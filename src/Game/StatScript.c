@@ -158,6 +158,18 @@ static scriptStructEntry StaticNavLightInfoScriptTable[] =
     END_SCRIPT_STRUCT_ENTRY
 };
 
+
+
+
+static ptrdiff_t diff( const void* va, const void* vb ) {
+    const char* a = va;
+    const char* b = vb;
+    return a - b;
+}
+
+
+
+
 /*=============================================================================
     Private Functions:
 =============================================================================*/
@@ -812,7 +824,7 @@ void scriptSetStruct(char *directory,char *filename,scriptStructEntry info[],uby
             if (foundentry != NULL)
             {
                 strcpy(globalScriptFileName,filename);
-                foundentry->setVarCB(directory,value,structureToFillIn + (foundentry->offset1 - foundentry->offset2) );
+                foundentry->setVarCB(directory,value,structureToFillIn + diff(foundentry->offset1,foundentry->offset2) );
             }
         }
     }
@@ -880,6 +892,8 @@ void scriptSet(char *directory,char *filename,scriptEntry info[])
 
     fileClose(fh);
 }
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : scriptSetFileSystem
@@ -1070,7 +1084,7 @@ void scriptSetGunStatics(char *directory,char *filename,struct ShipStaticInfo *s
                         if (foundentry != NULL)
                         {
                             structureToFillIn = (ubyte *)&gunstaticinfo->gunstatics[processingGun];
-                            foundentry->setVarCB(directory,value,structureToFillIn + (foundentry->offset1 - foundentry->offset2) );
+                            foundentry->setVarCB(directory,value,structureToFillIn + diff(foundentry->offset1,foundentry->offset2) );
                         }
                     }
                     break;
@@ -1986,7 +2000,7 @@ void mgGameTypeScriptInit()
                     if (foundentry != NULL)
                     {
                         structureToFillIn = (ubyte *)&preSetGames->gameType[gameNum];
-                        foundentry->setVarCB("",value,structureToFillIn + (foundentry->offset1 - foundentry->offset2) );
+                        foundentry->setVarCB("",value,structureToFillIn + diff(foundentry->offset1,foundentry->offset2) );
                     }
                 }
                 break;
