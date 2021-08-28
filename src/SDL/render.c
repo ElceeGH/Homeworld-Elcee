@@ -75,9 +75,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "utility.h"
-#ifdef HW_ENABLE_GLES
 #include "SDL_syswm.h"
-#endif
 
 #if defined _MSC_VER
 	#define isnan(x) _isnan(x)
@@ -997,6 +995,12 @@ bool setupPixelFormat()
                 return FALSE;
 	    }
 	}
+
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(sdlwindow, &wmInfo);
+    HWND hwnd = wmInfo.info.win.window;
+    ghMainWindow = hwnd;
 
     if(!(glcontext = SDL_GL_CreateContext(sdlwindow)))
         return FALSE;
