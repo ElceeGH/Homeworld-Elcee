@@ -691,29 +691,16 @@ bool8 fileMakeDirectory (const char* directoryName)
 		return TRUE;
 
 	/* Add a trailing slash to our directory name. */
-#ifdef _WIN32
-	if (directoryCopy[directoryLen - 1] != '\\')
-	{
-		directoryCopy[directoryLen] = '\\';
-		directoryLen++;
-		directoryCopy[directoryLen] = '\0';
-	}
-#else
 	if (directoryCopy[directoryLen - 1] != '/')
 	{
 		directoryCopy[directoryLen] = '/';
 		directoryLen++;
 		directoryCopy[directoryLen] = '\0';
 	}
-#endif
 
 	/* Find the first path element that isn't the root directory or a parent
 	   directory delimiter. */
-#ifdef _WIN32
-	pChar = strchr(directoryCopy, '\\');
-#else
 	pChar = strchr(directoryCopy, '/');
-#endif
 	if (pChar)
 	{
 		*pChar = '\0';
@@ -725,13 +712,9 @@ bool8 fileMakeDirectory (const char* directoryName)
 		if (directoryCopy[0] == '\0')
 #endif
 		{
-#ifdef _WIN32
-			*pChar = '\\';
-			pChar = strchr(pChar + 1, '\\');
-#else
-			*pChar = '/';
+		    *pChar = '/';
 			pChar = strchr(pChar + 1, '/');
-#endif
+
 			*pChar = '\0';
 		}
 	}
@@ -759,13 +742,8 @@ bool8 fileMakeDirectory (const char* directoryName)
 				return FALSE;
 		}
 		/* Continue with the next path element. */
-#ifdef _WIN32
-		*pChar = '\\';
-		pChar = strchr(pChar + 1, '\\');
-#else
 		*pChar = '/';
 		pChar = strchr(pChar + 1, '/');
-#endif
 	}
 
 	return TRUE;
@@ -1142,7 +1120,7 @@ void fileDelete(char *_fileName)
 filehandle fileOpen(char *_fileName, udword flags)
 {
     FILE *file;
-    char access[3];
+    char access[3] = { 0, 0, 0 };
     char *fileName;
     char localPath[PATH_MAX] = "";
     filehandle fh;
@@ -1295,22 +1273,12 @@ filehandle fileOpen(char *_fileName, udword flags)
     }
 
     // resort to the good old disk filesystem
-
     fileName = filePathPrepend(_fileName, flags);            //get full path
     fileNameCorrectCase(fileName);
 
-    if (bitTest(flags, FF_AppendMode))
-    {
-        access[0] = 'a';
-    }
-    else if (bitTest(flags, FF_WriteMode))
-    {
-        access[0] = 'w';
-    }
-    else
-    {
-        access[0] = 'r';
-    }
+         if (bitTest(flags, FF_AppendMode)) { access[0] = 'a'; }
+    else if (bitTest(flags, FF_WriteMode )) { access[0] = 'w'; }
+    else                                    { access[0] = 'r'; }
 
 #ifdef _WIN32
     /* Only open files in text mode on Windows.  Since text files are assumed
@@ -1318,15 +1286,13 @@ filehandle fileOpen(char *_fileName, udword flags)
        manually on other platforms. */
     if (bitTest(flags, FF_TextMode))
     {
-        access[1] = 't';
+        access[1] = '\0';
     }
     else
 #endif
     {
         access[1] = 'b';
     }
-
-    access[2] = 0;
 
     if (LogFileLoads)
     {
