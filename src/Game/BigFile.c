@@ -561,7 +561,7 @@ bool bigTOCFileExists(bigTOC *toc, char *filename, udword *fileNum)
     // since the shipped .big files have this problem we can't fix it without
     // breaking everything, so we do a lookup the broken way (more likely to
     // find a match anyway) and then try the fixed version for newer .big files
-    target.nameLength = strlen(filenamei);
+    target.nameLength = (unsigned short) strlen(filenamei);
     target.nameCRC1   = crc32Compute((ubyte *)filenamei,  target.nameLength/2);
     target.nameCRC2   = crc32Compute((ubyte *)filenamei + target.nameLength/2, target.nameLength/2);
 

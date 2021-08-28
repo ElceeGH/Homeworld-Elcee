@@ -266,7 +266,7 @@ void demStateSave(void)
 
     for (index = state.nKeys = 0; index < KEY_TOTAL_KEYS; index++)
     {                                                       //for all keys
-	memcpy(&keyScanCodeCopy, &keyScanCode[index], sizeof(ubyte));
+	memcpy(&keyScanCodeCopy, (void*)&keyScanCode[index], sizeof(ubyte));
         if (keyScanCodeCopy != 0)
         {                                                   //if this scan code has some activity
             state.key[state.nKeys].index = (ubyte)index;    //save it

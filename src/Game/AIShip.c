@@ -27,6 +27,7 @@
 #include "Tactics.h"
 #include "Tweak.h"
 #include "Universe.h"
+#include <stdio.h>
 
 
 #define DEBUG_AISHIP    0

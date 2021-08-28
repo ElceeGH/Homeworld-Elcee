@@ -94,8 +94,7 @@
       <PreprocessorDefinitions>_WIN32_FIXME;HW_GAME_HOMEWORLD;HW_BUILD_FOR_DEBUGGING;_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)hwsdl.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -110,6 +109,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>msvcrtd.lib;winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
@@ -153,7 +154,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
-      <PrecompiledHeader />
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)hwsdl.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -161,6 +162,8 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;SDLmain.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -196,7 +199,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader />
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)hwsdl.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -205,6 +208,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>msvcrt.lib;winmm.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;SDLmain.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -241,7 +246,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader />
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)hwsdl.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -251,6 +256,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;SDLmain.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -383,6 +390,12 @@
     <ClCompile Include="..\..\src\Game\PiePlate.c" />
     <ClCompile Include="..\..\src\Game\Ping.c" />
     <ClCompile Include="..\..\src\Game\PlugScreen.c" />
+    <ClCompile Include="..\..\src\Game\precompiled.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Game\ProfileTimers.c" />
     <ClCompile Include="..\..\src\Game\Randy.c" />
     <ClCompile Include="..\..\src\Game\Region.c" />
@@ -471,7 +484,12 @@
     <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.func.c" />
     <ClCompile Include="..\..\src\Sdl\avi.c" />
-    <ClCompile Include="..\..\src\Sdl\ClientCDKey.cpp" />
+    <ClCompile Include="..\..\src\Sdl\ClientCDKey.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Sdl\debugwnd.c" />
     <ClCompile Include="..\..\src\Sdl\font.c" />
     <ClCompile Include="..\..\src\Sdl\main.c" />
@@ -496,9 +514,19 @@
     <ClCompile Include="..\..\src\Sdl\texreg.c" />
     <ClCompile Include="..\..\src\Sdl\TimeoutTimer.c" />
     <ClCompile Include="..\..\src\Sdl\Titan.c" />
-    <ClCompile Include="..\..\src\Sdl\TitanInterface.cpp" />
+    <ClCompile Include="..\..\src\Sdl\TitanInterface.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Sdl\TitanInterfaceC.stub.c" />
-    <ClCompile Include="..\..\src\Sdl\TitanPacketMsg.cpp" />
+    <ClCompile Include="..\..\src\Sdl\TitanPacketMsg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Sdl\utility.c" />
     <ClCompile Include="..\..\src\Sdl\wave.c" />
     <ClCompile Include="..\..\src\Sdl\win32glue.c" />
@@ -715,7 +743,7 @@
     <ClInclude Include="..\..\src\Game\PiePlate.h" />
     <ClInclude Include="..\..\src\Game\Ping.h" />
     <ClInclude Include="..\..\src\Game\PlugScreen.h" />
-    <ClInclude Include="..\..\src\Game\preinclude.h" />
+    <ClInclude Include="..\..\src\Game\precompiled.h" />
     <ClInclude Include="..\..\src\Game\ProfileTimers.h" />
     <ClInclude Include="..\..\src\Game\RaceDefs.h" />
     <ClInclude Include="..\..\src\Game\Randy.h" />

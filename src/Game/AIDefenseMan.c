@@ -407,7 +407,8 @@ void aidPositionProximitySensorRoving(udword index)
 ----------------------------------------------------------------------------*/
 void aidPositionProximitySensorGuard(udword index)
 {
-    vector moveto0, moveto2;
+    vector moveto0 = {0,0,0};
+    vector moveto2 = {0,0,0};
     vector originvect = {0,0,0};
     SelectCommand selone;
 

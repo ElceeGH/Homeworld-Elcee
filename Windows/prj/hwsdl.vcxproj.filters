@@ -12,9 +12,8 @@
       <UniqueIdentifier>{3b19e234-300a-498d-9ed0-ce502666ba7c}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{a03d26f1-94f9-4fc9-ba5d-1477bb52e0e6}</UniqueIdentifier>
-      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
+    <Filter Include="Source Files\precompiled">
+      <UniqueIdentifier>{27737490-837f-4f94-9ea5-033ae4a9e794}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -942,6 +941,9 @@
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\precompiled.c">
+      <Filter>Source Files\precompiled</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Game\Matrix.s">
@@ -1759,8 +1761,8 @@
     <ClInclude Include="..\..\src\Sdl\wave.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Game\preinclude.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\..\src\Game\precompiled.h">
+      <Filter>Source Files\precompiled</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

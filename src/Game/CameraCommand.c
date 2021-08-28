@@ -1579,7 +1579,7 @@ void ccControl(CameraCommand *cameracommand)
     udword focusOnScreen;
     real32 zoomfactor = 0.0f;
     CameraStackEntry *curentry = currentCameraStackEntry(cameracommand);
-    float targetDistance;
+    float targetDistance = 0.0f;
    sdword UserAction;
 
     if (cameracommand->actualcamera.ignoreZoom)

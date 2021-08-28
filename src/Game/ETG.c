@@ -1006,8 +1006,8 @@ void etgNumberEffectsParse(char *directory,char *field,void *dataToFillIn)
 ----------------------------------------------------------------------------*/
 sdword etgTokTheType(void)
 {
-    char *param;
-    sdword exType;
+    char *param = NULL;
+    sdword exType = 0;
 
     param = strtok(NULL, ETG_TokenDelimiters);
     dbgAssertOrIgnore(param);
@@ -1257,7 +1257,7 @@ void etgDamageEventSet(char *directory,char *field,void *dataToFillIn)
 {
     char *param;
     ShipClass classy;
-    sdword exType;
+    sdword exType = 0;
 
     param = strtok(field, ETG_TokenDelimiters);
     dbgAssertOrIgnore(param);
@@ -3902,7 +3902,7 @@ char *etgParseVariable(char *params, bool *bSetInitial)
 //create a new integer
 sdword etgNewInteger(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *params, char *ret)
 {
-    memsize initial;
+    memsize initial = 0;
     sdword nScanned;
     bool bSetInitial;
     char *start;
@@ -7241,7 +7241,7 @@ sdword etgDetatchThisOwner(Effect *effect, Ship *owner, sdword nToFind)
 {
     Node *fNode, *bNode;
     Effect *thisEffect;
-    sdword nDetached;
+    sdword nDetached = 0;
 #if ETG_DETATCH_STATS
     static int nDetachRequests = 0;
     static int nTotalDetached = 0;

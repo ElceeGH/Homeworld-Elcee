@@ -19,6 +19,7 @@
 #include "SoundEvent.h"
 #include "StatScript.h"
 #include "Universe.h"
+#include <stdio.h>
 
 /*=============================================================================
     Data:

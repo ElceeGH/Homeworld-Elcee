@@ -13,6 +13,7 @@
 #include "SoundEvent.h"
 #include "SpeechEvent.h"
 #include "StringsOnly.h"
+#include <stdio.h>
 
 
 /*=============================================================================

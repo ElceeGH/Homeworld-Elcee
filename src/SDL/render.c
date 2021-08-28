@@ -77,10 +77,6 @@
 #include "utility.h"
 #include "SDL_syswm.h"
 
-#if defined _MSC_VER
-	#define isnan(x) _isnan(x)
-#endif
-
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>

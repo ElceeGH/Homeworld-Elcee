@@ -20,6 +20,7 @@
 #include "StatScript.h"
 #include "Teams.h"
 #include "utility.h"
+#include <stdio.h>
 
 
 #define PREVIEW_IMAGE    1
