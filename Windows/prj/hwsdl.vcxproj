@@ -356,12 +356,7 @@
     <ClCompile Include="..\..\src\Game\KASFunc.c" />
     <ClCompile Include="..\..\src\Game\Key.c" />
     <ClCompile Include="..\..\src\Game\KeyBindings.c" />
-    <ClCompile Include="..\..\src\Game\KNITransform.c">
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/arch:SSE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/arch:SSE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">/arch:SSE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">/arch:SSE %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
+    <ClCompile Include="..\..\src\Game\KNITransform.c" />
     <ClCompile Include="..\..\src\Game\LagPrint.c" />
     <ClCompile Include="..\..\src\Game\LaunchMgr.c" />
     <ClCompile Include="..\..\src\Game\LevelLoad.c" />
@@ -446,7 +441,6 @@
     <ClCompile Include="..\..\src\Game\UnivUpdate.c" />
     <ClCompile Include="..\..\src\Game\Vector.c" />
     <ClCompile Include="..\..\src\Game\Volume.c" />
-    <ClCompile Include="..\..\src\homeworld.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Mission01.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Mission01.func.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Mission02.c" />
@@ -483,53 +477,49 @@
     <ClCompile Include="..\..\src\Missions\Generated\Mission16.func.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.c" />
     <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.func.c" />
-    <ClCompile Include="..\..\src\Sdl\avi.c" />
-    <ClCompile Include="..\..\src\Sdl\ClientCDKey.cpp">
+    <ClCompile Include="..\..\src\SDL\avi.c" />
+    <ClCompile Include="..\..\src\SDL\ClientCDKey.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\debugwnd.c" />
-    <ClCompile Include="..\..\src\Sdl\font.c" />
-    <ClCompile Include="..\..\src\Sdl\main.c" />
-    <ClCompile Include="..\..\src\Sdl\mainrgn.c" />
-    <ClCompile Include="..\..\src\Sdl\mixfft.c" />
-    <ClCompile Include="..\..\src\Sdl\mouse.c" />
-    <ClCompile Include="..\..\src\Sdl\prim2d.c" />
-    <ClCompile Include="..\..\src\Sdl\prim3d.c" />
-    <ClCompile Include="..\..\src\Sdl\Queue.c" />
-    <ClCompile Include="..\..\src\Sdl\render.c">
-      <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</OmitFramePointers>
-      <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</OmitFramePointers>
-      <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">false</OmitFramePointers>
-      <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">false</OmitFramePointers>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\rglu.c" />
-    <ClCompile Include="..\..\src\Sdl\rinit.c" />
-    <ClCompile Include="..\..\src\Sdl\screenshot.c" />
-    <ClCompile Include="..\..\src\Sdl\smixer.c" />
-    <ClCompile Include="..\..\src\Sdl\soundlow.c" />
-    <ClCompile Include="..\..\src\Sdl\sstream.c" />
-    <ClCompile Include="..\..\src\Sdl\texreg.c" />
-    <ClCompile Include="..\..\src\Sdl\TimeoutTimer.c" />
-    <ClCompile Include="..\..\src\Sdl\Titan.c" />
-    <ClCompile Include="..\..\src\Sdl\TitanInterface.cpp">
+    <ClCompile Include="..\..\src\SDL\debugwnd.c" />
+    <ClCompile Include="..\..\src\SDL\font.c" />
+    <ClCompile Include="..\..\src\SDL\main.c" />
+    <ClCompile Include="..\..\src\SDL\mainrgn.c" />
+    <ClCompile Include="..\..\src\SDL\mixfft.c" />
+    <ClCompile Include="..\..\src\SDL\mouse.c" />
+    <ClCompile Include="..\..\src\SDL\NetworkInterface.c" />
+    <ClCompile Include="..\..\src\SDL\prim2d.c" />
+    <ClCompile Include="..\..\src\SDL\prim3d.c" />
+    <ClCompile Include="..\..\src\SDL\Queue.c" />
+    <ClCompile Include="..\..\src\SDL\render.c" />
+    <ClCompile Include="..\..\src\SDL\rglu.c" />
+    <ClCompile Include="..\..\src\SDL\rinit.c" />
+    <ClCompile Include="..\..\src\SDL\screenshot.c" />
+    <ClCompile Include="..\..\src\SDL\smixer.c" />
+    <ClCompile Include="..\..\src\SDL\soundlow.c" />
+    <ClCompile Include="..\..\src\SDL\sstream.c" />
+    <ClCompile Include="..\..\src\SDL\texreg.c" />
+    <ClCompile Include="..\..\src\SDL\TimeoutTimer.c" />
+    <ClCompile Include="..\..\src\SDL\Titan.c" />
+    <ClCompile Include="..\..\src\SDL\TitanInterface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\TitanInterfaceC.stub.c" />
-    <ClCompile Include="..\..\src\Sdl\TitanPacketMsg.cpp">
+    <ClCompile Include="..\..\src\SDL\TitanInterfaceC.c" />
+    <ClCompile Include="..\..\src\SDL\TitanPacketMsg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\utility.c" />
-    <ClCompile Include="..\..\src\Sdl\wave.c" />
-    <ClCompile Include="..\..\src\Sdl\win32glue.c" />
+    <ClCompile Include="..\..\src\SDL\utility.c" />
+    <ClCompile Include="..\..\src\SDL\wave.c" />
+    <ClCompile Include="..\..\src\SDL\win32glue.c" />
     <ClCompile Include="..\..\src\Ships\AdvanceSupportFrigate.c" />
     <ClCompile Include="..\..\src\Ships\Carrier.c" />
     <ClCompile Include="..\..\src\Ships\CloakGenerator.c" />
@@ -614,8 +604,8 @@
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctflt.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctfst.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctint.c" />
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemansi.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jmemmgr.c" />
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemname.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jquant1.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jquant2.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\jutils.c" />
@@ -629,17 +619,16 @@
     <ClCompile Include="..\..\src\ThirdParty\JPG\transupp.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrbmp.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrgif.c" />
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrppm.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrrle.c" />
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c" />
     <ClCompile Include="..\..\src\ThirdParty\LZSS\BitIO.c" />
     <ClCompile Include="..\..\src\ThirdParty\LZSS\LZSS.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\Game\Matrix.s" />
+    <ClInclude Include="..\..\src\Game\precompiled.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\Game\precompiled.h" />
+    <None Include="..\..\src\Game\Matrix.s" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

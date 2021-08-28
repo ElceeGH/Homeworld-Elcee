@@ -14,9 +14,6 @@
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{5052c7f4-7fb6-4036-84e3-ce7882c18596}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\JPG">
-      <UniqueIdentifier>{a5ed36cc-d66f-4603-871e-17d6a16fb49b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Generated">
       <UniqueIdentifier>{f988ecfa-7071-418e-9b70-71657c3a9953}</UniqueIdentifier>
     </Filter>
@@ -25,6 +22,21 @@
     </Filter>
     <Filter Include="Source Files\Crap">
       <UniqueIdentifier>{123df94e-73ba-492b-81ec-fedf3a0b6f3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty">
+      <UniqueIdentifier>{b3321f31-49cf-4b09-ae4d-16afc92263d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\CRC">
+      <UniqueIdentifier>{63c0375f-7172-426f-bdcd-831e5c88d48e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\LZSS">
+      <UniqueIdentifier>{2d344208-fb80-46fb-a8d6-136bf72e90c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\JPG">
+      <UniqueIdentifier>{843a8fdb-88a7-4cf5-a07d-5dd0abb0851e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SDL">
+      <UniqueIdentifier>{5e3e4d0f-5a55-4b76-b932-44fb58ed944c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -139,143 +151,14 @@
     <ClCompile Include="..\..\src\Missions\Generated\Mission16.c">
       <Filter>Source Files\Generated</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jaricom.c">
-      <Filter>Source Files\JPG</Filter>
+    <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.c">
+      <Filter>Source Files\Generated</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcapimin.c">
-      <Filter>Source Files\JPG</Filter>
+    <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.func.c">
+      <Filter>Source Files\Generated</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcapistd.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcarith.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jccoefct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jccolor.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcdctmgr.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jchuff.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcinit.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmainct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmarker.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmaster.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcomapi.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcparam.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcprepct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jcsample.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jctrans.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdapimin.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdapistd.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdarith.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdatadst.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdatasrc.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdcoefct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdcolor.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jddctmgr.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdhuff.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdinput.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmainct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmarker.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmaster.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmerge.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdpostct.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdsample.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jdtrans.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jerror.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctflt.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctfst.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctint.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctflt.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctfst.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctint.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemmgr.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemname.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jquant1.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jquant2.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\jutils.c">
-      <Filter>Source Files\JPG</Filter>
+    <ClCompile Include="..\..\src\Game\libs.c">
+      <Filter>Source Files\Crap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\AIAttackMan.c">
       <Filter>Source Files\Game</Filter>
@@ -319,16 +202,40 @@
     <ClCompile Include="..\..\src\Game\AIVar.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Blobs.c">
+    <ClCompile Include="..\..\src\Game\Damage.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\Alliance.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\Animatic.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Game\Attack.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Game\AutoDownloadMap.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\AutoLOD.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Game\Battle.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\BigFile.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Blobs.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\BMP.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Bounties.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\B-Spline.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\BTG.c">
@@ -343,19 +250,334 @@
     <ClCompile Include="..\..\src\Game\Captaincy.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.c">
-      <Filter>Source Files\Generated</Filter>
+    <ClCompile Include="..\..\src\Game\ChannelFSM.c">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Missions\Generated\Tutorial1.func.c">
-      <Filter>Source Files\Generated</Filter>
+    <ClCompile Include="..\..\src\Game\Chatting.c">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\cdjpeg.c">
-      <Filter>Source Files\JPG</Filter>
+    <ClCompile Include="..\..\src\Game\Clamp.c">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Ships\CloakGenerator.c">
-      <Filter>Source Files\Ships</Filter>
+    <ClCompile Include="..\..\src\Game\Clipper.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Clouds.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Collision.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Color.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ColPick.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\CommandLayer.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\CommandNetwork.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\CommandWrap.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ConsMgr.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Crates.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Debug.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Demo.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Dock.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Eval.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\FEFlow.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\FEReg.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\File.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\FlightMan.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\FontReg.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Formation.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\GameChat.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\GamePick.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Globals.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Gun.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Hash.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\HorseRace.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\HS.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\InfoOverlay.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\KAS.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\KASFunc.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Key.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\KeyBindings.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\KNITransform.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\LagPrint.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\LaunchMgr.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\LevelLoad.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Light.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\LinkedList.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\LOD.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\MadLinkIn.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Matrix.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Matrix-mult.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Memory.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Mesh.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\MeshAnim.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\MEX.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\MultiplayerGame.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\MultiplayerLANGame.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\NavLights.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Nebulae.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\NetCheck.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\NIS.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Objectives.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ObjTypes.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Options.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Particle.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Physics.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\PiePlate.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Ping.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\PlugScreen.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ProfileTimers.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Timer.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\TitanNet.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Tracking.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\TradeMgr.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Trails.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Transformer.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Tutor.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Tweak.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Twiddle.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Types.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\UIControls.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Undo.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Universe.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\UnivUpdate.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Vector.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Volume.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Randy.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Region.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ResCollect.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ResearchAPI.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ResearchGUI.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SaveGame.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ScenPick.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Scroller.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Select.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Sensors.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Shader.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ShipSelect.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\ShipView.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SinglePlayer.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SoundEvent.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SoundEventPlay.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SoundEventStop.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\SpeechEvent.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Star3d.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Stats.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\StatScript.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\StringSupport.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Subtitle.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Tactical.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Tactics.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\TaskBar.c">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Game\Teams.c">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Ships\AdvanceSupportFrigate.c">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Ships\Carrier.c">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Ships\CloakGenerator.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Ships\DDDFrigate.c">
@@ -448,16 +670,19 @@
     <ClCompile Include="..\..\src\Ships\RepairCorvette.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Ships\ResearchShip.c">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Ships\ResourceCollector.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Ships\ResourceController.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Ships\ResearchShip.c">
+    <ClCompile Include="..\..\src\Ships\SalCapCorvette.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Ships\SalCapCorvette.c">
+    <ClCompile Include="..\..\src\Ships\SensorArray.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Ships\StandardDestroyer.c">
@@ -466,494 +691,278 @@
     <ClCompile Include="..\..\src\Ships\StandardFrigate.c">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrbmp.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrgif.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrppm.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\wrrle.c">
-      <Filter>Source Files\JPG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Ships\Carrier.c">
-      <Filter>Source Files\Ships</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Clamp.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Animatic.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\AutoDownloadMap.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\AutoLOD.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\avi.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\BigFile.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\CRC\CRC32.c">
+      <Filter>Source Files\ThirdParty\CRC</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\LZSS\BitIO.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\BMP.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Bounties.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\B-Spline.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ChannelFSM.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Chatting.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Eval.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\ClientCDKey.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Clipper.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Clouds.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Collision.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Color.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ColPick.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\CommandLayer.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\CommandNetwork.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\CommandWrap.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ConsMgr.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Crates.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\CRC\CRC32.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Damage.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Debug.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\debugwnd.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Demo.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Dock.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\FEFlow.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\FEReg.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\File.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\FlightMan.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\font.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\FontReg.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Formation.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\GameChat.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\GamePick.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Globals.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Gun.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Hash.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\homeworld.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\HorseRace.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\PiePlate.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\MultiplayerGame.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\MultiplayerLANGame.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\NavLights.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Nebulae.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\NetCheck.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\NIS.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Objectives.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ObjTypes.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Options.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Particle.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Physics.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\MEX.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\MeshAnim.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Mesh.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Memory.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Matrix-mult.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Matrix.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\mainrgn.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\main.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\MadLinkIn.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\LZSS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\LZSS\LZSS.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\LZSS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\LOD.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\avi.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\LinkedList.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\debugwnd.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Light.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\font.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\LevelLoad.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\main.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\LaunchMgr.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\mainrgn.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\LagPrint.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\mixfft.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\KNITransform.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\mouse.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\KeyBindings.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\NetworkInterface.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Key.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\prim2d.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\KASFunc.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\prim3d.c">
+      <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\KAS.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\SDL\Queue.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\render.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rglu.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rinit.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\screenshot.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\smixer.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\soundlow.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\sstream.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\texreg.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\TimeoutTimer.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\Titan.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\TitanInterfaceC.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\utility.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\wave.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\win32glue.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\ClientCDKey.cpp">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\TitanInterface.cpp">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\TitanPacketMsg.cpp">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\cdjpeg.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\interfce.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\HS.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jaricom.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\InfoOverlay.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcapimin.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\win32glue.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcapistd.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\smixer.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcarith.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\SoundEvent.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jccoefct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\SoundEventPlay.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jccolor.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\SoundEventStop.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcdctmgr.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\soundlow.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jchuff.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\SpeechEvent.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcinit.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\sstream.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmainct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Star3d.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmarker.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Stats.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcmaster.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\StatScript.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcomapi.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\StringSupport.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcparam.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Subtitle.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcprepct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Tactical.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jcsample.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Tactics.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jctrans.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\TaskBar.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdapimin.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Teams.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdapistd.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\texreg.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdarith.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\TimeoutTimer.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdatadst.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Timer.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdatasrc.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\Titan.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdcoefct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\TitanInterface.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdcolor.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\TitanInterfaceC.stub.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jddctmgr.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\TitanNet.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdhuff.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\TitanPacketMsg.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdinput.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Tracking.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmainct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\TradeMgr.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmarker.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Trails.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmaster.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Transformer.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdmerge.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThirdParty\JPG\transupp.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdpostct.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Tutor.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdsample.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Tweak.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jdtrans.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Twiddle.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jerror.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Types.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctflt.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\UIControls.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctfst.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Undo.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctint.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Universe.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctflt.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\UnivUpdate.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctfst.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\utility.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jidctint.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Vector.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemansi.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Volume.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jmemmgr.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\wave.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jquant1.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\SinglePlayer.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jquant2.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\mixfft.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\mouse.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Ping.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\PlugScreen.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\prim2d.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\prim3d.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ProfileTimers.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\Queue.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Randy.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\jutils.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdbmp.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdcolmap.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdgif.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdppm.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdrle.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdswitch.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdtarga.c">
-      <Filter>Source Files\Game</Filter>
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Region.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\transupp.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\render.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\wrbmp.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\ResCollect.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\wrgif.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\ResearchAPI.c">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\wrrle.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\ResearchGUI.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\rglu.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\rinit.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\SaveGame.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ScenPick.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Sdl\screenshot.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Scroller.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Select.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Ships\SensorArray.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Sensors.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Shader.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ShipSelect.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\ShipView.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\libs.c">
-      <Filter>Source Files\Crap</Filter>
+    <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c">
+      <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
