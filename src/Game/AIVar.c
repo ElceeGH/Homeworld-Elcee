@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Memory.h"
 #include "SaveGame.h"
+#include <stdio.h>
 
 
 /*=============================================================================
