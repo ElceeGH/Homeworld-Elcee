@@ -23,6 +23,8 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 
+#define M_PI_2 1.57079632679489661923
+
 #define TEST_LIGHTNING 0
 
 extern udword gDevcaps2;
@@ -978,7 +980,7 @@ void cloudGenerateLightning(vector *from, vector *to) {
 }
 
 void cloudRenderLightning(vector* pa, vector* pb, udword depth, sdword lod) {
-    vector lightning[depth];
+    vector* lightning = malloc( depth * sizeof(vector));
     real32 width = 12.0f / (real32)(lod + 1);
     real32 alpha = width / 10.0f;
     if (width > 3.0f) alpha = 1.0f;
@@ -995,6 +997,7 @@ void cloudRenderLightning(vector* pa, vector* pb, udword depth, sdword lod) {
     glColor4f(CLOUD_LIGHTNING_MAIN_RED, CLOUD_LIGHTNING_MAIN_GREEN, CLOUD_LIGHTNING_MAIN_BLUE, CLOUD_LIGHTNING_MAIN_ALPHA * alpha);
     glDrawArrays(GL_LINE_STRIP, 0, depth);
     glDisableClientState(GL_VERTEX_ARRAY);
+    free( lightning );
 }
 
 bool8 cloudHasLightning(cloudSystem* system)
