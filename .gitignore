@@ -7,8 +7,6 @@ Mac/Homeworld.xcodeproj/*.mode*
 Mac/Homeworld.xcodeproj/*.pbxuser
 Mac/SDL2.framework
 
-src/Missions/Generated
-
 tools/biggie/biggie
 
 tools/kas2c/kas2c
@@ -38,7 +36,12 @@ configure.ac
 
 cscope.files
 cscope.out
+Windows/.vs/
+SDL/
+Windows/prj/hwsdl_debug/
 tools/kas2c/project/KAS2C/.vs/
 tools/kas2c/project/KAS2C/Debug/
 tools/kas2c/project/KAS2C/KAS2C/Debug/
 tools/kas2c/project/KAS2C/KAS2C/KAS2C.vcxproj.user
+Windows/prj/hwsdl.vcxproj.user
+bin/
