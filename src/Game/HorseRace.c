@@ -167,6 +167,17 @@ real32 horseRaceGetPacketPercent(real32 barPercent);
 //HR_ChatTextEntry
 //extern nisheader *utyTeaserHeader;
 
+
+
+// Hack crap to get it to build
+bool feShouldSaveMouseCursor( void ) { return 0; }
+void mouseStoreCursorUnder  ( void ) {};
+void mouseRestoreCursorUnder( void ) {};
+
+
+
+
+
 /*=============================================================================
     Functions
 =============================================================================*/
