@@ -1,0 +1,19 @@
+gcc -E -x c SinglePlayer/Mission01.kas     > Mission01.kp
+gcc -E -x c SinglePlayer/Mission02.kas     > Mission02.kp
+gcc -E -x c SinglePlayer/Mission03.kas     > Mission03.kp
+gcc -E -x c SinglePlayer/Mission04.kas     > Mission04.kp
+gcc -E -x c SinglePlayer/Mission05.kas     > Mission05.kp
+gcc -E -x c SinglePlayer/Mission05_OEM.kas > Mission05_OEM.kp
+gcc -E -x c SinglePlayer/Mission06.kas     > Mission06.kp
+gcc -E -x c SinglePlayer/Mission07.kas     > Mission07.kp
+gcc -E -x c SinglePlayer/Mission08.kas     > Mission08.kp
+gcc -E -x c SinglePlayer/Mission09.kas     > Mission09.kp
+gcc -E -x c SinglePlayer/Mission10.kas     > Mission10.kp
+gcc -E -x c SinglePlayer/Mission11.kas     > Mission11.kp
+gcc -E -x c SinglePlayer/Mission12.kas     > Mission12.kp
+gcc -E -x c SinglePlayer/Mission13.kas     > Mission13.kp
+gcc -E -x c SinglePlayer/Mission14.kas     > Mission14.kp
+gcc -E -x c SinglePlayer/Mission15.kas     > Mission15.kp
+gcc -E -x c SinglePlayer/Mission16.kas     > Mission16.kp
+gcc -E -x c Tutorials/Tutorial1.kas        > Tutorial1.kp
+
