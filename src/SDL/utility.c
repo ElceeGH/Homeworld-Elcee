@@ -4051,8 +4051,8 @@ DONE_INTROS:
 
     renderData.width = MAIN_WindowWidth;                    //setup data for
     renderData.height = MAIN_WindowHeight;                  //initializing the
-    /*renderData.hWnd = ghMainWindow;*/                         //rendering system
-    renderData.hWnd = 0;                                    //rendering system
+    renderData.hWnd = ghMainWindow;                         //rendering system
+    //renderData.hWnd = 0;                                    //rendering system
     if (rndInit(&renderData) != OKAY)                       //startup the rendering system
     {
         //fallback to 640x480@16 rGL+sw, and fatally exit if that doesn't work either
