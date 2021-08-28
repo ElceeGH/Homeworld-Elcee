@@ -1866,7 +1866,6 @@ void kasFunctionStart(char *funcName)
 void kasFunctionEnd(void)
 {
     int funcNum = callStack[curFuncDepth].functionNum;
-    FunctionCall *fcallp;
 
 #ifdef LOTS_OF_DEBUGS
     fprintf(stderr, "-=*> kasFunctionEnd()\n");
