@@ -920,8 +920,9 @@ void utyOptionsFileRead(void)
 ----------------------------------------------------------------------------*/
 void utyOptionsFileWrite(void)
 {
-    char* home_dir;
+    const char* home_dir;
     char ch_buf[PATH_MAX];
+    char dir_buf[PATH_MAX];
     sdword index;
     FILE *f;
 
@@ -935,12 +936,17 @@ void utyOptionsFileWrite(void)
     {
         strcpy(ch_buf, home_dir);
         strcat(ch_buf, "/" CONFIGDIR "/" UTY_CONFIG_FILENAME);
+
+        strcpy(dir_buf, home_dir);
+        strcat(dir_buf, "/" CONFIGDIR );
+        mkdir(dir_buf);
     }
     else
     {
         strcpy(ch_buf, UTY_CONFIG_FILENAME);
     }
-    f = fopen(ch_buf, "wt");
+
+    f = fopen(ch_buf, "w");
 
     for (index = 0; utyOptionsList[index].name != NULL; index++)
     {
