@@ -3635,17 +3635,10 @@ char* utyGameSystemsPreInit(void)
 	if (fileUserSettingsPath[0] == '\0')
 	{
 #ifdef _WIN32
-		// Use the same directory as the Homeworld data (similar to the
-		// functionality in the original Homeworld).
-
-		if (fileHomeworldDataPath[0] != '\0')
-		{
-			fileUserSettingsPathSet(fileHomeworldDataPath);
-		}
-		else
-		{	//HACKHACK: This is a temporary hack. Somebody needs to fix this!
-			fileUserSettingsPathSet("C:\\HomeworldData");
-		}
+        const char* appdata = getenv("APPDATA");
+        char dir[PATH_MAX];
+        sprintf( dir, "%s/%s", appdata, CONFIGDIR );
+		fileUserSettingsPathSet( dir );
 #else
 		// Use the user's own Homeworld configuration dir if possible or
 		// else use the Homeworld data directory itself.
