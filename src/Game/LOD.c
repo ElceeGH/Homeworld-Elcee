@@ -276,6 +276,14 @@ lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
     vecSub(obj->cameraDistanceVector,*camera,*ship);
     obj->cameraDistanceSquared = distance = vecMagnitudeSquared(obj->cameraDistanceVector);
 
+    // Increase detail for we are now in the far off year of 2021.
+    // 24K is approximately the distance to the camera at maximum zoom when not in the sensor manager.
+    // When inside this range just keep everything at max detail by assuming the camera is right on top of it.
+    if (sqrtf(distance) < 24000.0f) 
+    {
+        distance = 1.0f;
+    }
+
 #if LOD_SCALE_DEBUG
     if (lodDebugScaleFactor != 0.0f)
     {
