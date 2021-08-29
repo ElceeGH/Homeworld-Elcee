@@ -67,10 +67,6 @@
 #include "utility.h"
 #include "Vector.h"
 
-#if defined _MSC_VER
-	#define isnan(x) _isnan(x)
-#endif
-
 //located in mainrg.c
 //falko's fault...not mine..long story
 void toFieldSphereDraw(ShipPtr ship,real32 radius, real32 scale);

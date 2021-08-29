@@ -52,7 +52,6 @@
 
 #ifdef _MSC_VER
 	#define strcasecmp _stricmp
-	#define isnan _isnan
 #else
     #include <strings.h>
 #endif

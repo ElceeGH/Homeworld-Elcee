@@ -36,10 +36,6 @@
 #include "Undo.h"
 #include "Universe.h"
 
-#if defined _MSC_VER
-	#define isnan(x) _isnan(x)
-#endif
-
 #ifndef SW_Render
     #ifdef _WIN32
         #include <windows.h>

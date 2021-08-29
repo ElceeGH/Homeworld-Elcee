@@ -34,10 +34,6 @@
 #include "Teams.h"
 #include "Universe.h"
 
-#if defined _MSC_VER
-	#define isnan(x) _isnan(x)
-#endif
-
 #define MIN2(x,y) ((x) < (y) ? (x) : (y))
 #define MAX2(x,y) ((x) > (y) ? (x) : (y))
 

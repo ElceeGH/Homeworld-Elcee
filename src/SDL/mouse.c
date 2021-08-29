@@ -455,7 +455,6 @@ void mouseCursorDelayShow(uword delay)
 {
     mouseWillBeVisible = delay+1;
 }
-
 /*-----------------------------------------------------------------------------
     Name        : mousePositionSet
     Description : Set new mouse position.

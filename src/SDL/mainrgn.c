@@ -83,10 +83,6 @@
     #include <windows.h>
 #endif
 
-#if defined _MSC_VER
-	#define isnan(x) _isnan(x)
-#endif
-
 #undef UTY_SCREEN_SHOT
 
 /*=============================================================================
