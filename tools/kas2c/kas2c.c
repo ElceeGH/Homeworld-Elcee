@@ -12,6 +12,7 @@
 #endif
 
 #include "kas2c.h"
+#define LOTS_OF_DEBUGS
 
 #ifdef _WIN32
 #define strcasecmp _stricmp

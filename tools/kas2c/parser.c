@@ -2529,7 +2529,6 @@ int main(int argc, char **argv)
     functionCount = 0;  // number of FSM init/watch functions created
 
     // normal yyin and yyout interaction
-    yylex();
     yyparse();
 
     fprintf(yyhout, "\n\n#endif\n");
