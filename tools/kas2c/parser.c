@@ -66,7 +66,6 @@
 
 
 /* First part of user prologue.  */
-#line 1 "parser.y"
 
 
 #ifdef _MACOSX
@@ -103,7 +102,6 @@ extern int lineNum;
 extern char curFilename[];
 
 
-#line 111 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -257,12 +255,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 42 "parser.y"
+
 
     char    *string;    /* string buffer */
     int     number;     /* numeric value */
 
-#line 270 "parser.c"
+
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -1622,483 +1620,328 @@ yyreduce:
   switch (yyn)
     {
   case 5:
-#line 69 "parser.y"
                                  { kasLocalizationStart(); }
-#line 1632 "parser.c"
     break;
 
   case 6:
-#line 72 "parser.y"
                          { kasLocalizationEnd(); }
-#line 1638 "parser.c"
     break;
 
   case 9:
-#line 83 "parser.y"
                                                     { kasLStringDefineEnd(); }
-#line 1644 "parser.c"
     break;
 
   case 10:
-#line 86 "parser.y"
                                    { kasLStringDefineStart((yyvsp[0].string)); }
-#line 1650 "parser.c"
     break;
 
   case 11:
-#line 89 "parser.y"
                             { kasLStringValue((yyvsp[0].string)); }
-#line 1656 "parser.c"
     break;
 
   case 12:
-#line 90 "parser.y"
                                    { kasLStringValue((yyvsp[0].string)); }
-#line 1662 "parser.c"
     break;
 
   case 16:
-#line 100 "parser.y"
                    { kasFSMStart((yyvsp[0].string)); }
-#line 1668 "parser.c"
     break;
 
   case 17:
-#line 103 "parser.y"
                     { kasFSMEnd(""); }
-#line 1674 "parser.c"
     break;
 
   case 18:
-#line 104 "parser.y"
                     { kasFSMEnd((yyvsp[0].string)); }
-#line 1680 "parser.c"
     break;
 
   case 19:
-#line 107 "parser.y"
              { kasStateListClear(); kasStateListEnd(); }
-#line 1686 "parser.c"
     break;
 
   case 20:
-#line 108 "parser.y"
                    { kasStateListClear(); }
-#line 1692 "parser.c"
     break;
 
   case 21:
-#line 108 "parser.y"
                                                               { kasStateListEnd(); }
-#line 1698 "parser.c"
     break;
 
   case 22:
-#line 111 "parser.y"
                                         { kasStateListAdd((yyvsp[0].string)); }
-#line 1704 "parser.c"
     break;
 
   case 23:
-#line 112 "parser.y"
                                         { kasStateListAdd((yyvsp[0].string)); }
-#line 1710 "parser.c"
     break;
 
   case 24:
-#line 115 "parser.y"
                     { kasInitializeStart(); kasInitializeEnd(); }
-#line 1716 "parser.c"
     break;
 
   case 26:
-#line 119 "parser.y"
                                    { kasInitializeStart(); }
-#line 1722 "parser.c"
     break;
 
   case 27:
-#line 122 "parser.y"
                                     { kasInitializeEnd(); }
-#line 1728 "parser.c"
     break;
 
   case 28:
-#line 125 "parser.y"
                 { kasWatchStart(); kasWatchEnd(); }
-#line 1734 "parser.c"
     break;
 
   case 30:
-#line 129 "parser.y"
                                     { kasWatchStart(); }
-#line 1740 "parser.c"
     break;
 
   case 31:
-#line 132 "parser.y"
                                     { kasWatchEnd(); }
-#line 1746 "parser.c"
     break;
 
   case 34:
-#line 144 "parser.y"
                     { fprintf(yyout, ";\n\t"); }
-#line 1752 "parser.c"
     break;
 
   case 35:
-#line 145 "parser.y"
                                { fprintf(yyout, ";\n\t"); }
-#line 1758 "parser.c"
     break;
 
   case 36:
-#line 146 "parser.y"
                                { kasJump((yyvsp[-1].string)); fprintf(yyout, ";\n\treturn;\n\t"); }
-#line 1764 "parser.c"
     break;
 
   case 40:
-#line 154 "parser.y"
                                  { kasFSMCreateStart((yyvsp[0].string)); }
-#line 1770 "parser.c"
     break;
 
   case 41:
-#line 154 "parser.y"
                                                                                   { kasFSMCreateEnd(); }
-#line 1776 "parser.c"
     break;
 
   case 44:
-#line 165 "parser.y"
                      { fprintf(yyout, "else\n\t{\n\t"); }
-#line 1782 "parser.c"
     break;
 
   case 45:
-#line 165 "parser.y"
                                                                      { fprintf(yyout, "}\n\t"); }
-#line 1788 "parser.c"
     break;
 
   case 47:
-#line 169 "parser.y"
                                   { fprintf(yyout, "else if ("); }
-#line 1794 "parser.c"
     break;
 
   case 48:
-#line 169 "parser.y"
                                                                                   { fprintf(yyout, ")\n\t{\n\t"); }
-#line 1800 "parser.c"
     break;
 
   case 49:
-#line 169 "parser.y"
                                                                                                                                { fprintf(yyout, "}\n\t"); }
-#line 1806 "parser.c"
     break;
 
   case 50:
-#line 172 "parser.y"
                        { fprintf(yyout, "if ("); }
-#line 1812 "parser.c"
     break;
 
   case 51:
-#line 172 "parser.y"
                                                                   { fprintf(yyout, ")\n\t{\n\t"); }
-#line 1818 "parser.c"
     break;
 
   case 52:
-#line 172 "parser.y"
                                                                                                                { fprintf(yyout, "}\n\t"); }
-#line 1824 "parser.c"
     break;
 
   case 54:
-#line 178 "parser.y"
                                { fprintf(yyout, "if (!kasfVarValueGet(\"_VIFONCE%03d\") && (", ifOnceIndex+1); }
-#line 1830 "parser.c"
     break;
 
   case 55:
-#line 178 "parser.y"
                                                                                                                                 { fprintf(yyout, ")) // \"ifonce\" #%d\n\t{\n\tkasfVarCreateSet(\"_VIFONCE%03d\", 1);\n\t", ifOnceIndex+1, ifOnceIndex+1); }
-#line 1836 "parser.c"
     break;
 
   case 56:
-#line 178 "parser.y"
                                                                                                                                                                                                                                                                         { fprintf(yyout, "}\n\t"); ++ifOnceIndex; }
-#line 1842 "parser.c"
     break;
 
   case 57:
-#line 182 "parser.y"
                            { fprintf(yyout, " + "); }
-#line 1848 "parser.c"
     break;
 
   case 59:
-#line 183 "parser.y"
                            { fprintf(yyout, " - "); }
-#line 1854 "parser.c"
     break;
 
   case 61:
-#line 184 "parser.y"
                            { fprintf(yyout, " * "); }
-#line 1860 "parser.c"
     break;
 
   case 63:
-#line 185 "parser.y"
                            { fprintf(yyout, " / "); }
-#line 1866 "parser.c"
     break;
 
   case 65:
-#line 186 "parser.y"
                            { fprintf(yyout, " && "); }
-#line 1872 "parser.c"
     break;
 
   case 67:
-#line 187 "parser.y"
                            { fprintf(yyout, " || "); }
-#line 1878 "parser.c"
     break;
 
   case 69:
-#line 188 "parser.y"
                            { fprintf(yyout, " == "); }
-#line 1884 "parser.c"
     break;
 
   case 71:
-#line 189 "parser.y"
                            { fprintf(yyout, " != "); }
-#line 1890 "parser.c"
     break;
 
   case 73:
-#line 190 "parser.y"
                            { fprintf(yyout, " > "); }
-#line 1896 "parser.c"
     break;
 
   case 75:
-#line 191 "parser.y"
                            { fprintf(yyout, " >= "); }
-#line 1902 "parser.c"
     break;
 
   case 77:
-#line 192 "parser.y"
                            { fprintf(yyout, " < "); }
-#line 1908 "parser.c"
     break;
 
   case 79:
-#line 193 "parser.y"
                            { fprintf(yyout, " <= "); }
-#line 1914 "parser.c"
     break;
 
   case 81:
-#line 194 "parser.y"
                     { fprintf(yyout, "-"); }
-#line 1920 "parser.c"
     break;
 
   case 83:
-#line 195 "parser.y"
                     { fprintf(yyout, "!"); }
-#line 1926 "parser.c"
     break;
 
   case 85:
-#line 196 "parser.y"
                     { fprintf(yyout, "!"); }
-#line 1932 "parser.c"
     break;
 
   case 87:
-#line 197 "parser.y"
                 { fprintf(yyout, "("); }
-#line 1938 "parser.c"
     break;
 
   case 88:
-#line 197 "parser.y"
                                                         { fprintf(yyout, ")"); }
-#line 1944 "parser.c"
     break;
 
   case 89:
-#line 198 "parser.y"
                    { fprintf(yyout, "%d", (yyvsp[0].number)); }
-#line 1950 "parser.c"
     break;
 
   case 90:
-#line 199 "parser.y"
                { kasFunctionStart((yyvsp[0].string)); }
-#line 1956 "parser.c"
     break;
 
   case 91:
-#line 199 "parser.y"
                                                             { kasFunctionEnd(); }
-#line 1962 "parser.c"
     break;
 
   case 92:
-#line 200 "parser.y"
                  { fprintf(yyout, "1"); }
-#line 1968 "parser.c"
     break;
 
   case 93:
-#line 201 "parser.y"
                   { fprintf(yyout, "0"); }
-#line 1974 "parser.c"
     break;
 
   case 96:
-#line 206 "parser.y"
                            { fprintf(yyout, ", "); }
-#line 1980 "parser.c"
     break;
 
   case 98:
-#line 209 "parser.y"
                        { kasFunctionParamNumber(); }
-#line 1986 "parser.c"
     break;
 
   case 99:
-#line 210 "parser.y"
                        { fprintf(yyout, "\"%s\"", (yyvsp[0].string));
                          kasFunctionParamCharPtr(); }
-#line 1993 "parser.c"
     break;
 
   case 100:
-#line 212 "parser.y"
                             { kasLStringReference((yyvsp[0].string));
                               kasFunctionParamCharPtr(); }
-#line 2000 "parser.c"
     break;
 
   case 102:
-#line 219 "parser.y"
                            { fprintf(yyout, "kasGrowSelectionPtr(\"%s\")", (yyvsp[0].string));
                              kasFunctionParamSelectCommandPtr(); }
-#line 2007 "parser.c"
     break;
 
   case 103:
-#line 221 "parser.y"
                            { fprintf(yyout, "kasPathPtr(\"%s\")", (yyvsp[0].string));
                              kasFunctionParamPathPtr(); }
-#line 2014 "parser.c"
     break;
 
   case 104:
-#line 223 "parser.y"
                             { fprintf(yyout, "kasVectorPtr(\"%s\")", (yyvsp[0].string));
                               kasFunctionParamVectorPtr(); }
-#line 2021 "parser.c"
     break;
 
   case 105:
-#line 225 "parser.y"
                             { fprintf(yyout, "kasVolumePtr(\"%s\")", (yyvsp[0].string));
                               kasFunctionParamVolumePtr(); }
-#line 2028 "parser.c"
     break;
 
   case 106:
-#line 227 "parser.y"
                                 { fprintf(yyout, "kasAITeamShipsPtr(\"%s\")", (yyvsp[0].string));
                                   kasFunctionParamSelectCommandPtr(); }
-#line 2035 "parser.c"
     break;
 
   case 107:
-#line 229 "parser.y"
                                  { fprintf(yyout, "kasShipsVectorPtr(\"%s\")", (yyvsp[0].string));
                                    kasFunctionParamVectorPtr(); }
-#line 2042 "parser.c"
     break;
 
   case 108:
-#line 231 "parser.y"
                                  { fprintf(yyout, "kasTeamsVectorPtr(\"%s\")", (yyvsp[0].string));
                                    kasFunctionParamVectorPtr(); }
-#line 2049 "parser.c"
     break;
 
   case 109:
-#line 233 "parser.y"
                                   { fprintf(yyout, "kasVolumeVectorPtr(\"%s\")", (yyvsp[0].string));
                                    kasFunctionParamVectorPtr(); }
-#line 2056 "parser.c"
     break;
 
   case 110:
-#line 235 "parser.y"
                            { fprintf(yyout, "(&kasThisTeamPtr->shipList)");
                         kasFunctionParamSelectCommandPtr(); }
-#line 2063 "parser.c"
     break;
 
   case 111:
-#line 237 "parser.y"
                            { fprintf(yyout, "kasThisTeamsVectorPtr()");
                                 kasFunctionParamVectorPtr();  }
-#line 2070 "parser.c"
     break;
 
   case 112:
-#line 241 "parser.y"
                            { fprintf(yyout, "kasAITeamPtr(\"%s\")", (yyvsp[0].string));
                              kasFunctionParamAITeamPtr(); }
-#line 2077 "parser.c"
     break;
 
   case 113:
-#line 243 "parser.y"
                       { fprintf(yyout, "kasThisTeamPtr");
                         kasFunctionParamAITeamPtr(); }
-#line 2084 "parser.c"
     break;
 
   case 117:
-#line 254 "parser.y"
                             { kasStateStart((yyvsp[0].string)); }
-#line 2090 "parser.c"
     break;
 
   case 118:
-#line 257 "parser.y"
                         { kasStateEnd(""); }
-#line 2096 "parser.c"
     break;
 
   case 119:
-#line 258 "parser.y"
                         { kasStateEnd((yyvsp[0].string)); }
-#line 2102 "parser.c"
     break;
 
 
-#line 2106 "parser.c"
 
       default: break;
     }
@@ -2330,7 +2173,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 261 "parser.y"
+
 
 
 int lineNum = 1;
