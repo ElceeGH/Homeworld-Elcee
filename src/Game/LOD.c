@@ -20,6 +20,7 @@
 #include "Key.h"
 #include "texreg.h"
 #include "LOD.h"
+#include "Tweak.h"
 
 extern meshdata *defaultmesh;          // hack for now.  remove later when defaults no longer needed
 
@@ -279,7 +280,7 @@ lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
     // Increase detail for we are now in the far off year of 2021.
     // 24K is approximately the distance to the camera at maximum zoom when not in the sensor manager.
     // When inside this range just keep everything at max detail by assuming the camera is right on top of it.
-    if (sqrtf(distance) < 24000.0f) 
+    if (distance < RENDER_MAXVIEWABLE_DISTANCE_SQR) 
     {
         distance = 1.0f;
     }
