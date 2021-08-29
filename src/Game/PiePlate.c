@@ -121,19 +121,19 @@ void pieStartup(void)
     pieCircleSizeMin = primScreenToGLScaleX(8);
 
     piePlaneCircleSegments[0].screenRadius = primScreenToGLScaleX(200);
-    piePlaneCircleSegments[0].nSegments = 32;
+    piePlaneCircleSegments[0].nSegments = 32*16;
     piePlaneCircleSegments[1].screenRadius = primScreenToGLScaleX(80);
-    piePlaneCircleSegments[1].nSegments = 20;
+    piePlaneCircleSegments[1].nSegments = 20*16;
     piePlaneCircleSegments[2].screenRadius = primScreenToGLScaleX(32);
-    piePlaneCircleSegments[2].nSegments = 16;
+    piePlaneCircleSegments[2].nSegments = 16*16;
     piePlaneCircleSegments[3].screenRadius = primScreenToGLScaleX(10);
-    piePlaneCircleSegments[3].nSegments = 12;
+    piePlaneCircleSegments[3].nSegments = 12*16;
     piePlaneCircleSegments[4].screenRadius = primScreenToGLScaleX(4);
-    piePlaneCircleSegments[4].nSegments = 8;
+    piePlaneCircleSegments[4].nSegments = 8*16;
     piePlaneCircleSegments[5].screenRadius = primScreenToGLScaleX(2);
-    piePlaneCircleSegments[5].nSegments = 6;
+    piePlaneCircleSegments[5].nSegments = 6*16;
     piePlaneCircleSegments[6].screenRadius = primScreenToGLScaleX(0);
-    piePlaneCircleSegments[6].nSegments = 4;
+    piePlaneCircleSegments[6].nSegments = 4*16;
 }
 
 /*-----------------------------------------------------------------------------
