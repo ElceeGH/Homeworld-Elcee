@@ -261,7 +261,7 @@ real32 btgGetPhi(void)
 {
     return(-btgPhiOffset);
 }
-
+ 
 /*-----------------------------------------------------------------------------
     Name        : btgGetTexture
     Description : creates a GL texture object with the contents of the given .TGA file
@@ -281,15 +281,7 @@ void btgGetTexture(char* filename, udword* thandle, sdword* width, sdword* heigh
     TGAFileHeader head;
     sdword i;
 
-#ifdef _WIN32
-    #ifdef _WIN32_FIXME
-      strcpy(fullname, "btg\\bitmaps\\b01.tga");
-    #else
-      strcpy(fullname, "btg\\bitmaps\\");
-    #endif
-#else
     strcpy(fullname, "btg/bitmaps/");
-#endif
     strcat(fullname, filename);
 
     if (fileExists(fullname, 0))
@@ -877,10 +869,10 @@ void btgLoad(char* filename)
     btgIndices = (uword*)memAlloc(3 * btgHead->numPolys * sizeof(uword), "btg indices", NonVolatile);
     if (useVBO) glGenBuffers(1, &vboIndices);
 
-#ifndef _WIN32_FIXME
+//#ifndef _WIN32_FIXME
     //spherically project things, blend colours, &c
     btgConvertVerts();
-#endif
+//#endif
 }
 
 /*-----------------------------------------------------------------------------
@@ -1289,9 +1281,9 @@ void btgRender()
         {
             btgFade = 255;
         }
-#ifndef _WIN32_FIXME
+//#ifndef _WIN32_FIXME
         btgColorVertices();
-#endif
+//#endif
         if (useVBO) glBufferData(GL_ARRAY_BUFFER, btgHead->numVerts * sizeof(btgTransVertex), btgTransVerts, GL_STATIC_DRAW);
         *dlast = *dnext;
         lastFade = btgFade;
