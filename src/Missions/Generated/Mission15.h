@@ -41,6 +41,48 @@ extern const unsigned int Mission15_FunctionPointerCount;
 //
 //  FSM prototypes
 //
+void Init_Mission15_Dead(void);
+void Watch_Mission15_Dead(void);
+void Init_Mission15_Events(void);
+void Watch_Mission15_Events(void);
+void Init_Mission15_Events_PreNIS(void);
+void Watch_Mission15_Events_PreNIS(void);
+void Init_Mission15_Events_PlayNIS(void);
+void Watch_Mission15_Events_PlayNIS(void);
+void Init_Mission15_Events_FIIntro1(void);
+void Watch_Mission15_Events_FIIntro1(void);
+void Init_Mission15_Events_FIIntroLBXIn(void);
+void Watch_Mission15_Events_FIIntroLBXIn(void);
+void Init_Mission15_Events_FIIntro2(void);
+void Watch_Mission15_Events_FIIntro2(void);
+void Init_Mission15_Events_FIIntroLBXOut(void);
+void Watch_Mission15_Events_FIIntroLBXOut(void);
+void Init_Mission15_Events_Countdown(void);
+void Watch_Mission15_Events_Countdown(void);
+void Init_Mission15_Events_EvaluateWinner(void);
+void Watch_Mission15_Events_EvaluateWinner(void);
+void Init_Mission15_HeadShot(void);
+void Watch_Mission15_HeadShot(void);
+void Init_Mission15_HeadShot_Moving(void);
+void Watch_Mission15_HeadShot_Moving(void);
+void Init_Mission15_Protection(void);
+void Watch_Mission15_Protection(void);
+void Init_Mission15_Protection_Guarding(void);
+void Watch_Mission15_Protection_Guarding(void);
+void Init_Mission15_Protection_Retaliate(void);
+void Watch_Mission15_Protection_Retaliate(void);
+void Init_Mission15_Protection_KillMShip(void);
+void Watch_Mission15_Protection_KillMShip(void);
+void Init_Mission15_Harrass(void);
+void Watch_Mission15_Harrass(void);
+void Init_Mission15_Harrass_Bother(void);
+void Watch_Mission15_Harrass_Bother(void);
+void Init_Mission15_Harrass_Guard(void);
+void Watch_Mission15_Harrass_Guard(void);
+void Init_Mission15_Harrass_KillMShip(void);
+void Watch_Mission15_Harrass_KillMShip(void);
+void Init_Mission15_WaitForCountDown(void);
+void Watch_Mission15_WaitForCountDown(void);
 void Init_Mission15(void);
 void Watch_Mission15(void);
 
