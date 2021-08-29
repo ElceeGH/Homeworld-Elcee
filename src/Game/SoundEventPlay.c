@@ -128,9 +128,17 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
 				}
 				else
 				{
+					// Default volume fine for most sounds
+					sdword uiVol = (sword)(SOUND_VOL_MAX * volSFX);
+
+					// Ping is ultra-loud and clips like hell. Reduce bigtime (8x lower is still loud!)
+					if (event == UI_SensorsPing) {
+						uiVol /= 8;
+					}
+
 					handle = splayFPRVL(UIBank, UIEventsLUT->lookup[GetPatch(UIEventsLUT, 0, event)],
 										NULL, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_PRIORITY_MAX,
-										(sword)(SOUND_VOL_MAX * volSFX), FALSE, FALSE, FALSE);
+										uiVol, FALSE, FALSE, FALSE);
 				}
 	
 				break;
