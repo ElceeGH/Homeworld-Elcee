@@ -9,11 +9,6 @@ Mac/SDL2.framework
 
 tools/biggie/biggie
 
-tools/kas2c/kas2c
-tools/kas2c/lexer.c
-tools/kas2c/parser.c
-tools/kas2c/parser.h
-
 Linux/Makefile
 Linux/config.h
 Linux/config.log
@@ -45,3 +40,4 @@ tools/kas2c/project/KAS2C/KAS2C/Debug/
 tools/kas2c/project/KAS2C/KAS2C/KAS2C.vcxproj.user
 Windows/prj/hwsdl.vcxproj.user
 bin/
+Windows/prj/hwsdl_releas_test/
