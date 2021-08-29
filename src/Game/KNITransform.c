@@ -279,8 +279,7 @@ static MM_ALIGN16_PRE int Mask[4] MM_ALIGN16_POST =
 void transTransformCompletely_xmm(
     int nVerts, hvector* dest, vertexentry* source, float* M0, float* M1)
 {
-    int i, n;
-    hvector* dp;
+    int n;
 
     static float* m0;
     static float* m1;
