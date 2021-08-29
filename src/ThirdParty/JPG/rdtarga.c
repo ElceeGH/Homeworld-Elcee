@@ -38,6 +38,7 @@ typedef char U_CHAR;
 #endif /* HAVE_UNSIGNED_CHAR */
 
 
+#pragma warning( disable : 4024 )
 #define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
 
 
