@@ -70,10 +70,11 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\hwsdl_releas_test\</OutDir>
+    <OutDir>$(ProjectDir)..\..\bin\</OutDir>
     <IntDir>.\hwsdl_releas_test\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>C:\Projects\HomeworldSDL\SDL\include;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_rel</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">
     <OutDir>do not use this config\</OutDir>
@@ -148,7 +149,7 @@
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\src\SDL;..\..\src\rgl;..\..\src\Game;..\..\src\Ships;..\..\src\ThirdParty\JPG;..\..\src\ThirdParty\CRC;..\..\src\ThirdParty\LZSS;..\..\src\Generated;..\..\src\ThirdParty\Titan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_FIXME;HW_GAME_HOMEWORLD;HW_BUILD_FOR_DISTRIBUTION;_WIN32;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_FIXME;HW_GAME_HOMEWORLD;HW_BUILD_FOR_DISTRIBUTION;_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -166,8 +167,8 @@
       <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;SDLmain.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hwsdl.exe</OutputFile>
+      <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hwsdl_rel.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)hwsdl.pdb</ProgramDatabaseFile>
@@ -176,6 +177,7 @@
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>8388608</StackReserveSize>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

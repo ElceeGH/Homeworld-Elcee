@@ -5,9 +5,6 @@
       <UniqueIdentifier>{3682198d-14a7-407f-9009-d36a36ea0643}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90</Extensions>
     </Filter>
-    <Filter Include="Source Files\no-optimize">
-      <UniqueIdentifier>{333b6822-90a8-482c-9b35-37775914c33b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\precompiled">
       <UniqueIdentifier>{27737490-837f-4f94-9ea5-033ae4a9e794}</UniqueIdentifier>
     </Filter>
@@ -38,13 +35,16 @@
     <Filter Include="Source Files\SDL">
       <UniqueIdentifier>{5e3e4d0f-5a55-4b76-b932-44fb58ed944c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Game\no-optimize">
+      <UniqueIdentifier>{333b6822-90a8-482c-9b35-37775914c33b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Game\ETG.c">
-      <Filter>Source Files\no-optimize</Filter>
+      <Filter>Source Files\Game\no-optimize</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\Task.c">
-      <Filter>Source Files\no-optimize</Filter>
+      <Filter>Source Files\Game\no-optimize</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\precompiled.c">
       <Filter>Source Files\precompiled</Filter>
