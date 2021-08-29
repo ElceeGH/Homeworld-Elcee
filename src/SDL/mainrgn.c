@@ -1306,45 +1306,46 @@ void mrSelectHold(void)
 //nn: mouse wheel zoom doesn't call this code (at least in game and sensors manager)
 void mrCameraMotion(void)
 {
-    rectangle rect;
-    sdword cx, cy;
+    if (mouseCursorX() == mrOldMouseX
+    &&  mouseCursorY() == mrOldMouseY)
+    {
+        camMouseX = 0;
+        camMouseY = 0;
+        return;
+    }
+
     if (helpinfoactive)
     {
         if (!mouseInRect(&helpinforegion->rect))
         {
+            sdword cx = helpinforegion->rect.x0 / 2;
+            sdword cy = MAIN_WindowHeight       / 2;
 
-            cx = helpinforegion->rect.x0 / 2;
-            cy = MAIN_WindowHeight / 2;
+            mrMouseHasMoved += abs(mouseCursorX() - cx);
+            mrMouseHasMoved += abs(mouseCursorY() - cy);
+            camMouseX = cx - mouseCursorX();
+            camMouseY = cy - mouseCursorY();
+            mousePositionSet(cx, cy);
 
-            if (mouseCursorX() != cx ||
-            mouseCursorY() != cy)
-            {
-                mrMouseHasMoved += abs(mouseCursorX() - cx);
-                mrMouseHasMoved += abs(mouseCursorY() - cy);
-                camMouseX = cx - mouseCursorX();
-                camMouseY = cy - mouseCursorY();
-                mousePositionSet(cx, cy);
-
-                rect.x0 = 0;
-                rect.y0 = 0;
-                rect.x1 = helpinforegion->rect.x0;
-                rect.y1 = MAIN_WindowHeight;
-                mouseClipToRect(&rect);
-            }
+            rectangle rect;
+            rect.x0 = 0;
+            rect.y0 = 0;
+            rect.x1 = helpinforegion->rect.x0;
+            rect.y1 = MAIN_WindowHeight;
+            mouseClipToRect(&rect);
         }
     }
     else
     {
-        if (mouseCursorX() != MAIN_WindowWidth / 2 ||
-        mouseCursorY() != MAIN_WindowHeight / 2)
-        {
-            mrMouseHasMoved += abs(mouseCursorX() - MAIN_WindowWidth / 2);
-            mrMouseHasMoved += abs(mouseCursorY() - MAIN_WindowHeight / 2);
-            camMouseX = MAIN_WindowWidth / 2 - mouseCursorX();
-            camMouseY = MAIN_WindowHeight / 2 - mouseCursorY();
-            mousePositionSet(MAIN_WindowWidth / 2, MAIN_WindowHeight / 2);
-        }
+        sdword cx = MAIN_WindowWidth  / 2;
+        sdword cy = MAIN_WindowHeight / 2;
 
+        mrMouseHasMoved += abs(mouseCursorX() - cx);
+        mrMouseHasMoved += abs(mouseCursorY() - cy);
+        camMouseX = cx - mouseCursorX();
+        camMouseY = cy - mouseCursorY();
+        mousePositionSet(cx, cy);
+        printf( "mrCameraMotion: camMouse x=%i y=%i\n", camMouseX, camMouseY );
     }
 }
 
@@ -4102,8 +4103,8 @@ endReleaseButtonLogic:
             {                                               //if in camera movement mode
                 piePointModePause(FALSE);                    //unpause point specification for the camera motion
                 mousePositionSet(mrOldMouseX, mrOldMouseY); //restore mouse position
-                //mouseCursorShow();                          //show mouse cursor
-                mouseCursorShow();
+                
+                mouseCursorShow();                          //show mouse cursor
                 mrHoldRight = mrNULL;                       //idle mode
                 //mouseClipToRect(&defaultRect);
                 mouseClipToRect(NULL);

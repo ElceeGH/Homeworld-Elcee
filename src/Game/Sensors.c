@@ -3435,6 +3435,8 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             mouseCursorHide();                              //hide cursor and move to centre of the screen
             mousePositionSet(MAIN_WindowWidth / 2, MAIN_WindowHeight / 2);
             mrMouseHasMoved = 0;                            //mouse hasn't moved yet
+            camMouseX = 0;
+            camMouseY = 0;
             region->rect.x0 = region->rect.y0 = 0;          //make it's rectangle full-screen
             region->rect.x1 = MAIN_WindowWidth;
             region->rect.y1 = MAIN_WindowHeight;
