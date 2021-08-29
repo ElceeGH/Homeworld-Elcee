@@ -2143,6 +2143,12 @@ int main (int argc, char* argv[])
     }
 #endif  /* Support for other platforms? */
 
+    // Debug output
+    freopen( "stdout.txt", "w", stdout );
+    freopen( "stderr.txt", "w", stderr );
+    
+
+
     //load in options from the options file
     utyOptionsFileRead();
 
@@ -2274,6 +2280,9 @@ int main (int argc, char* argv[])
         fprintf(stderr, "%s\n", errorString);
         return ERR_ErrorStart;
     }
+
+    fclose( stdout );
+    fclose( stderr );
 
     /* Stay clean and fresh... */
     if (SDL_WasInit(SDL_INIT_EVERYTHING))
