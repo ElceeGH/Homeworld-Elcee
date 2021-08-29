@@ -1827,6 +1827,7 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
 ----------------------------------------------------------------------------*/
 void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
 {
+    LOD = 0; 
     sdword index;
 //    sdword count;
     trailsegment lastSegment, currentSegment;
