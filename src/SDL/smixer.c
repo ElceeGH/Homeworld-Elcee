@@ -36,8 +36,6 @@
 #define MIX_PANIC_DUR			16L	// approx 4 seconds - dur*fps
 
 /* function prototypes */
-void isoundmixerthreadSDL(void *dummy);
-void isoundmixerqueueSDL();
 sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2);
 sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect);
 #define isoundmixerdecode(a, b, c, d, e, f)		isoundmixerdecodeEffect(a, b, c, d, e, f, NULL);
