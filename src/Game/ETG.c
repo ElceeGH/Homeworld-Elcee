@@ -7737,7 +7737,7 @@ void *etgEffectCreate(etgeffectstatic *stat, void *owner, vector *pos, vector *v
 {
     sdword index;
     va_list argList;
-    smemsize arg[ETG_NumberParameters];
+    smemsize arg[ETG_NumberParameters] = { 0 };
     Effect *newEffect;
 
     newEffect = memAlloc(stat->effectSize, "GE(GenEffect)", Pyrophoric);//allocate the new effect
