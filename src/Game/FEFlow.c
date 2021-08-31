@@ -1069,7 +1069,9 @@ RESTART:
     while (region != NULL)
     {
         atom = (featom *)region->userID;
-        if ((region->userID > 255) && feCanStack[atom->type])
+        if (region->userID > 255)
+        if (atom->type < sizeof(feCanStack)/sizeof(feCanStack[0]))
+        if (feCanStack[atom->type])
         {
             //scan previous members and see if they want to become children
             child = region->previous;

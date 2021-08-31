@@ -276,7 +276,7 @@ extern bool fetEnableTextures;
 =============================================================================*/
 // macros for testing if an checkbox is checked etc.
 #define FECHECKED(atom)     (atom->status&FAS_Checked)
-#define FEFIRSTCALL(atom)   ((atom) && ((atom)->status&FAS_OnCreate))
+#define FEFIRSTCALL(atom)   (atom->status&FAS_OnCreate)
 #define FELASTCALL(atom)    (atom->status&FAS_OnDelete)
 
 // Relic scaled all their FE graphics to the minimum resolution they supported
