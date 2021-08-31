@@ -103,7 +103,7 @@ void kasInit();
 // Save Game Stuff
 void kasSave(void);
 void kasLoad(void);
-void *kasConvertOffsetToFuncPtr(sdword offset);
+const void *kasConvertOffsetToFuncPtr(sdword offset);
 sdword kasConvertFuncPtrToOffset(void *func);
 
 

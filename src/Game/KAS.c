@@ -151,7 +151,6 @@ void kasJump(char *stateName, KASInitFunction initFunction, KASWatchFunction wat
 //
 void kasFSMCreate(char *fsmName, KASInitFunction initFunction, KASWatchFunction watchFunction, AITeam *teamP)
 {
-	char teamName[KAS_TEAM_NAME_MAX_LENGTH+1];
     AITeam *saveP;
     sdword saveScope;
     char SaveMissionScopeName[KAS_MISSION_NAME_MAX_LENGTH+1];
@@ -164,6 +163,7 @@ void kasFSMCreate(char *fsmName, KASInitFunction initFunction, KASWatchFunction 
     CurrentTeamP = teamP;
 
 #ifdef HW_BUILD_FOR_DEBUGGING
+    char teamName[KAS_TEAM_NAME_MAX_LENGTH+1];
     aiplayerLog((aiCurrentAIPlayer->player->playerIndex,"\nKAS: FSMCreate(\"%s\", TEAM(\"%s\")", fsmName, kasAITeamName(teamP, teamName)));
 #endif
 
@@ -1412,7 +1412,7 @@ sdword kasConvertFuncPtrToOffset(void *func)
     }
 }
 
-void *kasConvertOffsetToFuncPtr(sdword offset)
+const void *kasConvertOffsetToFuncPtr(sdword offset)
 {
     if (offset == -1)
     {
@@ -1420,18 +1420,17 @@ void *kasConvertOffsetToFuncPtr(sdword offset)
     }
     else
     {
-        const void** func_list;
-        udword func_list_size;
+        const void** func_list = NULL;
+        udword func_list_size = 0;
 
-        func_list =
-            MissionEnumToFunctionList(spGetCurrentMission());
-        func_list_size = (func_list
-            ? FunctionListSize(spGetCurrentMission())
-            : 0);
+        func_list = MissionEnumToFunctionList(spGetCurrentMission());
+        
+        if (func_list)
+            func_list_size = FunctionListSize(spGetCurrentMission());
 
-        return ((udword)offset < func_list_size
-            ? func_list[offset]
-            : NULL);
+        if ((udword)offset < func_list_size)
+             return func_list[offset];
+        else return NULL;
     }
 }
 

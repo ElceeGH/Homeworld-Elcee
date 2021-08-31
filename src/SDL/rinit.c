@@ -11,6 +11,7 @@
 #define STRICT
 
 #include "SDL.h"
+#include "Debug.h"
 #include <stdio.h>
 
 #include <stdio.h>

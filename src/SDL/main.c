@@ -331,11 +331,13 @@ int RegisterCommandLine(char *commandLine)
 bool SetDisplayNum(char *string)
 {
   displayNum = atoi(string);
+  return TRUE;
 }
 
 bool XcodeDebug(char *string)
 {
     DebugWindow=TRUE;
+    return TRUE;
 }
 bool HeapSizeSet(char *string)
 {

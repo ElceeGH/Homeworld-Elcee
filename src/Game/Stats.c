@@ -321,7 +321,7 @@ void ConvertStatIndexToShipRaceType(sdword index,ShipType *shiptype,ShipRace *sh
 
 ShipStaticInfo *ConvertStatIndexToShipStatic(sdword i)
 {
-    ShipType shiptype = ShipType_Uninitialized;
+    ShipType shiptype = (ShipType) ShipType_Uninitialized;
     ShipRace shiprace = R1;
     ShipStaticInfo *shipstatic = NULL;
 
@@ -515,7 +515,7 @@ void GatherFightStatsFor(sdword i,sdword j,bool actuallyDoFight)
     sdword trynum = 0;
     sdword search,found,verytop;
     sdword powerfulship,nonpowerfulship;
-    ShipType shiptype = ShipType_Uninitialized;
+    ShipType shiptype = (ShipType) ShipType_Uninitialized;
     ShipRace shiprace = R1;
 
     ConvertStatIndexToShipRaceType(i,&shiptype,&shiprace);
@@ -808,7 +808,7 @@ void FancyFightPreLoad(void)
 void FancyFightPrepareFightStats(FightStats *fightStats)
 {
     FancyFightEntry *ffe = &fancyFightEntry[currentFancyFightEntry];
-    ShipType shiptype = ShipType_Uninitialized;
+    ShipType shiptype = (ShipType) ShipType_Uninitialized;
     ShipRace shiprace = R1;
     sdword i = ffe->statindex[0];
     sdword j = ffe->statindex[1];

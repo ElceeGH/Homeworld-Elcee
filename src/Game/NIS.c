@@ -4552,7 +4552,7 @@ nisheader *nisLoad(char *fileName, char *scriptName)
     sdword index, j;
     spaceobjpath *objPath;
     camerapath *camPath;
-    ShipType type = ShipType_Uninitialized;
+    ShipType type = (ShipType) ShipType_Uninitialized;
     char *instancePtr;
     char string[256];
     char effectPath[256];
@@ -4781,7 +4781,7 @@ foundOne:;
         }
         else
         {
-            objPath->parentIndex = -1;
+            objPath->parentIndex = (ShipType) ShipType_Uninitialized;
         }
     }
 

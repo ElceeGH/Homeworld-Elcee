@@ -2551,8 +2551,8 @@ void FixThisAITeam(AITeam *team)
 
     FixCooperatingTeamDiedCB(team);
 
-    team->kasFSMWatchFunction = kasConvertOffsetToFuncPtr((sdword)team->kasFSMWatchFunction);
-    team->kasStateWatchFunction = kasConvertOffsetToFuncPtr((sdword)team->kasStateWatchFunction);
+    team->kasFSMWatchFunction   = (KASWatchFunction) kasConvertOffsetToFuncPtr((sdword)team->kasFSMWatchFunction);
+    team->kasStateWatchFunction = (KASWatchFunction) kasConvertOffsetToFuncPtr((sdword)team->kasStateWatchFunction);
 
     FixLinkedListOfStuff(&team->moves,FixMoveCB);
 }
