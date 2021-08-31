@@ -268,22 +268,26 @@ sdword lodDrawingMode = FALSE;
 #endif
 lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
 {
-    real32 distance;
     SpaceObj *obj = (SpaceObj *)spaceObj;
     lodinfo *info = obj->staticinfo->staticheader.LOD;
 
     dbgAssertOrIgnore(info != NULL);                                //verify the LOD table exists
 
     vecSub(obj->cameraDistanceVector,*camera,*ship);
-    obj->cameraDistanceSquared = distance = vecMagnitudeSquared(obj->cameraDistanceVector);
-
+    obj->cameraDistanceSquared = vecMagnitudeSquared(obj->cameraDistanceVector);
+    
     // Increase detail for we are now in the far off year of 2021.
-    // 24K is approximately the distance to the camera at maximum zoom when not in the sensor manager.
-    // When inside this range just keep everything at max detail by assuming the camera is right on top of it.
-    if (distance < RENDER_MAXVIEWABLE_DISTANCE_SQR) 
-    {
-        distance = 1.0f;
-    }
+    // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
+    // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
+    // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
+    real32 distance = obj->cameraDistanceSquared - RENDER_MAXVIEWABLE_DISTANCE_SQR;
+    if (distance < 0.0f)
+        distance = 0.0f;
+
+    // Always render the big boys in their glorious full detail.
+    if (obj->flags & SOF_BigObject)
+        distance = 0.0f;
+    
 
 #if LOD_SCALE_DEBUG
     if (lodDebugScaleFactor != 0.0f)
