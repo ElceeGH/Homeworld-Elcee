@@ -362,19 +362,20 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
 					break;
 				}
 				effect = (Effect *)object;
-				if (SEinrangeSqr((event - Hit_Flag) + HIT_OFFSET, effect->cameraDistanceSquared)) // &&
-//					soundover(effectHandle))
+				if (SEinrangeSqr((event - Hit_Flag) + HIT_OFFSET, effect->cameraDistanceSquared))
 				{
-					for (i = 0; i < effectHandle[event & SFX_Event_Mask].max; i++)
+					effectHandles* handles = &effectHandle[ event & SFX_Event_Mask ];
+
+					for (i = 0; i < handles->max && i<NUM_HIT_EVENTS; i++)
 					{
-						if (soundover(effectHandle[event & SFX_Event_Mask].handle[i]))
+						if (soundover(handles->handle[i]))
 						{
 							dist = (real32)fsqrt(effect->cameraDistanceSquared);
 							vol = SEequalize((event - Hit_Flag) + HIT_OFFSET, dist, tempEQ);
 							pan = getPanAngle(effect->posinfo.position, EFFECT_SIZE, dist);
 		
 							handle = splayEPRV(SpecialEffectBank, SpecHitEventsLUT->lookup[GetPatch(SpecHitEventsLUT, 0, event)], tempEQ, pan, SOUND_PRIORITY_HIGH, vol);
-							effectHandle[event & SFX_Event_Mask].handle[i] = handle;
+							handles->handle[i] = handle;
 							break;
 						}
 					}
