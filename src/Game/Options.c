@@ -1372,7 +1372,7 @@ void opUpdateAudioSettings()
 
     soundEventVocalSettings(opVoiceComm, opVoiceStat, opVoiceChat);
 
-    soundEventMasterEQ((real32*)opEQReal);
+    soundEventMasterEQ( opEQReal, NUM_EQ_BANDS );
 
     soundEventMusicMasterVol(normalizeSmoothie(opMusicVol));
     soundEventSFXMasterVol(normalizeSmoothie(opSFXVol));
@@ -1396,7 +1396,7 @@ void opRestoreSavedEqualizerSettings()
         opEQReal[i] = 1.0f - ((real32)opEqualizerSettings[i] / 100.0f);
     }
 
-    soundEventMasterEQ((real32*)opEQReal);
+    soundEventMasterEQ( opEQReal, NUM_EQ_BANDS);
 }
 
 void opRestoreSavedCustomEffectsSettings()
@@ -1643,7 +1643,7 @@ void opOptionsSaveEqualizerSettings(void)
         opEQReal[i] = 1.0f - ((real32)opEqualizerSettings[i] / 100.0f);
     }
 
-    soundEventMasterEQ((real32*)opEQReal);
+    soundEventMasterEQ(opEQReal,NUM_EQ_BANDS);
 }
 
 void opOptionsSaveAdvancedSettings(void)
@@ -2146,7 +2146,7 @@ udword opEqualizerProcess(regionhandle reg, sdword ID, udword event, udword data
         EQ[i] = 1.0f - ((real32)opEqualizerSettings[i] / 100.0f);
     }
 
-    soundEventMasterEQ((real32*)EQ);
+    soundEventMasterEQ(opEQReal,NUM_EQ_BANDS);
 
     return (0);
 }
@@ -2174,7 +2174,7 @@ void opEQHelper(void)
         opEQReal[i] = 1.0f - ((real32)opEqualizerSettings[i] / 100.0f);
     }
 
-    soundEventMasterEQ((real32*)opEQReal);
+    soundEventMasterEQ(opEQReal,NUM_EQ_BANDS);
 }
 
 void opSpeaker(char* name, featom* atom)

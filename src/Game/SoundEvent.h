@@ -137,7 +137,7 @@ void soundEventMusicVol(real32);
 void soundEventMusicMasterVol(real32);
 void soundEventMusicVolNOW(real32 level);
 void soundEventMusicMasterVolNOW(real32 level);
-void soundEventMasterEQ(real32 *pmasterEQ);
+void soundEventMasterEQ(real32 *pmasterEQ, udword count);
 void soundEventSetActor(sdword actornum, bool bOn);
 void soundEventVocalSettings(bool bCommands, bool bStatus, bool bChatter);
 void soundEventGetVolume(real32 *sfxvol, real32 *speechvol, real32 *musicvol);

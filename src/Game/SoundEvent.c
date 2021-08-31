@@ -580,11 +580,9 @@ void soundEventMusicMasterVolNOW(real32 level)
     Outputs     :
     Return      :
 -----------------------------------------------------------------------------*/
-void soundEventMasterEQ(real32 *pmasterEQ)
+void soundEventMasterEQ(real32 *pmasterEQ, udword count )
 {
-    sdword i;
-
-    for (i = 0; i < SOUND_EQ_SIZE; i++)
+    for (sdword i = 0; i < count; i++)
     {
         MasterEQ[i] = *pmasterEQ++;
     }
