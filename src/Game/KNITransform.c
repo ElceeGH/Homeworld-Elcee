@@ -150,68 +150,6 @@ int nBytes;
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : chkxmmbits
-    Description : check control registers (not under NT) to determine OS-level
-                  support for KNI
-    Inputs      :
-    Outputs     :
-    Return      : 1 (supported) or 0 (not supported)
-----------------------------------------------------------------------------*/
-#if 0
-//this isn't used anywhere (not in transStartup too)
-static int chkxmmbits(void)
-{
-    static unsigned int cpu_eax, cpu_edx;
-    int hasSFXSR, hasEM;
-
-#if defined (__GNUC__) && defined (__i386__)
-    __asm__ __volatile__ (
-        "pusha\n\t"
-        "movl %%CR4, %%eax\n\t"
-        "movl %%eax, %0\n\t"
-        "popa\n\t"
-        : "=m" (cpu_eax) );
-
-hasSFXSR = (cpu_eax & SFXSR_BIT) ? 1 : 0;
-
-#elif defined (_MSC_VER)
-if (has_feature(CPU_FEATURE_SSE))
-{    
-    hasSFXSR = 1;
-}
-
-#endif
-
-
-#if defined (_MSC_VER)
-    __asm
-    {
-        pusha
-        mov eax, CR0
-        mov [cpu_eax], eax
-        popa
-    }
-#elif defined (__GNUC__) && defined (__i386__)
-    __asm__ __volatile__ (
-        "pusha\n\t"
-        "movl %%CR0, %%eax\n\t"
-        "movl %%eax, %0\n\t"
-        "popa\n\t"
-        : "=m" (cpu_eax) );
-#endif
-    hasEM = (cpu_eax & EM_BIT) ? 1 : 0;
-
-    if (hasSFXSR && !hasEM)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-#endif
-/*-----------------------------------------------------------------------------
     Name        : transDetermineKatmaiSupport
     Description : determines whether Katmai New Instructions are supported by the
                   processor & the OS.  kind of guesses under NT
@@ -221,32 +159,7 @@ if (has_feature(CPU_FEATURE_SSE))
 ----------------------------------------------------------------------------*/
 int transDetermineKatmaiSupport(unsigned int haveKatmai)
 {
-#ifdef _MM_FUNCTIONALITY
-    //emulated KNI, always supported
-    kniSupport = 1;
-#else
-
-#ifdef _WIN32
-    DWORD version;
-
-    version = GetVersion();
-
-    if (version < 0x80000000)
-    {
-        //WinNT
-        kniSupport = (haveKatmai) ? 1 : 0;
-    }
-    else
-    {
-        //Win9x or Win32
-        kniSupport = (haveKatmai) ? 1/*chkxmmbits()*/ : 0;
-    }
-#else
-    kniSupport = (haveKatmai) ? 1 : 0;
-#endif
-
-#endif
-    return kniSupport;
+    return 1;
 }
 
 /*-----------------------------------------------------------------------------
