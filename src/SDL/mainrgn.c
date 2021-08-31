@@ -1341,7 +1341,6 @@ void mrCameraMotion(void)
         camMouseX = cx - mouseCursorX();
         camMouseY = cy - mouseCursorY();
         mousePositionSet(cx, cy);
-        printf( "mrCameraMotion: camMouse x=%i y=%i\n", camMouseX, camMouseY );
     }
 }
 
