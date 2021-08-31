@@ -21,6 +21,9 @@
 #include "jerror.h"
 
 
+#pragma warning( disable : 4024 )
+
+
 /* Expanded data source object for stdio input */
 
 typedef struct {

@@ -24,6 +24,8 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 
+#pragma warning( disable : 4024 )
+
 #ifdef BMP_SUPPORTED
 
 
