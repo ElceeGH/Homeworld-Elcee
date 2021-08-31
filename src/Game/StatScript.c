@@ -714,17 +714,15 @@ bool parseLine(char *line,char **returnName,char **returnValue)
         return FALSE;
     }
 
-    do
+    length = strlen(line);
+    while (length > 0)
     {
-        length = strlen(line);
-        if (line[length - 1] == ' ' || line[length - 1] == '\t')
-        {
+        if (line[length - 1] == ' ' || line[length - 1] == '\t') {
             line[length - 1] = 0;
-        }
-        else
+        } else {
             break;
+        }
     }
-    while (length > 0);
 
     if (strchr(line, ';') != NULL)
     {                                                   //scan for comments
