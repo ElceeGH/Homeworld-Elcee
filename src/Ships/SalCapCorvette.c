@@ -1515,7 +1515,7 @@ sdword salCapFlyToDockingPoint2(Ship *dockwith,SpaceObjRotImpTargGuidanceShipDer
 
 sdword salCapFlyToDockingPoint3(Ship *dockwith,SpaceObjRotImpTargGuidanceShipDerelict *target,sdword dockindex)
 {
-    vector coneheadingInWorldCoordSys,conepositionInWorldCoordSys;
+    vector coneheadingInWorldCoordSys = {0}, conepositionInWorldCoordSys = {0};
     vector dockwithUp,dockwithHeading,dockwithRight;
     vector desiredHeading,desiredUp,desiredRight,destination;
 

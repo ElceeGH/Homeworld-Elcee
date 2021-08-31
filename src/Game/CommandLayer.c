@@ -35,6 +35,7 @@
 #include "Tweak.h"
 #include "Universe.h"
 #include "UnivUpdate.h"
+#include <stdio.h>
 
 
 #define DEBUG_PASSIVE_ATTACK  0

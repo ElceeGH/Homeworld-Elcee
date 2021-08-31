@@ -122,7 +122,7 @@ void factorize(long n, long *nFact, long fact[])
   long i,j,k;
   long nRadix;
   long radices[7];
-  long factors[maxFactorCount];
+  long factors[maxFactorCount] = { 0 };
 
   nRadix    =  6;  
   radices[1]=  2;
@@ -224,7 +224,7 @@ void permute(long nPoint, long nFact,
 
 {
   long i,j,k;
-  long count[maxFactorCount]; 
+  long count[maxFactorCount] = { 0 }; 
 
   for (i=1; i<=nFact; i++) count[i]=0;
   k=0;

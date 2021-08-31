@@ -62,7 +62,7 @@ typedef struct {
 
   /* GIF data packet construction buffer */
   int bytesinpkt;		/* # of bytes in current packet */
-  char packetbuf[256];		/* workspace for accumulating packet */
+  char packetbuf[256+1];		/* workspace for accumulating packet */
 
 } gif_dest_struct;
 

@@ -474,10 +474,11 @@ static void rowSetDetails(char *directory,char *field,void *dataToFillIn)
     if ((shiptype < 0) || (shiptype >= TOTAL_NUM_SHIPS))
     {
         dbgFatalf(DBG_Loc,"Invalid shiptype read at line %s in aiship.script",field);
+        return;
     }
 
     rightOfWays[shiptype] = (sbyte)rowpri;
-    rowAvoidBy[shiptype] = rowAvoidByVal;
+    rowAvoidBy [shiptype] = rowAvoidByVal;
 }
 
 /*-----------------------------------------------------------------------------

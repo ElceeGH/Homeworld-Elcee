@@ -496,9 +496,9 @@ char *rndIntToString(GLenum enumb, enumentry *table)
 void rndGLStateLogFunction(char *location)
 {
     sdword index, j;
-    GLfloat floats[MAX_FLOATS];
-    GLint ints[MAX_INTS];
-    GLboolean bools[MAX_BOOLS];
+    GLfloat floats[MAX_FLOATS] = { 0 };
+    GLint ints[MAX_INTS] = { 0 };
+    GLboolean bools[MAX_BOOLS+4] = { 0 };
     char totalString[256];
     char valueString[128];
     char *fileNameFull;
@@ -1296,7 +1296,6 @@ static real64 rndNear(real64 in)
 void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 {
     real32 projection[16];
-    sdword index;
 
 #if DISABLE_RANDOM_STARS
     bDrawStars = FALSE;

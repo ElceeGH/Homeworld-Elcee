@@ -695,6 +695,11 @@ void aiaProcessHarassTeams(void)
         team_num++;
     }
 
+    if (numAttTeams > MAX_NUM_HARASS_TEAMS) {
+        dbgFatal( __FILE__, __LINE__, "aiaProcessHarassTeams: numAttTeams > MAX_NUM_HARASS_TEAMS" );
+        return;
+    }
+
     for (i=0;i<numAttTeams;i++)
     {
         team = aiCurrentAIPlayer->attackTeam[i];

@@ -1165,7 +1165,7 @@ void rmSetShipDependCB(char *directory, char *field, void *dataToFillIn)
 {
     sdword index;
     char temp[64];
-    ShipType shiptype;
+    ShipType shiptype = 0;
     TechnologyType techtype;
     udword mask=0;
 
@@ -1222,7 +1222,7 @@ void rmSetTechDependCB(char *directory, char *field, void *dataToFillIn)
 {
     sdword index;
     char temp[64];
-    TechnologyType techtype, techset;
+    TechnologyType techtype=0, techset=0;
     udword mask=0;
 
     for (index=0;*field != ' ';index++,field++)

@@ -4034,7 +4034,7 @@ void aiuSplitAttack(SelectCommand *ships, SelectCommand *targets)
 void aiuSwarmDock(SelectCommand *ships, SelectCommand *pods)
 {
     extern real32 BUSY_ADD_TO_DISTANCE;
-    SelectCommand *dockgroups[20];
+    SelectCommand *dockgroups[20] = { NULL };
     real32 dist, busyadddist, mindist = REALlyBig;
     vector diff;
     udword i, j, closestDockat = 0;

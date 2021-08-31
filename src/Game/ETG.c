@@ -3496,7 +3496,7 @@ etgeffectstatic *etgEffectCodeLoad(char *fileName)
     char string[STRING_LENGTH];
     char *pString;
     etgeffectstatic *newStatic;
-    ubyte tempOpcode[OPCODE_MAX];
+    ubyte tempOpcode[OPCODE_MAX+1];
     sdword opcodeLength, index, offset;
 
     //allocate and initialize the new effect static structure
@@ -3583,6 +3583,7 @@ etgeffectstatic *etgEffectCodeLoad(char *fileName)
             if (etgExecStack.etgCodeBlock[etgParseMode].offset + opcodeLength >= etgExecStack.etgCodeBlock[etgParseMode].length)
             {
                 dbgFatalf(ETG, "Exceeded %d bytes of code in code block %d.",  etgExecStack.etgCodeBlock[etgParseMode].length, etgParseMode);
+                return NULL;
             }
 #endif
             memcpy(etgExecStack.etgCodeBlock[etgParseMode].code + etgExecStack.etgCodeBlock[etgParseMode].offset,
@@ -3708,7 +3709,7 @@ foundThisNewEffect:;
 ----------------------------------------------------------------------------*/
 sdword etgLineNumberUpdate(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *params, char *ret)
 {
-    char string[STRING_LENGTH];
+    char string[STRING_LENGTH] = { 0 };
     sdword nScanned, lineNumber;
 
     nScanned = sscanf(params, "%d \"%s\"", &lineNumber, string);
@@ -3961,9 +3962,9 @@ sdword etgNewInteger(struct etgeffectstatic *stat, ubyte *dest, char *opcode, ch
 //create a new RGB variable
 sdword etgNewRGB(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *params, char *ret)
 {
-    udword initial;
-    bool bSetInitial;
-    char *start;
+    udword initial = 0;
+    bool bSetInitial = 0;
+    char *start = NULL;
 
 #if ETG_ERROR_CHECKING
     if (etgParseMode != EPM_Variables)
@@ -3984,9 +3985,9 @@ sdword etgNewRGB(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *
 //create a new RGBA variable
 sdword etgNewRGBA(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *params, char *ret)
 {
-    udword initial;
-    bool bSetInitial;
-    char *start;
+    udword initial = 0;
+    bool bSetInitial = 0;
+    char *start = NULL;
 
 #if ETG_ERROR_CHECKING
     if (etgParseMode != EPM_Variables)
@@ -4320,10 +4321,10 @@ sdword etgSetMeshParse(struct etgeffectstatic *stat, ubyte *dest, char *opcode, 
 //create a new float
 sdword etgNewFloat(struct etgeffectstatic *stat, ubyte *dest, char *opcode, char *params, char *ret)
 {
-    udword initial;
-    sdword nScanned;
-    bool bSetInitial;
-    char *start;
+    udword initial = 0;
+    sdword nScanned = 0;
+    bool bSetInitial = 0;
+    char *start = NULL;
 
     if (etgParseMode == EPM_Constant)
     {                                                       //if we're creating a constant
@@ -4414,7 +4415,7 @@ void etgConditionalComplete(sdword codeBlock, sdword offset, sdword newOffset, u
 sdword etgConditional(struct etgeffectstatic *stat, ubyte *dest, char *opcodeString, char *params, char *ret)
 {
     char *param0, *oper, *param1, *tempparam;
-    etgvarentry *var0, *var1, *tempvar;
+    etgvarentry *var0=NULL, *var1=NULL, *tempvar=NULL;
     sdword isVar0, isVar1, bTranspose;
     char *parser;
     udword constant;
@@ -4716,7 +4717,7 @@ sdword etgReturn(struct etgeffectstatic *stat, ubyte *dest, char *opcodeString, 
 {
     etgbranch *opcode = (etgbranch *)dest;
     opcode->opcode = EOP_Return;
-    opcode->codeBlock = (sdword) MINUS1;
+    opcode->codeBlock = (udword) MINUS1;
     opcode->branchTo = MINUS1;
     return(sizeof(etgbranch));
 }
@@ -6625,6 +6626,7 @@ sdword etgCallTo(Effect *effect, struct etgeffectstatic *stat, ubyte *opcode)
     if (etgCallStackIndex >= ETG_CallStackSize)
     {
         dbgFatalf(DBG_Loc, "Overflowed ETG call stack of depth %d.", ETG_CallStackSize);
+        return 0;
     }
 #endif
     etgCallStack[etgCallStackIndex].codeBlock = etgExecStack.etgCodeBlockIndex;
@@ -6642,6 +6644,7 @@ sdword etgReturnTo(Effect *effect, struct etgeffectstatic *stat, ubyte *opcode)
     if (etgCallStackIndex < 1)
     {
         dbgFatal(DBG_Loc, "Underflowed ETG call stack.");
+        return 0;
     }
 #endif
     etgCallStackIndex--;
@@ -6663,6 +6666,7 @@ sdword etgAlternate(Effect *effect, struct etgeffectstatic *stat, ubyte *opcode)
     if (etgCallStackIndex >= ETG_CallStackSize)
     {
         dbgFatalf(DBG_Loc, "Overflowed ETG call stack of depth %d.", ETG_CallStackSize);
+        return 0;
     }
 #endif
     etgCallStack[etgCallStackIndex].codeBlock = etgExecStack.etgCodeBlockIndex;
@@ -7608,7 +7612,7 @@ void etgCreateEffects(Effect *effect, etgeffectstatic *stat, sdword number, sdwo
     sdword index, size, j;
     vector up, right, LOF, tempVector;
     Effect *newEffect;
-    smemsize arg[ETG_NumberParameters];
+    smemsize arg[ETG_NumberParameters] = { 0 };
     va_list argList;
 
     matGetVectFromMatrixCol1(up, effect->rotinfo.coordsys);

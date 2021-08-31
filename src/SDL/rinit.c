@@ -448,7 +448,6 @@ bool rinEnumeratePrimary(rdevice* dev)
 	SDL_DisplayMode mode;
     Uint32 flags;
 	int max_width;
-	int i, j;
 	const int display_index = 0;
 
 	if (!dev)
@@ -469,7 +468,7 @@ bool rinEnumeratePrimary(rdevice* dev)
 			return FALSE;
 	}
 
-	for(i=SDL_GetNumDisplayModes(display_index); i>0; i--){
+	for(int i=SDL_GetNumDisplayModes(display_index); i>0; i--){
 		if(SDL_GetDisplayMode(display_index, i-1, &mode)){
 			dbgMessagef("Error in SDL_GetDisplayMode(): %d %s",i-1,SDL_GetError());
 			return FALSE;
@@ -496,25 +495,11 @@ int rinEnumerateDevices(void)
     rdevice* gldev;
     rdevice  primaryDev;
     bool primaryVal;
-    
-#ifndef _MACOSX_FIX_GL
-    int maxWidth;
-#endif
-
-#if 0	/* CRC log only used by Direct3D. */
-    if (mainOutputCRC)
-    {
-        rinResetCRCLog();
-    }
-#endif
 
     rDeviceList = NULL;
     nDevices = 0;
     gDevcaps  = 0xFFFFFFFF;
     gDevcaps2 = 0x00000000;
-
-    //add Direct3D devices
-    /*nDevices += rinEnumerateDirect3D();*/
 
     //add OpenGL device
     dev = (rdevice*)rinMemAlloc(sizeof(rdevice));

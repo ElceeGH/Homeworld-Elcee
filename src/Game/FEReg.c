@@ -1064,10 +1064,9 @@ void ferDraw(sdword x, sdword y, lifheader *texture)
     if (g_Entry->glhandle == 0)
     {
         GLuint    thandle;
-        sdword    ix, iy;
+        sdword    iy;
         GLubyte*  cp;
         GLushort* data;
-        GLushort* rp;
 
         data = (GLushort*)memAlloc(4 * newwidth * newheight, "fer data", 0);
 

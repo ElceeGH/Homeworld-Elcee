@@ -186,7 +186,7 @@ void SetAIVecHeading(Ship *ship, SpaceObjRotImpTarg *target, vector *trajectory)
 {
     //real32 range;
     vector tmpvec;
-    udword target_class;
+    udword target_class = 0;
     real32 randegf;
     sdword randeg;
     matrix tmpmat;

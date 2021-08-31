@@ -1169,9 +1169,6 @@ void trCreateUnpalettedTexture(ubyte* palette, ubyte* data, sdword width, sdword
 udword trPalettedTextureCreate(ubyte *data, color *palette, sdword width, sdword height)
 {
     udword newHandle;
-#if TR_ERROR_CHECKING
-    udword internalWidth;
-#endif
     ubyte* tempData;
 #if TR_ASPECT_CHECKING
     sdword oldWidth, oldHeight;
@@ -1674,11 +1671,7 @@ ubyte *trImageScaleIndexed(ubyte *data, sdword width, sdword height, sdword newW
 void trPreLoadedTextureScale(sdword handle, sdword newWidth, sdword newHeight)
 {
     texreg *reg = &trTextureRegistry[handle];
-    ubyte *newIndexed, *oldIndexed;
     trcolorinfo *oldColorInfos, *newColorInfos;
-    udword *handles;
-    bool bUseAlpha;
-    sdword index;
 
     //sharing handled
     if (reg->sharedFrom != TR_NotShared)
@@ -2793,7 +2786,7 @@ void trRegistryRefresh(void)
     texreg *reg;
     llelement *lifListing;
     sdword listingLength;
-    udword listFlags;
+    udword listFlags = 0;
 
 #if TR_NIL_TEXTURE
     if (GLOBAL_NO_TEXTURES)
@@ -3672,13 +3665,6 @@ udword trNoPalGetHandle(void)
 ----------------------------------------------------------------------------*/
 void trNoPalTexImage(ubyte* data, ubyte* palette, sdword width, sdword height)
 {
-    ubyte* sp;
-    ubyte* dp;
-    sdword i, index;
-    ubyte* rgba;
-    uword* sdp;
-    sdword r, g, b;
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     if (texLinearFiltering)
@@ -3692,13 +3678,13 @@ void trNoPalTexImage(ubyte* data, ubyte* palette, sdword width, sdword height)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
-    rgba = memAlloc(4 * width * height, "temp rgba", Pyrophoric);
+    ubyte* rgba = memAlloc(4 * width * height, "temp rgba", Pyrophoric);
 
-    dp = rgba;
-    sp = data;
-    for (i = 0; i < width*height; i++, dp += 4, sp++)
+    ubyte* dp = rgba;
+    ubyte* sp = data;
+    for (sdword i = 0; i < width*height; i++, dp += 4, sp++)
     {
-        index = (*sp) << 2;
+        sdword index = (*sp) << 2;
         dp[0] = palette[index + 0];
         dp[1] = palette[index + 1];
         dp[2] = palette[index + 2];

@@ -542,56 +542,6 @@ void primPointSize3Fade(vector *p1, real32 size, color c, real32 fade)
     }
 }
 
-static void primSolidTexture3_multi(vector* p1, real32 size, color c, trhandle tex)
-{
-    real32 halfsize;
-    texreg* reg;
-    extern udword gDevcaps;
-
-    halfsize = 0.5f * size;
-
-    rndTextureEnable(TRUE);
-
-    trMakeCurrent(tex);
-    reg = trStructureGet(tex);
-    if (bitTest(reg->flags, TRF_Alpha))
-    {
-        glEnable(GL_BLEND);
-        glDisable(GL_ALPHA_TEST);
-        rndAdditiveBlends(TRUE);
-    }
-
-    glBegin(GL_QUADS);
-
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex3f(p1->x-halfsize, p1->y-halfsize, 0.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(p1->x+halfsize, p1->y-halfsize, 0.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex3f(p1->x+halfsize, p1->y+halfsize, 0.0f);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex3f(p1->x-halfsize, p1->y+halfsize, 0.0f);
-
-    if (!bitTest(gDevcaps, DEVSTAT_NO_GETTEXIMAGE))
-    {
-        glColor3ub(172, 172, 172);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex3f(p1->x-halfsize, p1->y-halfsize, 0.0f);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex3f(p1->x+halfsize, p1->y-halfsize, 0.0f);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex3f(p1->x+halfsize, p1->y+halfsize, 0.0f);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex3f(p1->x-halfsize, p1->y+halfsize, 0.0f);
-    }
-
-    glEnd();
-
-    glDisable(GL_BLEND);
-    rndAdditiveBlends(FALSE);
-}
-
 /*-----------------------------------------------------------------------------
     Name        : primSolidTexture3
     Description : Draw a 3D point with size

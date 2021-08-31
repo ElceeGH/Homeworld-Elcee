@@ -59,6 +59,7 @@
 #include "Tweak.h"
 #include "Universe.h"
 #include "utility.h"
+#include <stdio.h>
 
 
 #define DEBUG_COLLISIONS 0
