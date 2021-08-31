@@ -1205,10 +1205,9 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
     {
         rndAdditiveBlends(TRUE);
         glEnable(GL_BLEND);
-        rndTextureEnvironment(RTE_Blend);
-    } else {
-        rndTextureEnvironment(RTE_Modulate);
     }
+
+    rndTextureEnvironment(RTE_Modulate);
 
     hsColor = FALSE;
     if (bitTest(p->flags, PART_XYZSCALE))
