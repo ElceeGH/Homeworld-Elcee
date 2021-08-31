@@ -1272,10 +1272,10 @@ bool mainStartupGL(char* data)
 
     renderData.width = MAIN_WindowWidth;
     renderData.height = MAIN_WindowHeight;
+    renderData.hWnd = 0;
 #ifdef _WIN32
     renderData.hWnd = ghMainWindow;
 #endif
-    renderData.hWnd = 0;
     if (!rndSmallInit(&renderData, TRUE))
     {
         return FALSE;
