@@ -1148,6 +1148,7 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
     rndLightingEnable(TRUE);
     rndAdditiveBlends(FALSE);
     if (fogOn) glEnable(GL_FOG);
+    glDisable(GL_BLEND);
 }
 
 //ship lightning render & think fn
