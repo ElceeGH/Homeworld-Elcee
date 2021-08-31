@@ -1201,6 +1201,15 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 
     glColor3ub(200,200,200);
 
+    if (bitTest(p->flags, PART_ADDITIVE))
+    {
+        rndAdditiveBlends(TRUE);
+        glEnable(GL_BLEND);
+        rndTextureEnvironment(RTE_Blend);
+    } else {
+        rndTextureEnvironment(RTE_Modulate);
+    }
+
     hsColor = FALSE;
     if (bitTest(p->flags, PART_XYZSCALE))
     {
@@ -1211,7 +1220,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
         }
     }
 
-    rndTextureEnvironment(RTE_Modulate);
+    
 
     for (i = hits = 0; i < n; i++, p++)
     {
