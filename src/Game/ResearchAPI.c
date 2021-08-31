@@ -706,7 +706,7 @@ udword rmAllTechRequiredforTech(Player *player, TechnologyType type)
 
     techdepend = temp = player->researchinfo.techstat->TechNeededToResearch[type];
 
-    for (i=0;i<NumTechnologies;i--)
+    for (i=0;i<NumTechnologies;i++)
     {
         if (bitTest(temp, TechToBit(i)))
         {
