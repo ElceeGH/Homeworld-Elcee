@@ -1733,6 +1733,8 @@ real32 smBlobDropLineDistance(blob *thisBlob)
 ----------------------------------------------------------------------------*/
 blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix *projection, sdword sensorLevel)
 {
+    glEnable( GL_MULTISAMPLE );
+
     oval o;
     blob *thisBlob;
 //    Node *node;
@@ -2072,6 +2074,9 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     primModeSet2();
     pingListDraw(&smCamera, modelView, projection, &smViewRectangle);
     primModeClear2();
+
+    glDisable( GL_MULTISAMPLE );
+
     return(closestBlob);
 }
 

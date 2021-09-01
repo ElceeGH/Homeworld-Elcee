@@ -544,7 +544,9 @@ void svShipViewRender(featom* atom, regionhandle region)
                 index = universe.curPlayerIndex;
             }
         }
+        glEnable( GL_MULTISAMPLE );
         meshRender((meshdata *)info->staticheader.LOD->level[0].pData, index);
+        glDisable( GL_MULTISAMPLE );
     }
 
     glDisable(GL_NORMALIZE);

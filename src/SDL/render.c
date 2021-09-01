@@ -2316,6 +2316,8 @@ void rndMainViewAllButRenderFunction(Camera *camera)
 ----------------------------------------------------------------------------*/
 void rndMainViewRenderFunction(Camera *camera)
 {
+    glEnable( GL_MULTISAMPLE );
+
     Node *objnode;
     SpaceObj *spaceobj;
     udword i,numstars;
@@ -3192,6 +3194,8 @@ renderDefault:
     rndPostRenderDebug3DStuff(camera);
     primModeSet2();
     rndPostRenderDebug2DStuff(camera);
+
+    glDisable( GL_MULTISAMPLE );
 }
 
 GLuint plug_handle = 0;
