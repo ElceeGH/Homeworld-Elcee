@@ -32,7 +32,7 @@ configure.ac
 cscope.files
 cscope.out
 Windows/.vs/
-SDL/
+/SDL
 Windows/prj/hwsdl_debug/
 tools/kas2c/project/KAS2C/.vs/
 tools/kas2c/project/KAS2C/Debug/
