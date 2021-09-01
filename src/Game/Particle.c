@@ -2016,8 +2016,6 @@ int is_final_tex(trhandle tex)
 {
 #ifdef _MACOSX_FIX_86
     if (tex == 0xffffffff) return 1;
-#else
-    if (tex == 0x7fffffff) return 1;
 #endif
 
 #ifdef _X86_64_FIX_ME
@@ -2031,8 +2029,9 @@ int is_final_tex(trhandle tex)
     }
     if (tex >= TR_RegistrySize) { dbgFatalf(DBG_Loc, "tex handle 0x%lx is broken in is_final_tex, unable to continue", tex); }
 #endif
-        
-    return 0;
+
+    return tex == TR_InvalidHandle
+        || tex == TR_NotShared;
 }
 
 
