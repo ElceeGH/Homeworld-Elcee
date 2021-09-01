@@ -13,6 +13,10 @@
       <Configuration>release + symbols</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-ASAN|Win32">
+      <Configuration>Release-ASAN</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -39,6 +43,12 @@
     <UseOfMfc>false</UseOfMfc>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <EnableASAN>true</EnableASAN>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
@@ -54,6 +64,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -75,6 +88,14 @@
     <OutDir>$(ProjectDir)..\..\bin\</OutDir>
     <IntDir>.\hwsdl_releas_test\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Projects\HomeworldSDL\SDL\include;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_rel</TargetName>
+    <CodeAnalysisRuleSet>vs_analysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">
+    <OutDir>$(ProjectDir)..\..\bin\</OutDir>
+    <IntDir>.\hwsdl_releas_test\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
     <IncludePath>C:\Projects\HomeworldSDL\SDL\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_rel</TargetName>
     <CodeAnalysisRuleSet>vs_analysis.ruleset</CodeAnalysisRuleSet>
@@ -193,6 +214,57 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <TypeLibraryName>$(IntDir)hwsdl.tlb</TypeLibraryName>
       <HeaderFileName />
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\src\SDL;..\..\src\rgl;..\..\src\Game;..\..\src\Ships;..\..\src\ThirdParty\JPG;..\..\src\ThirdParty\CRC;..\..\src\ThirdParty\LZSS;..\..\src\Generated;..\..\src\ThirdParty\Titan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_FIXME;HW_GAME_HOMEWORLD;HW_BUILD_FOR_DISTRIBUTION;_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)hwsdl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hwsdl_rel.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)hwsdl.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(IntDir)hwsdl.map</MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>8388608</StackReserveSize>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>$(IntDir)hwsdl.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
     </Midl>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -343,6 +415,7 @@
     <ClCompile Include="..\..\src\Game\ETG.c">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">Disabled</Optimization>
     </ClCompile>
@@ -398,6 +471,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\ProfileTimers.c" />
@@ -429,6 +503,7 @@
     <ClCompile Include="..\..\src\Game\Task.c">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">Disabled</Optimization>
     </ClCompile>
@@ -491,6 +566,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\debugwnd.c" />
@@ -517,6 +593,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\TitanInterfaceC.c" />
@@ -524,6 +601,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\utility.c" />
@@ -574,360 +652,420 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\interfce.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jaricom.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcapimin.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcapistd.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcarith.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jccoefct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jccolor.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcdctmgr.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jchuff.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcinit.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcmainct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcmarker.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcmaster.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcomapi.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcparam.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcprepct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jcsample.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jctrans.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdapimin.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdapistd.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdarith.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdatadst.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdatasrc.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdcoefct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdcolor.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jddctmgr.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdhuff.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdinput.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdmainct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdmarker.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdmaster.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdmerge.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdpostct.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdsample.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jdtrans.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jerror.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctflt.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctfst.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jfdctint.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctflt.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctfst.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jidctint.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jmemansi.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jmemmgr.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jquant1.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jquant2.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\jutils.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdbmp.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdcolmap.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdgif.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdppm.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdrle.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdswitch.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\rdtarga.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\transupp.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrbmp.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrgif.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrrle.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='release + symbols|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='old_dont use_1|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\..\src\ThirdParty\LZSS\BitIO.c" />
