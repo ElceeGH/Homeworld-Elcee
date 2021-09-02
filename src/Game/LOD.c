@@ -92,6 +92,8 @@ real32 lodScaleFactor = LOD_ScaleFactor;
 real32 lodDebugScaleFactor = 0.0f;
 #endif
 
+
+
 /*=============================================================================
     Functions:
 =============================================================================*/
@@ -150,6 +152,8 @@ lodinfo *lodTableReadScript(char *directory, char *fileName)
     return(info);
 }
 
+
+
 /*=============================================================================
     Callback functions for script reading
 =============================================================================*/
@@ -173,6 +177,9 @@ static void lodColorScalarRead(char *directory,char *field,void *dataToFillIn)
         trStripeColorScalar = data;
     }
 }
+
+
+
 //set correct LOD type
 static void lodTypeRead(char *directory,char *field,void *dataToFillIn)
 {                                                           //set correct LOD type
@@ -244,6 +251,9 @@ static void lodMeshFileLoad(char *directory,char *field,void *dataToFillIn)
         *((meshdata **)dataToFillIn) = defaultmesh;
     }
 }
+
+
+
 //load in a tiny sprite file
 static void lodSpriteFileRead(char *directory,char *field,void *dataToFillIn)
 {
@@ -252,6 +262,8 @@ static void lodSpriteFileRead(char *directory,char *field,void *dataToFillIn)
 #endif
     dbgFatal(DBG_Loc, "Can't load sprite images yet!");
 }
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : lodLevelGet
@@ -266,55 +278,17 @@ sdword rndLOD = 0;
 sdword lodTuningMode = FALSE;
 sdword lodDrawingMode = FALSE;
 #endif
-lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
+lod *lodLevelGet(void *spaceObj, const vector *camera, const vector *ship)
 {
-    SpaceObj *obj = (SpaceObj *)spaceObj;
+    SpaceObj *obj = spaceObj;
     lodinfo *info = obj->staticinfo->staticheader.LOD;
 
-    dbgAssertOrIgnore(info != NULL);                                //verify the LOD table exists
+    dbgAssertOrIgnore(info != NULL); //verify the LOD table exists
 
     vecSub(obj->cameraDistanceVector,*camera,*ship);
-    obj->cameraDistanceSquared = vecMagnitudeSquared(obj->cameraDistanceVector);
-    
-    // Increase detail for we are now in the far off year of 2021.
-    // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
-    // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
-    // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
-    real32 distance = obj->cameraDistanceSquared - RENDER_MAXVIEWABLE_DISTANCE_SQR;
-    if (distance < 0.0f)
-        distance = 0.0f;
+    obj->cameraDistanceSquared = vecMagnitudeSquared(obj->cameraDistanceVector);    
+    obj->currentLOD            = lodLevelCompute( spaceObj, camera, TRUE );
 
-    // Always render the big boys in their glorious full detail.
-    if (obj->flags & SOF_BigObject)
-        distance = 0.0f;
-    
-
-#if LOD_SCALE_DEBUG
-    if (lodDebugScaleFactor != 0.0f)
-    {
-        lodScaleFactor = lodDebugScaleFactor;
-    }
-#endif
-    if (distance > info->level[obj->currentLOD].bOff * lodScaleFactor)
-    {                                                       //if drop a level of detail
-        do
-        {
-            obj->currentLOD++;                                  //go to lower level
-            if (obj->currentLOD >= info->nLevels)
-            {
-                obj->currentLOD = info->nLevels-1;
-                break;
-            }
-        }
-        while (distance > info->level[obj->currentLOD].bOff * lodScaleFactor);
-    }
-    else
-    {
-        while (obj->currentLOD > 0 && distance < info->level[obj->currentLOD - 1].bOn * lodScaleFactor)
-        {                                                   //if go higher level of detail
-            obj->currentLOD--;                              //go to higher level
-        }
-    }
     dbgAssertOrIgnore(obj->currentLOD >= 0);
     dbgAssertOrIgnore(obj->currentLOD < info->nLevels);             //verify we are within the available levels of detail
 #if LOD_PRINT_DISTANCE
@@ -339,34 +313,72 @@ lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship)
     return(&info->level[obj->currentLOD]);                  //return pointer to lod structure
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : lodPanicLevelGet
-    Description : Get level of detail for specified ship
-    Inputs      : spaceObj - space object to get
-                  camera, ship - location of ship and camera, respectively
-    Outputs     : updates the currentLOD of the specified space object.
-    Return      : lod structure for current level of detail
-----------------------------------------------------------------------------*/
-lod* lodPanicLevelGet(void* spaceObj, vector* camera, vector* ship)
-{
-    SpaceObj* obj = (SpaceObj*)spaceObj;
-    lodinfo* info = obj->staticinfo->staticheader.LOD;
 
-    if (obj->currentLOD == 3)
+
+/// Compute LOD for the object as it was in the original game, with no offset or max detail flag.
+/// Does not modify the object.
+ubyte lodLevelComputeDefault( const void* spaceObj, const vector* camera )
+{
+    return lodLevelCompute( spaceObj, camera, FALSE );
+}
+
+
+
+/// Compute LOD for the object.
+/// Does not modify the object.
+ubyte lodLevelCompute( const void* spaceObj, const vector* camera, udword maxDetail )
+{
+    const SpaceObj* obj  = spaceObj;
+    const lodinfo*  info = obj->staticinfo->staticheader.LOD;
+
+    ubyte lod = 0;
+    vector vec = { 0 };
+    vecSub( vec, *camera, obj->posinfo.position );
+    real32 dist = vecMagnitudeSquared(vec);
+
+    if (maxDetail) {
+        // Increase detail for we are now in the far off year of 2021.
+        // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
+        // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
+        // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
+        dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR;
+        dist = max( 0.0f, dist );
+
+        // Always render the big boys in their glorious full detail.
+        if (obj->flags & SOF_BigObject)
+            dist = 0.0f;
+
+        // @todo Mines... Haven't tried those yet.
+    }
+    
+#if LOD_SCALE_DEBUG
+    if (lodDebugScaleFactor != 0.0f)
     {
-        obj->currentLOD++;
-        if (obj->currentLOD >= info->nLevels)
-        {
-            obj->currentLOD--;
+        lodScaleFactor = lodDebugScaleFactor;
+    }
+#endif
+
+    if (dist > info->level[lod].bOff * lodScaleFactor) { //if drop a level of detail
+        do {
+            lod++; //go to lower level
+            if (lod >= info->nLevels) {
+                lod  = info->nLevels-1;
+                break;
+            }
         }
-        if ((info->level[obj->currentLOD].flags & LM_LODType) != LT_Mesh)
-        {
-            obj->currentLOD--;
+        while (dist > info->level[lod].bOff * lodScaleFactor);
+    } else {
+        while (lod>0 && lod < info->level[lod-1].bOn * lodScaleFactor) { //if go higher level of detail
+            lod--; //go to higher level
         }
     }
 
-    return(&info->level[obj->currentLOD]);
+    dbgAssertOrIgnore(lod >= 0);
+    dbgAssertOrIgnore(lod < info->nLevels);             //verify we are within the available levels of detail
+
+    return lod;
 }
+
 
 /*-----------------------------------------------------------------------------
     Name        : lodFree

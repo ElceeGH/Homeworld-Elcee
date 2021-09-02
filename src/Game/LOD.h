@@ -116,12 +116,12 @@ extern real32 lodDebugScaleFactor;
 /*=============================================================================
     Functions:
 =============================================================================*/
-lodinfo *lodTableReadScript(char *directory, char *fileName);
-
-lod *lodLevelGet(void *spaceObj, vector *camera, vector *ship);
-lod *lodPanicLevelGet(void *spaceObj, vector *camera, vector *ship);
-void lodAllMeshesRecolorize(lodinfo *LOD);
-sdword lodHierarchySizeCompute(lodinfo *LOD);
+lodinfo* lodTableReadScript(char *directory, char *fileName);
+ubyte    lodLevelCompute       ( const void* spaceObj, const vector* camera, udword maxDetail );
+ubyte    lodLevelComputeDefault( const void* spaceObj, const vector* camera );
+lod*     lodLevelGet           ( void *spaceObj, const vector *camera, const vector *ship );
+void     lodAllMeshesRecolorize (lodinfo *LOD);
+sdword   lodHierarchySizeCompute(lodinfo *LOD);
 
 void lodFree(lodinfo *LOD);
 
