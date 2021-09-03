@@ -148,7 +148,6 @@ udword rndTextureEnvironment(udword mode);
 sdword rndPerspectiveCorrection(sdword bEnable);
 sdword rndNormalizeEnable(sdword bEnable);
 sdword rndAdditiveBlends(sdword bAdditive);
-sdword rndMaterialfv(sdword face, sdword pname, real32* params);
 void rndSetClearColor(color c);
 
 real32 rndComputeOverlap(Ship* ship, real32 scalar);
