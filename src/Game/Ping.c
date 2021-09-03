@@ -34,6 +34,7 @@
 #include "Teams.h"
 #include "Tweak.h"
 #include "Universe.h"
+#include "rResScaling.h"
 
 /*=============================================================================
     Data:
@@ -439,7 +440,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 o.centreY = primGLToScreenY(y);
                 o.radiusX = o.radiusY = primGLToScreenScaleX(radius);
                 nSegments = pieCircleSegmentsCompute(radius);
-                primOvalArcOutline2(&o, 0.0f, 2*PI, 1, nSegments, thisPing->c);
+                primOvalArcOutline2(&o, 0.0f, 2*PI, getResDensityRelative(), nSegments, thisPing->c);
 
                 /* starting to draw a new ping so play the sound */
                 if (!smZoomingIn && !smZoomingOut && !pingset)
@@ -519,7 +520,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 o.centreX = viewPort->x0 + rowHeight * 3 / 2;
                 o.centreY = yScreen + rowHeight / 2;
                 o.radiusX = o.radiusY = rowHeight / 2;
-                primOvalArcOutline2(&o, 0.0f, TWOPI, 1, pingTONSegments, *pingTOList[index].c);
+                primOvalArcOutline2(&o, 0.0f, TWOPI, getResDensityRelative(), pingTONSegments, *pingTOList[index].c);
                 fontPrint(xScreen, yScreen, TO_TextColor, strGetString(pingTOList[index].stringEnum));
                 yScreen += rowHeight + 1;
             }
