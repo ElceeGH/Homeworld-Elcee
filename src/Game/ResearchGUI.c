@@ -44,6 +44,7 @@
 #include "Tutor.h"
 #include "UIControls.h"
 #include "Universe.h"
+#include "rResScaling.h"
 
 #ifndef SW_Render
     #ifdef _WIN32
@@ -871,8 +872,10 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
             {
                 labprint->pulsepos = 0;
             }
-            else
-                labprint->pulsepos += PULSE_INC;
+            else {
+                // Was designed for 60Hz update. Normalise increment for arbitrary refresh rate.
+                labprint->pulsepos += (sdword) (PULSE_INC / getResFrequencyRelative());
+            }
 
             pos = ((progressRect.x1 - progressRect.x0) * labprint->pulsepos) >> 16;
             pos = progressRect.x0 + pos;
