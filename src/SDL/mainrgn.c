@@ -5510,7 +5510,7 @@ void mrRegionDraw(regionhandle reg)
 
     rndTextureEnable(FALSE);
     glDisable(GL_TEXTURE_2D);
-
+    glEnable( GL_MULTISAMPLE );
     if (!thisNisPlaying)
     {
         mrTacticalOverlayState(utyCapsLockToggleState());   //make sure we have the right TO state
@@ -5519,17 +5519,17 @@ void mrRegionDraw(regionhandle reg)
     {                                                       //need better key mechanism
         rndTextureEnable(FALSE);
         glDisable(GL_TEXTURE_2D);
-
         toAllShipsDraw();                                   //draw tactical overlays
         toLegendDraw();                                     //draw legend for overlays
     }
-
+    
     selSelectedDraw();                                      //draw overlays for selected ships, if any
     if (mrHoldLeft == mrSelectHold)                         //and then draw the current selection progress
     {
         selSelectingDraw();
         primRectOutline2(&mrSelectionRect, 1, TW_SELECT_BOX_COLOR);
     }
+    glDisable( GL_MULTISAMPLE );
 
 #if SP_DEBUGKEYS
     kasDebugDraw();
