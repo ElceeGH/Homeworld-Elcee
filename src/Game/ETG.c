@@ -40,6 +40,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "miscUtil.h"
 
 #ifdef GENERIC_ETGCALLFUNCTION
 #ifdef _MACOSX_FIX_MISC
@@ -1933,10 +1934,7 @@ void etgReset(void)
 typedef struct
 {
     etgcodeblock etgCodeBlock[ETG_NumberCodeBlocks];
-    //ubyte *etgCurrentCodeBlock;
     udword etgCodeBlockIndex;
-    //udword etgCodeOffset;
-    //udword etgCodeLength;
     ubyte *etgVariables;
     bool etgDeleteFlag;
 }
@@ -3535,12 +3533,14 @@ etgeffectstatic *etgEffectCodeLoad(char *fileName)
     dbgMessagef(".");
 #endif
     //set up some variables, allocate memory
-    etgExecStack.etgCodeBlock[EPM_Startup].offset = etgExecStack.etgCodeBlock[EPM_EachFrame].offset = etgExecStack.etgCodeBlock[EPM_TimeIndex].offset = 0;
-    etgExecStack.etgCodeBlock[EPM_Startup].code = memAlloc(ETG_StartupParseSize, "StartupCodePool", 0);
-    etgExecStack.etgCodeBlock[EPM_Startup].length = ETG_StartupParseSize;
-    etgExecStack.etgCodeBlock[EPM_EachFrame].code = memAlloc(ETG_EachFrameParseSize, "EachFrameCodePool", 0);
+    etgExecStack.etgCodeBlock[EPM_TimeIndex].offset = 0;
+    etgExecStack.etgCodeBlock[EPM_EachFrame].offset = 0;
+    etgExecStack.etgCodeBlock[EPM_Startup]  .offset = 0;
+    etgExecStack.etgCodeBlock[EPM_Startup]  .code   = memAlloc(ETG_StartupParseSize, "StartupCodePool", 0);
+    etgExecStack.etgCodeBlock[EPM_Startup]  .length = ETG_StartupParseSize;
+    etgExecStack.etgCodeBlock[EPM_EachFrame].code   = memAlloc(ETG_EachFrameParseSize, "EachFrameCodePool", 0);
     etgExecStack.etgCodeBlock[EPM_EachFrame].length = ETG_EachFrameParseSize;
-    etgExecStack.etgCodeBlock[EPM_TimeIndex].code = memAlloc(ETG_TimeIndexParseSize, "TimeIndexCodePool", 0);
+    etgExecStack.etgCodeBlock[EPM_TimeIndex].code   = memAlloc(ETG_TimeIndexParseSize, "TimeIndexCodePool", 0);
     etgExecStack.etgCodeBlock[EPM_TimeIndex].length = ETG_TimeIndexParseSize;
     etgVariableTable = memAlloc(sizeof(etgvarentry) * ETG_VarTableParseLength, "VariableNameBlock", 0);
     etgVariableIndex = 0;
@@ -5569,7 +5569,7 @@ void etgCallbackOpen(sdword codeBlock, sdword offset, ubyte *userData)
     createCall = (etgfunctioncall *)userData;
     dbgAssertOrIgnore(createCall->opcode == EOP_Function && createCall->nParameters == 2);
 #endif
-    memmove(userData + etgFunctionSize(1), userData, etgFunctionSize(2));//move the function forward
+    memmoveAlt(userData + etgFunctionSize(1), userData, etgFunctionSize(2));//move the function forward
     //set up the call to partCreateCallbackSet()
     call = (etgfunctioncall *)userData;
     call->opcode = EOP_Function;

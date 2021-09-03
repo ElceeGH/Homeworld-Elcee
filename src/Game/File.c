@@ -17,6 +17,7 @@
 #include "File.h"
 #include "LZSS.h"
 #include "Memory.h"
+#include "miscUtil.h"
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -132,7 +133,6 @@ void fileNameReplaceSlashesInPlace(char *filePath)
 	}
 }
 
-
 /*-----------------------------------------------------------------------------
     Name        : fileNameReducePath
     Description : Removes extraneous slashes in the given path and reduces
@@ -164,7 +164,7 @@ static void fileNameReducePath (char* pathName)
 		if ((chPrev == '/' || chPrev == '\\') &&
 		    (chCurr == '/' || chCurr == '\\'))
 		{
-			memmove(pathName + i - 1, pathName + i, pathLen - i + 1);
+			memmoveAlt(pathName + i - 1, pathName + i, pathLen - i + 1);
 			pathLen--;
 			i--;
 		}
@@ -211,7 +211,7 @@ static void fileNameReducePath (char* pathName)
 		pathElemCount--;
 		if (pathElemCount != 0)
 		{
-			memmove(pathElem, pathElem + 1, sizeof(char*) * pathElemCount);
+			memmoveAlt(pathElem, pathElem + 1, sizeof(char*) * pathElemCount);
 		}
 	}
 
@@ -231,7 +231,7 @@ static void fileNameReducePath (char* pathName)
 			pathElemCount--;
 			if (i < pathElemCount)
 			{
-				memmove(
+				memmoveAlt(
 					pathElem + i, pathElem + i + 1,
 					sizeof(char*) * pathElemCount - i);
 			}
@@ -257,7 +257,7 @@ static void fileNameReducePath (char* pathName)
 				pathElemCount--;
 				if (pathElemCount != 0)
 				{
-					memmove(
+					memmoveAlt(
 						pathElem, pathElem + 1,
 						sizeof(char*) * pathElemCount);
 				}
@@ -281,7 +281,7 @@ static void fileNameReducePath (char* pathName)
 		pathElemCount--;
 		if (i < pathElemCount)
 		{
-			memmove(
+			memmoveAlt(
 				pathElem + i - 1, pathElem + i + 1,
 				sizeof(char*) * pathElemCount - i);
 		}
@@ -315,7 +315,7 @@ static void fileNameReducePath (char* pathName)
 		char* currentElem = pathElem[i];
 		size_t elemLen = strlen(currentElem);
 
-		memmove(
+		memmoveAlt(
 			pathName + pathLen, currentElem, sizeof(char) * elemLen);
 
 		pathLen += elemLen;
