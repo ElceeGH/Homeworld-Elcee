@@ -45,6 +45,7 @@
 #include "Randy.h"
 #include "Region.h"
 #include "render.h"
+#include "rResScaling.h"
 #include "rglu.h"
 #include "SaveGame.h"
 #include "Select.h"
@@ -1005,18 +1006,11 @@ justRenderAsDot:
                         }
                     }
 
-//                    if ((((Ship *)obj)->playerowner->playerIndex == universe.curPlayerIndex))
-//                    {                                       //enable double-size points
-                        pointSize = 2.0f;
-//                        //glPointSize(2.0f);
-//                    }
-//                    else
-//                    {
-//                        pointSize = 1.0f;
-//                        //glPointSize(1.0f);
-//                    }
+                    // Scale sensor dots for modern resolutions, keeping original look where they bunch up a little
+                    const float pointSizeRaw = sqrtf( getResDensity() * 0.004f );
+                    const float pointSize    = max( 2.0f, pointSizeRaw );
                     rndTextureEnable(FALSE);
-                    if ((!smBigPoints) && pointSize != 1.0f && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
+                    if (!smBigPoints && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
                     {
                         dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
                         bigDot[nBigDots].x = ((Ship *)obj)->collInfo.selCircleX;
