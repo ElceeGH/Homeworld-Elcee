@@ -2094,7 +2094,6 @@ void selSelectedDraw(void)
     sdword index;
     Ship *ship;
     fonthandle currentFont = fontCurrentGet();
-    sdword currentLOD;
 
     if (selSelected.numShips == 0)
     {
@@ -2113,14 +2112,14 @@ void selSelectedDraw(void)
         {
             if (ship->collInfo.selCircleRadius > 0.0f)
             {
-                currentLOD = ship->currentLOD;
-                dbgAssertOrIgnore(currentLOD < SEL_NumberLOD);
-                if ((ship->shiptype == Mothership) && (currentLOD > 0))
+                sdword lod = lodLevelComputeDefault( ship, &mrCamera->eyeposition );
+                dbgAssertOrIgnore(lod < SEL_NumberLOD);
+                if ((ship->shiptype == Mothership) && (lod > 0))
                 {
-                    currentLOD--;
+                    lod--;
                 }
                 glShadeModel(GL_FLAT);
-                selStatusDraw[currentLOD](ship);
+                selStatusDraw[lod](ship);
 #if SEL_DRAW_BOXES
 #if RND_VISUALIZATION
                 if (RENDER_BOXES)
