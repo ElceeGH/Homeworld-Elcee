@@ -14,6 +14,7 @@
 #include "prim3d.h"
 #include "render.h"
 #include "Universe.h"
+#include "rResScaling.h"
 
 #ifndef SW_Render
     #ifdef _WIN32
@@ -89,95 +90,88 @@ void navLightStaticInfoDelete(NAVLightStaticInfo *staticInfo)
     Inputs      : ship - the ship whose navlights we are to render
     Outputs     :
     Return      :
+
+    Notes:
+        This is a bit different than the original game which textured the lights up close (barely) but used solid coloured points far away.
+        Positioning of the lights is totally broken on the good LODs when far away when using the textured versions, so it's points all the way now.
+        In order to replicate the look of the original the points scale with distance and gain a white centre up close.
+        The lights still scale individually per ship too, but clamp the minimum scale to a certain level to remain nicely visible as in the original.
 ----------------------------------------------------------------------------*/
-void RenderNAVLights(Ship *ship)
-{
-   sdword i;
-   NAVLight *navLight;
-   NAVLightInfo *navLightInfo;
-   ShipStaticInfo *shipStaticInfo;
-   NAVLightStatic *navLightStatic;
-   vector origin = {0.0f, 0.0f, 0.0f};
-   NAVLightStaticInfo *navLightStaticInfo;
-   real32 fade;
-   bool lightOn;
-   extern bool bFade;
-   extern real32 meshFadeAlpha;
+void RenderNAVLights(Ship* ship) {
+    extern bool bFade;
+    extern real32 meshFadeAlpha;
 
-   fade = bFade ? meshFadeAlpha : 1.0f;
+    ShipStaticInfo* shipStaticInfo = ship->staticinfo;
+    NAVLightInfo*   navLightInfo   = ship->navLightInfo;
 
-   shipStaticInfo = (ShipStaticInfo *)ship->staticinfo;
+    if (shipStaticInfo->navlightStaticInfo && navLightInfo != NULL)    {
+        NAVLightStaticInfo* navLightStaticInfo = shipStaticInfo->navlightStaticInfo;
+        NAVLightStatic*     navLightStatic     = navLightStaticInfo->navlightstatics;
+        NAVLight*           navLight           = navLightInfo->navLights;
 
-    navLightInfo = ship->navLightInfo;
-   if(shipStaticInfo->navlightStaticInfo && navLightInfo != NULL)
-   {
-      glDepthMask(GL_FALSE);
-      rndAdditiveBlends(TRUE);
-      lightOn = rndLightingEnable(FALSE);
+        // State/inputs
+        
+        real32 fade      = bFade ? meshFadeAlpha : 1.0f;
+        real32 sizeScale = max( 1.0f, navLight->navlightstatic->size / 17.0f ); // Scale up big lights on the Mothership etc.
 
-      navLightStaticInfo = shipStaticInfo->navlightStaticInfo;
-      navLightStatic = navLightStaticInfo->navlightstatics;
-      navLight = navLightInfo->navLights;
+        // Scaling params
+        real32 resScaling = getResDensityRelative();
+        real32 nearThresh = 50;
+        real32 farThresh  = 4000;
+        real32 nearScale  = 5.0f * resScaling;
+        real32 farScale   = 1.0f * resScaling;
 
-      for( i=0 ; i<navLightStaticInfo->numNAVLights ; i++, navLight ++, navLightStatic ++)
-      {
-			// Account for the startdelay.
-			if(navLight->lastTimeFlashed == navLightStatic->startdelay)
-			{
-				navLight->lastTimeFlashed = universe.totaltimeelapsed + navLightStatic->startdelay;
-			}
-			
-			if(universe.totaltimeelapsed > navLight->lastTimeFlashed)
-			{
-				if(navLight->lightstate == 1)
-				{
-					navLight->lastTimeFlashed = universe.totaltimeelapsed + navLightStatic->flashrateoff;
-				}
-				else
-				{
-					navLight->lastTimeFlashed = universe.totaltimeelapsed + navLightStatic->flashrateon;
-				}
-				
-				navLight->lightstate = 1 - navLight->lightstate;
-			}
+        // Box step
+        real32 dist = sqrtf(ship->cameraDistanceSquared);
+        dist = max(dist, nearThresh);
+        dist = min(dist, farThresh);
+        real32 delta  = farThresh - nearThresh;
+        real32 linear = (dist - nearThresh) / delta;
+        real32 frac   = 1.0f - linear;
 
-			if(navLight->lightstate)
-			{
-				if (ship->currentLOD <= (sdword)navLightStatic->minLOD)
-				{
-					navLightBillboardEnable(ship, navLightStatic);
+        // Lerp
+        real32 scaleDelta = nearScale - farScale;
+        real32 lightSize  = farScale + scaleDelta * (frac*frac);
 
-					if(navLightStatic->texturehandle == TR_InvalidHandle)
-					{
-						primCircleSolid3Fade(&origin, navLightStatic->size, 10, navLightStatic->color, fade);
-					}
-					else
-					{
-						primSolidTexture3Fade(&origin, navLightStatic->size, navLightStatic->color, navLightStatic->texturehandle, fade);
-					}
+        // Render each light
+        bool lightOn = rndLightingEnable(FALSE);
+        glDepthMask(GL_FALSE);
+        glEnable(GL_POINT_SMOOTH);
+        rndAdditiveBlends(TRUE);
+        rndTextureEnable(FALSE);
+        
+        for (sdword i=0; i<navLightStaticInfo->numNAVLights; i++, navLight ++, navLightStatic ++)
+        {
+            // Account for the startdelay.
+            if (navLight->lastTimeFlashed == navLightStatic->startdelay)
+            {
+                navLight->lastTimeFlashed = universe.totaltimeelapsed + navLightStatic->startdelay;
+            }
 
-					navLightBillboardDisable();
-				}
-				else
-				{
-					color tempColor;
+            if (universe.totaltimeelapsed > navLight->lastTimeFlashed)
+            {
+                real32 timeadd = (navLight->lightstate == 1) ? navLightStatic->flashrateoff : navLightStatic->flashrateon;
+                navLight->lastTimeFlashed = universe.totaltimeelapsed + timeadd;
+                navLight->lightstate      = 1 - navLight->lightstate;
+            }
 
-                    tempColor = colRGB(colRed(navLightStatic->color) * 2 / 3,
-					                   colGreen(navLightStatic->color) * 2 / 3,
-									   colBlue(navLightStatic->color) * 2 / 3);
+            if (navLight->lightstate)
+            {
+                real32 fadeCentre = fade * frac * 0.75f;
+                color  white      = colRGB(255, 255, 255);
+                color  tempColor  = colRGB(colRed  (navLightStatic->color) * 2 / 3,
+                                           colGreen(navLightStatic->color) * 2 / 3,
+                                           colBlue (navLightStatic->color) * 2 / 3);
+                
+                primPointSize3Fade(&navLightStatic->position, lightSize*sizeScale,      tempColor, fade);
+                primPointSize3Fade(&navLightStatic->position, lightSize*sizeScale*0.5f, white,     fadeCentre);
+            }
+        }
 
-                    rndTextureEnable(FALSE);
-                    rndAdditiveBlends(TRUE);
-                    glEnable(GL_POINT_SMOOTH);
-                    primPointSize3Fade(&navLightStatic->position, 2.0f, tempColor, fade);
-                    glDisable(GL_POINT_SMOOTH);
-				}
-			}
-      }
-
-      rndLightingEnable(lightOn);
-      rndAdditiveBlends(FALSE);
-      glDepthMask(GL_TRUE);
+        rndLightingEnable(lightOn);
+        rndAdditiveBlends(FALSE);
+        glDisable(GL_POINT_SMOOTH);
+        glDepthMask(GL_TRUE);
     }
 }
 
