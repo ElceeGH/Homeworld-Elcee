@@ -2613,10 +2613,17 @@ dontdraw2:;
 
                                     if (shipStaticInfo->scaleCap != 0.0f)
                                     {                   //if there's a scaling cap
-                                        real32 scaleFactor;
+                                        
                                         glEnable(GL_RESCALE_NORMAL);
                                         rndNormalization = TRUE;
-                                        scaleFactor = 1.0f - selCameraSpace.z * shipStaticInfo->scaleCap;
+
+                                        // Very slightly reduce the distance scaling for very high resolutions since you can see more clearly.
+                                        // Not to be messed with lightly, since it affects mouse selection and other fiddly things.
+                                        real32 nlipsResMul = 1.0f - 0.125f * (sqrtf(getResDensityRelative()) - 1.0f);
+                                        // Don't allow more than 15% difference from original
+                                        nlipsResMul = max( nlipsResMul, 0.85f ); 
+                                        // Mix it up
+                                        real32 scaleFactor = 1.0f - nlipsResMul * selCameraSpace.z * shipStaticInfo->scaleCap;
 #if RND_VERBOSE_LEVEL >= 1
                                         if (isnan((double)scaleFactor))
                                         {
