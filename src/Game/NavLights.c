@@ -97,14 +97,16 @@ void navLightStaticInfoDelete(NAVLightStaticInfo *staticInfo)
         In order to replicate the look of the original the points scale with distance and gain a white centre up close.
         The lights still scale individually per ship too, but clamp the minimum scale to a certain level to remain nicely visible as in the original.
 ----------------------------------------------------------------------------*/
-void RenderNAVLights(Ship* ship) {
+void RenderNAVLights(Ship* ship) 
+{
     extern bool bFade;
     extern real32 meshFadeAlpha;
 
     ShipStaticInfo* shipStaticInfo = ship->staticinfo;
     NAVLightInfo*   navLightInfo   = ship->navLightInfo;
 
-    if (shipStaticInfo->navlightStaticInfo && navLightInfo != NULL)    {
+    if (shipStaticInfo->navlightStaticInfo && navLightInfo != NULL)
+    {
         NAVLightStaticInfo* navLightStaticInfo = shipStaticInfo->navlightStaticInfo;
         NAVLightStatic*     navLightStatic     = navLightStaticInfo->navlightstatics;
         NAVLight*           navLight           = navLightInfo->navLights;
@@ -113,9 +115,10 @@ void RenderNAVLights(Ship* ship) {
         real32 fade = bFade ? meshFadeAlpha : 1.0f;
 
         // Scaling params
+        bool   isBig      = ship->flags & SOF_BigObject;
         real32 resScaling = getResDensityRelative();
-        real32 nearThresh = 50;
-        real32 farThresh  = 4000;
+        real32 nearThresh = isBig ? 1500 : 100;
+        real32 farThresh  = isBig ? 6000 : 4000;
         real32 nearScale  = 5.0f * resScaling;
         real32 farScale   = 1.0f * resScaling;
 
