@@ -31,6 +31,7 @@
 #include "AutoLOD.h"
 #include "Shader.h"
 #include "devstats.h"
+#include "rResScaling.h"
 
 extern unsigned int gDevcaps;
 
@@ -1442,13 +1443,10 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 ----------------------------------------------------------------------------*/
 udword partRenderLineSystem(udword n, particle *p, udword flags)
 {
-    udword i, hits;
-    vector pos;
-    bool texEnabled, lightEnabled;
-    bool alpha = FALSE;
     GLfloat linewidth;
-
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
+
+    bool alpha = FALSE;
     if (bitTest(flags, PART_ALPHA))
     {
         alpha = TRUE;
@@ -1456,9 +1454,11 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
         glEnable(GL_BLEND);
     }
 
-    texEnabled = rndTextureEnable(FALSE);
-    lightEnabled = rndLightingEnable(FALSE);
+    bool   texEnabled   = rndTextureEnable(FALSE);
+    bool   lightEnabled = rndLightingEnable(FALSE);
+    real32 resScaling   = fsqrt(getResDensityRelative());
 
+    udword i, hits;
     for (i = hits = 0; i < n; i++, p++)
     {
         if (p->lifespan < 0.0f)
@@ -1469,17 +1469,9 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
             continue;
 
         handleIllum(p);
+        rndAdditiveBlends( bitTest(p->flags,PART_ADDITIVE) );
 
-        if (bitTest(p->flags, PART_ADDITIVE))
-        {
-            rndAdditiveBlends(TRUE);
-        }
-        else
-        {
-            rndAdditiveBlends(FALSE);
-        }
-
-        glLineWidth(p->scale);
+        glLineWidth(p->scale * resScaling);
         glBegin(GL_LINES);
         if (alpha)
         {
@@ -1489,7 +1481,7 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
         {
             glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
         }
-        pos = p->position;
+        vector pos = p->position;
         if (bitTest(flags, PART_WORLDSPACE))
         {
             vector rv = p->wVel;
