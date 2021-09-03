@@ -35,7 +35,7 @@ real32 getResDensity( void ) {
 /// Always at least 1.0f but unbounded upwards.
 real32 getResDensityRelative( void ) {
     const real32 baseDensity = sqrtSum( 800.0f, 600.0f );
-    const real32 ratio       = rglGetResDensity() / baseDensity;
+    const real32 ratio       = getResDensity() / baseDensity;
     return max( 1.0f, ratio );
 }
 
