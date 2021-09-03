@@ -843,7 +843,7 @@ void rndCapScaleCapStatsTaskFunction(void)
 }
 
 /*bool setupPixelFormat(HDC hDC)*/
-bool setupPixelFormat()
+static bool setupPixelFormat( void )
 {
 	Uint32 flags;
 	static Uint32 lastWidth  = 0;
@@ -1052,7 +1052,7 @@ int glCheckExtension(const char *ext) {
 }
 
 /*bool setupPalette(HDC hDC)*/
-bool setupPalette()
+static bool setupPalette( void )
 {
 	int pix_size;
 
