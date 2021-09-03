@@ -76,6 +76,7 @@
 #include "UnivUpdate.h"
 #include "utility.h"
 #include "SDL_syswm.h"
+#include "rResScaling.h"
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -1320,24 +1321,11 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
     rndTextureEnable(FALSE);
     if (bDrawStars && gameIsRunning)
     {
-        bool blends, pointSize;
+        glEnable(GL_POINT_SMOOTH);
+        glEnable(GL_BLEND);
 
-        blends = TRUE;
-        pointSize = TRUE;
-
-        glPointSize(1.0f);
-
-        if (blends)
-        {
-            glEnable(GL_POINT_SMOOTH);
-            glEnable(GL_BLEND);
-            //additively blend only if background are enabled
-            rndAdditiveBlends(showBackgrounds);
-            if (pointSize && (MAIN_WindowWidth > 1024))
-            {
-                glPointSize(1.2f);
-            }
-        }
+        //additively blend only if background are enabled
+        rndAdditiveBlends(showBackgrounds);
 
         //need to reset the projection matrix
         glMatrixMode(GL_PROJECTION);
@@ -1346,6 +1334,9 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
                         rndNear(camera->clipPlaneNear), camera->clipPlaneFar);
 
         //draw small stars
+        const real32 resDensity    = getResDensity();
+        const real32 smallStarSize = sqrtf( 0.0016f * resDensity );
+        glPointSize(smallStarSize);
         glEnableClientState(GL_COLOR_ARRAY);
         glEnableClientState(GL_VERTEX_ARRAY);
         if (useVBO) {
@@ -1359,39 +1350,17 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
         }
         glDrawArrays(GL_POINTS, 0, universe.star3dinfo->Num3dStars - NUM_BIG_STARS);
 
-        if (blends && pointSize)
-        {
-            switch (MAIN_WindowWidth)
-            {
-            case 640:
-            case 800:
-                glPointSize(2.1f);
-                break;
-            case 1024:
-                glPointSize(2.5f);
-                break;
-            case 1280:
-                glPointSize(2.65f);
-                break;
-            default:
-                glPointSize(2.8f);
-            }
-        }
-
+        
         //draw big stars
+        const real32 bigStarSize = sqrtf( 0.0064f * resDensity );
+        glPointSize(bigStarSize);
         glDrawArrays(GL_POINTS, (universe.star3dinfo->Num3dStars - NUM_BIG_STARS), NUM_BIG_STARS);
         glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
 
-        if (blends)
-        {
-            glDisable(GL_BLEND);
-            glDisable(GL_POINT_SMOOTH);
-            if (pointSize)
-            {
-                glPointSize(1.0f);
-            }
-        }
+        glDisable(GL_BLEND);
+        glDisable(GL_POINT_SMOOTH);
+        glPointSize(1.0f);
     }
 
     rndAdditiveBlends(FALSE);
