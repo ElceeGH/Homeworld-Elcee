@@ -964,6 +964,9 @@
     <ClCompile Include="..\..\src\ThirdParty\JPG\wrtarga.c">
       <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rglResScaling.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Game\precompiled.h">

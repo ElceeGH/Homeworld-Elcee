@@ -580,6 +580,7 @@
     <ClCompile Include="..\..\src\SDL\prim3d.c" />
     <ClCompile Include="..\..\src\SDL\Queue.c" />
     <ClCompile Include="..\..\src\SDL\render.c" />
+    <ClCompile Include="..\..\src\SDL\rglResScaling.c" />
     <ClCompile Include="..\..\src\SDL\rglu.c" />
     <ClCompile Include="..\..\src\SDL\rinit.c" />
     <ClCompile Include="..\..\src\SDL\screenshot.c" />
