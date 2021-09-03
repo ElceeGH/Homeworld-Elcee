@@ -6,7 +6,7 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-// #include "sstream.h"  // this does not exist
+
 
 #include "Debug.h"
 #include "File.h"
@@ -237,9 +237,12 @@ sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate)
 		}
 	}
 
+	// This used to free the stream, but it would cause a nullptr deref anyway in that case.
+	// Really if it's null there's nothing that can be done so just die.
 	if (pstream == NULL)
 	{
-		SNDreleasebuffer(pchan);
+		dbgFatal( DBG_Loc, "soundstreamcreatebuffer: pstream is nullptr." );
+		return 0;
 	}
 
 	if (pstream->buffersize % ((bitrate >> 3) * 4))
@@ -258,7 +261,7 @@ sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate)
 	pchan->handle = SNDcreatehandle(channel);
 	pstream->handle = pchan->handle;
 
-    return (pchan->handle);
+    return pchan->handle;
 }
 
 
