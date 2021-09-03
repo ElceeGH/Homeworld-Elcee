@@ -22,6 +22,7 @@
 #include <time.h>
 #include "Types.h"
 #include "Randy.h"
+#include "miscUtil.h"
 
 #include "Eval.h"
 
@@ -114,9 +115,7 @@ static void init_str(char *eval_str)
   pc = 0;
   s = eval_str;
 
-  for ( ; (*eval_str = toupper(*eval_str)); eval_str++)
-    ;
-/*  _strupr(eval_str); */
+  strToUpper(eval_str,eval_str);
 
 } /* init_str() */
 

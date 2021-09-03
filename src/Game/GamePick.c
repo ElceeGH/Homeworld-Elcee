@@ -34,6 +34,7 @@
 #include "StringsOnly.h"
 #include "Universe.h"
 #include "utility.h"
+#include "miscUtil.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -198,19 +199,14 @@ void gpGameItemDraw(rectangle *rect, listitemhandle data)
 ----------------------------------------------------------------------------*/
 void gpGameNameDraw(featom *atom, regionhandle region)
 {
-    fonthandle fhSave;
     char gameName[128];
-    char curr_ch;
-    unsigned int i;
+    memStrncpy(gameName, gpGames[gpCurrentSelected].title, sizeof(gameName));
+    strToUpper(gameName, gameName);
 
+    fonthandle fhSave = fontMakeCurrent(gpNameFont); //select the appropriate font
     rectangle *r = &region->rect;
-
-    fhSave = fontMakeCurrent(gpNameFont); //select the appropriate font
-    for (i = 0; i < 127 && (curr_ch = gpGames[gpCurrentSelected].title[i]); i++)
-        gameName[i] = toupper(curr_ch);
-    gameName[i] = '\0';
     fontPrintf(r->x0, r->y0, GP_SelectedColor, gameName);
-    fontMakeCurrent(fhSave);
+    fontMakeCurrent(fhSave); //restore font
 }
 
 /*-----------------------------------------------------------------------------

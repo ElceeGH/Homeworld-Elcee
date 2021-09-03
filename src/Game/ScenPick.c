@@ -41,6 +41,7 @@
 #include "StatScript.h"
 #include "Subtitle.h"
 #include "StringSupport.h"
+#include "miscUtil.h"
 
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
@@ -212,7 +213,6 @@ void spScenarioNameDraw(featom *atom, regionhandle region)
     fonthandle fhSave;
     char scenarioName[128];
     bool useDisplayName = FALSE;
-    unsigned int i;
 
     rectangle *r = &region->rect;
 
@@ -237,10 +237,10 @@ void spScenarioNameDraw(featom *atom, regionhandle region)
     }
 
     if (useDisplayName)
-        memStrncpy(scenarioName, tpGameCreated.DisplayMapName, 127);
-    else
-        memStrncpy(scenarioName, spScenarios[spCurrentSelected].title, 127);
-    for (i = 0; (scenarioName[i] = toupper(scenarioName[i])); i++) { }
+         memStrncpy(scenarioName, tpGameCreated.DisplayMapName,         sizeof(scenarioName)-1);
+    else memStrncpy(scenarioName, spScenarios[spCurrentSelected].title, sizeof(scenarioName)-1);
+
+    strToUpper( scenarioName, scenarioName );
     fontPrintf(r->x0, r->y0, FEC_ListItemSelected, scenarioName);
     fontMakeCurrent(fhSave);
 }

@@ -7944,7 +7944,7 @@ memsize etgSpawnNewEffect(Effect *effect, etgeffectstatic *stat, sdword nParams,
     matrix rotTheta, rotMu, tempMatrix;
     real32 sinTheta, cosTheta, sinMu, cosMu;
     va_list argList;
-    memsize arg[ETG_NumberParameters];
+    memsize arg[ETG_NumberParameters] = { 0 };
 
 
     if (etgFrequencyExceeded(stat))

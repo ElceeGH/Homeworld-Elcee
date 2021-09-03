@@ -965,6 +965,7 @@
       <Filter>Source Files\ThirdParty\JPG</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\rglResScaling.c">
+    <ClCompile Include="..\..\src\SDL\miscUtil.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
   </ItemGroup>

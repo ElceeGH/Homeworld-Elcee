@@ -20,6 +20,7 @@
 #include "BitIO.h"
 #include "LZSS.h"
 #include "standard_library.h"
+#include "miscUtil.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -538,7 +539,6 @@ bool bigTOCFileExists(bigTOC *toc, char *filename, udword *fileNum)
     char filenamei[PATH_MAX] = "";
     bigTOCFileEntry target;
     int numFiles = toc->numFiles;
-    unsigned int i;
     uword halfFilenameLength = 0;
 
     if (!numFiles)
@@ -552,7 +552,7 @@ bool bigTOCFileExists(bigTOC *toc, char *filename, udword *fileNum)
     }
 
     // pretend the filename is in lowercase
-    for (i = 0; (filenamei[i] = tolower(filename[i])); i++) { }
+    strToLower( filenamei, filename );
 
     // convert all slashes to backslashes and whittle multiple slashes down to a single one
     filenameSlashMassage(filenamei, FALSE);
@@ -1130,7 +1130,7 @@ int bigAdd(char *bigfilename, int numFiles, char *filenames[], int optCompressio
     }
 
     // keep track of files that need to be moved/deleted
-    moveFiles = (int *)malloc(sizeof(int) * numFiles);
+    moveFiles = malloc(sizeof(int) * numFiles);
 
     // add each file
     for (f = 0; f < numFiles; ++f)
@@ -1320,7 +1320,7 @@ int bigFastCreate(char *bigfilename, int numFiles, char *filenames[], int optCom
     char ch;
     int filesAdded = 0, dupesSkipped = 0;
     int pass;
-    int f, i, j, index;
+    int f, i, index;
     int *moveFiles = NULL;
     FILE *bigFP = NULL, *filelistFP = NULL, *dataFP = NULL;
     int filelist;
@@ -1445,12 +1445,7 @@ int bigFastCreate(char *bigfilename, int numFiles, char *filenames[], int optCom
                 }
 
                 // pretend name is lowercase for consistent CRCs
-                for (j = 0; tempshortfilename[j]; j++)
-                {
-                    tempshortfilenamei[j] = tolower(tempshortfilename[j]);
-                }
-                
-                tempshortfilenamei[j] = '\0';
+                strToLower( tempshortfilenamei, tempshortfilename );
 
                 // convert all slashes to backslashes and whittle multiple slashes down to a single one
                 filenameSlashMassage(tempshortfilenamei, FALSE);
@@ -1860,7 +1855,7 @@ int bigAddFile(char *bigFilename, char *filename, char *storedFilename, int optC
     }
 
     // pretend name is lowercase for consistent CRCs
-    for (i = 0; (tempshortfilenamei[i] = tolower(storedFilename[i])); i++) { }
+    strToLower( tempshortfilenamei, tempshortfilenamei );
 
     // convert all slashes to backslashes and whittle multiple slashes down to a single one
     filenameSlashMassage(tempshortfilenamei, FALSE);

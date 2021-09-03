@@ -573,6 +573,7 @@
     <ClCompile Include="..\..\src\SDL\font.c" />
     <ClCompile Include="..\..\src\SDL\main.c" />
     <ClCompile Include="..\..\src\SDL\mainrgn.c" />
+    <ClCompile Include="..\..\src\SDL\miscUtil.c" />
     <ClCompile Include="..\..\src\SDL\mixfft.c" />
     <ClCompile Include="..\..\src\SDL\mouse.c" />
     <ClCompile Include="..\..\src\SDL\NetworkInterface.c" />

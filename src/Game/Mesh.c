@@ -39,6 +39,7 @@
 #include "Hash.h"
 #include "prim3d.h"
 #include "Transformer.h"
+#include "miscUtil.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -351,12 +352,10 @@ trhandle * meshTextureRegisterAllPlayers(char *fullName, void *meshReference)
 ----------------------------------------------------------------------------*/
 void meshTextureNameToPath(char *out, char *mesh, char *tex)
 {
-    char *string;
-    unsigned int i;
     //make path of mesh path and \\texture\\<shipNameNoExtension\\<textureFileName>
     strcpy(out, mesh);
 
-    string = out;
+    char* string = out;
 #ifdef _WIN32
     while (strchr(string, '\\'))
     {                                               //find last backslash
@@ -373,7 +372,7 @@ void meshTextureNameToPath(char *out, char *mesh, char *tex)
     *string = 0;                                    //NULL terminate and append texture name
 
     strcat(out, tex);
-    for (i = 0; (out[i] = toupper(out[i])); i++) { }
+    strToUpper(out,out);
 }
 
 bool meshStringContainsPeriod(char* s)

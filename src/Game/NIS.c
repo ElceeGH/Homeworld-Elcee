@@ -43,6 +43,7 @@
 #include "Tracking.h"
 #include "Universe.h"
 #include "UnivUpdate.h"
+#include "miscUtil.h"
 
 #ifndef SW_Render
     #ifdef _WIN32
@@ -3397,9 +3398,8 @@ void nisCurrentObjectClear(char *directory,char *field,void *dataToFillIn)
 //sets the time for subsequent events
 void nisCurrentTimeSet(char *directory,char *field,void *dataToFillIn)
 {
-    unsigned int i;
     sdword nScanned;
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    strToUpper( field, field );
     if (strstr(field, "FRAME") == field)
     {
         nScanned = sscanf(field, "FRAME %f", &nisCurrentTime);
@@ -3497,7 +3497,6 @@ void nisSpeechEventSet(char *directory,char *field,void *dataToFillIn)
     char eventNumberString[256];
     double evaluatedNumber;
     ERR_TYPE exprError;
-    unsigned int i;
     nisevent *event = nisNewEvent(NEO_SpeechEvent);
     sdword actor = -1;
 
@@ -3517,7 +3516,8 @@ void nisSpeechEventSet(char *directory,char *field,void *dataToFillIn)
         sscanf(nextString + 1, "%d", &param);
         event->param[1] = param;
     }
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if ((actorString = strstr(field, "ACTOR")) != NULL)
     {
         sscanf(actorString + strlen("ACTOR "), "%d", &actor);
@@ -3637,8 +3637,8 @@ void nisCameraCutSet(char *directory,char *field,void *dataToFillIn)
     nisevent *event = nisNewEventNoObject(NEO_CameraCut);
     sdword nScanned;
     real32 value;
-    unsigned int i;
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f FRAME", &value);
@@ -3697,9 +3697,8 @@ void nisTextScrollSet(char *directory, char *field, void *dataToFillIn)
     nisevent *event = nisNewEventNoObject(NEO_TextScroll);
     sdword nScanned;
     real32 duration, distance;
-    unsigned int i;
-
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f,%f FRAME", &distance, &duration);
@@ -3724,9 +3723,8 @@ void nisTextFadeSet(char *directory, char *field, void *dataToFillIn)
 {
     sdword nScanned;
     real32 fade;
-    unsigned int i;
-
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f FRAME", &fade);
@@ -3764,9 +3762,8 @@ void nisTextDurationSet(char *directory, char *field, void *dataToFillIn)
 {
     sdword nScanned;
     real32 value;
-    unsigned int i;
-
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f FRAME", &value);
@@ -3841,9 +3838,8 @@ void nisCameraBlendInSet(char *directory, char *field, void *dataToFillIn)
     sdword nScanned;
     real32 time0, time1 = -1.0f;
     char *string0, *string1;
-    unsigned int i;
-
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     string0 = strtok(field, " \n\t,");
     string1 = strtok(NULL, " \n\t,");
     //read in the first time
@@ -3906,9 +3902,8 @@ void nisScissorBlendSet(char *directory, char *field, void *dataToFillIn)
     sdword nScanned;
     real32 value;
     nisevent *event;
-    unsigned int i;
-
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f FRAME", &value);
@@ -3966,10 +3961,9 @@ void nisMusicStopSet(char *directory,char *field,void *dataToFillIn)
 {
     real32 fadeOut;
     sdword nScanned;
-    unsigned int i;
     nisevent *event = nisNewEventNoObject(NEO_StopMusic);
 
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "%f FRAME", &fadeOut);
@@ -4025,7 +4019,6 @@ void nisFadeToSet(char *directory,char *field,void *dataToFillIn)
     real32 level, duration;
     sdword nScanned;
     char *time;
-    unsigned int i;
 
     time = strchr(field, ',');
     dbgAssertOrIgnore(time);
@@ -4042,7 +4035,7 @@ void nisFadeToSet(char *directory,char *field,void *dataToFillIn)
         dbgFatalf(DBG_Loc, "'%s' is not in the range of 0..1", field);
     }
 #endif
-    for (i = 0; (time[i] = toupper(time[i])); i++) { }
+    strToUpper( time, time );
     if (strstr(time, "FRAME"))
     {
         nScanned = sscanf(time, "%f FRAME", &duration);
@@ -4097,9 +4090,8 @@ void nisMeshAnimationSeekSet(char *directory, char *field, void *dataToFillIn)
     nisevent *event = nisNewEvent(NEO_MeshAnimationSeek);
     real32 seekTime;
     sdword nScanned;
-    unsigned int i;
 
-    for (i = 0; (field[i] = toupper(field[i])); i++) { }
+    strToUpper( field, field );
     if (strstr(field, "FRAME"))
     {
         nScanned = sscanf(field, "FRAME %f", &seekTime);
