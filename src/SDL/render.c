@@ -1838,16 +1838,13 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
 ----------------------------------------------------------------------------*/
 void rndDrawAsteroid0(sdword n)
 {
-    sdword  index;
-    color   c;
-    vector* v;
-
-    glPointSize(2.0f);
+    const real32 size = sqrtf( getResDensity() * 0.0058f );
+    glPointSize( size );
     glBegin(GL_POINTS);
-    for (index = 0; index < n; index++)
+    for (sdword index = 0; index < n; index++)
     {
-        c = asteroid0Data[index].c;
-        v = asteroid0Data[index].position;
+        color   c = asteroid0Data[index].c;
+        vector* v = asteroid0Data[index].position;
         glColor3ub(colRed(c), colGreen(c), colBlue(c));
         glVertex3fv((GLfloat*)v);
     }
