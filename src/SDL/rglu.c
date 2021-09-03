@@ -70,7 +70,7 @@ void rgluPerspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
 {
     GLfloat xmin, xmax, ymin, ymax;
 
-    ymax = zNear * tan(fovy * M_PI / 360.0);
+    ymax = zNear * tanf(fovy * PI / 360.0f);
     ymin = -ymax;
 
     xmax = ymax * aspect;
@@ -131,16 +131,16 @@ GLint rgluUnProject(GLfloat winx, GLfloat winy, GLfloat winz,
     GLfloat m[16], A[16];
     GLfloat in[4], out[4];
 
-    in[0] = (winx - viewport[0]) * 2 / viewport[2] - 1.0;
-    in[1] = (winy - viewport[1]) * 2 / viewport[3] - 1.0;
-    in[2] = 2 * winz - 1.0;
-    in[3] = 1.0;
+    in[0] = (winx - viewport[0]) * 2.0f / viewport[2] - 1.0f;
+    in[1] = (winy - viewport[1]) * 2.0f / viewport[3] - 1.0f;
+    in[2] = 2.0f * winz - 1.0f;
+    in[3] = 1.0f;
 
     mat4_multd(A, proj, model);
     mat4_inversed(m, A);
 
     transform_point(out, m, in);
-    if (out[3] == 0.0)
+    if (out[3] == 0.0f)
         return GL_FALSE;
     *objx = out[0] / out[3];
     *objy = out[1] / out[3];

@@ -843,7 +843,60 @@ void rndCapScaleCapStatsTaskFunction(void)
     sprintf(rndCapScaleCapStatsString, "\n trailScaleCap %f", scalar);
 }
 
-/*bool setupPixelFormat(HDC hDC)*/
+
+
+static bool setupWindow( Uint32 flags, Uint32 msaaLevel ) {
+    if (msaaLevel) {
+	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, msaaLevel );
+	}
+
+    /*
+    //Look for additional monitors: https://stackoverflow.com/questions/41745492/sdl2-how-to-position-a-window-on-a-second-monitor
+    //enumerate displays
+    int totalDisplays = SDL_GetNumVideoDisplays();
+    int targetDisplay=0;
+    dbgMessagef("Found %i displays",totalDisplays);
+    if (totalDisplays < displayNum)
+    {
+      dbgMessagef("%i display request but we detect %i displays, defaulting to display 0",displayNum,totalDisplays);
+    } else {
+      targetDisplay = displayNum;
+    }
+    */
+    sdlwindow = SDL_CreateWindow(
+        "Homeworld", 
+        SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayNum),
+        SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayNum),
+		MAIN_WindowWidth, 
+        MAIN_WindowHeight, 
+        flags
+    );
+
+    if ( ! sdlwindow) {
+        fprintf (stderr, "Failed to create window: error: %s\n", SDL_GetError() );
+        return FALSE;
+    }
+
+    // Set the window HWND global
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(sdlwindow, &wmInfo);
+    HWND hwnd = wmInfo.info.win.window;
+    ghMainWindow = hwnd;
+
+    // Create OpenGL context
+    glcontext = SDL_GL_CreateContext( sdlwindow );
+    if ( ! glcontext) {
+        fprintf( stderr, "Failed to create window: error: %s\n", SDL_GetError() );
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
 static bool setupPixelFormat( void )
 {
 	Uint32 flags;
@@ -893,8 +946,8 @@ static bool setupPixelFormat( void )
 #ifndef HW_ENABLE_GLES
     /* Set attributes. */
     SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE,  MAIN_WindowDepth);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   16);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #endif
 
@@ -959,52 +1012,11 @@ static bool setupPixelFormat( void )
     egl_context = new_context;
     egl_surface = new_surface;
 #else
-	if ( FSAA ) {
-	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, FSAA );
-	}
-
-  /*
-  //Look for additional monitors: https://stackoverflow.com/questions/41745492/sdl2-how-to-position-a-window-on-a-second-monitor
-  //enumerate displays
-  int totalDisplays = SDL_GetNumVideoDisplays();
-  int targetDisplay=0;
-  dbgMessagef("Found %i displays",totalDisplays);
-  if (totalDisplays < displayNum)
-  {
-    dbgMessagef("%i display request but we detect %i displays, defaulting to display 0",displayNum,totalDisplays);
-  } else {
-    targetDisplay = displayNum;
-  }
-*/
-	if (!(sdlwindow=SDL_CreateWindow("HomeworldSDL", SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayNum), SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayNum),
-		MAIN_WindowWidth, MAIN_WindowHeight, flags)))
-	{
-	    fprintf (stderr, "Couldn't set FSAA video mode: %s\n", SDL_GetError ());
-	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
-	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
-
-		if (!(sdlwindow=SDL_CreateWindow("HomeworldSDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			MAIN_WindowWidth, MAIN_WindowHeight, flags)))
-	    {
-		fprintf (stderr, "Couldn't set video mode: %s\n", SDL_GetError ());
-		//exit (1);
-                return FALSE;
-	    }
-	}
-
-    SDL_SysWMinfo wmInfo;
-    SDL_VERSION(&wmInfo.version);
-    SDL_GetWindowWMInfo(sdlwindow, &wmInfo);
-    HWND hwnd = wmInfo.info.win.window;
-    ghMainWindow = hwnd;
-
-    if(!(glcontext = SDL_GL_CreateContext(sdlwindow)))
+    if ( ! setupWindow( flags, FSAA ) )
         return FALSE;
 #endif
 
     SDL_GL_MakeCurrent(sdlwindow, glcontext);
-
 	SDL_ShowCursor(SDL_DISABLE);
 
 #ifdef _MACOSX_FIX_GL
@@ -1022,20 +1034,24 @@ static bool setupPixelFormat( void )
 #ifdef HW_ENABLE_GLES
     glDrawTexiOES = eglGetProcAddress("glDrawTexiOES");
 #else
-    glBindBuffer = SDL_GL_GetProcAddress("glBindBuffer");
+    glBindBuffer    = SDL_GL_GetProcAddress("glBindBuffer");
     glDeleteBuffers = SDL_GL_GetProcAddress("glDeleteBuffers");
-    glGenBuffers = SDL_GL_GetProcAddress("glGenBuffers");
-    glBufferData = SDL_GL_GetProcAddress("glBufferData");
+    glGenBuffers    = SDL_GL_GetProcAddress("glGenBuffers");
+    glBufferData    = SDL_GL_GetProcAddress("glBufferData");
     glBufferSubData = SDL_GL_GetProcAddress("glBufferSubData");
 #endif
 
+#ifndef _NDEBUG
     gl_extensions = glGetString(GL_EXTENSIONS);
     printf("GL Extensions:\n%s\n", gl_extensions);
+#endif
 
     useVBO = glCheckExtension("GL_ARB_vertex_buffer_object");
 
 	return TRUE;
 }
+
+
 
 int glCheckExtension(const char *ext) {
     bool gotext = gl_extensions && strstr(gl_extensions, ext) != NULL;
@@ -1052,7 +1068,8 @@ int glCheckExtension(const char *ext) {
     return gotext;
 }
 
-/*bool setupPalette(HDC hDC)*/
+
+
 static bool setupPalette( void )
 {
 	int pix_size;
@@ -1077,13 +1094,6 @@ typedef int (*AUXINITPOSITIONPROC)(GLuint, GLuint, GLuint, GLuint, GLuint);
 
 sdword rndSmallInit(rndinitdata* initData, bool GL)
 {
-    Uint32 flags;
-
-    /*
-    hGLWindow = initData->hWnd;
-    hGLDeviceContext = GetDC(initData->hWnd);
-    */
-    /*if (!setupPixelFormat(hGLDeviceContext))*/
     if (!setupPixelFormat())
     {
         return FALSE;
@@ -1092,7 +1102,7 @@ sdword rndSmallInit(rndinitdata* initData, bool GL)
     if (!setupPalette())
     {
         /* Kill the window we created. */
-        flags = SDL_WasInit(SDL_INIT_EVERYTHING);
+        Uint32 flags = SDL_WasInit(SDL_INIT_EVERYTHING);
 #ifdef HW_ENABLE_GLES
         eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroyContext(egl_display, egl_context);
@@ -1281,9 +1291,9 @@ void rndFilter(bool on)
 {
 }
 
-static real64 rndNear(real64 in)
+static real32 rndNear(real64 in)
 {
-    return in;
+    return (real32) in;
 }
 
 /*-----------------------------------------------------------------------------
@@ -4297,8 +4307,8 @@ void rndEnvironmentMap(vector* camera, vector* A, vector* B, vector* C,
     vcAddToScalarMultiply(&v1,&normal,2*length);  //possibly "-2*length"
 
     //v1 is now reflected ray
-    U->x = atan(v1.y/v1.x);                             //azimuth
-    U->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    U->x = atanf(v1.y/v1.x);                             //azimuth
+    U->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 
     //vertex B:
@@ -4307,8 +4317,8 @@ void rndEnvironmentMap(vector* camera, vector* A, vector* B, vector* C,
     length = vcDotProduct(&v1,&normal);
     vcAddToScalarMultiply(&v1,&normal,2*length);  //possibly "-2*length"
 
-    V->x = atan(v1.y/v1.x);                             //azimuth
-    V->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    V->x = atanf(v1.y/v1.x);                             //azimuth
+    V->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 
     //vertex C:
@@ -4317,8 +4327,8 @@ void rndEnvironmentMap(vector* camera, vector* A, vector* B, vector* C,
     length = vcDotProduct(&v1,&normal);
     vcAddToScalarMultiply(&v1,&normal,2*length);  //possibly "-2*length"
 
-    W->x = atan(v1.y/v1.x);                             //azimuth
-    W->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    W->x = atanf(v1.y/v1.x);                             //azimuth
+    W->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 }
 
@@ -4358,8 +4368,8 @@ void rndEnvironmentMapConvex(vector* camera, vector* A, vector* B, vector* C,
     vcAddToScalarMultiply(&v1,&v2,1+convex);
 
     //v1 is now reflected ray
-    U->x = atan(v1.y/v1.x);                             //azimuth
-    U->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    U->x = atanf(v1.y/v1.x);                             //azimuth
+    U->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 
     //vertex B:
@@ -4369,8 +4379,8 @@ void rndEnvironmentMapConvex(vector* camera, vector* A, vector* B, vector* C,
     vcScalarMultiply(&v2,&normal,2*length);
     vcAddToScalarMultiply(&v1,&v2,1+convex);
 
-    V->x = atan(v1.y/v1.x);                             //azimuth
-    V->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    V->x = atanf(v1.y/v1.x);                             //azimuth
+    V->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 
     //vertex C:
@@ -4380,8 +4390,8 @@ void rndEnvironmentMapConvex(vector* camera, vector* A, vector* B, vector* C,
     vcScalarMultiply(&v2,&normal,2*length);
     vcAddToScalarMultiply(&v1,&v2,1+convex);
 
-    W->x = atan(v1.y/v1.x);                             //azimuth
-    W->y = atan(v1.z/(sqrt(v1.x*v1.x + v1.y*v1.y)));    //elevation;
+    W->x = atanf(v1.y/v1.x);                             //azimuth
+    W->y = atanf(v1.z/(sqrtf(v1.x*v1.x + v1.y*v1.y)));    //elevation;
 
 
 
