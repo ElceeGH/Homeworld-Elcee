@@ -110,9 +110,7 @@ void RenderNAVLights(Ship* ship) {
         NAVLight*           navLight           = navLightInfo->navLights;
 
         // State/inputs
-        
-        real32 fade      = bFade ? meshFadeAlpha : 1.0f;
-        real32 sizeScale = max( 1.0f, navLight->navlightstatic->size / 17.0f ); // Scale up big lights on the Mothership etc.
+        real32 fade = bFade ? meshFadeAlpha : 1.0f;
 
         // Scaling params
         real32 resScaling = getResDensityRelative();
@@ -130,8 +128,8 @@ void RenderNAVLights(Ship* ship) {
         real32 frac   = 1.0f - linear;
 
         // Lerp
-        real32 scaleDelta = nearScale - farScale;
-        real32 lightSize  = farScale + scaleDelta * (frac*frac);
+        real32 scaleDelta    = nearScale - farScale;
+        real32 lightSizeBase = farScale + scaleDelta * (frac*frac);
 
         // Render each light
         bool lightOn = rndLightingEnable(FALSE);
@@ -157,14 +155,16 @@ void RenderNAVLights(Ship* ship) {
 
             if (navLight->lightstate)
             {
+                real32 lightScale = navLightStatic->size / 32.0f; // Scale up big lights on the Mothership, Scaffold etc.
+                real32 lightSize  = lightSizeBase * max(1.0f,lightScale); // Clamp scale though or it will look dumb!
                 real32 fadeCentre = fade * frac * 0.75f;
                 color  white      = colRGB(255, 255, 255);
                 color  tempColor  = colRGB(colRed  (navLightStatic->color) * 2 / 3,
                                            colGreen(navLightStatic->color) * 2 / 3,
                                            colBlue (navLightStatic->color) * 2 / 3);
                 
-                primPointSize3Fade(&navLightStatic->position, lightSize*sizeScale,      tempColor, fade);
-                primPointSize3Fade(&navLightStatic->position, lightSize*sizeScale*0.5f, white,     fadeCentre);
+                primPointSize3Fade(&navLightStatic->position, lightSize,      tempColor, fade);
+                primPointSize3Fade(&navLightStatic->position, lightSize*0.5f, white,     fadeCentre);
             }
         }
 
