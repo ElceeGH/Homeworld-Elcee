@@ -40,6 +40,7 @@
 #include "prim3d.h"
 #include "Transformer.h"
 #include "miscUtil.h"
+#include "rResScaling.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -1579,6 +1580,7 @@ void meshObjectRender(polygonobject *object, materialentry *materials, sdword iC
     {
         lightOn = rndLightingEnable(FALSE);
         glColor3ub(200,200,200);
+        glLineWidth( sqrtf(getResDensityRelative()) );
         enableBlend = TRUE;
         if (enableBlend)
         {
@@ -1793,6 +1795,7 @@ void meshObjectRender(polygonobject *object, materialentry *materials, sdword iC
 
     if (g_WireframeHack)
     {
+        glLineWidth( 1.0f );
         rndLightingEnable(lightOn);
         if (enableBlend)
         {
