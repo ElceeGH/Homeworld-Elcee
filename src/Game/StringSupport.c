@@ -679,35 +679,16 @@ static char * strParseString(char *str);
 
 void strSetCurKeyboard(void)
 {
-#ifdef _WIN32
-    udword keyboard;
+    strCurKeyboardLanguage = languageEnglish;
 
-    if (keyboard = GetKeyboardLayout(0))
-    {
-        if (PRIMARYLANGID(keyboard)==LANG_ENGLISH)
-        {
-            strCurKeyboardLanguage = languageEnglish;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_FRENCH)
-        {
-            strCurKeyboardLanguage = languageFrench;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_GERMAN)
-        {
-            strCurKeyboardLanguage = languageGerman;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_SPANISH)
-        {
-            strCurKeyboardLanguage = languageSpanish;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_ITALIAN)
-        {
-            strCurKeyboardLanguage = languageItalian;
-        }
-    }
-    else
-#endif
-        strCurKeyboardLanguage = languageEnglish;
+#ifdef _WIN32
+    udword keyboard = GetKeyboardLayout(0);
+         if (PRIMARYLANGID(keyboard)==LANG_ENGLISH) strCurKeyboardLanguage = languageEnglish; 
+    else if (PRIMARYLANGID(keyboard)==LANG_FRENCH)  strCurKeyboardLanguage = languageFrench;
+    else if (PRIMARYLANGID(keyboard)==LANG_GERMAN)  strCurKeyboardLanguage = languageGerman;
+    else if (PRIMARYLANGID(keyboard)==LANG_SPANISH) strCurKeyboardLanguage = languageSpanish;
+    else if (PRIMARYLANGID(keyboard)==LANG_ITALIAN) strCurKeyboardLanguage = languageItalian;
+#endif   
 }
 
 
@@ -720,75 +701,45 @@ void strSetCurKeyboard(void)
 ----------------------------------------------------------------------------*/
 bool8 strLoadLanguage(strLanguageType language)
 {
-    udword i;
-#ifdef _WIN32
-    udword keyboard;
-#endif
-
-    for (i=0;i<NumStrings;i++)
+    for (udword i=0;i<NumStrings;i++)
     {
         MessageStrings[i]=crapMessage;
     }
 
-#ifdef _WIN32
-    if (keyboard = GetKeyboardLayout(0))
-    {
-        if (PRIMARYLANGID(keyboard)==LANG_ENGLISH)
-        {
-            strCurKeyboardLanguage = languageEnglish;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_FRENCH)
-        {
-            strCurKeyboardLanguage = languageFrench;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_GERMAN)
-        {
-            strCurKeyboardLanguage = languageGerman;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_SPANISH)
-        {
-            strCurKeyboardLanguage = languageSpanish;
-        }
-        else if (PRIMARYLANGID(keyboard)==LANG_ITALIAN)
-        {
-            strCurKeyboardLanguage = languageItalian;
-        }
-    }
-    else
-#endif
-        strCurKeyboardLanguage = languageEnglish;
+    strSetCurKeyboard();
 
     if (strInitialized==TRUE)
     {
         strFreeLanguage();
     }
+
     switch (language)
     {
         case languageEnglish :
             scriptSet("","English.script",LanguageStrings);
             strCurLanguage = (udword)language;
             strInitialized = TRUE;
-        return(TRUE);
+            return(TRUE);
         case languageFrench :
             scriptSet("","French.script",LanguageStrings);
             strCurLanguage = (udword)language;
             strInitialized = TRUE;
-        return(TRUE);
+            return(TRUE);
         case languageGerman :
             scriptSet("","German.script",LanguageStrings);
             strCurLanguage = (udword)language;
             strInitialized = TRUE;
-        return(TRUE);
+            return(TRUE);
         case languageSpanish :
             scriptSet("","Spanish.script",LanguageStrings);
             strCurLanguage = (udword)language;
             strInitialized = TRUE;
-        return(TRUE);
+            return(TRUE);
         case languageItalian :
             scriptSet("","Italian.script",LanguageStrings);
             strCurLanguage = (udword)language;
             strInitialized = TRUE;
-        return(TRUE);
+            return(TRUE);
     }
 
     return(FALSE);
@@ -796,16 +747,14 @@ bool8 strLoadLanguage(strLanguageType language)
 
 /*-----------------------------------------------------------------------------
     Name        : strFreeLanguage
-    Description : Free's all global data from memory
+    Description : Frees all global data from memory
     Inputs      : none
     Outputs     : if success
     Return      : boolean
 ----------------------------------------------------------------------------*/
 bool8 strFreeLanguage(void)
 {
-    uword i;
-
-    for (i=0;i<NumStrings;i++)
+    for (uword i=0;i<NumStrings;i++)
     {
         if ((MessageStrings[i]!=NULL)&&(MessageStrings[i] != crapMessage)) memFree(MessageStrings[i]);
     }
