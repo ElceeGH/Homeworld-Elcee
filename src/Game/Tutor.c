@@ -1388,7 +1388,7 @@ shipsCase:
                 break;
 
             case TUT_PointerTypeRegion:
-                primRectOutline2(&pointer->rect, lineWidth*3.0f, colRGB(tutPulse, tutPulse, tutPulse));
+                primRectOutline2(&pointer->rect, sqrtf(lineWidth*3.0f), colRGB(tutPulse, tutPulse, tutPulse));
                 break;
 
             case TUT_PointerTypeAIVolume:
