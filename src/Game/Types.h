@@ -225,12 +225,14 @@ real32 MemsizeToReal32(memsize a);
    Declare basic macros
 --------------------------------------------------------------------------*/
 
-#ifndef max
-    #define max(a,b) ((a) > (b) ? (a) : (b))
-#endif
+#ifndef _WIN32
+    #ifndef max
+        #define max(a,b) ((a) > (b) ? (a) : (b))
+    #endif
 
-#ifndef min
-    #define min(a,b) ((a) > (b) ? (b) : (a))
+    #ifndef min
+        #define min(a,b) ((a) > (b) ? (b) : (a))
+    #endif
 #endif
 
 #if !defined(ABS)
