@@ -46,7 +46,7 @@ real32 getResDensityRelative( void ) {
 real32 getResFrequency( void ) {
     SDL_DisplayMode info;
     SDL_GetCurrentDisplayMode( 0, &info ); /// @todo Get the correct displayindex.
-    sdword freq = info.refresh_rate;
+    real32 freq = (real32) info.refresh_rate;
     freq = max( freq,   24.0f );
     freq = min( freq, 1000.0f );
     return freq;
