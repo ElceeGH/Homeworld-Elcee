@@ -126,7 +126,7 @@
 #define SM_WorldPlaneColor          colRGB(223, 115, 25)
 #define SM_HeightCircleColor        colRGB(223, 220, 10)
 #define SM_WorldPlaneDistanceFactor 0.6f
-#define SM_WorldPlaneSegments       48
+#define SM_WorldPlaneSegments       256
 #define SM_MovementWorldPlaneDim    0.6f
 #define SM_MovePlaneColor           colRGB(6,191,113)
 #define SM_RadialTickStart          (PI / 12)
