@@ -171,8 +171,8 @@ void ResearchShipHouseKeep(Ship *ship)
 
     if(bitTest(ship->specialFlags,SPECIAL_StopForResearchDocking))
     {
-        vecScalarMultiply(ship->posinfo.velocity,ship->posinfo.velocity,0.94);
-        vecScalarMultiply(ship->rotinfo.rotspeed,ship->rotinfo.rotspeed,0.94);
+        vecScalarMultiply(ship->posinfo.velocity,ship->posinfo.velocity,0.94f);
+        vecScalarMultiply(ship->rotinfo.rotspeed,ship->rotinfo.rotspeed,0.94f);
         bitSet(ship->dontapplyforceever,1);
         bitSet(ship->dontrotateever,1);
     }
@@ -449,7 +449,6 @@ void ResearchShipHouseKeep(Ship *ship)
 void CleanResearchShip(Ship *ship)
 {
     ResearchShipSpec *spec = (ResearchShipSpec *)ship->ShipSpecifics;
-    udword count;
 
     spec->seed = FALSE;
     spec->dockers = 0;
@@ -464,7 +463,7 @@ void CleanResearchShip(Ship *ship)
     spec->have_removed_from_parade = FALSE;
     if(ship->dockInfo != NULL)
     {
-        for(count = 0;count < ship->dockInfo->numDockPoints; count++)
+        for(sdword count = 0;count < ship->dockInfo->numDockPoints; count++)
         {
             ship->dockInfo->dockpoints[count].thisDockBusy = 0;   //debusy dockpoints
         }

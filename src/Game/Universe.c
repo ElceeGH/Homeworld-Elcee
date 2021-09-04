@@ -1100,7 +1100,6 @@ static void setMadStartInfo(char *directory,char *field,void *dataToFillIn)
 static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
 {
     ShipStaticInfo *info = (ShipStaticInfo *)dataToFillIn;
-    sdword i;
     char madAnimName[256];   //maximum of 4 animations so far
     udword numAnims;
     char *token;
@@ -1114,7 +1113,7 @@ static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->gunOpenIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1129,7 +1128,7 @@ static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->gunCloseIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1145,7 +1144,7 @@ static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->gunOpenDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1161,7 +1160,7 @@ static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->gunCloseDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1173,7 +1172,6 @@ static void setGunAnimInfo(char *directory,char *field,void *dataToFillIn)
 static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
 {
     ShipStaticInfo *info = (ShipStaticInfo *)dataToFillIn;
-    sdword i;
     char madAnimName[256];   //maximum of 4 animations so far
     udword numAnims;
     char *token;
@@ -1187,7 +1185,7 @@ static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->PostDockIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1202,7 +1200,7 @@ static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->DockIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1218,7 +1216,7 @@ static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->PostDockDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1233,7 +1231,7 @@ static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->DockDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"GunOpenMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1245,7 +1243,6 @@ static void setDockAnimInfo(char *directory,char *field,void *dataToFillIn)
 void setMothershipDoorAnimInfo(char *directory,char *field,void *dataToFillIn)
 {
      ShipStaticInfo *info = (ShipStaticInfo *)dataToFillIn;
-     sdword i;
      char madAnimName[256];   //maximum of 4 animations so far
      udword numAnims;
      char *token;
@@ -1259,7 +1256,7 @@ void setMothershipDoorAnimInfo(char *directory,char *field,void *dataToFillIn)
      if(numAnims > 0)
      {
          info->madStatic->DoorOpenIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"DoorOpenMadAnimIndex",NonVolatile);
-         for(i=0;i<numAnims;i++)
+         for(udword i=0;i<numAnims;i++)
          {
              token = strtok(NULL,seps);
              sscanf(token,"%s",madAnimName);
@@ -1274,7 +1271,7 @@ void setMothershipDoorAnimInfo(char *directory,char *field,void *dataToFillIn)
      if(numAnims > 0)
      {
          info->madStatic->DoorCloseIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"DoorCloseMadAnimIndex",NonVolatile);
-         for(i=0;i<numAnims;i++)
+         for(udword i=0;i<numAnims;i++)
          {
              token = strtok(NULL,seps);
              sscanf(token,"%s",madAnimName);
@@ -1285,7 +1282,6 @@ void setMothershipDoorAnimInfo(char *directory,char *field,void *dataToFillIn)
 void setSpecialCaseAnimInfo(char *directory,char *field,void *dataToFillIn)
 {
     ShipStaticInfo *info = (ShipStaticInfo *)dataToFillIn;
-    sdword i;
     char madAnimName[256];   //maximum of 4 animations so far
     udword numAnims;
     char *token;
@@ -1299,7 +1295,7 @@ void setSpecialCaseAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->specialOpenIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"SpecialMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1314,7 +1310,7 @@ void setSpecialCaseAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->specialCloseIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"SpecialMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1330,7 +1326,7 @@ void setSpecialCaseAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->specialOpenDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"SpecialMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -1346,7 +1342,7 @@ void setSpecialCaseAnimInfo(char *directory,char *field,void *dataToFillIn)
     if(numAnims > 0)
     {
         info->madStatic->specialCloseDamagedIndexes = (sdword *) memAlloc(sizeof(sdword)*numAnims,"SpecialMadAnimIndex",NonVolatile);
-        for(i=0;i<numAnims;i++)
+        for(udword i=0;i<numAnims;i++)
         {
             token = strtok(NULL,seps);
             sscanf(token,"%s",madAnimName);
@@ -3449,14 +3445,13 @@ void universeRealTimeTweak(SelectCommand *selection)
     udword shiparray[100];
     udword shiptypedone;
     udword shipdoneptr=0;
-    udword index;
     sdword flag = FALSE;
 
     for(shiptypedone = 0;shiptypedone < 100; shiptypedone++)
     {
         shiparray[shiptypedone] = 99999;    //fill with garbage ships
     }
-    for (index = 0;index < selection->numShips;index++)
+    for (sdword index = 0;index < selection->numShips;index++)
     {
         shiprace = selection->ShipPtr[index]->staticinfo->shiprace;
         shiptype = selection->ShipPtr[index]->shiptype;
@@ -4336,7 +4331,7 @@ bool unitCapCanCreateShip(ShipType ship, shipsinprogress *factory, shipavailable
     }
     while (allfactories != NULL);
 
-    if (player->totalships+totalships > cdMaxShipsAllowed)
+    if (player->totalships+totalships > (udword) cdMaxShipsAllowed)
     {
         speechEventFleet(STAT_F_Const_TotalLimit, 0, player->playerIndex);
         // player already has too many ships cannot build anymore
@@ -4345,7 +4340,7 @@ bool unitCapCanCreateShip(ShipType ship, shipsinprogress *factory, shipavailable
 
     if (cdLimitCaps[shipstatic->shiptype] != -1)
     {
-        if (player->shiptotals[shipstatic->shiptype]+typeships > cdLimitCaps[shipstatic->shiptype])
+        if (player->shiptotals[shipstatic->shiptype]+typeships > (udword) cdLimitCaps[shipstatic->shiptype])
         {
             speechEventFleet(STAT_F_Const_UnitLimit, shipstatic->shiptype, player->playerIndex);
             // player has to many of this type of ship
@@ -4353,7 +4348,7 @@ bool unitCapCanCreateShip(ShipType ship, shipsinprogress *factory, shipavailable
         }
     }
 
-    if (player->classtotals[shipstatic->shipclass]+classships > cdClassCaps[shipstatic->shipclass])
+    if (player->classtotals[shipstatic->shipclass]+classships > (udword) cdClassCaps[shipstatic->shipclass])
     {
         speechEventFleet(STAT_F_Const_UnitLimit, shipstatic->shiptype, player->playerIndex);
         // player has to many of this class of ship

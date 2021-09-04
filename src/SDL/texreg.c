@@ -3167,7 +3167,7 @@ void trMakeCurrent(trhandle handle)
     {                                                       //if we should use palettes
         if ((udword)reg->currentPalette != trPaletteIndex(handle))
         {
-            reg->currentPalette = (sword)trPaletteIndex(handle);
+            reg->currentPalette = (sbyte)trPaletteIndex(handle);
             dbgAssertOrIgnore((sdword)trPaletteIndex(handle) < reg->nPalettes);
             newPalette = &reg->palettes[trPaletteIndex(handle) * TR_PaletteSize];
         }

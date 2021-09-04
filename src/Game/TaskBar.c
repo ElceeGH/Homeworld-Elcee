@@ -426,7 +426,7 @@ void tbButtonDraw(regionhandle region)
         width = 2;
     }
     primRectSolid2(&r, c);
-    primRectOutline2(&r, width, borderColor);
+    primRectOutline2(&r, (real32)width, borderColor);
 
     //tbButtons[region->userID];
     strcpy(string, tbButtons[region->userID].caption);      //copy the string to local copy
@@ -1106,7 +1106,7 @@ void tbListWindowInit(char *name, featom *atom)
         Node         *search;
         uiclistitem  *listitem;
 
-        tbTimeOutSelect = taskTimeElapsed + 0.5;
+        tbTimeOutSelect = taskTimeElapsed + 0.5f;
 
         search = tbListWindow->listofitems.head;
         while (search != NULL)

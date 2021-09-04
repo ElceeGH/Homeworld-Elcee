@@ -1120,7 +1120,7 @@ sdword salCapTrackHeadingAndUp(SpaceObjRotImpTargGuidanceShipDerelict *target,re
     else if(cosAngle < -1.0f)
         cosAngle = -1.0f;
 
-    Angle = acos(cosAngle);
+    Angle = acosf(cosAngle);
 
     if(Angle <= withinAngle)
     {

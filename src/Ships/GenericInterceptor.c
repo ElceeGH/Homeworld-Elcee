@@ -604,8 +604,8 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
             {
                 memcpy(&diveinfo->orig_point, &diveinfo->rallypoint, sizeof(vector));
                 diveinfo->angle = DEG_TO_RAD(45);
-                sintheta = sin(diveinfo->angle);
-                costheta = cos(diveinfo->angle);
+                sintheta = sinf(diveinfo->angle);
+                costheta = cosf(diveinfo->angle);
                 diveinfo->rallypoint.x = (diveinfo->orig_point.x * costheta) + (diveinfo->orig_point.y * sintheta);   // rotate rallypoint X degrees clockwise
                 diveinfo->rallypoint.y = (diveinfo->orig_point.y * costheta) - (diveinfo->orig_point.x * sintheta);
             }
@@ -626,8 +626,8 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                     diveinfo->angle += DEG_TO_RAD(10);
                     if(diveinfo->angle >= DEG_TO_RAD(360))
                         diveinfo->angle -= DEG_TO_RAD(360);
-                    sintheta = sin(diveinfo->angle);
-                    costheta = cos(diveinfo->angle);
+                    sintheta = sinf(diveinfo->angle);
+                    costheta = cosf(diveinfo->angle);
                     diveinfo->rallypoint.x = (diveinfo->orig_point.x * costheta) + (diveinfo->orig_point.y * sintheta);   // rotate rallypoint X degrees clockwise
                     diveinfo->rallypoint.y = (diveinfo->orig_point.y * costheta) - (diveinfo->orig_point.x * sintheta);
                 }

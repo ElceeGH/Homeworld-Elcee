@@ -690,8 +690,8 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
 //    distance = smCurrentCameraDistance; //!!!
     distance *= smWorldPlaneDistanceFactor;
 
-    startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) / 2.0f - smHorizTickAngle * 2.0;
-    endAngle = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) / 2.0f + smHorizTickAngle * 2.0;
+    startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) / 2.0f - smHorizTickAngle * 2.0f;
+    endAngle   = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) / 2.0f + smHorizTickAngle * 2.0f;
 
     angle = (real32)floor((double)(startAngle / smHorizTickAngle)) * smHorizTickAngle;
     startPoint.x = cam->lookatpoint.x + (real32)cos((double)angle) * distance;   //position of starting point
@@ -1728,7 +1728,7 @@ real32 smBlobDropLineDistance(blob *thisBlob)
 blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix *projection, sdword sensorLevel)
 {
     glEnable( GL_MULTISAMPLE );
-    glLineWidth( sqrt(getResDensityRelative()) );
+    glLineWidth( sqrtf(getResDensityRelative()) );
 
     oval o;
     blob *thisBlob;
@@ -2300,7 +2300,7 @@ void smBlobSphereDraw(blob *closestBlob)
     hmatrix rotmat;
     while(angle < 180)
     {
-        hmatMakeRotAboutZ(&rotmat,cos(DEG_TO_RAD(angle)),sin(DEG_TO_RAD(angle)));
+        hmatMakeRotAboutZ(&rotmat,cosf(DEG_TO_RAD(angle)),sinf(DEG_TO_RAD(angle)));
          hmatPutVectIntoHMatrixCol4(closestBlob->centre, rotmat);
 
         glPushMatrix();
@@ -2315,7 +2315,7 @@ void smBlobSphereDraw(blob *closestBlob)
     angle = 0;
     while(angle < 180)
      {
-         hmatMakeRotAboutX(&rotmat,cos(DEG_TO_RAD(angle)),sin(DEG_TO_RAD(angle)));
+         hmatMakeRotAboutX(&rotmat,cosf(DEG_TO_RAD(angle)),sinf(DEG_TO_RAD(angle)));
          hmatPutVectIntoHMatrixCol4(closestBlob->centre, rotmat);
 
          glPushMatrix();
