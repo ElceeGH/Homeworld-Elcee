@@ -1123,7 +1123,7 @@ static long PulseVal(long Val)
     if(Val >= 255 || Val <= TUT_PointerPulseMin)
     {
         pulseDir = -pulseDir;
-        Val += pulseDir;
+        Val += (long)(0.5 + pulseDir / getResFrequencyRelative());
     }
     return Val;
 }
