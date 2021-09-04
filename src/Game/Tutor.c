@@ -36,6 +36,7 @@
 #include "texreg.h"
 #include "UIControls.h"
 #include "utility.h"
+#include "rResScaling.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -1238,6 +1239,9 @@ void tutDrawTextPointers(rectangle *pRect)
     color c;
     vector temp;
 
+    glEnable( GL_MULTISAMPLE );
+    real32 lineWidth = sqrtf(getResDensityRelative());
+
     for (pointer = tutPointer, index = 0; index < TUT_NumberPointers; index++, pointer++)
     {                                                       //for each pointer
         switch(pointer->pointerType)
@@ -1253,6 +1257,7 @@ void tutDrawTextPointers(rectangle *pRect)
 
                 tutClipSegToTextBox(&x0, &y0, &x1, &y1);
                 c = colRGB(tutPulse, tutPulse, tutPulse);
+                glLineWidth( lineWidth );
                 primLine2(x0, y0, x1, y1, c);
                 dx = (real32)(x0 - x1);                     //vector from arrowhead to source
                 dy = (real32)(y0 - y1);
@@ -1276,30 +1281,30 @@ void tutDrawTextPointers(rectangle *pRect)
                     {                                       //0..180
                         if (dx > 0.0f)
                         {                                   //0..90
-                            angle = (real32)atan((double)(dy / dx));
+                            angle = atanf(dy / dx);
                         }
                         else
                         {                                   //90..180
-                            angle = PI - (real32)atan((double)(dy / -dx));
+                            angle = PI - atanf(dy / -dx);
                         }
                     }
                     else
                     {                                       //180..360
                         if (dx < 0.0f)
                         {                                   //180..270
-                            angle = (real32)atan((double)(dy / dx)) + PI;
+                            angle = atanf(dy / dx) + PI;
                         }
                         else
                         {                                   //270..360
-                            angle = 2.0 * PI - (real32)atan((double)(-dy / dx));
+                            angle = 2.0f * PI - atanf(-dy / dx);
                         }
                     }
                     //now we have angle of main vector; offset that to get arrowhead vectors
-                    x0 = x1 + (sdword)(cos((double)(angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    y0 = y1 + (sdword)(sin((double)(angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    x0 = x1 + (sdword)(cosf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    y0 = y1 + (sdword)(sinf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
                     primLine2(x0, y0, x1, y1, c);
-                    x0 = x1 + (sdword)(cos((double)(angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    y0 = y1 + (sdword)(sin((double)(angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    x0 = x1 + (sdword)(cosf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    y0 = y1 + (sdword)(sinf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
                     primLine2(x0, y0, x1, y1, c);
                 }
                 break;
@@ -1321,6 +1326,7 @@ shipsCase:
                     //x = pointer->ship->collInfo.selCircleX;
                     //y = pointer->ship->collInfo.selCircleY;
 
+                    glLineWidth( lineWidth );
                     primGLCircleOutline2(x, y, rad, pieCircleSegmentsCompute(rad), colRGB(tutPulse/2, tutPulse, tutPulse/2));
 
                     sx = primScreenToGLX((pRect->x0 + pRect->x1) / 2);
@@ -1358,8 +1364,9 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &x1, &y0, &y1);
+                    glLineWidth( lineWidth );
                     primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                    primRectOutline2(&pointer->rect, 1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
+                    primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                 }
                 break;
 
@@ -1374,13 +1381,14 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &y0, &x1, &y1);
+                    glLineWidth( lineWidth );
                     primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                    primRectOutline2(&pointer->rect, 1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
+                    primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                 }
                 break;
 
             case TUT_PointerTypeRegion:
-                primRectOutline2(&pointer->rect, 3, colRGB(tutPulse, tutPulse, tutPulse));
+                primRectOutline2(&pointer->rect, lineWidth*3.0f, colRGB(tutPulse, tutPulse, tutPulse));
                 break;
 
             case TUT_PointerTypeAIVolume:
@@ -1394,6 +1402,7 @@ shipsCase:
                 {
                     real32 x, y, deltx, delty, len;
 
+                    glLineWidth( lineWidth );
                     rad = max(rad, TUT_ShipCircleSizeMin);
                     x = sx;
                     y = sy;
@@ -1422,6 +1431,9 @@ shipsCase:
     }
     tutPulse = PulseVal(tutPulse);
     tutPointersDrawnThisFrame = TRUE;
+
+    glLineWidth( 1.0f );
+    glDisable( GL_MULTISAMPLE );
 }
 
 // This function actually handles drawing the text in the region added by tutShowText
