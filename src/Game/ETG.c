@@ -2109,20 +2109,12 @@ void etgEffectCodeStart(etgeffectstatic *stat, Effect *effect, sdword nParams, .
     }
 #endif
     //set the variable and variable rate blocks
-    if (stat->variableSize)
-    {
-//        effect->variable = memAlloc(stat->variableSize + stat->rateSize +
-//                                    stat->variableSize / 4, "EffectVariables", 0);
-        effect->variable = ((ubyte *)effect) + etgEffectSize(stat->nParticleBlocks);
-        effect->variableRate = effect->variable + stat->variableSize;
-        effect->effectID = effect->variableRate + stat->rateSize;
-        memset(effect->effectID, 0xff, stat->variableSize / SCALESHIFT(4)); //clear out the effect ID's
-        memset(effect->variableRate, 0, stat->rateSize);
-    }
-    else
-    {
-        effect->variable = effect->variableRate = effect->effectID = NULL;
-    }
+    effect->variable = ((ubyte *)effect) + etgEffectSize(stat->nParticleBlocks);
+    effect->variableRate = effect->variable + stat->variableSize;
+    effect->effectID = effect->variableRate + stat->rateSize;
+    memset(effect->effectID, 0xff, stat->variableSize / SCALESHIFT(4)); //clear out the effect ID's
+    memset(effect->variableRate, 0, stat->rateSize);
+    
     //set the particle block info
     effect->nParticleBlocks = stat->nParticleBlocks;
     effect->iParticleBlock = 0;
