@@ -106,7 +106,7 @@ void primTriSolid2(triangle *tri, color c)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-void primTriOutline2(triangle *tri, sdword thickness, color c)
+void primTriOutline2(triangle *tri, real32 thickness, color c)
 {
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
@@ -234,14 +234,14 @@ void primRectTranslucent2(rectangle* rect, color c)
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRectOutline2(rectangle *rect, sdword thickness, color c)
+void primRectOutline2(rectangle *rect, real32 thickness, color c)
 {
     sdword bottom = rect->y1 - 1;
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glLineWidth(thickness);
 
     glBegin(GL_LINE_LOOP);
     glVertex2f(primScreenToGLX(rect->x0), primScreenToGLY(rect->y0));
@@ -338,7 +338,7 @@ void primRealRectUnion2(realrectangle *result, realrectangle *r0, realrectangle 
     Note        : The coordinate system used will be the engineering system
                     where up (x = 0, y = -1) is 0 rad.
 ----------------------------------------------------------------------------*/
-void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, sdword thickness, sdword segments, color c)
+void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickness, sdword segments, color c)
 {
     sdword segment, endSegment;
     real32 angle, angleInc;
@@ -352,33 +352,33 @@ void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, sdword thickne
     width  = primScreenToGLScaleX(o->radiusX);
     height = primScreenToGLScaleY(o->radiusY);
 
-    segment = (sdword)(radStart * (real32)segments / (2.0f * PI));//get starting segment
-    endSegment = (sdword)(radEnd * (real32)segments / (2.0f * PI) - 0.01f);//get ending segment
+    segment    = (sdword)(radStart * (real32)segments / (2.0f * PI));//get starting segment
+    endSegment = (sdword)(radEnd   * (real32)segments / (2.0f * PI) - 0.01f);//get ending segment
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glLineWidth((GLfloat)thickness);
     glBegin(GL_LINE_STRIP);
 
-    x = centreX + (real32)sin((double)radStart) * width;    //first vertex
-    y = centreY + (real32)cos((double)radStart) * height;
+    x = centreX + sinf(radStart) * width;    //first vertex
+    y = centreY + cosf(radStart) * height;
  
     glVertex2f(x, y);
     
     segment++;
-    angle = (real32)segment * (2.0f * PI / (real32)segments);
+    angle    = (real32)segment * (2.0f * PI / (real32)segments);
     angleInc = (2.0f * PI / (real32)segments);
 
     for (; segment <= endSegment; segment++)
     {                                                       //for start and all complete segments
-        x = centreX + (real32)sin((double)angle) * width;
-        y = centreY + (real32)cos((double)angle) * height;
+        x = centreX + sinf(angle) * width;
+        y = centreY + cosf(angle) * height;
 
         glVertex2f(x, y);
         
         angle += angleInc;                                  //update angle
     }
-    x = centreX + (real32)sin((double)radEnd) * width;
-    y = centreY + (real32)cos((double)radEnd) * height;
+    x = centreX + sinf(radEnd) * width;
+    y = centreY + cosf(radEnd) * height;
 
     glVertex2f(x, y);                                       //draw last vertex
     
@@ -404,7 +404,7 @@ void primGLCircleOutline2(real32 x, real32 y, real32 radius, sdword nSegments, c
     glVertex2f(x, y + radiusY);
     for (index = 0, angle = angleInc; index <= nSegments; index++, angle += angleInc)
     {
-        glVertex2f(x + (real32)sin(angle) * radius, y + (real32)cos(angle) * radiusY);
+        glVertex2f(x + (real32)sinf(angle) * radius, y + (real32)cosf(angle) * radiusY);
     }
     glEnd();
 }
@@ -481,7 +481,7 @@ void primNonAALine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
     Outputs     : Sets GL_COLOR
     Return      : void
 ----------------------------------------------------------------------------*/
-void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, sdword thickness, color c)
+void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, real32 thickness, color c)
 {
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
@@ -505,7 +505,7 @@ void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, sdword thickness
 ----------------------------------------------------------------------------*/
 static bool LLblendon;
 static GLfloat LLlinewidth;
-void primLineLoopStart2(sdword thickness, color c)
+void primLineLoopStart2(real32 thickness, color c)
 {
     glGetFloatv(GL_LINE_WIDTH, &LLlinewidth);
     LLblendon = glIsEnabled(GL_BLEND);
@@ -654,7 +654,7 @@ void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb)
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primBeveledRectOutline(rectangle *rect, sdword thickness, color c,
+void primBeveledRectOutline(rectangle *rect, real32 thickness, color c,
                             uword xb, uword yb)
 {
     GLfloat linewidth;
@@ -683,7 +683,7 @@ void primBeveledRectOutline(rectangle *rect, sdword thickness, color c,
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRoundRectOutline(rectangle *rect, sdword thickness, color c, uword xb, uword yb)
+void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, uword yb)
 {
     oval o;
     sdword segs = SEGS;
@@ -736,7 +736,7 @@ void primRoundRectOutline(rectangle *rect, sdword thickness, color c, uword xb, 
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primMaskedRoundRectOutline(rectangle *rect, sdword thickness, color c,
+void primMaskedRoundRectOutline(rectangle *rect, real32 thickness, color c,
                                 uword xb, uword yb, uword mask)
 {
     oval o;

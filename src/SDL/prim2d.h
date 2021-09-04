@@ -102,14 +102,14 @@ void primModeClearFunction2(void);
 
 //draw a single colored triangle
 void primTriSolid2(triangle *tri, color c);
-void primTriOutline2(triangle *tri, sdword thickness, color c);
+void primTriOutline2(triangle *tri, real32 thickness, color c);
 //draw a rectangle
 void primRectSolid2(rectangle *rect, color c);
 void primRectTranslucent2(rectangle *rect, color c);
 void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb);
-void primRectOutline2(rectangle *rect, sdword thickness, color c);
-void primBeveledRectOutline(rectangle *rect, sdword thickness, color c, uword xb, uword yb);
-void primRoundRectOutline(rectangle *rect, sdword thickness, color c, uword xb, uword yb);
+void primRectOutline2(rectangle *rect, real32 thickness, color c);
+void primBeveledRectOutline(rectangle *rect, real32 thickness, color c, uword xb, uword yb);
+void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, uword yb);
 void primRectShaded2(rectangle *rect, color *c); // color *c is a pointer to an array of 4 color values
 
 #define OL_UL   0x01
@@ -117,7 +117,7 @@ void primRectShaded2(rectangle *rect, color *c); // color *c is a pointer to an 
 #define OL_LR   0x04
 #define OL_LL   0x08
 #define OL_ALL  0x0F
-void primMaskedRoundRectOutline(rectangle *rect, sdword thickness, color c,
+void primMaskedRoundRectOutline(rectangle *rect, real32 thickness, color c,
         uword xb, uword yb, uword mask);
 
 void primRectSolidTextured2(rectangle *rect);
@@ -126,9 +126,9 @@ void primRectSolidTexturedFullRectC2(rectangle *rect, color c);
 //draw a line
 void primLine2(sdword x0, sdword y0, sdword x1, sdword y1, color c);
 void primNonAALine2(sdword x0, sdword y0, sdword x1, sdword y1, color c);
-void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, sdword thickness, color c);
+void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, real32 thickness, color c);
 //draw a line loop
-void primLineLoopStart2(sdword thickness, color c);
+void primLineLoopStart2(real32 thickness, color c);
 void primLineLoopPoint3F(real32 x, real32 y);
 void primLineLoopEnd2(void);
 //draw solid circular things
@@ -138,7 +138,7 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
 void primRectUnion2(rectangle *result, rectangle *r0, rectangle *r1);
 void primRealRectUnion2(realrectangle *result, realrectangle *r0, realrectangle *r1);
 //draw oval arcs
-void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, sdword thickness, sdword segments, color c);
+void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickness, sdword segments, color c);
 void primGLCircleOutline2(real32 x, real32 y, real32 radius, sdword nSegments, color c);
 //series of successively blended rect outlines
 void primSeriesOfRects(rectangle *rect, uword width,
