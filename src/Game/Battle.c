@@ -970,7 +970,7 @@ readyToPlay:
     if (chat->minRepeatProximity > 0.0f && where != NULL)
     {                                                       //if we should consider location of last time this event was spoken
         vecSub(diff, *where, chat->lastPlaceSpoken);
-        distance = fmathSqrtDouble((double)vecMagnitudeSquared(diff));
+        distance = (real32) fmathSqrtDouble((double)vecMagnitudeSquared(diff));
         if (distance < chat->minRepeatProximity)
         {
             result = distance / chat->minRepeatProximity;

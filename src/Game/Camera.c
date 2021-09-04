@@ -366,13 +366,13 @@ sdword cameraControl(Camera *camera, bool EnforceShipDistances)
         UserAction |= CAM_USER_ZOOMED;
     }
 
-#define CAMERA_JOYSTICK_ZOOM_SENS             0.2
-#define CAMERA_JOYSTICK_DECLINATION_SENS      0.15
-#define CAMERA_JOYSTICK_RIGHT_ASCENSION_SENS  0.15
+#define CAMERA_JOYSTICK_ZOOM_SENS             0.2f
+#define CAMERA_JOYSTICK_DECLINATION_SENS      0.15f
+#define CAMERA_JOYSTICK_RIGHT_ASCENSION_SENS  0.15f
 
     if (camJoyZoom != 0)
     {
-        cameraZoom(camera, 1.0 + CAMERA_JOYSTICK_ZOOM_SENS * camJoyZoom / SWORD_Max, EnforceShipDistances);
+        cameraZoom(camera, 1.0f + CAMERA_JOYSTICK_ZOOM_SENS * camJoyZoom / SWORD_Max, EnforceShipDistances);
         camJoyZoom = 0;
         UserAction |= CAM_USER_ZOOMED;      
     }
@@ -461,9 +461,9 @@ udword cameraChecksum(Camera *cam)
 ----------------------------------------------------------------------------*/
 void cameraRayCast(vector *dest, Camera *cam, sdword screenX, sdword screenY, sdword screenWidth, sdword screenHeight)
 {
-    real32 mappedMouseX     = 0.0,
-           mappedMouseY     = 0.0,
-           normalisedHeight = 0.0;
+    real32 mappedMouseX     = 0.0f,
+           mappedMouseY     = 0.0f,
+           normalisedHeight = 0.0f;
     
     vector looking,
            right,
@@ -485,12 +485,12 @@ void cameraRayCast(vector *dest, Camera *cam, sdword screenX, sdword screenY, sd
     // eyeposition whose normal is parallel with "looking"
 
     // half-height of the screen has a normalised height of
-    normalisedHeight = tan(DEG_TO_RAD(cam->fieldofview / 2));
+    normalisedHeight = tanf(DEG_TO_RAD(cam->fieldofview / 2));
 
     // NB: the height dimension is how the fieldofview is defined so this is used
     // as the unit measure. Also note that a centred origin is used in this mapping.
-    mappedMouseY =  ((real32)screenY / (real32)screenHeight) - 0.5;
-    mappedMouseX = (((real32)screenX / (real32)screenWidth ) - 0.5) * rndAspectRatio;
+    mappedMouseY =  ((real32)screenY / (real32)screenHeight) - 0.5f;
+    mappedMouseX = (((real32)screenX / (real32)screenWidth ) - 0.5f) * rndAspectRatio;
 
     // clean up the mouse vectors
     vecMultiplyByScalar(right, normalisedHeight * mappedMouseX);
@@ -501,7 +501,7 @@ void cameraRayCast(vector *dest, Camera *cam, sdword screenX, sdword screenY, sd
     // it was either. I suspect that it's something to do with the inter-conversion
     // with the perspective projection since the maths in this function is dealing 
     // with orthogonal reference frames.
-    vecMultiplyByScalar(looking, 0.49);
+    vecMultiplyByScalar(looking, 0.49f);
 
     // add the three vectors to get the cast ray vector
     // (eyeball to mouse cursor and beyond)

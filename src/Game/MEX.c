@@ -532,7 +532,7 @@ void mexSetCollisionInfo(StaticCollInfo *staticCollInfo,void *mex,real32 forward
             real32 right = staticCollInfo->rightlength * 0.5f;
             real32 forward = staticCollInfo->forwardlength * 0.5f;
 
-            real32 minr = sqrt(up*up+right*right+forward*forward) * 1.1f;
+            real32 minr = sqrtf(up*up+right*right+forward*forward) * 1.1f;
 
             if (minr > staticCollInfo->collspheresize)
             {
@@ -545,9 +545,9 @@ void mexSetCollisionInfo(StaticCollInfo *staticCollInfo,void *mex,real32 forward
             }
         }
 
-        staticCollInfo->diagonallength = sqrt(staticCollInfo->uplength*staticCollInfo->uplength +
-                                              staticCollInfo->forwardlength*staticCollInfo->forwardlength +
-                                              staticCollInfo->rightlength*staticCollInfo->rightlength);
+        staticCollInfo->diagonallength = sqrtf(staticCollInfo->uplength*staticCollInfo->uplength +
+                                               staticCollInfo->forwardlength*staticCollInfo->forwardlength +
+                                               staticCollInfo->rightlength*staticCollInfo->rightlength);
     }
     else
     {
@@ -562,9 +562,9 @@ void mexSetCollisionInfo(StaticCollInfo *staticCollInfo,void *mex,real32 forward
         staticCollInfo->rightlength = staticCollInfo->collspheresize*rightScale;
         staticCollInfo->forwardlength = staticCollInfo->collspheresize*forwardScale;
 
-        staticCollInfo->diagonallength = sqrt(staticCollInfo->uplength*staticCollInfo->uplength +
-                                              staticCollInfo->forwardlength*staticCollInfo->forwardlength +
-                                              staticCollInfo->rightlength*staticCollInfo->rightlength);
+        staticCollInfo->diagonallength = sqrtf(staticCollInfo->uplength*staticCollInfo->uplength +
+                                               staticCollInfo->forwardlength*staticCollInfo->forwardlength +
+                                               staticCollInfo->rightlength*staticCollInfo->rightlength);
     }
 }
 

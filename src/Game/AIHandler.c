@@ -128,15 +128,15 @@ void aihSwarmerEmptyFuelHandler(AITeam *team)
         ship = team->shipList.selection->ShipPtr[i];
 
         if (!bitTest(ship->flags, SOF_Crazy) &&
-            (100.0 * ship->fuel / ship->staticinfo->maxfuel
+            (100.0f * ship->fuel / ship->staticinfo->maxfuel
                   < team->curMove->events.fuelLow.watchPercentage))
         {
             bitSet(ship->flags, SOF_Crazy);
-            ship->deathtime = universe.totaltimeelapsed + frandyrandombetween(RANDOM_AI_PLAYER, 14.0, 20.0);
+            ship->deathtime = universe.totaltimeelapsed + frandyrandombetween(RANDOM_AI_PLAYER, 14.0f, 20.0f);
             ApplyCareenRotationDirectly(ship);
-            ship->rotinfo.rotspeed.x *= 1.5;
-            ship->rotinfo.rotspeed.y *= 1.5;
-            ship->rotinfo.rotspeed.z *= 1.5;
+            ship->rotinfo.rotspeed.x *= 1.5f;
+            ship->rotinfo.rotspeed.y *= 1.5f;
+            ship->rotinfo.rotspeed.z *= 1.5f;
         }
     }
 }
@@ -613,7 +613,7 @@ void aihGravWellEnemyNotNearbyHandler(AITeam *team)
     aiuWrapSpecial(team->shipList.selection, NULL);
     thisMove->events.enemyNotNearby.handler = NULL;
     aieHandlerSetEnemyNearby(thisMove,
-                             (((GravWellGeneratorStatics *) ((ShipStaticInfo *)(team->shipList.selection->ShipPtr[0]->staticinfo))->custstatinfo)->GravWellRadius)*0.8,
+                             (((GravWellGeneratorStatics *) ((ShipStaticInfo *)(team->shipList.selection->ShipPtr[0]->staticinfo))->custstatinfo)->GravWellRadius)*0.8f,
                              FALSE, aihGravWellEnemyNearbyHandler);
     //later cancel attack move on cooperating team???
 }

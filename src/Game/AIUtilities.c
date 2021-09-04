@@ -3652,7 +3652,9 @@ bool aiuFindArmadaTarget(vector *dest_target, SelectCommand **sel_target, Select
 {
     aiblob *blob, *best_blob = NULL, *mothership_blob = NULL;
     udword i/*, best_num_ships*/;
-    real32 primary_value_strength_ratio = 0.0, best_primary_value_strength_ratio = 0.0, mothership_value_strength_ratio = 0.0;
+    real32 primary_value_strength_ratio      = 0; 
+    real32 best_primary_value_strength_ratio = 0;
+    real32 mothership_value_strength_ratio   = 0;
     real32 randvar = 0.0;
 
     //NOTE: later may need to consider strength of attack team.  In addition, may need to
@@ -3673,7 +3675,7 @@ bool aiuFindArmadaTarget(vector *dest_target, SelectCommand **sel_target, Select
             //or just take out the main attack force.  Ooooh!!! Decision making time
             if (blob->primaryenemyvalue > AIU_MOTHERSHIP_VALUE)
             {
-                mothership_value_strength_ratio = (((real32)blob->primaryenemyvalue*(500.0))/(real32)blob->primaryenemystrength);
+                mothership_value_strength_ratio = (((real32)blob->primaryenemyvalue*(500.0f))/(real32)blob->primaryenemystrength);
                 mothership_blob = blob;
                 if (aiuEnemyBlobs->numBlobs == 1)
                 {
@@ -3684,7 +3686,7 @@ bool aiuFindArmadaTarget(vector *dest_target, SelectCommand **sel_target, Select
         }
         else if (blob->primaryenemystrength)
         {
-            primary_value_strength_ratio = (((real32)blob->primaryenemyvalue*(500.0))/(real32)blob->primaryenemystrength);
+            primary_value_strength_ratio = (((real32)blob->primaryenemyvalue*(500.0f))/(real32)blob->primaryenemystrength);
         }
         else
         {
@@ -3697,14 +3699,14 @@ bool aiuFindArmadaTarget(vector *dest_target, SelectCommand **sel_target, Select
             //medium error with sensor array
             if (1)//aiCurrentAIPlayer->SensorArray)
             {
-                randvar = frandyrandombetween(RANDOM_AI_PLAYER, -primary_value_strength_ratio/3,
-                                              primary_value_strength_ratio/3);
+                randvar = frandyrandombetween(RANDOM_AI_PLAYER, -primary_value_strength_ratio/3.0f,
+                                              primary_value_strength_ratio/3.0f);
             }
             //high error with no sensor array
             else
             {
-                randvar = frandyrandombetween(RANDOM_AI_PLAYER, -primary_value_strength_ratio/1.2,
-                                              primary_value_strength_ratio/1.2);
+                randvar = frandyrandombetween(RANDOM_AI_PLAYER, -primary_value_strength_ratio/1.2f,
+                                              primary_value_strength_ratio/1.2f);
             }
             primary_value_strength_ratio += randvar;
             dbgAssertOrIgnore(primary_value_strength_ratio >= 0);

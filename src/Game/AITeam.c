@@ -1055,7 +1055,7 @@ void aitOptimizeGravWellGenerator(AITeam *team)
     dbgAssertOrIgnore(guardMove!=NULL);
 
     aieHandlerSetEnemyNearby(guardMove,
-                             (((GravWellGeneratorStatics *) ((ShipStaticInfo *)(team->shipList.selection->ShipPtr[0]->staticinfo))->custstatinfo)->GravWellRadius)*0.8,
+                             (((GravWellGeneratorStatics *) ((ShipStaticInfo *)(team->shipList.selection->ShipPtr[0]->staticinfo))->custstatinfo)->GravWellRadius)*0.8f,
                              FALSE, aihGravWellEnemyNearbyHandler);
     bitSet(team->teamFlags, TEAM_SpecialOptimal);
 

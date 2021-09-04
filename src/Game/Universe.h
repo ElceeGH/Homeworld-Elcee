@@ -102,7 +102,7 @@ typedef struct Player
     PlayerState playerState;
     struct AIPlayer *aiPlayer;      // if non-null, then player has a computer AI Player
     udword autoLaunch;
-    uword playerIndex;
+    ubyte playerIndex;
     ubyte sensorLevel;
     ubyte bounty;                   //range from 0 to 100
     real32 timeMoShipAttacked;

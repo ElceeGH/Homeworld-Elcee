@@ -636,7 +636,7 @@ void aioCreateSpecialDefense(AITeam *team, ShipType type)
         if (gravstatics)
         {
             aieHandlerSetEnemyNearby(move,
-                                     (((GravWellGeneratorStatics *) gravstatics->custstatinfo)->GravWellRadius)*0.8,
+                                     (((GravWellGeneratorStatics *) gravstatics->custstatinfo)->GravWellRadius)*0.8f,
                                      FALSE, aihGravWellEnemyNearbyHandler);
             aieHandlerSetTeamDied(move, aihRemoveTeamDiedHandler);
         }

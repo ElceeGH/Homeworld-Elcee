@@ -1565,7 +1565,7 @@ void cmUpdateShipAvailable(void)
         }
         else if (cmShipsAvailable[index].itemtype==ITEM_CLASS)
         {
-            cmShipsAvailable[index].itemstat = (sword)isclass;
+            cmShipsAvailable[index].itemstat = (sbyte) isclass;
             if (isclass==STAT_PRINT) NUMBER_SHIPS_AVAILABLE++;
             isclass=STAT_DONTPRINT;
         }

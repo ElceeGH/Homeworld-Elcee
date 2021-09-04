@@ -381,7 +381,7 @@ DVect LookToObj, LookToCam, nLookToObj, nLookToCam;
     }
 
    if(targetDistance)
-      *targetDistance = MaxDist;
+      *targetDistance = (real32) MaxDist;
 
    useSlowWheelZoomIn = FALSE;
    return 0;
@@ -624,10 +624,10 @@ void CubicLogUnsigned(real32 *pos, real32 *speed, real32 targ, real32 threshold,
             fakeDist = REALlySmall;
         }
     }
-    fakeDist = log(fakeDist) / log(logBase);                //compute values in log-base-n space
-    fakeTarg = log(threshold) / log(logBase);               //roughly zero in logarithm space
+    fakeDist = (real32) (log(fakeDist)  / log(logBase));               //compute values in log-base-n space
+    fakeTarg = (real32) (log(threshold) / log(logBase));               //roughly zero in logarithm space
     EvalCubic(&fakeDist, speed, fakeTarg, step);            //update value
-    *pos = pow(logBase, fakeDist) * posSign + targ + threshold * tSign;//convert back to linear space
+    *pos = powf(logBase, fakeDist) * posSign + targ + threshold * tSign;//convert back to linear space
 }
 
 /*-----------------------------------------------------------------------------
@@ -741,7 +741,7 @@ void GetDistanceAngleDeclination(Camera *camera,vector *distvec)
 {
     real32 value;
     // calculate distance
-    camera->distance = sqrt(vecMagnitudeSquared(*distvec));
+    camera->distance = sqrtf(vecMagnitudeSquared(*distvec));
 
     // now calculate angle and declination to face target
     camera->angle = (real32)atan2(distvec->y,distvec->x);
@@ -749,12 +749,10 @@ void GetDistanceAngleDeclination(Camera *camera,vector *distvec)
 
     dbgAssertOrIgnore( ABS(value) <= 1.01f );       // USE 1.01 SO ROUND OFF ERRORS DON'T CRASH US
 
-    if(value < -1.0f)
-        value = -1.0f;
-    else if(value > 1.0f)
-        value = 1.0f;
+    if (value < -1.0f) value = -1.0f;
+    if (value >  1.0f) value =  1.0f;
 
-    camera->declination = (PI/2.0f) - (real32)acos(value);
+    camera->declination = (PI/2.0f) - acosf(value);
 }
 
 void FocusOnNewEntry(CameraCommand *cameracommand,CameraStackEntry *entry)
@@ -1069,7 +1067,7 @@ void ccFocusGeneral(CameraCommand *cameracommand,FocusCommand *focuscom, bool bC
    vecSub(distvec, cameracommand->actualcamera.eyeposition, entry->remembercam.lookatpoint);
 
     // calculate distance
-   newDist = sqrt(vecMagnitudeSquared(distvec));
+   newDist = sqrtf(vecMagnitudeSquared(distvec));
    entry->remembercam.distance = oldentry->remembercam.distance;
    if(entry->remembercam.distance < MinDist)
       entry->remembercam.distance = MinDist;

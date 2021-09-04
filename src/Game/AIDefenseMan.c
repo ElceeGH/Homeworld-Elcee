@@ -232,7 +232,7 @@ void aidCheckSphereOfInfluence(void)
     //check for guard teams outside of the sphere of influence and
     //recall them
     //later have a chance of no recall depending on "personality"
-    spherewithextra = aiCurrentAIPlayer->sphereofinfluence * 1.4;
+    spherewithextra = aiCurrentAIPlayer->sphereofinfluence * 1.4f;
     for (i=0;i<aiCurrentAIPlayer->numGuardTeams;i++)
     {
         if (aitNumTeamShips(aiCurrentAIPlayer->guardTeams[i]))

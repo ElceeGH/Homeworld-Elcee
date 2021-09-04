@@ -319,7 +319,7 @@ sdword NUM_IN_CLASSES[NUM_CLASSES];
 sdword getShipClass()
 {
     real32 prob;
-    prob = frandombetween(0.0,1.0f);
+    prob = frandombetween(0.0f,1.0f);
 
     if(prob <= CrateClassProbCLASS_HeavyCruiser)
         return CLASS_HeavyCruiser;
@@ -365,7 +365,7 @@ ShipType getShipType(ShipClass classtype)
     real32 prob,probcurrent,probtest;
     ShipType shipcurrent,shiptype;
 
-    prob = frandombetween(0.0,1.0f);
+    prob = frandombetween(0.0f,1.0f);
     probcurrent = 1.0f;
     shipcurrent = 9999;
 

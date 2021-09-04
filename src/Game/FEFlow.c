@@ -1597,16 +1597,16 @@ sdword feResRepositionScaledX(sdword x)
 {
     real32 scale = FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN;
 
-    return (x * scale)                                                    // resize
-         + ((MAIN_WindowWidth  - (FE_RELIC_SCREEN_WIDTH  * scale)) / 2);  // widescreen centring
+    return (sdword) ((x * scale)                                           // resize
+         + ((MAIN_WindowWidth  - (FE_RELIC_SCREEN_WIDTH  * scale)) / 2));  // widescreen centring
 }
 
 sdword feResRepositionScaledY(sdword y)
 {
     real32 scale = FE_SCALE_TO_FIT_FACTOR_RELIC_SCREEN;
     
-    return (y * scale)                                                    // resize
-         + ((MAIN_WindowHeight - (FE_RELIC_SCREEN_HEIGHT * scale)) / 2);  // widescreen centring
+    return (sdword) ((y * scale)                                           // resize
+         + ((MAIN_WindowHeight - (FE_RELIC_SCREEN_HEIGHT * scale)) / 2));  // widescreen centring
 }
 
 /*-----------------------------------------------------------------------------

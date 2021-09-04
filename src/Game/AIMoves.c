@@ -3252,7 +3252,7 @@ sdword aimProcessMothershipMove(AITeam *team)
             (aiuDestinationNotNearOtherMothership(destination, 800000000)))
 
         {
-            time = frandyrandombetween(RANDOM_AI_PLAYER, 20.0, 35.0);
+            time = frandyrandombetween(RANDOM_AI_PLAYER, 20.0f, 35.0f);
             newMove = aimCreateMoveToNoAdd(team, destination, time, TIME_LIMITED, NO_FORMATION, Neutral, TRUE, TRUE);
             newMove->events = thisMove->events;
             aitAddmoveBeforeAndMakeCurrent(team, newMove, thisMove);

@@ -1530,8 +1530,8 @@ int bigFastCreate(char *bigfilename, int numFiles, char *filenames[], int optCom
                             free(moveFiles);
                             return 0;
                         }
-                        fileEntry.realLength = findData.st_size;
-                        fileEntry.timeStamp = findData.st_mtime;
+                        fileEntry.realLength = (udword) findData.st_size;
+                        fileEntry.timeStamp  = (udword) findData.st_mtime;
 
                         // data
                         fseek(bigFP, curOffset, SEEK_SET);
@@ -1868,8 +1868,8 @@ int bigAddFile(char *bigFilename, char *filename, char *storedFilename, int optC
     fileEntry.nameCRC2 = crc32Compute((ubyte *)tempshortfilenamei + halfFilenameLength,
                                       (fileEntry.nameLength - halfFilenameLength));
     fileEntry.storedLength = optCompression ? findDataCompressed.st_size : findData.st_size;
-    fileEntry.realLength = findData.st_size;
-    fileEntry.timeStamp = findData.st_mtime;
+    fileEntry.realLength = (udword) findData.st_size;
+    fileEntry.timeStamp  = (udword) findData.st_mtime;
     fileEntry.compressionType = optCompression;
     // fileEntry.offset will be calculated later
 

@@ -1003,33 +1003,32 @@ void btgZip(void)
     Outputs     : out is modified
     Return      :
 ----------------------------------------------------------------------------*/
-void btgConvertAVert(vector* out, real32 x, real32 y)
+void btgConvertAVert(vector* out, real64 x, real64 y)
 {
     real32 xFrac, yFrac;
     real32 theta, phi;
     real32 sinTheta, cosTheta;
     real32 sinPhi, cosPhi;
-    real32 pageWidth, pageHeight;
     real32 radius;
 
-    pageWidth  = (real32)btgHead->pageWidth;
-    pageHeight = (real32)btgHead->pageHeight;
+    real32 pageWidth  = (real32)btgHead->pageWidth;
+    real32 pageHeight = (real32)btgHead->pageHeight;
 
-    x = ((real32)pageWidth - 1.0) - x;
+    x = (pageWidth - 1.0f) - x;
 
-    xFrac = (real32)x / pageWidth;
-    yFrac = (real32)y / pageHeight;
+    xFrac = (real32) (x / pageWidth );
+    yFrac = (real32) (y / pageHeight);
 
     theta = 2.0f * M_PI_F * xFrac;
     phi   = 1.0f * M_PI_F * yFrac;
 
     theta += DEG_TO_RAD(btgThetaOffset) + DEG_TO_RAD(90.0f);
-    phi += DEG_TO_RAD(btgPhiOffset);
+    phi   += DEG_TO_RAD(btgPhiOffset);
 
-    sinTheta = fsin(theta);
-    cosTheta = fcos(theta);
-    sinPhi = fsin(phi);
-    cosPhi = fcos(phi);
+    sinTheta = sinf(theta);
+    cosTheta = cosf(theta);
+    sinPhi   = sinf(phi);
+    cosPhi   = cosf(phi);
 
     radius = CAMERA_CLIP_FAR - 500.0f;
     out->x = radius * cosTheta * sinPhi;
@@ -1051,7 +1050,7 @@ void btgConvertVert(btgTransVertex* out, udword nVert)
 
     in = btgVerts + nVert;
 
-    btgConvertAVert(&out->position, in->x, in->y);
+    btgConvertAVert(&out->position, (real32) in->x, (real32) in->y);
 
     out->red   = (GLubyte)((in->red   * in->alpha) >> 8);
     out->green = (GLubyte)((in->green * in->alpha) >> 8);
@@ -1069,17 +1068,15 @@ void btgConvertVert(btgTransVertex* out, udword nVert)
 ----------------------------------------------------------------------------*/
 void btgConvertStar(btgTransStar* out, udword nVert)
 {
-    btgStar* in;
-    real32   x, y;
-    real32   halfWidth, halfHeight;
+    btgStar* in = btgStars + nVert;
 
-    in = btgStars + nVert;
-
-    halfWidth  = (real32)in->width / 2.0f;
-    halfHeight = (real32)in->height / 2.0f;
-    halfWidth *= 640.0f / MAIN_WindowWidth;
+    real32 halfWidth, halfHeight;
+    halfWidth   = (real32)in->width  / 2.0f;
+    halfHeight  = (real32)in->height / 2.0f;
+    halfWidth  *= 640.0f / MAIN_WindowWidth;
     halfHeight *= 480.0f / MAIN_WindowHeight;
 
+    real64 x,y;
     x = in->x - halfWidth;
     y = in->y + halfHeight;
     btgConvertAVert(&out->ll, x, y);

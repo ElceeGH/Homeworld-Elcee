@@ -1860,7 +1860,7 @@ bool shouldMissileLoseTarget(Missile *missile)
                 prob+=tweakBoostIfFlightMan;
             }
 
-            rannum = frandombetween(0.0,1.0f);
+            rannum = frandombetween(0.0f,1.0f);
 
             if(rannum < prob)
             {

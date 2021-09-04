@@ -2579,7 +2579,7 @@ bool processMpHyperspaceingToDo(CommandToDo *movetodo)
             else if(dotproduct <=-1.0f)
                 dotproduct = -1.0f;
 
-            movetoplace.w = RAD_TO_DEG(acos(dotproduct));
+            movetoplace.w = RAD_TO_DEG(acosf(dotproduct));
 
             vecSet(othervector,0.0f,1.0f,0.0f);
             dotproduct = vecDotProduct(shipheading,othervector);

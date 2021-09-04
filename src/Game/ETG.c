@@ -7218,7 +7218,7 @@ sdword etgDiv(sdword numer, sdword denom)
 udword etgSin(real32 ang)
 {
     real32 value;
-    value = sin(ang);
+    value = sinf(ang);
     return(Real32ToUdword(value));
 }
 
@@ -7226,7 +7226,7 @@ udword etgSin(real32 ang)
 udword etgCos(real32 ang)
 {
     real32 value;
-    value = cos(ang);
+    value = cosf(ang);
     return(Real32ToUdword(value));
 }
 
