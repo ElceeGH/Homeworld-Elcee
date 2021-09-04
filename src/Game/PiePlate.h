@@ -40,7 +40,7 @@
 =============================================================================*/
 //default point spec attributes
 #define PIE_PizzaDishRadius         0.75f
-#define PIE_PizzaSlices             32
+#define PIE_PizzaSlices             256
 
 #define PIE_PlanePointFudge         0.00001f
 

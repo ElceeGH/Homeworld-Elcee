@@ -35,6 +35,7 @@
 #include "Tweak.h"
 #include "Undo.h"
 #include "Universe.h"
+#include "rResScaling.h"
 
 #ifndef SW_Render
     #ifdef _WIN32
@@ -141,18 +142,11 @@ void pieStartup(void)
 ----------------------------------------------------------------------------*/
 sdword pieCircleSegmentsCompute(real32 screenRadius)
 {
-    sdword nSegments, index;
-
-    nSegments = piePlaneCircleSegments[PIE_NumberCircleLODs - 1].nSegments;
-    for (index = 0; index < PIE_NumberCircleLODs; index++)
-    {
-        if (screenRadius > piePlaneCircleSegments[index].screenRadius)
-        {
-            nSegments = piePlaneCircleSegments[index].nSegments;
-            return(nSegments);
-        }
-    }
-    return(piePlaneCircleSegments[0].nSegments);
+    for (sdword i=0; i<PIE_NumberCircleLODs; i++)
+        if (screenRadius > piePlaneCircleSegments[i].screenRadius)
+            return piePlaneCircleSegments[i].nSegments;
+    
+    return piePlaneCircleSegments[0].nSegments;
 }
 
 /*-----------------------------------------------------------------------------
@@ -801,10 +795,9 @@ bool pieDestinationInGunRangeOfTargets()
 ----------------------------------------------------------------------------*/
 void piePlaneDraw(real32 distance)
 {
-    vector world0, world1, plane;
-    //Ship *mothership;
+    
     real32 scaledSize;
-    sdword nSegments;
+    
     color pieColor,spokeColor,headingColor;
 
     if(pieNeedSpecialAttackAndMoveColor())
@@ -836,30 +829,14 @@ void piePlaneDraw(real32 distance)
         headingColor = TW_MOVE_HEADING_COLOR;
     }
 
+    glLineWidth( sqrtf(getResDensityRelative()) );
     primCircleOutlineZ(&selCentrePoint, piePizzaDishRadius * distance,
                        piePizzaSlices, pieColor);//TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
     //get the heading of the mothership for drawing the 'spokes' of the pie plate
-    /*
-    mothership = universe.curPlayerPtr->PlayerMothership;
-    if (mothership != NULL)
-    {
-        matGetVectFromMatrixCol3(pieMotherShipHeading, mothership->rotinfo.coordsys);
-        //handle an unlikely case: mothership pointing just about straight 'down'
-        if (pieMotherShipHeading.z >= (1.0f - (real32)1e-6))
-        {
-            pieMotherShipHeading.x = pieMotherShipHeading.z = 0.0f;
-            pieMotherShipHeading.y = 1.0f;
-        }
-        else
-        {
-            pieMotherShipHeading.z = 0;
-            vecNormalize(&pieMotherShipHeading);
-        }
-    }
-    dbgAssertOrIgnore(pieMotherShipHeading.x != REALlyBig);
-    */
     pieMotherShipHeading.x = pieMotherShipHeading.z = 0.0f;
     pieMotherShipHeading.y = 1.0f;
+
+    vector world0, world1, plane;
     vecScalarMultiply(plane, pieMotherShipHeading, piePizzaDishRadius * distance);
     world0.x = selCentrePoint.x + plane.x;
     world0.y = selCentrePoint.y + plane.y;
@@ -875,9 +852,13 @@ void piePlaneDraw(real32 distance)
     world1.z = selCentrePoint.z;
     primLine3(&world1, &world0, spokeColor);
     //pieOriginDraw(&selCentrePoint, pieOriginSizeCentre * distance, TW_MOVE_ORIGIN_COLOR);  //TW_MOVE_ORIGIN_COLOR tweakable global variable (tweak.*)
+
     //plane point circle
+    sdword nSegments;
     pieScreenSizeOfCircleCompute(&piePlanePoint, selAverageSize, &scaledSize, &nSegments);
     primCircleOutlineZ(&piePlanePoint, scaledSize, nSegments, moveLineColor);
+
+    glLineWidth(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
