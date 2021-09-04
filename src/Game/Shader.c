@@ -780,7 +780,7 @@ void shSpecularColour(
         nDotVP = nz;
         if (nDotVP > 0.0f)
         {
-            alpha = shPow(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[specInd]);
+            alpha = powf(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[specInd]);
         }
         else
         {

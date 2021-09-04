@@ -382,9 +382,6 @@
     <ClCompile Include="..\..\src\Game\Matrix.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\Matrix-mult.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Game\Memory.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
