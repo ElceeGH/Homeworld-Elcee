@@ -54,7 +54,7 @@ bool FalkosFuckedUpTutorialFlag = FALSE;
 
 // Function declarations
 void utySinglePlayerGameStart(char *name, featom *atom);
-char *tutGetNextTextLine(char *pDest, char *pString, long Width, int pDestSize);
+char *tutGetNextTextLine(char *pDest, char *pString, long Width, unsigned int pDestSize);
 udword tutProcessNextButton(struct tagRegion *reg, smemsize ID, udword event, udword data);
 udword tutProcessBackButton(struct tagRegion *reg, smemsize ID, udword event, udword data);
 udword uicButtonProcess(regionhandle region, smemsize ID, udword event, udword data);
@@ -115,7 +115,7 @@ buttonhandle tutBackRegion = NULL;
 void tutDrawBackButtonFunction(regionhandle reg);
 
 // List of image indices for the displayed images
-static char szImageIndexList[16];
+static long szImageIndexList[16];
 
 
 // Construction manager exports
@@ -1044,38 +1044,38 @@ bool tutIsspace(char c)
 
 // This function gets a line of text that is up to Width pixels wide, and returns a
 // pointer to the start of the next line.  Assumes the current font is set.
-char *tutGetNextTextLine(char *pDest, char *pString, long Width, int pDestSize)
+char *tutGetNextTextLine(char *pDest, char *pString, long Width, unsigned int pDestSize)
 {
-long    WordLen, StringLen;
-char    *pstr;
-long    Done = FALSE;
-char    temp;
+    long WordLen, StringLen;
+    char *pstr;
+    long done = FALSE;
+    char temp;
 
     StringLen = 0;
-    WordLen = 0;
-    *pDest = 0;
+    WordLen   = 0;
+    *pDest    = 0;
 
-    if(pString[0] == 0)
+    if (pString[0] == 0)
         return NULL;
 
     if (strlen(pString) < pDestSize) {
-	memStrncpy(pDest, pString, strlen(pString) +1);
+	    memStrncpy(pDest, pString, strlen(pString) +1);
     }
     else {
-	memStrncpy(pDest, pString, pDestSize -1);
-	memStrncpy(pDest + pDestSize -1, '\0', 1);
+	    memStrncpy(pDest, pString, pDestSize -1);
+	    memStrncpy(pDest + pDestSize -1, '\0', 1);
     }
 
     do {
         // Skip leading whitespace
         pstr = &pDest[StringLen];
-        while( *pstr && *pstr != '\n' && (*pstr == '-' || tutIsspace(*pstr)) )
+        while ( *pstr && *pstr != '\n' && (*pstr == '-' || tutIsspace(*pstr)) )
         {
             WordLen++;
             pstr++;
         }
 
-        if(*pstr && *pstr != '\n')
+        if (*pstr && *pstr != '\n')
         {
             while( *pstr && *pstr != '\n' && *pstr != '-' && !tutIsspace(*pstr) )
             {
@@ -1086,7 +1086,7 @@ char    temp;
             temp = *pstr;
             *pstr = 0;
             if(fontWidth(pDest) > Width)
-                Done = TRUE;
+                done = TRUE;
             else
             {
                 StringLen += WordLen;
@@ -1096,12 +1096,12 @@ char    temp;
         }
         else
         {
-            Done = TRUE;
+            done = TRUE;
             StringLen += WordLen;
         }
-    } while(!Done);
+    } while (!done);
 
-    if(StringLen)
+    if (StringLen)
     {
         // memStrncpy(pDest, pString, StringLen+1);
         pDest[StringLen] = 0;
@@ -1117,7 +1117,7 @@ char    temp;
 
 static long PulseVal(long Val)
 {
-static long pulseDir = TUT_PointerPulseInc;
+    static long pulseDir = TUT_PointerPulseInc;
 
     Val += pulseDir;
     if(Val >= 255 || Val <= TUT_PointerPulseMin)
@@ -1139,8 +1139,8 @@ typedef struct {
 // returns true if clipped, false otherwise
 sdword tutClipSegToHorizontal(lvector *pSeg, lvector *pDest, sdword y)
 {
-sdword dy0, dy1;
-real32 t;
+    sdword dy0, dy1;
+    real32 t;
 
     dy0 = pSeg[1].y - pSeg[0].y;
     dy1 = y - pSeg[0].y;
@@ -1163,8 +1163,8 @@ real32 t;
 // returns true if clipped, false otherwise
 sdword tutClipSegToVertical(lvector *pSeg, lvector *pDest, sdword x)
 {
-sdword dx0, dx1;
-real32 t;
+    sdword dx0, dx1;
+    real32 t;
 
     dx0 = pSeg[1].x - pSeg[0].x;
     dx1 = x - pSeg[0].x;
@@ -1185,8 +1185,8 @@ real32 t;
 
 void tutClipSegToTextBox(sdword *x0, sdword *y0, sdword *x1, sdword *y1)
 {
-lvector ClipSeg[2];
-lvector Clipped;
+    lvector ClipSeg[2];
+    lvector Clipped;
 
     ClipSeg[0].x = *x0; ClipSeg[0].y = *y0;
     ClipSeg[1].x = *x1; ClipSeg[1].y = *y1;
@@ -1721,26 +1721,24 @@ long    i;
 
 long tutParseImagesIntoIndices(char *szImages)
 {
-char    szToken[256];
-long    StrIndex, Count, TokenIndex;
+    char szToken[256];
 
-    Count = 0;
-    StrIndex = GetNextCommaDelimitedToken(szImages, szToken, 0);
-    while(StrIndex)
+    long count    = 0;
+    long strIndex = GetNextCommaDelimitedToken(szImages, szToken, 0);
+    while (strIndex)
     {
-        TokenIndex = tutFindTokenIndex(tutImageList, szToken);
+        long TokenIndex = tutFindTokenIndex(tutImageList, szToken);
 
         if(TokenIndex != -1)
-            szImageIndexList[Count] = TokenIndex;
-        else
-            szImageIndexList[Count] = 0;
+             szImageIndexList[count] = TokenIndex;
+        else szImageIndexList[count] = 0;
 
-        Count++;
-        StrIndex = GetNextCommaDelimitedToken(NULL, szToken, StrIndex);
+        count++;
+        strIndex = GetNextCommaDelimitedToken(NULL, szToken, strIndex);
     }
 
-    szImageIndexList[Count] = 0;
-    return Count;
+    szImageIndexList[count] = 0;
+    return count;
 }
 
 
@@ -1760,10 +1758,10 @@ long    ImageCount;
 
     ImageCount = tutParseImagesIntoIndices(szImages);
 
-    tutImageAtom.x = MAIN_WindowWidth - ImageCount * 64;
-    tutImageAtom.y = MAIN_WindowHeight - 64;
-    tutImageAtom.width = ImageCount * 64;
-    tutImageAtom.height = 64;
+    tutImageAtom.x      = (sword) (MAIN_WindowWidth - ImageCount * 64);
+    tutImageAtom.y      = (sword) (MAIN_WindowHeight - 64);
+    tutImageAtom.width  = (sword) ImageCount * 64;
+    tutImageAtom.height = (sword) 64;
 
     tutImageRegion = regChildAlloc(tutRootRegion, (smemsize)&tutImageAtom,
         tutImageAtom.x, tutImageAtom.y, tutImageAtom.width, tutImageAtom.height, 0, 0);
@@ -1779,9 +1777,9 @@ long    ImageCount;
 
 void tutDrawImageFunction(regionhandle reg)
 {
-rectangle   rect;
-long    i, Index;
-long    x, y;
+    rectangle   rect;
+    long    i, Index;
+    long    x, y;
 
     x = reg->rect.x0;
     y = reg->rect.y0;
@@ -1858,10 +1856,8 @@ void tutShutdown(void)
 ----------------------------------------------------------------------------*/
 void tutInitialize(void)
 {
-    long    i;
-    char    Filename[256];
-
-    i = 0;
+    long i = 0;
+    char Filename[256];
 
     while( tutImageList[i][0] )
     {
@@ -1874,33 +1870,15 @@ void tutInitialize(void)
             strcpy(Filename, "feman/texdecorative/");
 #endif
 
-            //load the correct texture depending on language
-            if (strCurLanguage == languageEnglish)
-            {
-                strcat(Filename, tutImageList[i]);
+            //load the correct texture depending on language. defaults to english
+            switch (strCurLanguage) {
+                case languageEnglish : strcat(Filename, tutImageList[i]);        break;
+                case languageFrench  : strcat(Filename, tutFrenchImageList[i]);  break;
+                case languageGerman  : strcat(Filename, tutGermanImageList[i]);  break;
+                case languageSpanish : strcat(Filename, tutSpanishImageList[i]); break;
+                case languageItalian : strcat(Filename, tutItalianImageList[i]); break;
+                default              : strcat(Filename, tutImageList[i]);        break;
             }
-            else if (strCurLanguage == languageFrench)
-            {
-                strcat(Filename, tutFrenchImageList[i]);
-            }
-            else if (strCurLanguage == languageGerman)
-            {
-                strcat(Filename, tutGermanImageList[i]);
-            }
-            else if (strCurLanguage == languageSpanish)
-            {
-                strcat(Filename, tutSpanishImageList[i]);
-            }
-            else if (strCurLanguage == languageItalian)
-            {
-                strcat(Filename, tutItalianImageList[i]);
-            }
-            else
-            {
-                //defaults to english
-                strcat(Filename, tutImageList[i]);
-            }
-
             strcat(Filename, ".LiF");
             tutImage[i] = trLIFFileLoad(Filename, NonVolatile);
 
@@ -2108,14 +2086,13 @@ bool tutGameSentMessage(char *eventNames)
 
 bool tutGameMessageInQueue(char *eventNames)
 {
-    udword  i;
-    char    szToken[256];
-    long    StrIndex;
+    char szToken[256];
+    long StrIndex;
 
     StrIndex = GetNextCommaDelimitedToken(eventNames, szToken, 0);
     while (StrIndex)
     {
-        for (i=0; i<tutGameMessageIndex; i++)
+        for (long i=0; i<tutGameMessageIndex; i++)
         {
             if (strcasecmp(szToken, tutGameMessageList[i]) == 0)
             {
