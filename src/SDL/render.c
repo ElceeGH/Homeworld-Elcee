@@ -1362,6 +1362,8 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 
         
         //draw big stars
+        /// Extrapolate the curve originally specified for the size of big stars in BTG, proportional to screen resolution.
+        /// It was originally based on only the width of the screen as a proxy for resolution but that's no good nowadays.
         const real32 bigStarSize = sqrtf( 0.0064f * resDensity );
         glPointSize(bigStarSize);
         glDrawArrays(GL_POINTS, (universe.star3dinfo->Num3dStars - NUM_BIG_STARS), NUM_BIG_STARS);

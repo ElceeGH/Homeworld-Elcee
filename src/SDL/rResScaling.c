@@ -56,11 +56,3 @@ real32 getResFrequency( void ) {
 real32 getResFrequencyRelative( void ) {
     return getResFrequency() / 60.0f;
 }
-
-
-
-/// Extrapolate the curve originally specified for the size of big stars in BTG, proportional to screen resolution.
-/// It was originally based on only the width of the screen as a proxy for resolution but that's no good nowadays.
-real32 getBigStarSize( void ) {
-    return sqrtf( getResDensity() * 0.0064f );
-}
