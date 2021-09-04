@@ -114,9 +114,6 @@ typedef struct tagTGAFileHeader
 // code
 // -----
 
-#define fsin(A) (real32)sin((real64)(A))
-#define fcos(A) (real32)cos((real64)(A))
-
 /*-----------------------------------------------------------------------------
     Name        : btgStartup
     Description : initialize the btg subsystem
@@ -1238,11 +1235,7 @@ void btgRender()
 
     if (btgHead == NULL)
     {
-#ifdef _WIN32
-        btgLoad("BTG\\default.btg");
-#else
         btgLoad("BTG/default.btg");
-#endif
     }
 
 #if MR_KEYBOARD_CHEATS
@@ -1278,10 +1271,11 @@ void btgRender()
         {
             btgFade = 255;
         }
-//#ifndef _WIN32_FIXME
+
         btgColorVertices();
-//#endif
+
         if (useVBO) glBufferData(GL_ARRAY_BUFFER, btgHead->numVerts * sizeof(btgTransVertex), btgTransVerts, GL_STATIC_DRAW);
+
         *dlast = *dnext;
         lastFade = btgFade;
     }
