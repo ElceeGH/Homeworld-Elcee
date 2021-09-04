@@ -48,10 +48,11 @@
     Defines:
 =============================================================================*/
 
-#define NUM_CARRIER_SHIPS       13 + 2
-#define LM_FIGHTER_SPACER       TOTAL_NUM_SHIPS + 1
-#define LM_CORVETTE_SPACER      TOTAL_NUM_SHIPS + 2
+#define NUM_CARRIER_SHIPS       (13 + 2)
+#define LM_FIGHTER_SPACER       (TOTAL_NUM_SHIPS + 1)
+#define LM_CORVETTE_SPACER      (TOTAL_NUM_SHIPS + 2)
 #define LM_SHIP_IMAGE_INSET     4
+#define LM_PRINTORDER_END       -1
 
 
 #define LM_VertSpacing      (fontHeight(" ") >> 1)
@@ -106,7 +107,7 @@ sdword PrintOrder[LM_NUMSHIPS] =
     P1StandardCorvette  ,
     P1MissileCorvette   ,
 
-    -1
+    LM_PRINTORDER_END
 };
 
 // This is a bool that is TRUE if the ship is in the printlist. dynamically calculated
@@ -233,6 +234,15 @@ ShipType lmcurshipview=DefaultShip;
     Functions:
 =============================================================================*/
 
+
+static bool lmIsPrintOrderIndexValid( sdword poi ) {
+    return poi != LM_PRINTORDER_END
+        && poi != LM_FIGHTER_SPACER 
+        && poi != LM_CORVETTE_SPACER
+        && shipsavailable[poi].nShips > 0;
+}
+
+
 void lmUpdateShipView(void)
 {
     udword index;
@@ -241,18 +251,18 @@ void lmUpdateShipView(void)
 
     if (lmcurshipview == DefaultShip)
     {
-        for (index=0; PrintOrder[index]!=-1;index++)
+        for (index=0; PrintOrder[index]!=LM_PRINTORDER_END; index++)
         {                                                       //for all available ships
-            if ((shipsavailable[PrintOrder[index]].nShips > 0) &&
-                ((PrintOrder[index]!=LM_FIGHTER_SPACER) && (PrintOrder[index]!=LM_CORVETTE_SPACER)))
+            sdword poi = PrintOrder[index];
+            if (lmIsPrintOrderIndexValid(poi))
             {
-                svSelectShip(PrintOrder[index]);
+                svSelectShip(poi);
                 if (lmListWindow!=NULL)
                 {
-                    listitem = uicListFindItemByData(lmListWindow, (ubyte *)PrintOrder[index]);
+                    listitem = uicListFindItemByData(lmListWindow, (ubyte *)poi);
                     uicListWindowSetCurItem(lmListWindow, listitem);
                 }
-                lmcurshipview = PrintOrder[index];
+                lmcurshipview = poi;
                 break;
             }
         }
@@ -274,16 +284,16 @@ void lmUpdateShipView(void)
             lmcurshipview = DefaultShip;
             for (index=0; PrintOrder[index]!=-1;index++)
             {                                                       //for all available ships
-                if ((shipsavailable[PrintOrder[index]].nShips > 0) &&
-                    ((PrintOrder[index]!=LM_FIGHTER_SPACER) && (PrintOrder[index]!=LM_CORVETTE_SPACER)))
+                sdword poi = PrintOrder[index];
+                if (lmIsPrintOrderIndexValid(poi))
                 {
                     if (lmListWindow!=NULL)
                     {
-                        listitem = uicListFindItemByData(lmListWindow, (ubyte *)PrintOrder[index]);
+                        listitem = uicListFindItemByData(lmListWindow, (ubyte *)poi);
                         uicListWindowSetCurItem(lmListWindow, listitem);
                     }
 
-                    lmcurshipview = PrintOrder[index];
+                    lmcurshipview = poi;
                     break;
                 }
             }
@@ -603,155 +613,6 @@ void lmCloseIfOpen()
     }
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : lmSelectShipType
-    Description : Find what type of ship was selected
-    Inputs      : reg - region clicked on
-                  yClicked - vertical location clicked on.
-                  xClicked - horozontal location clicked on.
-    Outputs     :
-    Return      : type of ship clicked on or -1 if none
-----------------------------------------------------------------------------*/
-/*sdword lmSelectShipType(regionhandle region, sdword yClicked, sdword xClicked)
-{
-    sdword index, x, y, yspace, boxclicked=-1, xtab;
-    fonthandle currentFont;
-    sdword shipnum;
-    rectangle rect = region->rect;
-
-    currentFont = fontMakeCurrent(lmShipListFont);
-    yspace = fontHeight(" ") + LM_VertSpacing;
-    fontMakeCurrent(currentFont);
-
-
-    xtab = 0;
-    y    = rect.y0 + LM_VertSpacing;
-    x    = rect.x0 + LM_HorzSpacing;
-
-
-    for (index = 0; PrintOrder[index]!=-1; index++)
-    {
-        if ( (yClicked >= y)&&
-             (yClicked  < y + yspace) )
-        {
-            boxclicked = index;
-            break;
-        }
-        y += yspace;
-    }
-
-    if (boxclicked != -1)
-        for (index=0,shipnum=-1; PrintOrder[index]!=-1;index++)
-        {
-            if (PrintOrder[index] != SPACER)
-            {
-                if (shipsavailable[PrintOrder[index]].nShips > 0)
-                    shipnum++;
-                if (shipnum==boxclicked)
-                {
-                    svSelectShip(PrintOrder[index]);
-                    lmcurshipview = PrintOrder[index];
-                    return(index);
-                }
-            }
-        }
-
-
-
-    return(-1);
-}*/
-
-/*-----------------------------------------------------------------------------
-    Name        : lmSelectAvailable
-    Description : Callback for selecting/deselecting ships
-    Inputs      : standard region callback
-    Outputs     : selects or deselects a ship for launching
-    Return      :
-----------------------------------------------------------------------------*/
-/*sdword lmSelectAvailable(regionhandle region, sdword ID, udword event, udword data)
-{
-    sdword clicked, index;
-
-    if (event == RPE_PressLeft)
-    {
-        if((tutorial==TUTORIAL_ONLY) && !tutEnable.bLaunchSelectShips)
-            return 0;
-
-        clicked = lmSelectShipType(region, mouseCursorY(), mouseCursorX());
-
-        if (clicked != -1)
-        {
-            if (!controlstate)
-            {
-                for (index=0; PrintOrder[index]!=-1; index++)
-                {
-                    shipsavailable[PrintOrder[index]].bSelected = FALSE;
-                }
-            }
-            if (shiftstate)
-            {
-                if (curselected > clicked)
-                    for (index=clicked; index <= curselected; index++ )
-                        shipsavailable[PrintOrder[index]].bSelected = TRUE;
-                else
-                    for (index=curselected; index <= clicked; index++ )
-                        shipsavailable[PrintOrder[index]].bSelected = TRUE;
-            }
-            if (controlstate)
-            {
-                if (shipsavailable[PrintOrder[clicked]].bSelected)
-                    shipsavailable[PrintOrder[clicked]].bSelected = FALSE;
-                else
-                    shipsavailable[PrintOrder[clicked]].bSelected = TRUE;
-            }
-            else
-                shipsavailable[PrintOrder[clicked]].bSelected = TRUE;
-
-
-            if (!shiftstate)
-                curselected = clicked;
-
-            if(tutorial)
-            {
-            char    msg[256];
-
-                strcpy(msg, "Game_Launch_");
-                if(shipsavailable[PrintOrder[clicked]].bSelected)
-                    strcat(msg, "Select_");
-                else
-                    strcat(msg, "Deselect_");
-
-                strcat(msg, ShipTypeToNiceStr(PrintOrder[clicked]));
-                tutGameMessage(msg);
-            }
-        }
-        return(0);
-    }
-    else if (event == RPE_KeyDown)
-    {
-        switch (ID)
-        {
-            case SHIFTKEY : shiftstate=TRUE;
-                return(0);
-            case CONTROLKEY : controlstate=TRUE;
-                return(0);
-        }
-    }
-    else if (event == RPE_KeyUp)
-    {
-        switch (ID)
-        {
-            case SHIFTKEY : shiftstate=FALSE;
-                return(0);
-            case CONTROLKEY : controlstate=FALSE;
-                return(0);
-        }
-    }
-
-
-    return(0);
-}*/
-
 void lmShipItemDraw(rectangle *rect, listitemhandle data)
 {
     fonthandle currentFont;
@@ -840,24 +701,24 @@ void lmShipsToLaunchDraw(char *string, featom *atom)
 
         for (index=LM_NUMSHIPS-1;index>=0;index--)
         {
-            if ( ((PrintOrder[index]!=LM_FIGHTER_SPACER) && (PrintOrder[index]!=LM_CORVETTE_SPACER)) &&
-                 (shipsavailable[PrintOrder[index]].nShips > 0) )
+            sdword poi = PrintOrder[index];
+            if (lmIsPrintOrderIndexValid(poi))
             {
-                uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], UICLI_CanSelect, UICLW_AddToHead);
-                if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Corvette)
+                uicListAddItem(lmListWindow, (ubyte *)poi, UICLI_CanSelect, UICLW_AddToHead);
+                if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Corvette)
                 {
                     is_corv = TRUE;
                 }
-                else if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Fighter)
+                else if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Fighter)
                 {
                     is_fight = TRUE;
                 }
 
             }
-            else if ( ( (PrintOrder[index]==LM_FIGHTER_SPACER) && (is_fight) ) ||
-                      ( (PrintOrder[index]==LM_CORVETTE_SPACER) && (is_corv) )  )
+            else if ( ( (poi==LM_FIGHTER_SPACER)  && (is_fight) ) ||
+                      ( (poi==LM_CORVETTE_SPACER) && (is_corv) )  )
             {
-                uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], 0, UICLW_AddToHead);
+                uicListAddItem(lmListWindow, (ubyte *)poi, 0, UICLW_AddToHead);
             }
         }
 
@@ -873,81 +734,6 @@ void lmShipsToLaunchDraw(char *string, featom *atom)
         lmcurshipview = (sdword)lmListWindow->CurLineSelected->data;
         svSelectShip(lmcurshipview);
     }
-/*    fonthandle currentFont;
-    rectangle  rect = region->rect, select;
-    char       tempstr[64];
-    sdword     index;
-    color      col, plaincol, selectcol;
-    sdword     x, y, xtab;
-
-    currentFont = fontMakeCurrent(lmShipListFont);
-
-    if (region->flags == 0 || region->flags == RPE_DrawFunctionAdded)
-    {                                                       //if region not processed yet
-        region->flags = RPE_PressLeft;     //receive mouse presses from now on
-        regFunctionSet(region, (regionfunction)lmSelectAvailable);          //set new region handler function
-    }
-    feStaticRectangleDraw(region);                          //draw standard rectangle
-
-    xtab = 0;
-    y    = rect.y0 + LM_VertSpacing;
-    x    = rect.x0 + LM_HorzSpacing;
-
-    plaincol = FEC_ListItemStandard;//lmShipListTextColor;
-    selectcol = FEC_ListItemSelected;//lmShipSelectedTextColor;
-
-
-
-    for (index=0;PrintOrder[index]!=-1;index++)
-    {
-        if (PrintOrder[index]!=SPACER)
-        {
-            if (shipsavailable[PrintOrder[index]].bSelected)
-                col = selectcol;
-            else
-                col = plaincol;
-
-            if (shipsavailable[PrintOrder[index]].nShips > 0)
-            {
-                sprintf(tempstr, " %i",shipsavailable[PrintOrder[index]].nShips);
-                fontPrintf(x+fontWidth(" 55 ")-fontWidth(tempstr), y, col,"%s",tempstr);
-                fontPrintf(x+fontWidth(" 55 "), y, col," x %s", ShipTypeToNiceStr(PrintOrder[index]));
-            }
-            else
-                goto skipnewline;
-        }
-
-        if (index == curselected)
-        {
-            select.x0 = x-LM_BoxSpacing;
-            select.y0 = y-LM_BoxSpacing;
-            select.x1 = x+(((rect.x1-rect.x0)*3)/4);
-            select.y1 = y-LM_BoxSpacing+fontHeight(" ") + LM_VertSpacing;
-            primRectTranslucent2(&select, FEC_ListItemTranslucent);
-            primRectOutline2(&select, 1, FEC_ListItemTranslucentBorder); //selectcol
-        }
-
-
-
-        if (PrintOrder[index]==SPACER)
-        {
-            //xtab = (rect.x1-rect.x0)>>1;
-            //y    = rect.y0 + LM_VertSpacing;
-            plaincol = FEC_ListItemStandard;//lmShip2ListTextColor;
-            selectcol = FEC_ListItemSelected;//lmShip2SelectedTextColor;
-        }
-        else
-        {
-            y += fontHeight(" ") + LM_VertSpacing;
-        }
-
-        x = rect.x0 + xtab + LM_HorzSpacing;
-
-skipnewline:
-        ;
-    }
-
-    fontMakeCurrent(currentFont);*/
 }
 
 /*-----------------------------------------------------------------------------
@@ -959,14 +745,15 @@ skipnewline:
 ----------------------------------------------------------------------------*/
 void lmBarDraw(rectangle *rect, color back, color fore, real32 percent)
 {
-    rectangle temp;
+    
     primRectSolid2(rect, back);
 
-    if (percent > 1.0)
+    if (percent > 1.0f)
     {
-        percent = 1.0;
+        percent = 1.0f;
     }
 
+    rectangle temp;
     temp.x0 = rect->x0;
     temp.y0 = rect->y0;
     temp.x1 = rect->x0 + (sdword)((rect->x1-rect->x0)*percent);
@@ -1540,24 +1327,24 @@ void lmUpdateShipsInside(void)
 
             for (index=LM_NUMSHIPS-1;index>=0;index--)
             {
-                if ( ((PrintOrder[index]!=LM_FIGHTER_SPACER) && (PrintOrder[index]!=LM_CORVETTE_SPACER)) &&
-                     (shipsavailable[PrintOrder[index]].nShips > 0) )
+                sdword poi = PrintOrder[index];
+                if (lmIsPrintOrderIndexValid(poi))
                 {
-                    uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], UICLI_CanSelect, UICLW_AddToHead);
-                    if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Corvette)
+                    uicListAddItem(lmListWindow, (ubyte *)poi, UICLI_CanSelect, UICLW_AddToHead);
+                    if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Corvette)
                     {
                         is_corv = TRUE;
                     }
-                    else if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Fighter)
+                    else if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Fighter)
                     {
                         is_fight = TRUE;
                     }
 
                 }
-                else if ( ( (PrintOrder[index]==LM_FIGHTER_SPACER) && (is_fight) ) ||
-                          ( (PrintOrder[index]==LM_CORVETTE_SPACER) && (is_corv) )  )
+                else if ( ( (poi==LM_FIGHTER_SPACER) && (is_fight) ) ||
+                          ( (poi==LM_CORVETTE_SPACER) && (is_corv) )  )
                 {
-                    uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], 0, UICLW_AddToHead);
+                    uicListAddItem(lmListWindow, (ubyte *)poi, 0, UICLW_AddToHead);
                 }
             }
 
@@ -1786,25 +1573,25 @@ void lmReLaunch(Ship *newship)
 
         for (index=LM_NUMSHIPS-1;index>=0;index--)
         {
-            if ( ((PrintOrder[index]!=LM_FIGHTER_SPACER) && (PrintOrder[index]!=LM_CORVETTE_SPACER)) &&
-                 (shipsavailable[PrintOrder[index]].nShips > 0) )
+            sdword poi = PrintOrder[index];
+            if (lmIsPrintOrderIndexValid(poi))
             {
-                uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], UICLI_CanSelect, UICLW_AddToHead);
+                uicListAddItem(lmListWindow, (ubyte *)poi, UICLI_CanSelect, UICLW_AddToHead);
 
-                if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Corvette)
+                if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Corvette)
                 {
                     is_corv = TRUE;
                 }
-                else if (shipsavailable[PrintOrder[index]].ship->staticinfo->shipclass==CLASS_Fighter)
+                else if (shipsavailable[poi].ship->staticinfo->shipclass==CLASS_Fighter)
                 {
                     is_fight = TRUE;
                 }
 
             }
-            else if ( ( (PrintOrder[index]==LM_FIGHTER_SPACER) && (is_fight) ) ||
-                      ( (PrintOrder[index]==LM_CORVETTE_SPACER) && (is_corv) )  )
+            else if ( ( (poi==LM_FIGHTER_SPACER) && (is_fight) ) ||
+                      ( (poi==LM_CORVETTE_SPACER) && (is_corv) )  )
             {
-                uicListAddItem(lmListWindow, (ubyte *)PrintOrder[index], 0, UICLW_AddToHead);
+                uicListAddItem(lmListWindow, (ubyte *)poi, 0, UICLW_AddToHead);
             }
         }
 
