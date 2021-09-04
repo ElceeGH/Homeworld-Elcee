@@ -7,26 +7,14 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
-		old_dont use_1|x86 = old_dont use_1|x86
-		Release (test)|x86 = Release (test)|x86
-		release + symbols|x86 = release + symbols|x86
 		Release|x86 = Release|x86
-		release+symbols|x86 = release+symbols|x86
 		Release-ASAN|x86 = Release-ASAN|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|x86.ActiveCfg = Debug|Win32
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Debug|x86.Build.0 = Debug|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.old_dont use_1|x86.ActiveCfg = old_dont use_1|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.old_dont use_1|x86.Build.0 = old_dont use_1|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release (test)|x86.ActiveCfg = Release|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release (test)|x86.Build.0 = Release|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.release + symbols|x86.ActiveCfg = release + symbols|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.release + symbols|x86.Build.0 = release + symbols|Win32
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|x86.ActiveCfg = Release|Win32
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release|x86.Build.0 = Release|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.release+symbols|x86.ActiveCfg = release + symbols|Win32
-		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.release+symbols|x86.Build.0 = release + symbols|Win32
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release-ASAN|x86.ActiveCfg = Release-ASAN|Win32
 		{81CB51C4-B434-4E12-B69B-BAEE102F2852}.Release-ASAN|x86.Build.0 = Release-ASAN|Win32
 	EndGlobalSection
