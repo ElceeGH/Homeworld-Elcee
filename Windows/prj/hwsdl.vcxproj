@@ -445,6 +445,7 @@
     <ClCompile Include="..\..\src\SDL\rResScaling.c" />
     <ClCompile Include="..\..\src\SDL\rglu.c" />
     <ClCompile Include="..\..\src\SDL\rinit.c" />
+    <ClCompile Include="..\..\src\SDL\rShaderProgram.c" />
     <ClCompile Include="..\..\src\SDL\screenshot.c" />
     <ClCompile Include="..\..\src\SDL\smixer.c" />
     <ClCompile Include="..\..\src\SDL\soundlow.c" />

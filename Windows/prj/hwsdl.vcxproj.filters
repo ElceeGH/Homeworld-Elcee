@@ -967,6 +967,9 @@
     <ClCompile Include="..\..\src\SDL\miscUtil.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rShaderProgram.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Game\precompiled.h">
