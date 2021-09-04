@@ -440,7 +440,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 o.centreY = primGLToScreenY(y);
                 o.radiusX = o.radiusY = primGLToScreenScaleX(radius);
                 nSegments = pieCircleSegmentsCompute(radius);
-                primOvalArcOutline2(&o, 0.0f, 2*PI, getResDensityRelative(), nSegments, thisPing->c);
+                primOvalArcOutline2(&o, 0.0f, 2*PI, sqrtf(getResDensityRelative()), nSegments, thisPing->c);
 
                 /* starting to draw a new ping so play the sound */
                 if (!smZoomingIn && !smZoomingOut && !pingset)
