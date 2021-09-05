@@ -1513,10 +1513,10 @@ bool rndShipVisibleUsingCoordSys(SpaceObj* spaceobj, Camera* camera)
 
     result = rndShipVisible(spaceobj, camera);
 
-    glMatrixMode(GL_PROJECTION_MATRIX);
+    glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(projection);
 
-    glMatrixMode(GL_MODELVIEW_MATRIX);
+    glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(modelview);
 
     return result;
