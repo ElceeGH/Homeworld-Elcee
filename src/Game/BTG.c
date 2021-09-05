@@ -1284,15 +1284,15 @@ void btgRender()
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
     if (useVBO) {
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(btgTransVertex), 0);
-        glVertexPointer(3, GL_FLOAT, sizeof(btgTransVertex), (GLvoid*)4);
+        glColorPointer (4, GL_UNSIGNED_BYTE, sizeof(btgTransVertex), (void*) offsetof(btgTransVertex,red)     );
+        glVertexPointer(3, GL_FLOAT,         sizeof(btgTransVertex), (void*) offsetof(btgTransVertex,position));
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices);
         glDrawElements(GL_TRIANGLES, 3 * btgHead->numPolys, GL_UNSIGNED_SHORT, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     } else {
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(btgTransVertex), (GLubyte*)btgTransVerts);
-        glVertexPointer(3, GL_FLOAT, sizeof(btgTransVertex), ((GLubyte*)btgTransVerts) + 4);
+        glColorPointer (4, GL_UNSIGNED_BYTE, sizeof(btgTransVertex), ((GLubyte*)btgTransVerts) + offsetof(btgTransVertex,red)     );
+        glVertexPointer(3, GL_FLOAT,         sizeof(btgTransVertex), ((GLubyte*)btgTransVerts) + offsetof(btgTransVertex,position));
         glDrawElements(GL_TRIANGLES, 3 * btgHead->numPolys, GL_UNSIGNED_SHORT, btgIndices);
     }
     glDisableClientState(GL_COLOR_ARRAY);
