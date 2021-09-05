@@ -19,67 +19,8 @@
 #version 120
 
 // Uniforms
-uniform vec4 uDitherScale = vec4(63.0); // Derived from output bit depth.     Scale = power( 2, bits ) - 1
-uniform int  uDitherNoise = 0;          // Temporal variation in bayer dither. Noise = frameindex & 0x3F
-
-
-
-// Component-wise IHOR
-bvec4 inHalfOpenRange( vec4 f, float low, float high ) {
-    bvec4 gt = greaterThanEqual( f, vec4(low)  );
-    bvec4 lt = lessThan        ( f, vec4(high) );
-    return bvec4(
-        lt.x && gt.x,
-        lt.y && gt.y,
-        lt.z && gt.z,
-        lt.w && gt.w
-    );
-}
-
-// Mix using bvec4
-vec4 select( vec4 a, vec4 b, bvec4 f ) {
-    return vec4(
-        f.x ? b.x : a.x,
-        f.y ? b.y : a.y,
-        f.z ? b.z : a.z,
-        f.w ? b.w : a.w
-    );
-}
-
-// 2x2 order dither.  A bit hacky.
-//  00  10  10  01  11
-//  00  00  01  11  11
-vec4 dither( vec4 col ) {
-    vec2 fp = gl_FragCoord.xy - 0.5; // Shift from pixel centre to integer
-    vec2 mp = mod( fp, 2.0 );        // 0 or 1
-    
-    float f25 = (mp.x  + mp.y == 0.0) ? 1.0 : 0.0; // 12.5 - 37.5 %
-    float f50 = (mp.x == mp.y)        ? 1.0 : 0.0; // 37.5 - 62.5 %
-    float f75 = 1.0 - f25;                         // 62.5 - 87.5 %
-    
-    vec4 scaled = col * uDitherScale;
-    vec4 low    = floor( scaled );
-    vec4 frac   = fract( scaled );
-    vec4 high   = ceil ( scaled );
-    
-    bvec4 isF25  = inHalfOpenRange ( frac, 0.125, 0.375 );
-    bvec4 isF50  = inHalfOpenRange ( frac, 0.375, 0.625 );
-    bvec4 isF75  = inHalfOpenRange ( frac, 0.625, 0.875 );
-    bvec4 isF100 = greaterThanEqual( frac, vec4(0.875)  );
-    
-    vec4 ditherSelect = vec4( 0.0 );
-         ditherSelect = select( ditherSelect, vec4(f25), isF25  );
-         ditherSelect = select( ditherSelect, vec4(f50), isF50  );
-         ditherSelect = select( ditherSelect, vec4(f75), isF75  );
-         ditherSelect = select( ditherSelect, vec4(1.0), isF100 );
-    
-    vec4 select = mix( low, high, ditherSelect );
-    vec4 renorm = select / uDitherScale;
-    
-    return renorm;
-}
-
-
+uniform vec4 uDitherScale = vec4(63.0); // Derived from output bit depth.      Value = power( 2, bits ) - 1
+uniform int  uDitherNoise = 0;          // Temporal variation in bayer dither. Value = frameindex & 0x3F
 
 // 8x8 ordered dither pattern.
 const float bayerPattern[] = float[8*8](
@@ -93,18 +34,14 @@ const float bayerPattern[] = float[8*8](
     255.0,  125.0,  223.0,   93.0,  247.0,  117.0,  215.0,   85.0
 );
 
-
-
 // Get bayer value for this pixel
 float bayerValue() {
     vec2  fp = gl_FragCoord.xy - 0.5;
     vec2  mp = mod( fp, 8.0 );
     float bi = int( mp.y*8.0 + mp.x );
-    float i  = mod( bi + uDitherNoise, 64.0 );
-    return bayerPattern[int(i)] / 255.0;
+    float ti = mod( bi + uDitherNoise, 64.0 );
+    return bayerPattern[int(ti)] / 255.0;
 }
-
-
 
 // Dither the colour using the bayer pattern
 vec4 bayerDither( vec4 col ) {
@@ -116,21 +53,7 @@ vec4 bayerDither( vec4 col ) {
     return sel / uDitherScale;
 }
 
-
-
 void main() {
-    vec4 a = dither( gl_Color );
-    vec4 b = bayerDither( gl_Color );
-    
-    if (gl_FragCoord.x < 2560/2)
-         gl_FragColor = a;
-    else gl_FragColor = b;
-    
-    if (gl_FragCoord.x - 0.5 == 2560/2)
-        gl_FragColor = vec4(1.0);
+    gl_FragColor = bayerDither( gl_Color );
 }
-
-
-
-
 
