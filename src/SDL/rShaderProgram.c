@@ -21,6 +21,7 @@ static void   checkLink         ( const char* name, GLuint handle );
 
 
 
+// Private GL
 static PFNGLCREATESHADERPROC      glCreateShader;
 static PFNGLSHADERSOURCEPROC      glShaderSource;
 static PFNGLCOMPILESHADERPROC     glCompileShader;
@@ -32,7 +33,16 @@ static PFNGLGETSHADERIVPROC       glGetShaderiv;
 static PFNGLGETSHADERINFOLOGPROC  glGetShaderInfoLog;
 static PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 static PFNGLGETPROGRAMIVPROC      glGetProgramiv;
-PFNGLUSEPROGRAMPROC       glUseProgram;
+
+// Public GL
+PFNGLUSEPROGRAMPROC         glUseProgram;
+PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+PFNGLUNIFORM1IPROC          glUniform1i;
+PFNGLUNIFORM1FPROC          glUniform1f;
+PFNGLUNIFORM2FVPROC         glUniform2fv;
+PFNGLUNIFORM3FVPROC         glUniform3fv;
+PFNGLUNIFORM4FVPROC         glUniform4fv;
+PFNGLUNIFORMMATRIX4FVPROC   glUniformMatrix4fv;
 
 
 
@@ -49,7 +59,16 @@ void loadShaderFunctions() {
     glGetShaderInfoLog  = SDL_GL_GetProcAddress( "glGetShaderInfoLog"  );
     glGetProgramInfoLog = SDL_GL_GetProcAddress( "glGetProgramInfoLog" );
     glGetProgramiv      = SDL_GL_GetProcAddress( "glGetProgramiv"      );
-    glUseProgram        = SDL_GL_GetProcAddress( "glUseProgram"        );
+
+    glUseProgram         = SDL_GL_GetProcAddress( "glUseProgram"         );
+    glGetUniformLocation = SDL_GL_GetProcAddress( "glGetUniformLocation" );
+    glUniform1i          = SDL_GL_GetProcAddress( "glUniform1i"          );
+    glUniform1f          = SDL_GL_GetProcAddress( "glUniform1f"          );
+    glUniform2fv         = SDL_GL_GetProcAddress( "glUniform2fv"         );
+    glUniform3fv         = SDL_GL_GetProcAddress( "glUniform3fv"         );
+    glUniform4fv         = SDL_GL_GetProcAddress( "glUniform4fv"         );
+    glUniform4fv         = SDL_GL_GetProcAddress( "glUniform4fv"         );
+    glUniformMatrix4fv   = SDL_GL_GetProcAddress( "glUniformMatrix4fv"   );
 }
 
 
@@ -128,8 +147,8 @@ static void checkCompile( const char* name, GLuint handle ) {
 
     // If present, output log on standard error stream.
     if ( ! compileGood  ||  logLen > 1) { // +1 for null terminator
-        const char* errorOrMessage = compileGood ? "message" : "error";
-        printf( "Shader compile %s for shader '%s'. Log:\n", errorOrMessage, name );
+        const char* what = compileGood ? "message" : "error";
+        printf( "Shader compile %s for shader '%s'. Log:\n", what, name );
 
         char* log = malloc( logLen );
         glGetShaderInfoLog( handle, logLen, NULL, log );
@@ -149,8 +168,8 @@ static void checkLink( const char* name, GLuint handle ) {
 
     // Output log on standard error stream.
     if ( ! linkGood  || logLen > 1) {
-        const char* errorOrMessage = linkGood ? "message" : "error";
-        printf( "Program link %s for program %s. Log:\n", errorOrMessage, name );
+        const char* what = linkGood ? "message" : "error";
+        printf( "Program link %s for program '%s'. Log:\n", what, name );
 
         char* log = malloc( logLen );
         glGetProgramInfoLog( handle, logLen, NULL, log );
