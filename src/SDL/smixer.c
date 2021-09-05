@@ -68,12 +68,12 @@ real32 timebufferL[FQ_DSIZE], timebufferR[FQ_DSIZE], temptimeL[FQ_DSIZE], tempti
 real32 mixbuffer1L[FQ_SIZE], mixbuffer1R[FQ_SIZE], mixbuffer2L[FQ_SIZE], mixbuffer2R[FQ_SIZE];
 
 //extern LPDIRECTSOUND lpDirectSound;
+extern SDL_sem* mixerThreadSem;
 extern CHANNEL channels[];
 extern bool soundinited;
 extern STREAM streams[];
 extern CHANNEL speechchannels[];
 extern sdword numstreams;
-extern bool bDirectSoundCertified;
 extern SENTENCELUT *SentenceLUT;
 extern real32 MasterEQ[];
 
@@ -876,8 +876,12 @@ void isoundmixerqueueSDL(Uint8 *stream, int len)
 #endif
 }
 
+
+
 void soundfeedercb(void *userdata, Uint8 *stream, int len)
 {
+	SDL_SemPost( mixerThreadSem );
+
 	memset(stream, 0, len);
 	if (mixer.status >= SOUND_PLAYING) {
 		isoundmixerqueueSDL(stream, len);

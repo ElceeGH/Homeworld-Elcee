@@ -29,7 +29,7 @@
 
 
 /* functions */
-sdword isoundstreamreadheader(STREAM *pstream);
+static sdword isoundstreamreadheader(STREAM *pstream);
 
 /* variables */
 streamprintfunction	debugfunction = NULL;
@@ -43,6 +43,9 @@ sdword numstreams;
 #if VCE_BACKWARDS_COMPATIBLE
 bool ssOldFormatVCE = FALSE;
 #endif
+
+SDL_sem* mixerThreadSem = NULL;
+
 
 extern CHANNEL channels[];
 extern SENTENCELUT *SentenceLUT;
@@ -81,7 +84,7 @@ void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamers
 
 
 
-sdword streamStartThread(void)
+static sdword streamStartThread(void)
 {
 	streamer.status = SOUND_PLAYING;
 
@@ -137,6 +140,7 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams, streampri
 		debugfunction = printfunction;
 	}
 
+	mixerThreadSem = SDL_CreateSemaphore( 1 );
 	streamStartThread();
 
 	return (SOUND_OK);
@@ -1052,12 +1056,14 @@ int isoundstreamupdate(void *dummy)
 	
 	if (streams == NULL)
 	{
-	/* not inited yet */
-	return 0;
+		/* not inited yet */
+		return 0;
 	}
 
 	while (soundinited && (streamer.status >= SOUND_STOPPED))
 	{
+		SDL_SemWait( mixerThreadSem );
+
 		if (streamer.status == SOUND_STOPPING)
 		{
 			/* check and see if its done yet */
@@ -1372,13 +1378,6 @@ Recover:
 				streamer.status = SOUND_PLAYING;
 			}
 		}
-		
-#ifdef _MSC_VER
-#pragma message("This should use semaphores!")
-#else
-#warning This should use semaphores!
-#endif
-		SDL_Delay(SOUND_STREAM_SLEEP);
 	}
 	
 	/* clean up all the streams */
