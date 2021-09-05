@@ -783,7 +783,7 @@ real32 nebChunkDistance(nebChunk* a, nebChunk* b)
     {
         vector dist;
         vecSub(dist, a->position, b->position);
-        return fsqrt(vecMagnitudeSquared(dist));
+        return sqrtf(vecMagnitudeSquared(dist));
     }
 }
 
@@ -1553,7 +1553,7 @@ void nebTendrilBounds(nebTendril* tendril)
     dy = dia2.y - cen.y;
     dz = dia2.z - cen.z;
     rad_sq = dx*dx + dy*dy + dz*dz;
-    rad = fsqrt(rad_sq);
+    rad = sqrtf(rad_sq);
 
     for (i = 0; i < (sdword)tendril->lod[lod].numVerts; i++)
     {
@@ -1565,7 +1565,7 @@ void nebTendrilBounds(nebTendril* tendril)
         old_to_p_sq = dx*dx + dy*dy + dz*dz;
         if (old_to_p_sq > rad_sq)
         {
-            old_to_p = fsqrt(old_to_p_sq);
+            old_to_p = sqrtf(old_to_p_sq);
             rad = 0.5f * (rad + old_to_p);
             rad_sq = rad*rad;
             old_to_new = old_to_p - rad;
@@ -1820,7 +1820,7 @@ void nebRenderTendril(nebTendril* tendril, sdword lod)
         b0 = b;
 
         vecSub(forward, b, a);
-        length = fsqrt(vecMagnitudeSquared(forward));
+        length = sqrtf(vecMagnitudeSquared(forward));
         vecNormalize(&forward);
         direction = forward;
 
@@ -1878,7 +1878,7 @@ real32 nebDistanceFromCamera(vector* pos)
     vector dist;
 
     vecSub(dist, *pos, mrCamera->eyeposition);
-    return fsqrt(vecMagnitudeSquared(dist));
+    return sqrtf(vecMagnitudeSquared(dist));
 }
 
 /*-----------------------------------------------------------------------------
@@ -2221,7 +2221,7 @@ void nebUpdateChunk(nebChunk* chunk)
     vecAddTo(chunk->dPos, chunk->velocity);
 
     //check magnitude
-    if (fsqrt(vecMagnitudeSquared(chunk->dPos)) > (chunk->outerRadius - chunk->innerRadius))
+    if (sqrtf(vecMagnitudeSquared(chunk->dPos)) > (chunk->outerRadius - chunk->innerRadius))
     {
         //from whence we came
         vecSubFrom(chunk->dPos, chunk->velocity);
@@ -2260,7 +2260,7 @@ void nebSetFog()
         spaceobj = (SpaceObj*)listGetStructOfNode(node);
         if (spaceobj->objtype == OBJ_NebulaType)
         {
-            dist = fsqrt(spaceobj->cameraDistanceSquared);
+            dist = sqrtf(spaceobj->cameraDistanceSquared);
             if (dist != 0.0f)
             {
                 sumOf += nebradius / dist;

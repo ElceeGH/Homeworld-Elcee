@@ -4329,7 +4329,7 @@ bool toDrawPulsedLine(vector linestart, vector lineend, real32 pulsesize, color 
     //calculate the pulse
     //get the unit direction vector of the pulse line
     vecSub(dirvect, lineend, linestart);
-    distance = (real32) fsqrt(vecMagnitudeSquared(dirvect));
+    distance = (real32) sqrtf(vecMagnitudeSquared(dirvect));
     vecNormalize(&dirvect);
 
     //find the start and end points of the pulse
@@ -4484,7 +4484,7 @@ void toDrawMoveToLine(ShipPtr ship, color linecolor, color pulsecolor)
     matGetVectFromMatrixCol2(shipright, ship->rotinfo.coordsys);
 
     vecSub(dirvect, ship->moveTo, ship->collInfo.collPosition);
-    distance = (real32) fsqrt(vecMagnitudeSquared(dirvect));
+    distance = (real32) sqrtf(vecMagnitudeSquared(dirvect));
 
     //find the moveto starting point
     vecScalarMultiply(dirfrontproj, shipfront, vecDotProduct(dirvect, shipfront));
@@ -4541,7 +4541,7 @@ void toDrawMoveFromLine(ShipPtr ship)
     shipback = shippos;
 
     vecSub(dirvect, shipback, ship->moveFrom);
-    distance = (real32) fsqrt(vecMagnitudeSquared(dirvect));
+    distance = (real32) sqrtf(vecMagnitudeSquared(dirvect));
 
     if (distance < shipradius)
     {
@@ -4961,7 +4961,7 @@ void toPulse1(vector linestart, vector lineend, real32 pulsesize, color pulsecol
     }
 
     vecSub(dirvect, lineend, linestart);
-    distance = fsqrt(vecMagnitudeSquared(dirvect));
+    distance = sqrtf(vecMagnitudeSquared(dirvect));
     vecNormalize(&dirvect);
 
 
@@ -5168,7 +5168,7 @@ void toPulse2(vector linestart, vector lineend, real32 pulsesize, color pulsecol
     }
 
     vecSub(dirvect, lineend, linestart);
-    distance = fsqrt(vecMagnitudeSquared(dirvect));
+    distance = sqrtf(vecMagnitudeSquared(dirvect));
     vecNormalize(&dirvect);
 
 
@@ -5273,7 +5273,7 @@ void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color pass
         {
             newrad = circle3distance[count];
         }
-       newrad = fsqrt(radius*radius - (radius - newrad)*(radius - newrad));
+       newrad = sqrtf(radius*radius - (radius - newrad)*(radius - newrad));
 
        //Turn off 2D primmode
        primModeClear2();
@@ -5378,7 +5378,7 @@ void toDrawRadialIndicator4(ShipPtr ship, real32 radius, real32 scale,color pass
         {
             newrad = circle4distance[count];
         }
-       newrad = fsqrt(radius*radius - (radius - newrad)*(radius - newrad));
+       newrad = sqrtf(radius*radius - (radius - newrad)*(radius - newrad));
 
        //Turn off 2D primmode
        primModeClear2();

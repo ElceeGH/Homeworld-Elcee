@@ -2529,7 +2529,7 @@ void ObjectsCollided(SpaceObjRotImpTarg *obj1,SpaceObjRotImpTarg *obj2,real32 co
                 collforce.x = 0.1f;     // so cross product with up doesn't blow up
             }
 
-            collforcemag = fsqrt(vecMagnitudeSquared(collforce));
+            collforcemag = sqrtf(vecMagnitudeSquared(collforce));
 
             // make force tangential:
 
@@ -2868,7 +2868,7 @@ void MakeExplosionRockBumpables(Ship *ship,bool scuttle)
         {
             distsquared = 1.0f;
         }
-        dist = fsqrt(distsquared);
+        dist = sqrtf(distsquared);
         blaststrength = 1.0f - (dist / blastradius);
         vecNormalizeToLength(&distvector,(scuttle ? BLAST_CONSTANT_SCUTTLE : BLAST_CONSTANT) * blaststrength);
 
@@ -3079,7 +3079,7 @@ void pointExplosionInSpace(vector *position,real32 blastRadius,real32 maxDamage,
         {
             distsquared = 1.0f;
         }
-        dist = fsqrt(distsquared);
+        dist = sqrtf(distsquared);
         blaststrength = 1.0f - (dist / blastRadius);
         vecNormalizeToLength(&distvector,BLAST_CONSTANT * blaststrength);
 
@@ -3997,7 +3997,7 @@ void univDeleteDeadShip(Ship *ship, sdword deathBy)
                 maxVelocity = ship->staticinfo->staticheader.maxvelocity;
                 if (maxVelocity != 0.0f)
                 {
-                    velMagnitude = fsqrt(vecMagnitudeSquared(ship->posinfo.velocity));
+                    velMagnitude = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
                     velMagnitude /= maxVelocity;
                 }
                 else
@@ -4638,7 +4638,7 @@ bool DeleteDeadDerelict(Derelict *derelict, sdword deathBy)
             colSize = ((ShipStaticInfo *)(derelict->staticinfo))->staticheader.staticCollInfo.collspheresize;
             //colSize *= derelict->magnitudeSquared;
 
-            velMagnitude = fsqrt(vecMagnitudeSquared(derelict->posinfo.velocity));
+            velMagnitude = sqrtf(vecMagnitudeSquared(derelict->posinfo.velocity));
             velMagnitude /= derelict->staticinfo->staticheader.maxvelocity;
             colSizeDword = Real32ToUdword(colSize);
             velMagnitudeDword = Real32ToUdword(velMagnitude);

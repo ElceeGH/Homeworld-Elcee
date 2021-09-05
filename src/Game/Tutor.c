@@ -1263,7 +1263,7 @@ void tutDrawTextPointers(rectangle *pRect)
                 dy = (real32)(y0 - y1);
                 if (dx != 0.0f || dy != 0.0f)
                 {                                           //if not zero-length vector
-                    magnitude = fmathSqrt(dx * dx + dy * dy);   //magnitude of vector
+                    magnitude = sqrtf(dx * dx + dy * dy);   //magnitude of vector
                     dx /= magnitude;
                     dy /= magnitude;                        //normalize the vector
                     if (dx == 0.0f)
@@ -1335,7 +1335,7 @@ shipsCase:
                     deltx = x-sx;
                     delty = y-sy;
 
-                    len = (real32)fsqrt(deltx*deltx + delty*delty);
+                    len = (real32)sqrtf(deltx*deltx + delty*delty);
                     len = (len - rad) / len;
 
                     if (len > 0.0f)
@@ -1414,7 +1414,7 @@ shipsCase:
                     deltx = x-sx;
                     delty = y-sy;
 
-                    len = (real32)fsqrt(deltx*deltx + delty*delty);
+                    len = (real32)sqrtf(deltx*deltx + delty*delty);
                     len = (len - rad) / len;
 
                     x0 = primGLToScreenX(sx);

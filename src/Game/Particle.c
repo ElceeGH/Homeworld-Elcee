@@ -1456,7 +1456,7 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
 
     bool   texEnabled   = rndTextureEnable(FALSE);
     bool   lightEnabled = rndLightingEnable(FALSE);
-    real32 resScaling   = fsqrt(getResDensityRelative());
+    real32 resScaling   = sqrtf(getResDensityRelative());
 
     udword i, hits;
     for (i = hits = 0; i < n; i++, p++)

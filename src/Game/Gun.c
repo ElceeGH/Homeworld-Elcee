@@ -1448,7 +1448,7 @@ bool gunShootGunsAtMultipleTargets(Ship *ship)
                         break;
                     case GUN_Fixed:
                         aishipGetTrajectory(ship,target,&trajectory);
-                        dist = fsqrt(vecMagnitudeSquared(trajectory));
+                        dist = sqrtf(vecMagnitudeSquared(trajectory));
                         vecDivideByScalar(trajectory,dist,temp);
 
                         matGetVectFromMatrixCol3(shipheading,ship->rotinfo.coordsys);

@@ -251,7 +251,7 @@ float dist;
       center.z /= (real32 )(master->slaveinfo->slaves.num+1);
 
       vecSub(distvec, center, master->collInfo.collPosition);
-      dist = fsqrt(vecMagnitudeSquared(distvec));
+      dist = sqrtf(vecMagnitudeSquared(distvec));
 
       *pos = center;
       *rad = dist + (master->staticinfo->staticheader.staticCollInfo.collspheresize);
@@ -707,7 +707,7 @@ void CameraChase(CameraCommand *cameracommand,real32 zoomfactor)
          CubicLogUnsigned(&cameracommand->actualcamera.eyeposition.y, &eyeYSpeed, deLookVector.y, camTrackPosThreshold, camTrackPosSpeed, camTrackPosBase);
          CubicLogUnsigned(&cameracommand->actualcamera.eyeposition.z, &eyeZSpeed, deLookVector.z, camTrackPosThreshold, camTrackPosSpeed, camTrackPosBase);
          vecSub(deLookVector, cameracommand->actualcamera.eyeposition, cameracommand->actualcamera.lookatpoint);
-         cameracommand->actualcamera.distance = fsqrt(vecMagnitudeSquared(deLookVector));
+         cameracommand->actualcamera.distance = sqrtf(vecMagnitudeSquared(deLookVector));
 
          Frames--;
       }

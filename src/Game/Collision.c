@@ -58,7 +58,7 @@ real32 RangeToTarget(Ship *ship,SpaceObjRotImpTarg *target,vector *trajectory)
 {
     real32 dist;
 
-    dist = fsqrt(vecMagnitudeSquared(*trajectory));
+    dist = sqrtf(vecMagnitudeSquared(*trajectory));
     dist -= target->staticinfo->staticheader.staticCollInfo.approxcollspheresize;
 
     if (dist > 0.0f)
@@ -606,7 +606,7 @@ bool kamikazeCheck(SpaceObjRotImpTarg *obj1, SpaceObjRotImpTarg *obj2)
             //vector einsteinVel;
             //real32 shipvel,damFactor;
             //vecSub(einsteinVel,obj1->posinfo.velocity,obj2->posinfo.velocity);
-            //shipvel = fsqrt(vecMagnitudeSquared(einsteinVel));
+            //shipvel = sqrtf(vecMagnitudeSquared(einsteinVel));
             //damFactor = shipvel/ship1->staticinfo->staticheader.maxvelocity;
             if(ship1->attackvars.attacktarget == obj2)
             {
@@ -639,9 +639,9 @@ bool kamikazeCheck(SpaceObjRotImpTarg *obj1, SpaceObjRotImpTarg *obj2)
             //vector einsteinVel;
             //real32 shipvel,damFactor;
             //vecSub(einsteinVel,obj1->posinfo.velocity,obj2->posinfo.velocity);
-            //shipvel = fsqrt(vecMagnitudeSquared(einsteinVel));
+            //shipvel = sqrtf(vecMagnitudeSquared(einsteinVel));
             //vecSub(einsteinVel,obj1->posinfo.velocity,obj2->posinfo.velocity);
-            //shipvel = fsqrt(vecMagnitudeSquared(einsteinVel));
+            //shipvel = sqrtf(vecMagnitudeSquared(einsteinVel));
             //damFactor = shipvel/ship2->staticinfo->staticheader.maxvelocity;
             if(ship2->attackvars.attacktarget == obj1)
             {
@@ -901,7 +901,7 @@ void collCheckShipShipColl(blob *thisBlob,bool checkSmallShips)
                 }
             }
             distsquared = vecMagnitudeSquared(distvector);
-            dist = (real32)fsqrt(distsquared);
+            dist = (real32)sqrtf(distsquared);
 
             if (dist < colldist)
             {
@@ -1213,7 +1213,7 @@ void collCheckBigShipSmallShipColl(blob *thisBlob)
             }
 
             distsquared = vecMagnitudeSquared(distvector);
-            dist = (real32)fsqrt(distsquared);
+            dist = (real32)sqrtf(distsquared);
 
             if (dist < colldist)
             {
@@ -1401,7 +1401,7 @@ void collCheckShipResourceColl(blob *thisBlob)
             }
 
             distsquared = vecMagnitudeSquared(distvector);
-            dist = (real32)fsqrt(distsquared);
+            dist = (real32)sqrtf(distsquared);
 
             if (dist < colldist)
             {
@@ -1584,7 +1584,7 @@ void collCheckShipDerelictColl(blob *thisBlob)
             }
 
             distsquared = vecMagnitudeSquared(distvector);
-            dist = (real32)fsqrt(distsquared);
+            dist = (real32)sqrtf(distsquared);
 
             if (dist < colldist)
             {
@@ -1646,7 +1646,7 @@ bool collCheckLineOfSight(Ship* source, Ship* target, vector* sourcePosition, ve
     else
     {
         vecSub(distvec, target->posinfo.position, *sourcePosition);
-        length = fsqrt(vecMagnitudeSquared(distvec));
+        length = sqrtf(vecMagnitudeSquared(distvec));
     }
 
     if (target == NULL || target->collMyBlob == source->collMyBlob)
@@ -1791,7 +1791,7 @@ bulletchecks++;
 			dsqr = targetstaticheader->staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 			if (dsqr > 0)
 			{
-				d = fsqrt(dsqr);
+				d = sqrtf(dsqr);
 				if ((v-d) < bullet->traveldist)
 				{
 					if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&bullet->posinfo.position,&bullet->bulletheading,bullet->traveldist,&collSide)) >= 0.0f)
@@ -1855,7 +1855,7 @@ void collCheckBeamColl(blob *thisBlob,Bullet *bullet)
 				dsqr = bullet->target->staticinfo->staticheader.staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 				if (dsqr > 0)
 				{
-					d = fsqrt(dsqr);
+					d = sqrtf(dsqr);
 					if ((v-d) < bullet->traveldist)
 					{
 						if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)bullet->target,&bullet->posinfo.position,&bullet->bulletheading,bullet->traveldist,&collSide)) >= 0.0f)
@@ -1905,7 +1905,7 @@ void collCheckBeamColl(blob *thisBlob,Bullet *bullet)
 			dsqr = (checkBlob->radius*checkBlob->radius) - (distsquared - (v*v));
 			if (dsqr > 0)
 			{
-				d = fsqrt(dsqr);
+				d = sqrtf(dsqr);
 				if ((v-d) < bullet->traveldist)
 				{
 					collCheckBeamCollWithTargetsInBlob(bullet,checkBlob,&minbeamCollideLineDist,&minbeamTarget,&minbeamCollSide);
@@ -2020,7 +2020,7 @@ void collCheckBulletTargetColl(blob *thisBlob)
 							dsqr = testcollsizesqr - (distsquared - (v*v));
 							if (dsqr > 0)
 							{
-								d = fsqrt(dsqr);
+								d = sqrtf(dsqr);
 								if ((v-d) < bullet->traveldist)
 								{
 									if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)bullet->target,&bullet->posinfo.position,&bullet->bulletheading,bullet->traveldist,&collSide)) >= 0.0f)
@@ -2158,7 +2158,7 @@ passagain:
 						dsqr = testcollsizesqr - (distsquared - (v*v));
 						if (dsqr > 0)
 						{
-							d = fsqrt(dsqr);
+							d = sqrtf(dsqr);
 							if ((v-d) < bullet->traveldist)
 							{
 								if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&bullet->posinfo.position,&bullet->bulletheading,bullet->traveldist,&collSide)) >= 0.0f)
@@ -2356,7 +2356,7 @@ passagain:
 				dsqr = targetstaticheader->staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 				if (dsqr > 0)
 				{
-					d = fsqrt(dsqr);
+					d = sqrtf(dsqr);
 					if ((v-d) < missile->maxtraveldist)
 					{
 						if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&missile->posinfo.position,&missileheading,missile->maxtraveldist,&collSide)) >= 0.0f)
@@ -2521,7 +2521,7 @@ void collCheckMissileResourceColl(blob *thisBlob,MissileType missileType)
 				dsqr = targetstaticheader->staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 				if (dsqr > 0)
 				{
-					d = fsqrt(dsqr);
+					d = sqrtf(dsqr);
 					if ((v-d) < missile->maxtraveldist)
 					{
 						if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&missile->posinfo.position,&missileheading,missile->maxtraveldist,&collSide)) >= 0.0f)
@@ -2675,7 +2675,7 @@ void collCheckMissileDerelictColl(blob *thisBlob,MissileType missileType)
 				dsqr = targetstaticheader->staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 				if (dsqr > 0)
 				{
-					d = fsqrt(dsqr);
+					d = sqrtf(dsqr);
 					if ((v-d) < missile->maxtraveldist)
 					{
 						if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&missile->posinfo.position,&missileheading,missile->maxtraveldist,&collSide)) >= 0.0f)
@@ -2820,7 +2820,7 @@ void collCheckMissileMineColl(blob *thisBlob)
 				dsqr = targetstaticheader->staticCollInfo.collspheresizeSqr - (distsquared - (v*v));
 				if (dsqr > 0)
 				{
-					d = fsqrt(dsqr);
+					d = sqrtf(dsqr);
 					if ((v-d) < missile->maxtraveldist)
 					{
 						if ((collideLineDist = collCheckRectLine((SpaceObjRotImp *)target,&missile->posinfo.position,&missileheading,missile->maxtraveldist,&collSide)) >= 0.0f)

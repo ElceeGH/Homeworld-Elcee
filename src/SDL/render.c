@@ -1599,7 +1599,7 @@ bool rndFade(SpaceObj* spaceobj, Camera* camera)
         }
 
         fadedist *= mult;
-        maxdist = mult * fsqrt(maxdist);
+        maxdist = mult * sqrtf(maxdist);
     }
     else if (spaceobj->objtype == OBJ_DerelictType)
     {
@@ -1620,19 +1620,19 @@ bool rndFade(SpaceObj* spaceobj, Camera* camera)
         }
 
         fadedist *= mult;
-        maxdist = mult * fsqrt(maxdist);
+        maxdist = mult * sqrtf(maxdist);
     }
     else
     {
         if (spaceobj->flags & SOF_BigObject)
         {
             fadedist = mult * RENDER_MAXVIEWABLE_FADE;
-            maxdist  = mult * fsqrt(RENDER_MAXVIEWABLE_DISTANCE_SQR);
+            maxdist  = mult * sqrtf(RENDER_MAXVIEWABLE_DISTANCE_SQR);
         }
         else
         {
             fadedist = mult * RENDER_VIEWABLE_FADE;
-            maxdist  = mult * fsqrt(RENDER_VIEWABLE_DISTANCE_SQR);
+            maxdist  = mult * sqrtf(RENDER_VIEWABLE_DISTANCE_SQR);
         }
     }
 
@@ -1832,7 +1832,7 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
     real32 dist;
 
     vecSub(veclen, dockship->posinfo.position, ship->posinfo.position);
-    dist = fsqrt(vecMagnitudeSquared(veclen));
+    dist = sqrtf(vecMagnitudeSquared(veclen));
     if (dist < nearVal) dist = nearVal;
     if (dist > farVal)  dist = farVal;
     dist -= nearVal;
@@ -2132,7 +2132,7 @@ void rndPostRenderDebug2DStuff(Camera *camera)
 
             dockship = ship->dockvars.dockship;
             vecSub(veclen, ship->posinfo.position, dockship->posinfo.position);
-            dist = fsqrt(vecMagnitudeSquared(veclen));
+            dist = sqrtf(vecMagnitudeSquared(veclen));
             sprintf(string, "%0.2f m", dist);
             fontPrint(0, 0, colWhite, string);
         }
@@ -2184,7 +2184,7 @@ void rndPostRenderDebug2DStuff(Camera *camera)
 
 //            vecSub(veclen, ship->posinfo.position, camera->eyeposition);
             vecSub(veclen, ship->collInfo.collPosition, camera->eyeposition);
-            dist = fsqrt(vecMagnitudeSquared(veclen));
+            dist = sqrtf(vecMagnitudeSquared(veclen));
             sprintf(string, "dist %0.2f m", dist);
             fontPrint((MAIN_WindowWidth - fontWidth(string)) / 2,
                       fontHeight(" "),

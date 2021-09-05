@@ -1096,7 +1096,7 @@ void soundEventUpdate(void)
             // play the derelict ambience here
             pDerelict = (Derelict *)ship;
 
-            dist = (real32)fsqrt(pDerelict->cameraDistanceSquared);
+            dist = (real32)sqrtf(pDerelict->cameraDistanceSquared);
 
             if (dist < nearestShipDistance)
             {
@@ -1167,7 +1167,7 @@ void soundEventUpdate(void)
 
 		// ok, now we're into the SHIP stuff
         shipclass = ship->staticinfo->shipclass;
-        dist = (real32)fsqrt(ship->cameraDistanceSquared);
+        dist = (real32)sqrtf(ship->cameraDistanceSquared);
 		
 		// a little hack here so that these ships have reasonable volume curves
 		if (ship->shiptype == MiningBase)
@@ -1241,7 +1241,7 @@ void soundEventUpdate(void)
 		pan = getPanAngle(ship->enginePosition, ship->staticinfo->staticheader.staticCollInfo.approxcollspheresize, dist);
 		vol = SEequalize(shipclass, dist, tempEQ);
 		shipangle = SEgetAngleToCamera(ship);
-		velocity = fsqrt(vecMagnitudeSquared(ship->posinfo.velocity));
+		velocity = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
 		
 		// need this for setting the music volume
 		if (dist < nearestShipDistance)
@@ -1947,7 +1947,7 @@ void soundEventUpdate(void)
 
 	shipangle = SEgetAngleToCamera(ship);
 
-	velocity = fsqrt(vecMagnitudeSquared(ship->posinfo.velocity));
+	velocity = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
 
 	if (ship->staticinfo->maxfuel > 0.0)
 	{
@@ -2093,7 +2093,7 @@ void SEupdateShipRange(void)
 
         if (SEinrangeSqr(shipclass, ship->cameraDistanceSquared))
 		{
-			ship->soundevent.distance = (real32)fsqrt(ship->cameraDistanceSquared);
+			ship->soundevent.distance = (real32)sqrtf(ship->cameraDistanceSquared);
 			
 			ship->soundevent.coverage = rndComputeOverlap(ship, 1.0);	// make 1.0 tweakable in a script
 	

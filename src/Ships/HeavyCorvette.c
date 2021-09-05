@@ -237,7 +237,7 @@ bool doBurstFire(Ship *ship)
 
     vecSub(trajectory,spec->burstFireVector,ship->posinfo.position);
     range = vecMagnitudeSquared(trajectory);
-    range = fsqrt(range);
+    range = sqrtf(range);
     one_over_range = 1.0f/range;
     vecScalarMultiply(trajectory,trajectory,one_over_range);
 

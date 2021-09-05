@@ -402,7 +402,7 @@ void aishipGetTrajectoryWithVelPrediction(Ship *ship,SpaceObjRotImpTarg *target,
         goto settrajectory;
     }
 
-    distToTargetMag = fsqrt(vecMagnitudeSquared(distToTargetVec));
+    distToTargetMag = sqrtf(vecMagnitudeSquared(distToTargetVec));
 
     bullettraveltime = distToTargetMag / bulletspeed;
 
@@ -970,7 +970,7 @@ udword aishipFlyToPointAvoidingObjsFunc(Ship *ship,vector *destination,udword ai
                     real32 ydistanceleft = (destination->y - ship->posinfo.position.y);
                     real32 r;
                     zdistanceleft = ABS(destination->z - ship->posinfo.position.z);
-                    r = fsqrt(xdistanceleft*xdistanceleft + ydistanceleft*ydistanceleft);
+                    r = sqrtf(xdistanceleft*xdistanceleft + ydistanceleft*ydistanceleft);
                     if ((zdistanceleft < MIN_DIST_FOR_FANCY_DESCEND) ||
                         (zdistanceleft < (r*MIN_ANGLE_FOR_FANCY_DESCEND)))
                     {
@@ -1517,7 +1517,7 @@ norowcheck:
                 }
 
                 repulsemag2 = vecMagnitudeSquared(repulse);
-                repulsedist = fsqrt(repulsemag2);
+                repulsedist = sqrtf(repulsemag2);
 
                 if (repulsedist > maxdistconsider)
                 {
@@ -1622,7 +1622,7 @@ norowcheck:
                             goto skipobscurecollsizedirectioncheck;
                         }
 
-                        destToObjDist = fsqrt(destToObjMag2);
+                        destToObjDist = sqrtf(destToObjMag2);
                         vecScalarDivide(destToObjNorm,destToObj,destToObjDist,temp);
 
                         if (destToObjDist < (GetCollSizeInDirection(avoidobj,destToObjNorm)))
@@ -1793,14 +1793,14 @@ void aishipFlyMissileToTarget(Missile *missile,SpaceObjRotImpTarg *target)
         goto gottargettrajectory;
     }
 
-    missilevel = fsqrt(vecMagnitudeSquared(missile->posinfo.velocity));
+    missilevel = sqrtf(vecMagnitudeSquared(missile->posinfo.velocity));
 
     if (missilevel < 200.0f)
     {
         goto gottargettrajectory;
     }
 
-    distToTargetMag = fsqrt(distToTargetMagSqr);
+    distToTargetMag = sqrtf(distToTargetMagSqr);
 
     missiletraveltime = distToTargetMag / missilevel;
 

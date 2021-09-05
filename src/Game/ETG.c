@@ -7431,7 +7431,7 @@ udword etgEffectVelocityGet(Effect *effect)
         velVector = &effect->posinfo.velocity;
     }
     velocity = vecMagnitudeSquared(*velVector);
-    velocity = fsqrt(velocity);
+    velocity = sqrtf(velocity);
     intVelocity = Real32ToUdword(velocity);
     return(intVelocity);
 }

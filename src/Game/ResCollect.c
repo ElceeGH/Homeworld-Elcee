@@ -715,7 +715,7 @@ void TurnHarvestEffectOn(Ship *ship,Resource *resource,vector *trajectory, real3
 
     vecSub(nozzletrajectory,*trajectory,nozzleposition);
 
-    nozzletrajectorydist = fsqrt(vecMagnitudeSquared(nozzletrajectory));
+    nozzletrajectorydist = sqrtf(vecMagnitudeSquared(nozzletrajectory));
     vecDivideByScalar(nozzletrajectory,nozzletrajectorydist,temp);
 
     matCreateCoordSysFromHeading(&nozzlecoordsys,&nozzletrajectory);
@@ -787,7 +787,7 @@ void ModifyHarvestEffect(Effect *effect,Ship *ship,vector *trajectory, real32 re
 
     vecAdd(effect->posinfo.position,nozzleposition,ship->posinfo.position);
 
-    nozzletrajectorydist = fsqrt(vecMagnitudeSquared(nozzletrajectory));
+    nozzletrajectorydist = sqrtf(vecMagnitudeSquared(nozzletrajectory));
     vecDivideByScalar(nozzletrajectory,nozzletrajectorydist,temp);
 
     matCreateCoordSysFromHeading(&effect->rotinfo.coordsys,&nozzletrajectory);
@@ -840,7 +840,7 @@ void R1ResourcerHarvestsAsteroid(struct Ship *ship,struct Resource *resource)
 
         case R1RCASTEROID_APPROACHASTEROID:
             aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)resource,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)resource,dist);
             if (range > ASTEROID_HARVEST_RANGE)
             {
@@ -872,7 +872,7 @@ void R1ResourcerHarvestsAsteroid(struct Ship *ship,struct Resource *resource)
 
         case R1RCASTEROID_HARVEST:
             aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)resource,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)resource,dist);
             if(ship->rceffect == NULL)
             {
@@ -1148,7 +1148,7 @@ void R1ResourcerAttacksShip(struct Ship *ship,struct SpaceObjRotImpTarg *target,
 
         case R1RCASTEROID_APPROACHASTEROID:
             aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)target,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)target,dist);
             if (range > ASTEROID_HARVEST_RANGE)
             {
@@ -1172,7 +1172,7 @@ void R1ResourcerAttacksShip(struct Ship *ship,struct SpaceObjRotImpTarg *target,
 
         case R1RCASTEROID_HARVEST:
             aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)target,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)target,dist);
 
             if (range > ASTEROID_MAXHARVEST_RANGE)

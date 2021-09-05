@@ -332,9 +332,9 @@ void shDockLight(real32 t)
 void shDockLightColor(color c)
 {
     shDockColor = c;
-    shDockScalarRed = colReal32(colRed(c));
+    shDockScalarRed   = colReal32(colRed  (c));
     shDockScalarGreen = colReal32(colGreen(c));
-    shDockScalarBlue = colReal32(colBlue(c));
+    shDockScalarBlue  = colReal32(colBlue (c));
 }
 
 /*-----------------------------------------------------------------------------
@@ -360,7 +360,7 @@ void shTransformNormal(vector* out, vector* in, real32* m)
         tx = ux*m[0] + uy*m[1] + uz*m[2];
         ty = ux*m[4] + uy*m[5] + uz*m[6];
         tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = fmathSqrtDouble(tx*tx + ty*ty + tz*tz);
+        len = sqrt(tx*tx + ty*ty + tz*tz);
         scale = (len > 1E-30) ? (1.0 / len) : 1.0;
         out->x = (real32)(tx*scale);
         out->y = (real32)(ty*scale);
@@ -400,7 +400,7 @@ void _shTransformNormal(vector* out, vector* in, real32* m, sdword normalize)
         tx = ux*m[0] + uy*m[1] + uz*m[2];
         ty = ux*m[4] + uy*m[5] + uz*m[6];
         tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = fmathSqrtDouble(tx*tx + ty*ty + tz*tz);
+        len = sqrt(tx*tx + ty*ty + tz*tz);
         scale = (len > 1E-30) ? (1.0 / len) : 1.0;
         out->x = (real32)(tx*scale);
         out->y = (real32)(ty*scale);
@@ -439,14 +439,6 @@ void shTransformVertex(vector* out, vector* in, real32* m)
     out->z = m[2]*ox + m[6]*oy + m[10]*oz + m[14];
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : shPow
-    Description : wrapper for math.h's "pow"
-    Inputs      : ..
-    Outputs     :
-    Return      : result
-----------------------------------------------------------------------------*/
-#define shPow(A,B) (real32)pow((real64)(A), (real64)(B))
 
 /*-----------------------------------------------------------------------------
     Name        : shColour
@@ -458,8 +450,7 @@ void shTransformVertex(vector* out, vector* in, real32* m)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void shColour(
-    sdword side, vector* norm, ubyte* color, real32* minv)
+void shColour( sdword side, vector* norm, ubyte* color, real32* minv)
 {
     sdword l;
     real32 sumR, sumG, sumB;
@@ -807,7 +798,7 @@ void shSpecularColour(
                    + nz * vpInfNorm[l].z;
             if (nDotVP > 0.0f)
             {
-                alpha1 += shPow(nDotVP, shSpecularExponent[1]);
+                alpha1 += powf(nDotVP, shSpecularExponent[1]);
             }
         }
 
@@ -833,7 +824,7 @@ void shSpecularColour(
         }
         if (nDotVP > 0.0f)
         {
-            alpha = shPow(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[2]);
+            alpha = powf(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[2]);
         }
         else
         {

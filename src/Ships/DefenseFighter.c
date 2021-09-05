@@ -222,7 +222,7 @@ void defensefightertargetbullet(Ship *ship, Bullet *bullettotarget)
 //        univAddObjToRenderListIf((SpaceObj *)laser->effect,(SpaceObj *)ship);     // add to render list if parent ship is in render list
         //do length calculations :)
         ((real32 *)laser->effect->variable)[ETG_LengthVariable] =
-                    fsqrt(vecMagnitudeSquared(laser->lengthvec));
+                    sqrtf(vecMagnitudeSquared(laser->lengthvec));
     }
     else
     {
@@ -558,7 +558,7 @@ void DefenseFighterDestroyedABullet(Ship *ship, Bullet *bullet, Bullet *laser)
         intDamage = TreatAsUdword(floatDamage);
 
 //        vecScalarMultiply(newVelocity,bullet->posinfo.velocity,0.3f);
-//        velMagnitude = fsqrt(vecMagnitudeSquared(newVelocity));
+//        velMagnitude = sqrtf(vecMagnitudeSquared(newVelocity));
 //        velMagnitudeDword = TreatAsUdword(velMagnitude);
 
         etgEffectCreate(stat, NULL, &bullet->posinfo.position, &bullet->posinfo.velocity, &bullet->rotinfo.coordsys, 1.0f, 0, 1, intDamage);
@@ -713,7 +713,7 @@ void DefenseFighterHouseKeep(Ship *ship)
                 if(defensestruct->laser->effect != NULL)
                 {    //adjust length
                     ((real32 *)defensestruct->laser->effect->variable)[ETG_LengthVariable] =
-                        fsqrt(vecMagnitudeSquared(defensestruct->laser->lengthvec));
+                        sqrtf(vecMagnitudeSquared(defensestruct->laser->lengthvec));
                 }
             }
 
@@ -829,7 +829,7 @@ void defenseFighterAdjustLaser(Bullet *laser)
             if(defensestruct->laser->effect != NULL)
             {    //adjust length
                 ((real32 *)defensestruct->laser->effect->variable)[ETG_LengthVariable] =
-                    fsqrt(vecMagnitudeSquared(defensestruct->laser->lengthvec));
+                    sqrtf(vecMagnitudeSquared(defensestruct->laser->lengthvec));
             }
             return;
         }

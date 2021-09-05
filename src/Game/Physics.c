@@ -355,11 +355,11 @@ void physUpdateObjPosVel(SpaceObj *obj,real32 phystimeelapsed)
                     {
                         if (((Ship *)obj)->shipisattacking)
                         {
-                            ((Ship *)obj)->fuel -= shipstaticinfo->attackfuelburnrate * getVectDistSloppy(d); // fsqrt(vecMagnitudeSquared(d));//*burnmult;
+                            ((Ship *)obj)->fuel -= shipstaticinfo->attackfuelburnrate * getVectDistSloppy(d); // sqrtf(vecMagnitudeSquared(d));//*burnmult;
                         }
                         else
                         {
-                            ((Ship *)obj)->fuel -= shipstaticinfo->fuelburnrate * getVectDistSloppy(d); //fsqrt(vecMagnitudeSquared(d));//*burnmult;
+                            ((Ship *)obj)->fuel -= shipstaticinfo->fuelburnrate * getVectDistSloppy(d); //sqrtf(vecMagnitudeSquared(d));//*burnmult;
                         }
                     }
 #if TEST_FUEL
@@ -638,11 +638,11 @@ void physUpdateObjPosVelShip(Ship *obj,real32 phystimeelapsed)
                     {
                         if (((Ship *)obj)->shipisattacking)
                         {
-                            ((Ship *)obj)->fuel -= shipstaticinfo->attackfuelburnrate * getVectDistSloppy(d); // fsqrt(vecMagnitudeSquared(d));//*burnmult;
+                            ((Ship *)obj)->fuel -= shipstaticinfo->attackfuelburnrate * getVectDistSloppy(d); // sqrtf(vecMagnitudeSquared(d));//*burnmult;
                         }
                         else
                         {
-                            ((Ship *)obj)->fuel -= shipstaticinfo->fuelburnrate * getVectDistSloppy(d); //fsqrt(vecMagnitudeSquared(d));//*burnmult;
+                            ((Ship *)obj)->fuel -= shipstaticinfo->fuelburnrate * getVectDistSloppy(d); //sqrtf(vecMagnitudeSquared(d));//*burnmult;
                         }
                     }
 #if TEST_FUEL

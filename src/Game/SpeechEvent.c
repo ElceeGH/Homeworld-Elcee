@@ -2020,7 +2020,7 @@ sdword speechEventPlay(void *object, sdword event, sdword var, sdword playernum,
 
             damageratio = 1.0f - ((real32)ship->health * (real32)shipstatic->oneOverMaxHealth);      // (real32)shipstatic->maxhealth);
 
-            dist = fsqrt(spaceobject->cameraDistanceSquared);
+            dist = sqrtf(spaceobject->cameraDistanceSquared);
 
             vol = SOUND_VOL_MAX - (sword)(SPEECH_VOL_FACTOR * dist);
             if (vol < SPEECH_VOL_LOW)

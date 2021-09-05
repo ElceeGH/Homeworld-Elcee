@@ -103,7 +103,7 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
             objtype = spaceobject->objtype;
         }
 
-        dist = fsqrt(spaceobject->cameraDistanceSquared);
+        dist = sqrtf(spaceobject->cameraDistanceSquared);
     }
     else
     {
@@ -345,7 +345,7 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
 				}
 				dbgMessagef("SoundEventPlay: Explosion event %d", event);
 				effect = (Effect *)object;
-				dist = (real32)fsqrt(effect->cameraDistanceSquared);
+				dist = (real32)sqrtf(effect->cameraDistanceSquared);
 				if (SEinrange((event - Exp_Flag) + EXPLOSION_OFFSET, dist))
 				{
 					vol = SEequalize((event - Exp_Flag) + EXPLOSION_OFFSET, dist, tempEQ);
@@ -370,7 +370,7 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
 					{
 						if (soundover(handles->handle[i]))
 						{
-							dist = (real32)fsqrt(effect->cameraDistanceSquared);
+							dist = (real32)sqrtf(effect->cameraDistanceSquared);
 							vol = SEequalize((event - Hit_Flag) + HIT_OFFSET, dist, tempEQ);
 							pan = getPanAngle(effect->posinfo.position, EFFECT_SIZE, dist);
 		
@@ -445,7 +445,7 @@ sdword soundEffectType(Effect *effect, sdword event, sdword objecttype)
 				}
                 if (SEinrangeSqr((event - Hit_Flag) + HIT_OFFSET, effect->cameraDistanceSquared))
                 {
-                    dist = (real32)fsqrt(effect->cameraDistanceSquared);
+                    dist = (real32)sqrtf(effect->cameraDistanceSquared);
                     vol = SEequalize((event - Hit_Flag) + HIT_OFFSET, dist, tempEQ);
                     pan = getPanAngle(effect->posinfo.position, EFFECT_SIZE, dist);
 

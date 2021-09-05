@@ -1938,8 +1938,8 @@ void InitStatMineInfo(MissileStaticInfo *mineStatInfo,ShipRace race)
 
     scriptSetStruct(directory,shipname,MineStaticScriptTable,(ubyte *)mineStatInfo);
 
-    mineStatInfo->mineRange = fsqrt(mineStatInfo->MINE_RANGESQR);
-    mineStatInfo->mineRangeForced = fsqrt(mineStatInfo->MINE_RANGESQR_FORCED);
+    mineStatInfo->mineRange = sqrtf(mineStatInfo->MINE_RANGESQR);
+    mineStatInfo->mineRangeForced = sqrtf(mineStatInfo->MINE_RANGESQR_FORCED);
 
     precalcStaticHeader(&mineStatInfo->staticheader);
     precalcStaticInfoHealth((StaticInfoHealth *)mineStatInfo);

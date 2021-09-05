@@ -611,7 +611,7 @@ etgLOD = etgSpecialPurposeEffectTable[EGT_GRAVWELL_ON];
                     }
 
                 }
-                distance = fsqrt(distanceSqr);
+                distance = sqrtf(distanceSqr);
                 oneOverDistance = 1.0f/distance;
                 gravToShip.x = gravToShip.x*oneOverDistance;
                 gravToShip.y = gravToShip.y*oneOverDistance;

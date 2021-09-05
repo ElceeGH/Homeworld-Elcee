@@ -1759,7 +1759,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     closestBlob = NULL;
 
     distanceToOriginSquared = vecMagnitudeSquared(camera->eyeposition);
-    distanceToOrigin = fmathSqrt(distanceToOriginSquared);
+    distanceToOrigin = sqrtf(distanceToOriginSquared);
 
     smBlobsSortToCamera(list, camera);
     primModeSet2();
@@ -1783,8 +1783,8 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
             closestMoveBlob = thisBlob;
         }
     }
-    closestSortDistance = fmathSqrt(closestSortDistance);
-    farthestSortDistance = fmathSqrt(farthestSortDistance);
+    closestSortDistance = sqrtf(closestSortDistance);
+    farthestSortDistance = sqrtf(farthestSortDistance);
     if (closestSortDistance >= farthestSortDistance)
     {
         closestSortDistance = farthestSortDistance - 1.0f;
@@ -1825,7 +1825,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
                 c = colBlend(smIntBlobColorLow, smIntBlobColor, factor);
             }
             //depth-grad the blob brightness
-            factor = fmathSqrt(thisBlob->cameraSortDistance);
+            factor = sqrtf(thisBlob->cameraSortDistance);
             factor = (factor - closestSortDistance) /
                 (farthestSortDistance - closestSortDistance);
             if (factor < 0.0f)
@@ -2394,7 +2394,7 @@ void smAllBlobsPiePlateDraw(real32 distance)
             //do closestblob checking first in this loop
 
             vecSub(tempvec,mouse_pos,thisBlob->centre);
-            tempreal  = fsqrt(vecMagnitudeSquared(tempvec));
+            tempreal  = sqrtf(vecMagnitudeSquared(tempvec));
             if(tempreal < closestDistance)
             {
                 closestDistance = tempreal;
@@ -2422,7 +2422,7 @@ void smAllBlobsPiePlateDraw(real32 distance)
         {
             probeBlob = closestBlob;
             vecSub(tempvec,mouse_pos,probeBlob->centre);
-            tempreal = fsqrt(vecMagnitudeSquared(tempvec));
+            tempreal = sqrtf(vecMagnitudeSquared(tempvec));
             if(tempreal < probeBlob->radius)
             {
                 smBlobSphereDraw(closestBlob);
@@ -3324,7 +3324,7 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
                                 real32 cost;
                                 //we're in hyperspace pieplate mode!
                                 vecSub(distancevec,selCentrePoint,destination);
-                                cost = hyperspaceCost(fsqrt(vecMagnitudeSquared(distancevec)),(SelectCommand *)&selSelected);
+                                cost = hyperspaceCost(sqrtf(vecMagnitudeSquared(distancevec)),(SelectCommand *)&selSelected);
                                 if(universe.curPlayerPtr->resourceUnits < ((sdword)cost))
                                 {
                                     //can't afford it!
@@ -3805,7 +3805,7 @@ void smSensorsClose(char *name, featom *atom)
     smEyeStart = universe.mainCameraCommand.actualcamera.eyeposition;
 
     vecSub(direction, smEyeStart, smLookStart);
-    dStart = fmathSqrt(vecMagnitudeSquared(direction));
+    dStart = sqrtf(vecMagnitudeSquared(direction));
     smEyeEnd = smCamera.eyeposition;
     smLookEnd = smCamera.lookatpoint;
     vecSub(direction, smLookEnd, smEyeEnd);

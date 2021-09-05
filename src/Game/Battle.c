@@ -776,7 +776,7 @@ void battleSpeechText(sdword eventNum, char **texts)
 sdword battleChatterAttempt(sdword linkTo, sdword event, Ship *ship, sdword variable)
 {
     vector dist;
-    double distance, result;
+    real64 distance, result;
     battleevent *chat;
     udword randomWeight;
 
@@ -794,8 +794,8 @@ sdword battleChatterAttempt(sdword linkTo, sdword event, Ship *ship, sdword vari
     if (batRandom() < randomWeight)
     {                                                       //if it passes random weight test
         vecSub(dist, mrCamera->eyeposition, ship->posinfo.position);
-        distance = (double)vecMagnitudeSquared(dist);       //get length of vector
-        distance = fmathSqrtDouble(distance);
+        distance = (real64)vecMagnitudeSquared(dist);       //get length of vector
+        distance = sqrt(distance);
         if (distance < chat->maxDistance)
         {                                                   //if it's not too far away from camera to hear
             result = 1.0 - distance / chat->maxDistance;
@@ -804,7 +804,7 @@ sdword battleChatterAttempt(sdword linkTo, sdword event, Ship *ship, sdword vari
             {
                 result = pow(result, chat->expDistance);    //compute point on probability curve
             }
-            if ((double)batRandom() < result * (double)BAT_RandomTotal)
+            if ((real64)batRandom() < result * (real64)BAT_RandomTotal)
             {                                               //if passes camera proximity test
 #if BATTLE_TEXT
                 if(chat->texts != NULL)
@@ -857,7 +857,7 @@ sdword battleChatterAttempt(sdword linkTo, sdword event, Ship *ship, sdword vari
 bool battleCanChatterAtThisTime(sdword event, Ship *ship)
 {
     battleevent *chat;
-    double timeSinceLastSpoken, result, distance;
+    real64 timeSinceLastSpoken, result, distance;
     vector diff;
 
     dbgAssertOrIgnore(event >= 0 && event < BCE_LastBCE);
@@ -880,7 +880,7 @@ bool battleCanChatterAtThisTime(sdword event, Ship *ship)
     {                                                       //find proper spot on probability curve
         result = pow(result, chat->expWavelength);
     }
-    if ((double)batRandom() >= result * (double)BAT_RandomTotal)
+    if ((real64)batRandom() >= result * (real64)BAT_RandomTotal)
     {
 #if BATTLE_VERBOSE_LEVEL >= 2
         dbgMessagef("...Event %d above wavelength curve.", chat->eventNumber);
@@ -897,7 +897,7 @@ bool battleCanChatterAtThisTime(sdword event, Ship *ship)
         {
             vecSub(diff, mrCamera->eyeposition, chat->lastPlaceSpoken);
         }
-        distance = fmathSqrtDouble((double)vecMagnitudeSquared(diff));
+        distance = sqrt(vecMagnitudeSquared(diff));
         if (distance < chat->minRepeatProximity)
         {
             result = distance / chat->minRepeatProximity;
@@ -934,7 +934,7 @@ bool battleCanChatterAtThisTime(sdword event, Ship *ship)
 sdword battleChatterFleetAttempt(sdword linkTo, sdword event, sdword variable, vector *where)
 {
     battleevent *chat;
-    double timeSinceLastSpoken, result;
+    real64 timeSinceLastSpoken, result;
     udword randomWeight;
     vector diff;
     real32 distance;
@@ -947,7 +947,7 @@ sdword battleChatterFleetAttempt(sdword linkTo, sdword event, sdword variable, v
         return(ERROR);                                      //no jouez-vous
     }
 #endif
-    timeSinceLastSpoken = (double)(universe.totaltimeelapsed - chat->lastTimeSpoken);
+    timeSinceLastSpoken = (real64)(universe.totaltimeelapsed - chat->lastTimeSpoken);
 
     dbgAssertOrIgnore(chat->minWavelength > 0.0);
     if (timeSinceLastSpoken > chat->minWavelength)
@@ -959,7 +959,7 @@ sdword battleChatterFleetAttempt(sdword linkTo, sdword event, sdword variable, v
     {                                                       //find proper spot on probability curve
         result = pow(result, chat->expWavelength);
     }
-    if ((double)batRandom() >= result * (double)BAT_RandomTotal)
+    if ((real64)batRandom() >= result * (real64)BAT_RandomTotal)
     {
 #if BATTLE_VERBOSE_LEVEL >= 2
         dbgMessagef("...Event %d above wavelength curve.", chat->eventNumber);
@@ -970,7 +970,7 @@ readyToPlay:
     if (chat->minRepeatProximity > 0.0f && where != NULL)
     {                                                       //if we should consider location of last time this event was spoken
         vecSub(diff, *where, chat->lastPlaceSpoken);
-        distance = (real32) fmathSqrtDouble((double)vecMagnitudeSquared(diff));
+        distance = (real32) sqrt(vecMagnitudeSquared(diff));
         if (distance < chat->minRepeatProximity)
         {
             result = distance / chat->minRepeatProximity;
@@ -978,7 +978,7 @@ readyToPlay:
             {
                 result = pow(result, chat->expRepeatProximity);
             }
-            if ((double)batRandom() >= result * (double)BAT_RandomTotal)
+            if ((real64)batRandom() >= result * (real64)BAT_RandomTotal)
             {
 #if BATTLE_VERBOSE_LEVEL >= 2
                 dbgMessagef("...Event %d above proximity curve.", chat->eventNumber);
@@ -1429,7 +1429,7 @@ void battlePingEvaluate(void *voidPing, battleping *battlePing)
                     case COMMAND_MOVE:
                         //... see if he's moving out of the ping
                         vecSub(diff, thisPing->centre, command->move.destination);
-                        if (fsqrt(vecMagnitudeSquared(diff)) > battlePing->radius * batRetreatModifier)
+                        if (sqrtf(vecMagnitudeSquared(diff)) > battlePing->radius * batRetreatModifier)
                         {                                   //if this ship is moving out of the ping
                             if (battleCanChatterAtThisTime(BCE_Retreat, ship))
                             {                               //if we can speak of retreat

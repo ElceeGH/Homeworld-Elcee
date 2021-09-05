@@ -2790,7 +2790,7 @@ real32 nisFocusMaxRadius(vector *centre, MaxSelection *selection)
             maxRadius = radius;
         }
     }
-    return(fsqrt(maxRadius));                               //return max distance
+    return(sqrtf(maxRadius));                               //return max distance
 }
 
 /*-----------------------------------------------------------------------------
@@ -2872,7 +2872,7 @@ void nisFocus(nisplaying *NIS, nisevent *event)
         {
             vecSub(distance, focusPoint, nisCamera->eyeposition);
             vecSub(lookDirection, nisCamera->lookatpoint, nisCamera->eyeposition);
-            nisCamera->distance = fsqrt(vecMagnitudeSquared(distance));
+            nisCamera->distance = sqrtf(vecMagnitudeSquared(distance));
             vecMultiplyByScalar(lookDirection, nisCamera->distance);
             vecAdd(nisCamera->lookatpoint, nisCamera->eyeposition, lookDirection);
         }

@@ -2048,7 +2048,7 @@ bool targetIsntNearShip(Ship *ship,SpaceObjRotImpTarg *target)
     real32 dist;
     vecSub(distvect,target->posinfo.position,ship->posinfo.position);
     dist = vecMagnitudeSquared(distvect);
-    dist = fsqrt(dist);
+    dist = sqrtf(dist);
 
     return(dist > ship->staticinfo->bulletRange[ship->tacticstype]);
 }
@@ -4338,7 +4338,7 @@ void CalculateMoveToPoints(SelectCommand *selection,vector from,vector to)
 
     vecSub(d,to,from);
     dsqr = vecMagnitudeSquared(d);
-    dmag = fsqrt(dsqr);
+    dmag = sqrtf(dsqr);
 
     if (numShips > NUM_STACK_MOVECALCS)
     {
@@ -4366,7 +4366,7 @@ void CalculateMoveToPoints(SelectCommand *selection,vector from,vector to)
     }
 
     dbgAssertOrIgnore(maxrsqr >= 0.0f);
-    maxrmag = fsqrt(maxrsqr);
+    maxrmag = sqrtf(maxrsqr);
 
     // scales from a d/r ratio of DISTMINRATIO      to      SHRINKMIN
     //                            DISTMAXRATIO              SHRINKMAX
@@ -4986,7 +4986,7 @@ void clMpHyperspace(CommandLayer *comlayer,SelectCommand *selectcom,vector from,
 
     vecSub(distsqr,from,to);
     tempdist = vecMagnitudeSquared(distsqr);
-    distance = fsqrt(tempdist);
+    distance = sqrtf(tempdist);
     cost = (sdword)hyperspaceCost(distance,selectcom);
 
     playerindex = selectcom->ShipPtr[0]->playerowner->playerIndex;
@@ -5521,7 +5521,7 @@ void pickMultipleAttackTargets(Ship *ship,AttackCommand *attack)
 
             vecSub(targetInShipCoordSys,thisTargetInfo->targetInShipCoordSys,gunstatic->position);
 
-            dist = fsqrt(vecMagnitudeSquared(targetInShipCoordSys));
+            dist = sqrtf(vecMagnitudeSquared(targetInShipCoordSys));
 
             range = RangeToTargetGivenDist(ship,target,dist);
 
@@ -5770,7 +5770,7 @@ void InitExtraAttackInfo(SelectCommand *selection,AttackCommand *attack,bool fin
     diff.z = ABS(diff.z);
 
     if ((diff.z >= ATTACKING_FROM_ABOVE_MIN_DIST) &&
-        (diff.z >= (fsqrt(diff.x*diff.x + diff.y*diff.y)*ATTACKING_FROM_ABOVE_MIN_RATIO)))
+        (diff.z >= (sqrtf(diff.x*diff.x + diff.y*diff.y)*ATTACKING_FROM_ABOVE_MIN_RATIO)))
     {
         for (i=0;i<numShips;i++)
         {

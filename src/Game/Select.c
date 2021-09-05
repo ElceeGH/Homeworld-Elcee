@@ -865,7 +865,7 @@ void selCircleCompute(hmatrix *modelView, hmatrix *projection, SpaceObjRotImpTar
             dist = vecMagnitudeSquared(distvec);
             hmatMultiplyHMatByHVec(&selCameraSpace, modelView, &centre);//in camera space
             radius = selCameraSpace;
-            dist = fsqrt(dist);
+            dist = sqrtf(dist);
             radius.x += dist + (master->staticinfo->staticheader.staticCollInfo.collspheresize);
             hmatMultiplyHMatByHVec(&screenSpace, projection, &selCameraSpace);//in screen space
             hmatMultiplyHMatByHVec(&radiusProjected, projection, &radius);
@@ -2700,7 +2700,7 @@ void selSelectionDimensions(hmatrix *modelView, hmatrix *projection, SelectComma
                 maxRadius = radius;
             }
         }
-        maxRadius = fsqrt(maxRadius);
+        maxRadius = sqrtf(maxRadius);
         selCircleComputeGeneral(modelView, projection, &centre, maxRadius, destX, destY, destRad);
     }
 }

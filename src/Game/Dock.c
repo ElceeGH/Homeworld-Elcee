@@ -679,7 +679,7 @@ Ship *FindNearestShipToDockAt(Ship *ship,DockType dockType)
                    ((dockType & DOCK_FOR_RETIRE) && (dockatstatic->canReceiveShipsForRetire)))
                 {
                     vecSub(diff,dockat->posinfo.position,ship->posinfo.position);
-                    dist = fsqrt(vecMagnitudeSquared(diff));
+                    dist = sqrtf(vecMagnitudeSquared(diff));
 
                     if (dockType & DOCK_TO_DEPOSIT_RESOURCES)
                     {
@@ -1898,7 +1898,7 @@ bool dockFlyToConeInside(Ship *ship,Ship *dockwith,real32 dockDistance)
     vecAddTo(conepositionInWorldCoordSys,dockwith->posinfo.position);
 
     vecSub(coneToShip,ship->posinfo.position,conepositionInWorldCoordSys);
-    coneToShipMag = fsqrt(vecMagnitudeSquared(coneToShip));
+    coneToShipMag = sqrtf(vecMagnitudeSquared(coneToShip));
 
     dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
@@ -2796,7 +2796,7 @@ bool ShipDocksAtJunkYardHQ(struct CommandToDo *docktodo,struct Ship *ship,struct
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -2974,7 +2974,7 @@ bool ShipDocksAtRepairCorvette(struct CommandToDo *docktodo,struct Ship *ship,st
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -3195,7 +3195,7 @@ bool ShipDocksAtResourceCollector(struct CommandToDo *docktodo,struct Ship *ship
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -3461,7 +3461,7 @@ bool ShipDocksAtASF(struct CommandToDo *docktodo,struct Ship *ship,struct Ship *
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (docktodo->dock.dockType & DOCK_INSTANTANEOUSLY)
@@ -3750,7 +3750,7 @@ bool ShipDocksAtResController(struct CommandToDo *docktodo,struct Ship *ship,str
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -4609,7 +4609,7 @@ bool ShipDocksAtCarrierMother(struct CommandToDo *docktodo,struct Ship *ship,str
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -4652,7 +4652,7 @@ waitforlatch:
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -5018,7 +5018,7 @@ bool DroneDocksAtDDDF(struct Ship *ship,struct Ship *dockwith)
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))
@@ -6254,7 +6254,7 @@ bool ShipDocksAtFuelPod(struct CommandToDo *docktodo,struct Ship *ship,struct Sh
 
             matMultiplyMatByVec(&coneheadingInWorldCoordSys,&dockwith->rotinfo.coordsys,&dockstaticpoint->conenormal);
 
-            coneToShipMag = fsqrt(coneToShipMagSqr);
+            coneToShipMag = sqrtf(coneToShipMagSqr);
             dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 
             if (dotprod >= (dockstaticpoint->coneangle*coneToShipMag))

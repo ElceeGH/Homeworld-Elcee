@@ -12,10 +12,6 @@
 
 #include <math.h>
 
-#define fsqrt(x)     (real32)sqrtf((real32)(x))
-#define fmathSqrt(x) (real32)sqrtf((real32)(x))
-#define fmathSqrtDouble sqrt
-
 // pi
 #ifndef PI
     #define PI 3.14159265358979f

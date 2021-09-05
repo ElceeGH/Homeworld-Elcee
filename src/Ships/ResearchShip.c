@@ -154,7 +154,7 @@ void getRotatePoint(Ship *ship, vector *point, real32 *distance)
 
     vecSub(dist,ship->posinfo.position, *point);
     *distance = vecMagnitudeSquared(dist);
-    *distance = fsqrt(*distance);
+    *distance = sqrtf(*distance);
 }
 
 void ResearchShipHouseKeep(Ship *ship)
@@ -326,7 +326,7 @@ void ResearchShipHouseKeep(Ship *ship)
                         matMultiplyMatByMat(&tmpmat, &ship->rotinfo.coordsys, &rot_matrix);
                         //vecSub(tmpvec, ship->posinfo.position, spec->rotate_point);
                         //dist = vecMagnitudeSquared(tmpvec);
-                        //dist = fsqrt(dist);
+                        //dist = sqrtf(dist);
 
                         matGetVectFromMatrixCol3(desiredheading,tmpmat);
                         vecScalarMultiply(destination, desiredheading, spec->rotate_distance);      //old was dist

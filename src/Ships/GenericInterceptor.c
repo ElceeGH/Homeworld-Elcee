@@ -451,7 +451,7 @@ void GenericInterceptorPassiveAttack(Ship *ship,Ship *target,bool rotate)
     else
         aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)target,&trajectory);
 
-    dist = fsqrt(vecMagnitudeSquared(trajectory));
+    dist = sqrtf(vecMagnitudeSquared(trajectory));
     vecDivideByScalar(trajectory,dist,temp);
 
     range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)target,dist);
@@ -707,7 +707,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
 
             aishipGetTrajectoryWithAngleCorrection(ship,target,&trajectory);
 
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             vecDivideByScalar(trajectory,dist,temp);
 
             range = RangeToTargetGivenDist(ship,target,dist);
@@ -774,7 +774,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
             else
                 aishipGetTrajectory(ship,target,&trajectory);
 
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             vecDivideByScalar(trajectory,dist,temp);
 
             if (vecDotProduct(trajectory,target->posinfo.velocity) < 0)     // never track a velocity of ship moving towards us,
@@ -921,7 +921,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                         //slowly reduce verticle component so as to organize
                         //things and reduce deadlyness of verticle attacks
                         //tempreal = vecMagnitudeSquared(spec->aivec);
-                        //tempreal = fsqrt(tempreal);
+                        //tempreal = sqrtf(tempreal);
                         //spec->aivec.x *= tacticsInfo.InterceptorVerticalMultiplier;
                         //vecNormalize(&spec->aivec);
                         //vecScalarMultiply(spec->aivec,spec->aivec,tempreal);

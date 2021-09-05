@@ -108,7 +108,7 @@ void attackPassiveRotate(Ship *ship,Ship *target)
         }
     }
 
-    dist = fsqrt(vecMagnitudeSquared(trajectory));
+    dist = sqrtf(vecMagnitudeSquared(trajectory));
     vecDivideByScalar(trajectory,dist,temp);
 
     aitrackHeading(ship,&trajectory,FLYSHIP_ATTACKACCURACY);
@@ -181,7 +181,7 @@ void attackSimple(Ship *ship,SpaceObjRotImpTarg *target)
 
     aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)target,&trajectory);
 
-    dist = fsqrt(vecMagnitudeSquared(trajectory));
+    dist = sqrtf(vecMagnitudeSquared(trajectory));
     vecDivideByScalar(trajectory,dist,temp);
 
     range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)target,dist);
@@ -217,7 +217,7 @@ void attackPassive(Ship *ship,Ship *target)
     {
         aishipGetTrajectory(ship,(SpaceObjRotImpTarg *)target,&trajectory);
 
-        dist = fsqrt(vecMagnitudeSquared(trajectory));
+        dist = sqrtf(vecMagnitudeSquared(trajectory));
         vecDivideByScalar(trajectory,dist,temp);
 
         range = RangeToTargetGivenDist(ship,(SpaceObjRotImpTarg *)target,dist);
@@ -285,7 +285,7 @@ void attackStraightForward(Ship *ship,SpaceObjRotImpTarg *target,real32 gunRange
 
     aishipGetTrajectory(ship,target,&trajectory);
 
-    dist = fsqrt(vecMagnitudeSquared(trajectory));
+    dist = sqrtf(vecMagnitudeSquared(trajectory));
     vecDivideByScalar(trajectory,dist,temp);
 
     range = RangeToTargetGivenDist(ship,target,dist);
@@ -469,7 +469,7 @@ void attackSideStep(Ship *ship,SpaceObjRotImpTarg *target,AttackSideStep *attack
 #endif
             aishipGetTrajectory(ship,target,&trajectory);
 
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             vecDivideByScalar(trajectory,dist,temp);
             aitrackHeadingWithBank(ship,&trajectory,FLYSHIP_HEADINGACCURACY,shipstaticinfo->sinbank);
 
@@ -505,7 +505,7 @@ void attackSideStep(Ship *ship,SpaceObjRotImpTarg *target,AttackSideStep *attack
 
             aishipGetTrajectory(ship,target,&trajectory);
 
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             vecDivideByScalar(trajectory,dist,temp);
 
             aishipFlyToPointAvoidingObjsWithVel(ship,NULL,0,0.0f,&ship->posinfo.velocity);     // just avoid objects
@@ -558,7 +558,7 @@ void attackSideStep(Ship *ship,SpaceObjRotImpTarg *target,AttackSideStep *attack
 #endif
             aishipGetTrajectory(ship,target,&trajectory);
 
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             vecDivideByScalar(trajectory,dist,temp);
             aitrackHeadingWithBank(ship,&trajectory,FLYSHIP_HEADINGACCURACY,shipstaticinfo->sinbank);
 

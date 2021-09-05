@@ -121,7 +121,7 @@ void GenericDefenderAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdist)
 
         case DEFENDER_APPROACH:
             aishipGetTrajectory(ship,target,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,target,dist);
             if (range > newrange)
             {
@@ -136,7 +136,7 @@ void GenericDefenderAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdist)
 
         case DEFENDER_CIRCLE:
             aishipGetTrajectory(ship,target,&trajectory);
-            dist = fsqrt(vecMagnitudeSquared(trajectory));
+            dist = sqrtf(vecMagnitudeSquared(trajectory));
             range = RangeToTargetGivenDist(ship,target,dist);
             if (range > newrange)
             {
@@ -220,7 +220,7 @@ void doKamikazeAttack(Ship *ship,SpaceObjRotImpTarg *target)
 
     vecSub(trajectory,target->collInfo.collPosition,ship->posinfo.position);
     mag = vecMagnitudeSquared(trajectory);
-    dist = fsqrt(mag);
+    dist = sqrtf(mag);
 
     destination = trajectory;
     vecNormalize(&destination);
@@ -259,7 +259,7 @@ void doKamikazeAttack(Ship *ship,SpaceObjRotImpTarg *target)
     case K_Ram2:
         //lets use...mmmmm..twister theor...no...relativity
         vecSub(EinsteinVelocity,ship->posinfo.velocity,target->posinfo.velocity);
-        shipvel = fsqrt(vecMagnitudeSquared(EinsteinVelocity));
+        shipvel = sqrtf(vecMagnitudeSquared(EinsteinVelocity));
         if(ship->shiptype == MinelayerCorvette)
         {
             ((MinelayerCorvetteSpec *)(ship->ShipSpecifics))->mineaistate = MINE_DROP_ATTACK;

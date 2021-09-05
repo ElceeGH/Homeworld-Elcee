@@ -23,7 +23,7 @@
 ----------------------------------------------------------------------------*/
 void vecNormalize(vector *a)
 {
-    real32 mag = fsqrt(vecMagnitudeSquared(*a));
+    real32 mag = sqrtf(vecMagnitudeSquared(*a));
     real32 oneOverMag;
 
 #ifdef OPTIMIZE_VERBOSE
@@ -75,7 +75,7 @@ void vecHomogenize(vector* dst, hvector* src)
 ----------------------------------------------------------------------------*/
 void vecCopyAndNormalize(vector *src,vector *dst)
 {
-    real32 mag = fsqrt(vecMagnitudeSquared(*src));
+    real32 mag = sqrtf(vecMagnitudeSquared(*src));
     real32 oneOverMag = 1.0f / mag;
 
     dst->x = src->x * oneOverMag;
@@ -92,7 +92,7 @@ void vecCopyAndNormalize(vector *src,vector *dst)
 ----------------------------------------------------------------------------*/
 void vecNormalizeToLength(vector *a,real32 length)
 {
-    real32 mag = fsqrt(vecMagnitudeSquared(*a));
+    real32 mag = sqrtf(vecMagnitudeSquared(*a));
     real32 ratio = length / mag;
 
     a->x *= ratio;
@@ -150,7 +150,7 @@ void vecCapVectorSloppy(vector *vectorToCap,real32 maxMagnitude)
 ----------------------------------------------------------------------------*/
 void vecCapVector(vector *vectorToCap,real32 maxMagnitude)
 {
-    real32 actualMag = fsqrt(vecMagnitudeSquared(*vectorToCap));
+    real32 actualMag = sqrtf(vecMagnitudeSquared(*vectorToCap));
     real32 ratio;
 
     if (actualMag > maxMagnitude)
@@ -193,7 +193,7 @@ void vecCapVectorWithMag(vector *vectorToCap,real32 maxMagnitude,real32 actualMa
 ----------------------------------------------------------------------------*/
 void vecCapMinVector(vector *vectorToCap,real32 minMagnitude)
 {
-    real32 actualMag = fsqrt(vecMagnitudeSquared(*vectorToCap));
+    real32 actualMag = sqrtf(vecMagnitudeSquared(*vectorToCap));
     real32 ratio;
 
     if (actualMag < minMagnitude)
@@ -214,7 +214,7 @@ void vecCapMinVector(vector *vectorToCap,real32 minMagnitude)
 ----------------------------------------------------------------------------*/
 void vecCapMinMaxVector(vector *vectorToCap,real32 minMagnitude,real32 maxMagnitude)
 {
-    real32 actualMag = fsqrt(vecMagnitudeSquared(*vectorToCap));
+    real32 actualMag = sqrtf(vecMagnitudeSquared(*vectorToCap));
     real32 ratio;
 
     if (actualMag < minMagnitude)

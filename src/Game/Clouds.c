@@ -505,7 +505,7 @@ static void ellipsoid_octant(sdword n, real32 a, real32 b, real32 c)
 
         px = sin_ph * a;
         nx = sin_ph * a_1;
-        rnorm = 1.0f / fsqrt(nx*nx + nznz);
+        rnorm = 1.0f / sqrtf(nx*nx + nznz);
         SetV(o, px, 0.0f, pz, nx*rnorm, 0.0f, nz*rnorm);
         o++;
 
@@ -517,14 +517,14 @@ static void ellipsoid_octant(sdword n, real32 a, real32 b, real32 c)
             tmp = table_th->sin * sin_ph;
             py = tmp * b;
             ny = tmp * b_1;
-            rnorm = 1.0f / fsqrt(nx*nx + ny*ny + nznz);
+            rnorm = 1.0f / sqrtf(nx*nx + ny*ny + nznz);
             SetV(o, px, py, pz, nx*rnorm, ny*rnorm, nz*rnorm);
             o++;
         }
 
         py = sin_ph * b;
         ny = sin_ph * b_1;
-        rnorm = 1.0f / fsqrt(ny*ny + nznz);
+        rnorm = 1.0f / sqrtf(ny*ny + nznz);
         SetV(o, 0.0f, py, pz, 0.0f, ny*rnorm, nz*rnorm);
         o++;
     }
@@ -540,7 +540,7 @@ static void ellipsoid_octant(sdword n, real32 a, real32 b, real32 c)
         tmp = table_th->sin;
         py = tmp * b;
         ny = tmp * b_1;
-        rnorm = 1.0f / fsqrt(nx*nx + ny*ny);
+        rnorm = 1.0f / sqrtf(nx*nx + ny*ny);
         SetV(o, px, py, 0.0f, nx*rnorm, ny*rnorm, 0.0f);
         o++;
     }
@@ -1132,7 +1132,7 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
         pointB = l->pointB;
 
         vecSub(distvec, pointB, pointA);
-        distance = fsqrt(vecMagnitudeSquared(distvec));
+        distance = sqrtf(vecMagnitudeSquared(distvec));
 
         //lod for lightning jaggies
         if (distance > CLOUD_LDT0) depth = 17;
@@ -1163,7 +1163,7 @@ void cloudRenderAndUpdateLightning(lightning* l, sdword lod)
 
     vecSub(distvec, pointB, pointA);
     distance = vecMagnitudeSquared(distvec);
-    distance = fsqrt(distance);
+    distance = sqrtf(distance);
 
     if (distance > CLOUD_LDT0) depth = 17;
     else if (distance > CLOUD_LDT1) depth = 9;
@@ -1187,7 +1187,7 @@ real32 cloudLightningDistance(lightning* l)
     vector dist;
 
     vecSub(dist, l->pointB, l->pointA);
-    return fsqrt(vecMagnitudeSquared(dist));
+    return sqrtf(vecMagnitudeSquared(dist));
 }
 
 void cloudCapLightningDistance(lightning* l)
@@ -1637,7 +1637,7 @@ void cloudSetFog()
             dontNebulate = TRUE;    //there's clouds here, don't do nebula fog
 
             radius = spaceobj->staticinfo->staticheader.staticCollInfo.collspheresize;
-            dist = fsqrt(spaceobj->cameraDistanceSquared);
+            dist = sqrtf(spaceobj->cameraDistanceSquared);
             if (dist != 0.0f)
             {
                 sumOf += radius * (1.0f / dist);

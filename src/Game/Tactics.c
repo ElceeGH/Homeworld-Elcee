@@ -1625,7 +1625,7 @@ real32 tacticsMaxDistToTarget(SelectCommand *selection,SpaceObjRotImpTarg *targe
             maxdistsqr = newdistsqr;
         }
     }
-    return(fsqrt(maxdistsqr));
+    return(sqrtf(maxdistsqr));
 }
 
 //function to perform dodging perhaps bad place...

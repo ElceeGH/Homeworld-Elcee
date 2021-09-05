@@ -682,8 +682,8 @@ bool aitrackHeadingWithBankPitchFunc(Ship *ship,vector *desiredHeading,real32 ac
         curheadingsqr = 1.0f;
     }
 
-    curheadingmag = fsqrt(curheadingsqr);
-    desheadingmag = fsqrt(desheadingsqr);
+    curheadingmag = sqrtf(curheadingsqr);
+    desheadingmag = sqrtf(desheadingsqr);
     temp1 = 1.0f / curheadingmag;
     temp2 = 1.0f / desheadingmag;
 
@@ -739,7 +739,7 @@ bool aitrackHeadingWithBankPitchFunc(Ship *ship,vector *desiredHeading,real32 ac
 
     desheading.z = (real32)tan(finalpitch);     // z = tan(theta) * 1 (because sqrt(desheading.x^2 + desheading.y^2) == 1)
 
-    temp1 = 1.0f / fsqrt(desheading.z * desheading.z + 1.0f);
+    temp1 = 1.0f / sqrtf(desheading.z * desheading.z + 1.0f);
 
     desheading.x *= temp1;       // normalize vector
     desheading.y *= temp1;

@@ -86,7 +86,7 @@ void univDFGFieldEffect(Ship *ship, Bullet *bullet,real32 totaltimeelapsed)
         return;
     }
 
-    bulletspeed = fsqrt(vecMagnitudeSquared(bullet->posinfo.velocity));
+    bulletspeed = sqrtf(vecMagnitudeSquared(bullet->posinfo.velocity));
 
     //coorsys for deflection effect
     vecSub(shiptobullet,bullet->posinfo.position,ship->posinfo.position);

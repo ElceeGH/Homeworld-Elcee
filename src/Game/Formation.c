@@ -1830,7 +1830,7 @@ void FormationCalculateOffsets(struct CommandToDo *formationtodo)
             Ship *ship;
             ShipStaticInfo *shipstatic;
 
-            squaresize = (udword)fsqrt((real32)numShips);
+            squaresize = (udword)sqrtf((real32)numShips);
             if ((squaresize*squaresize) < numShips)
             {
                 squaresize++;

@@ -333,7 +333,7 @@ sdword salCapFlyToWithInCone(Ship *ship,SpaceObjRotImpTargGuidanceShipDerelict *
     vecAddTo(conepositionInWorldCoordSys,target->posinfo.position);
 
     vecSub(coneToShip,ship->posinfo.position,conepositionInWorldCoordSys);
-    coneToShipMag = fsqrt(vecMagnitudeSquared(coneToShip));
+    coneToShipMag = sqrtf(vecMagnitudeSquared(coneToShip));
 
     dotprod = vecDotProduct(coneheadingInWorldCoordSys,coneToShip);  // 1.0*coneToShipMag*cos(theta)
 

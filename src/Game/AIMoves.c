@@ -1294,7 +1294,7 @@ sdword aimProcessHyperspace(AITeam *team)
         if (hyperspacingShips.numShips)
         {
             current_location = selCentrePointComputeGeneral((MaxSelection *)&hyperspacingShips, &avg_size);
-            cost = hyperspaceCost(fsqrt(aiuFindDistanceSquared(current_location, thisMove->params.move.destination)), (SelectCommand *)&hyperspacingShips);
+            cost = hyperspaceCost(sqrtf(aiuFindDistanceSquared(current_location, thisMove->params.move.destination)), (SelectCommand *)&hyperspacingShips);
 
             aiCurrentAIPlayer->aifHyperSavings -= (sdword)cost;
             clWrapMpHyperspace(&universe.mainCommandLayer, (SelectCommand *)&hyperspacingShips, current_location, thisMove->params.move.destination);
@@ -1444,7 +1444,7 @@ sdword aimProcessMoveTo(AITeam *team)
                 break;
             case DISTANCE_LIMITED:
                 current_location = selCentrePointComputeGeneral((MaxSelection *)team->shipList.selection, &avg_size);
-                if (fsqrt(aiuFindDistanceSquared(current_location, thisMove->params.moveTo.source)) > thisMove->params.moveTo.limiter)
+                if (sqrtf(aiuFindDistanceSquared(current_location, thisMove->params.moveTo.source)) > thisMove->params.moveTo.limiter)
                 {
                     aiuWrapHalt(team->shipList.selection);
 //                    aiplayerLog((aiIndex,"Move To team reached distance destination"));
@@ -1598,7 +1598,7 @@ sdword aimProcessMoveAttack(AITeam *team)
             mingunrangesq  = aiuFindMinimumGunRangeSquared(teamShips);
             victims_center = selCentrePointComputeGeneral((MaxSelection *)victims, &dummy);
             teams_center   = selCentrePointComputeGeneral((MaxSelection *)teamShips, &dummy);
-            destination    = aiuGenerateFlankCoordinates(victims_center, teams_center, origin, fsqrt(mingunrangesq));
+            destination    = aiuGenerateFlankCoordinates(victims_center, teams_center, origin, sqrtf(mingunrangesq));
 
             newMove = aimCreateMoveTeamNoAdd(team, destination, thisMove->formation, FALSE, TRUE);
             aitAddmoveBeforeAndMakeCurrent(team, newMove, thisMove);
@@ -2100,10 +2100,10 @@ sdword aimProcessTempGuard(AITeam *team)
     {
         if (aiCurrentAIPlayer->player->PlayerMothership)
         {
-            distance = AIM_TEMP_GUARD_MOVE_LOCATION_MULT*(fsqrt(aiCurrentAIPlayer->sphereofinfluence));
+            distance = AIM_TEMP_GUARD_MOVE_LOCATION_MULT*(sqrtf(aiCurrentAIPlayer->sphereofinfluence));
 
 /*            guardLocation = aiuFindRangeStandoffPoint(aiCurrentAIPlayer->player->PlayerMothership->posinfo.position,
-                                                      origin, AIM_TEMP_GUARD_MOVE_LOCATION_MULT*(fsqrt(aiCurrentAIPlayer->sphereofinfluence)));
+                                                      origin, AIM_TEMP_GUARD_MOVE_LOCATION_MULT*(sqrtf(aiCurrentAIPlayer->sphereofinfluence)));
 
             newMove = aimCreateMoveTeamNoAdd(team, guardLocation, AIM_TEMP_GUARD_MOVE_FORMATION, FALSE, TRUE);
 */

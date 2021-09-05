@@ -214,7 +214,7 @@ vector aiuFindRangeStandoffPoint(vector destination, vector location, real32 ran
     real32 disterror = frandyrandombetween(RANDOM_AI_PLAYER,AIU_STANDOFF_DIST_ERROR_LOW,AIU_STANDOFF_DIST_ERROR_HIGH);
 
     vecSub(standoff_point, destination, location);
-    dist_from_location = fsqrt(vecMagnitudeSquared(standoff_point));
+    dist_from_location = sqrtf(vecMagnitudeSquared(standoff_point));
     dist_from_location -= range;
 
     if (dist_from_location <= 0)
@@ -4064,7 +4064,7 @@ void aiuSwarmDock(SelectCommand *ships, SelectCommand *pods)
             dockat = pods->ShipPtr[j];
 
             vecSub(diff,dockat->posinfo.position,ship->posinfo.position);
-            dist = fsqrt(vecMagnitudeSquared(diff));
+            dist = sqrtf(vecMagnitudeSquared(diff));
             busyadddist = BUSY_ADD_TO_DISTANCE;
 
             if (dockat->dockInfo->busyness >= dockat->staticinfo->canHandleNumShipsDocking)

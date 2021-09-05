@@ -392,7 +392,7 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
     dist_z *= dist_z;
 
     //find la distance (using that wonderful formula by Pythagoras)
-    pieDistance = fsqrt(dist_x + dist_y + dist_z);
+    pieDistance = sqrtf(dist_x + dist_y + dist_z);
     distance = (udword)pieDistance;
 
     //update the global moveto vector and distance variables
@@ -567,7 +567,7 @@ void pieAllShipsToPiePlateDraw(real32 distance)
             c = TW_SHIP_LINE_COLOR;
         }
         primLine3(&planePoint, &shipPoint, c);              //draw line from plane to ship
-        length = fsqrt(((shipPoint.x - selCentrePoint.x) * (shipPoint.x - selCentrePoint.x) +
+        length = sqrtf(((shipPoint.x - selCentrePoint.x) * (shipPoint.x - selCentrePoint.x) +
                  (shipPoint.y - selCentrePoint.y) * (shipPoint.y - selCentrePoint.y)));
         //now draw circle on the plane
         bHeightPointDrawn = FALSE;
@@ -638,7 +638,7 @@ void pieWorldLocationCompute(vector *world0, vector *world1, real32 *eyeMag)
     world0->y = mrCamera->eyeposition.y;
     world0->z = mrCamera->eyeposition.z;
 
-    *eyeMag = fsqrt(vecMagnitudeSquared(*world0));
+    *eyeMag = sqrtf(vecMagnitudeSquared(*world0));
 
     cameraRayCast(world1, mrCamera, mouseCursorX(), mouseCursorY(), MAIN_WindowWidth, MAIN_WindowHeight);
     vecMultiplyByScalar(*world1, *eyeMag);
@@ -920,7 +920,7 @@ bool pieMovePointClipToLimits(real32 sizeX, real32 sizeY, real32 sizeZ, vector *
         return(FALSE);                                      //no clipping because no intersection
     }
 
-    fsqrtResult = fsqrt(rSquared * drSquared - DSquared);
+    fsqrtResult = sqrtf(rSquared * drSquared - DSquared);
     x1 = (D * dy + SGN(dy) * dx * fsqrtResult) / drSquared;
     x2 = (D * dy - SGN(dy) * dx * fsqrtResult) / drSquared;
     y1 = (-D * dx + ABS(dy) * fsqrtResult) / drSquared;
@@ -1038,7 +1038,7 @@ void piePointSpecDraw(void)
     world0.x = mrCamera->eyeposition.x - selCentrePoint.x;
     world0.y = mrCamera->eyeposition.y - selCentrePoint.y;
     world0.z = mrCamera->eyeposition.z - selCentrePoint.z;
-    distance = fmathSqrt(vecMagnitudeSquared(world0));
+    distance = sqrtf(vecMagnitudeSquared(world0));
     //prepare for drawing
     primModeClear2();
     rndLightingEnable(FALSE);                               //draw the pizza dish
@@ -1200,7 +1200,7 @@ void piePointSpecDraw(void)
         moveLengthVector.x = pieHeightPoint.x - selCentrePoint.x;
         moveLengthVector.y = pieHeightPoint.y - selCentrePoint.y;
         moveLengthVector.z = 0.0f;
-        moveLength = fmathSqrt(vecMagnitudeSquared(moveLengthVector));
+        moveLength = sqrtf(vecMagnitudeSquared(moveLengthVector));
         if (moveLength > maxMoveLength)
         {                                                   //if distance on the plane too far
             vecMultiplyByScalar(moveLengthVector, maxMoveLength / moveLength);

@@ -1643,7 +1643,7 @@ sdword kasfFindDistance(hvector *location1, hvector *location2)
 
     distsq = aiuFindDistanceSquared(loc1, loc2);
 
-    return (sdword)fsqrt(distsq);
+    return (sdword)sqrtf(distsq);
 }
 
 

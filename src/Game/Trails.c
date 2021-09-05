@@ -819,7 +819,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
 //    maxvel = ship->staticinfo->staticheader.maxvelocity;
     maxvel = tacticsGetShipsMaxVelocity(ship);
     VECCOPY(&vel, &ship->posinfo.velocity);
-    mag = fsqrt(vecMagnitudeSquared(vel));
+    mag = sqrtf(vecMagnitudeSquared(vel));
     velratio = 0.5f * mag / maxvel;
     if (velratio == 0.0f)
     {
@@ -1093,7 +1093,7 @@ void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real3
 
     //scale radius by velocity fn
     VECCOPY(&vel, &ship->posinfo.velocity);
-    mag = fsqrt(vecMagnitudeSquared(vel));
+    mag = sqrtf(vecMagnitudeSquared(vel));
     velratio = mag / maxvel;
     if (velratio < VELRATIO_THRESH)
     {
@@ -1172,7 +1172,7 @@ void trailStraighten(vector positions[], real32* coordsys)
         distances[i] = vecMagnitudeSquared(directions[i]);
         if (distances[i] > 0.0f)
         {
-            distances[i] = fsqrt(distances[i]);
+            distances[i] = sqrtf(distances[i]);
         }
         vecNormalize(&directions[i]);
     }
@@ -1947,7 +1947,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
     }
     trailCopySegment(&currentSegment, &lastSegment);
 
-    mag = fsqrt(vecMagnitudeSquared(ship->posinfo.velocity));
+    mag = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
     if (mag < 0.001f)   //decision
     {
         return;

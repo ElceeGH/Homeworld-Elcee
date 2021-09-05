@@ -1439,12 +1439,12 @@ void wkTradeInit(void)
         wkTradeShips[index].vy = 0.0f;
         wkTradeShips[index].ang = 0.0f;
         wkTradeShips[index].vang = 0.0f;
-        wkTradeShips[index].vangacc = WK_ANGULAR_ACC / fsqrt(mass);
-        wkTradeShips[index].vangmax = WK_ANGULAR_MAXVEL / fsqrt(fsqrt(mass));
-        wkTradeShips[index].acc = WK_LINEAR_ACC / fsqrt(mass);
+        wkTradeShips[index].vangacc = WK_ANGULAR_ACC / sqrtf(mass);
+        wkTradeShips[index].vangmax = WK_ANGULAR_MAXVEL / sqrtf(sqrtf(mass));
+        wkTradeShips[index].acc = WK_LINEAR_ACC / sqrtf(mass);
         wkTradeShips[index].maxvel = WK_LINEAR_MAXVEL;
-        wkTradeShips[index].revacc = WK_LINEAR_REVACC / fsqrt(mass);
-        wkTradeShips[index].strafeacc = WK_STRAFE_ACC / fsqrt(mass);
+        wkTradeShips[index].revacc = WK_LINEAR_REVACC / sqrtf(mass);
+        wkTradeShips[index].strafeacc = WK_STRAFE_ACC / sqrtf(mass);
         wkTradeShips[index].controlthrust = 0;
         wkTradeShips[index].controlrot = 0;
         wkTradeShips[index].controlstrafe = 0;
@@ -1598,7 +1598,7 @@ void wkTradeUpdate(void)
             }
         }
 
-        vel = fsqrt(trader->vx*trader->vx +
+        vel = sqrtf(trader->vx*trader->vx +
                     trader->vy*trader->vy);
 
         if (vel > trader->maxvel)

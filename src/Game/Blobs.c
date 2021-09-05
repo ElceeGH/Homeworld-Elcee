@@ -358,7 +358,7 @@ void bobUpdateObjsInBlobCollInfo(blob *thisBlob)
         }
 
         vecSub(distvec,spaceobj->posinfo.position,thisBlob->centre);
-        spaceobj->collOptimizeDist = fsqrt(vecMagnitudeSquared(distvec));
+        spaceobj->collOptimizeDist = sqrtf(vecMagnitudeSquared(distvec));
     }
 
     qsort(&blobObjects->SpaceObjPtr[0],blobObjects->numSpaceObjs,sizeof(SpaceObj *),CompareSpaceObjCollOptimizeDistCB);
@@ -399,7 +399,7 @@ void bobUpdateExtraCollBobInfo(LinkedList *list)
             spaceobj = blobObjects->SpaceObjPtr[i];
 
             vecSub(distvec,spaceobj->posinfo.position,thisBlob->centre);
-            spaceobj->collOptimizeDist = fsqrt(vecMagnitudeSquared(distvec));
+            spaceobj->collOptimizeDist = sqrtf(vecMagnitudeSquared(distvec));
             spaceobj->collMyBlob = thisBlob;
         }
 
@@ -1371,7 +1371,7 @@ void bobListUpdate(LinkedList *list)
             thisBlob = (blob *)listGetStructOfNode(thisNode);
             if (thisBlob->sqrtSortDistance == 0.0f)
             {
-                thisBlob->sqrtSortDistance = fsqrt(thisBlob->sortDistance);
+                thisBlob->sqrtSortDistance = sqrtf(thisBlob->sortDistance);
             }
             thisblobSortDistance = thisBlob->sqrtSortDistance;
             //walk forward through list combining any spheres which could combine with this one
@@ -1384,7 +1384,7 @@ void bobListUpdate(LinkedList *list)
 
                 if (otherBlob->sqrtSortDistance == 0.0f)
                 {
-                    otherBlob->sqrtSortDistance = fsqrt(otherBlob->sortDistance);
+                    otherBlob->sqrtSortDistance = sqrtf(otherBlob->sortDistance);
                 }
                 otherblobSortDistance = otherBlob->sqrtSortDistance;
 
@@ -1430,7 +1430,7 @@ void bobListUpdate(LinkedList *list)
                 {                                           //if these blobs are sufficiently overlapping
                     //determine if the new sphere would match density criteria
                     bobStatsCombine();
-                    newRadius = (((real32)fsqrt(distance)) + thisBlob->radius + otherBlob->radius) * 0.5f;
+                    newRadius = (((real32)sqrtf(distance)) + thisBlob->radius + otherBlob->radius) * 0.5f;
                     newVolume = sphereVolume(newRadius);
                     newDensity = (thisBlob->totalMass + otherBlob->totalMass) / newVolume;
 
@@ -1918,7 +1918,7 @@ void bobAddObjToSpecificBlob(blob *putInBlob,SpaceObj *obj)
 #endif
 
     vecSub(distvec,obj->posinfo.position,putInBlob->centre);
-    obj->collOptimizeDist = fsqrt(vecMagnitudeSquared(distvec));
+    obj->collOptimizeDist = sqrtf(vecMagnitudeSquared(distvec));
     obj->collMyBlob = putInBlob;
 
     AddObjToObjectListsOfBlob(obj,putInBlob);
@@ -1953,7 +1953,7 @@ void bobAddObjToNearestBlob(LinkedList *list,SpaceObj *obj)
 //    dbgAssertOrIgnore(putInBlob->debugFlag == 0);
 #endif
 
-    obj->collOptimizeDist = fsqrt(distsqr);
+    obj->collOptimizeDist = sqrtf(distsqr);
     obj->collMyBlob = putInBlob;
 
     AddObjToObjectListsOfBlob(obj,putInBlob);
