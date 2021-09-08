@@ -77,6 +77,7 @@
 #include "utility.h"
 #include "SDL_syswm.h"
 #include "rResScaling.h"
+#include "rShaderProgram.h"
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -1039,11 +1040,7 @@ static bool setupPixelFormat( void )
     glGenBuffers    = SDL_GL_GetProcAddress("glGenBuffers");
     glBufferData    = SDL_GL_GetProcAddress("glBufferData");
     glBufferSubData = SDL_GL_GetProcAddress("glBufferSubData");
-#endif
-
-#ifndef _NDEBUG
-    gl_extensions = glGetString(GL_EXTENSIONS);
-    printf("GL Extensions:\n%s\n", gl_extensions);
+    loadShaderFunctions();
 #endif
 
     useVBO = glCheckExtension("GL_ARB_vertex_buffer_object");
