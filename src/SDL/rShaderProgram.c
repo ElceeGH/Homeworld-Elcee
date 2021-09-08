@@ -1,6 +1,6 @@
 /*=============================================================================
     Name    : rShaderProgram.c
-    Purpose : OpenGL shader loading functions.
+    Purpose : OpenGL shader functionality.
 
     Created 04/09/2021 by Elcee
 =============================================================================*/
@@ -8,29 +8,53 @@
 
 
 #include "rShaderProgram.h"
+#include "Debug.h"
 #include "SDL.h"
 #include <stdio.h>
 
 
 
-static char*  loadSourceFromFile( const char* name );
-static GLuint compileShader     ( const char* name, const char* source );
-static GLuint linkProgram       ( const char* name, GLuint shader );
-static void   checkCompile      ( const char* name, GLuint handle );
-static void   checkLink         ( const char* name, GLuint handle );
+//////////////////////////////////////////
+// Constants ////////////////////////////
+////////////////////////////////////////
+
+#define SHADER_DIR_DEV     "../src/Shaders" ///< Checked first
+#define SHADER_DIR_RELEASE "Shaders"        ///< Checked second
+#define SHADER_MAX_COUNT   256               ///< Max number of simultaneously loaded shader programs
 
 
+
+//////////////////////////////////////////
+// Types ////////////////////////////////
+////////////////////////////////////////
+
+/// Mapping of filename to GL handle
+typedef struct ProgramMap {
+    GLuint program;        ///< Handle of shader program. Zero if no program is allocated.
+    char   name[MAX_PATH]; ///< Name of shader program excluding the path etc.
+} ProgramMap;
+
+
+
+//////////////////////////////////////////
+// Variables ////////////////////////////
+////////////////////////////////////////
+
+/// All mappings
+static ProgramMap programMap[SHADER_MAX_COUNT];
 
 // Private GL
 static PFNGLCREATESHADERPROC      glCreateShader;
 static PFNGLSHADERSOURCEPROC      glShaderSource;
 static PFNGLCOMPILESHADERPROC     glCompileShader;
-static PFNGLCREATEPROGRAMPROC     glCreateProgram;
 static PFNGLATTACHSHADERPROC      glAttachShader;
-static PFNGLLINKPROGRAMPROC       glLinkProgram;
 static PFNGLDETACHSHADERPROC      glDetachShader;
+static PFNGLDELETESHADERPROC      glDeleteShader;
 static PFNGLGETSHADERIVPROC       glGetShaderiv;
 static PFNGLGETSHADERINFOLOGPROC  glGetShaderInfoLog;
+static PFNGLCREATEPROGRAMPROC     glCreateProgram;
+static PFNGLLINKPROGRAMPROC       glLinkProgram;
+static PFNGLDELETEPROGRAMPROC     glDeleteProgram;
 static PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 static PFNGLGETPROGRAMIVPROC      glGetProgramiv;
 
@@ -46,17 +70,41 @@ PFNGLUNIFORMMATRIX4FVPROC   glUniformMatrix4fv;
 
 
 
+//////////////////////////////////////////
+// Local function decls /////////////////
+////////////////////////////////////////
+
+static ProgramMap* mapConstruct( const char* name, GLuint program );
+static void        mapDestruct ( GLuint program );
+static ProgramMap* mapFind     ( GLuint program );
+
+static GLuint loadShaderProgramInternal  ( const char* name );
+static void   unloadShaderProgramInternal( GLuint handle );
+static void   unloadAllShaderPrograms    ( void );
+
+static char*  loadSourceFromFile( const char* name );
+static GLuint compileShader     ( const char* name, const char* source );
+static GLuint linkProgram       ( const char* name, GLuint shader );
+static void   checkCompile      ( const char* name, GLuint handle );
+static void   checkLink         ( const char* name, GLuint handle );
+
+
+
 /// Initialise the OpenGL function pointers.
 void loadShaderFunctions() {
+    unloadAllShaderPrograms();
+
     glCreateShader      = SDL_GL_GetProcAddress( "glCreateShader"      );
     glShaderSource      = SDL_GL_GetProcAddress( "glShaderSource"      );
     glCompileShader     = SDL_GL_GetProcAddress( "glCompileShader"     );
-    glCreateProgram     = SDL_GL_GetProcAddress( "glCreateProgram"     );
     glAttachShader      = SDL_GL_GetProcAddress( "glAttachShader"      );
-    glLinkProgram       = SDL_GL_GetProcAddress( "glLinkProgram"       );
     glDetachShader      = SDL_GL_GetProcAddress( "glDetachShader"      );
+    glDeleteShader      = SDL_GL_GetProcAddress( "glDeleteShader"      );
     glGetShaderiv       = SDL_GL_GetProcAddress( "glGetShaderiv"       );
     glGetShaderInfoLog  = SDL_GL_GetProcAddress( "glGetShaderInfoLog"  );
+    glCreateProgram     = SDL_GL_GetProcAddress( "glCreateProgram"     );
+    glLinkProgram       = SDL_GL_GetProcAddress( "glLinkProgram"       );
+    glDeleteProgram     = SDL_GL_GetProcAddress( "glDeleteProgram"     );
     glGetProgramInfoLog = SDL_GL_GetProcAddress( "glGetProgramInfoLog" );
     glGetProgramiv      = SDL_GL_GetProcAddress( "glGetProgramiv"      );
 
@@ -73,25 +121,122 @@ void loadShaderFunctions() {
 
 
 
+/// Construct a new mapping in a free slot.
+static ProgramMap* mapConstruct( const char* name, GLuint program ) {
+    ProgramMap* map = mapFind( 0 );
+    snprintf( map->name, sizeof(map->name), "%s", name );
+    map->program = program;
+    return map;
+}
+
+/// Destruct a mapping.
+static void mapDestruct( GLuint handle ) {
+    ProgramMap* map = mapFind( handle );
+    snprintf( map->name, sizeof(map->name), "%s", "<undefined>" );
+    map->program = 0;
+}
+
+/// Find mapping by its program handle.
+/// A zero handle represents an unused slot.
+/// If no free slot exists, it kills the game via dbgFatalf.
+static ProgramMap* mapFind( GLuint program ) {
+    for (size_t i=0; i<SHADER_MAX_COUNT; i++) {
+        ProgramMap* map = &programMap[i];
+        if (map->program == program)
+            return map;
+    }
+
+    dbgFatalf( DBG_Loc, "No shader program with handle %i exists in map.", program );
+    return NULL;
+}
+
+
+
+/// Recompile all extant shader programs.
+/// This should be done in a fixed point in the rendering sequence.
+/// Beginning or end of the frame is good.
+void reloadAllShaderPrograms( void ) {
+    for (size_t i=0; i<SHADER_MAX_COUNT; i++) {
+        ProgramMap* map = &programMap[i];
+
+        if (map->program) {
+            unloadShaderProgramInternal( map->program );
+            map->program = loadShaderProgramInternal( map->name );
+        }
+    }
+}
+
+
+
+/// Unload all shader programs.
+static void unloadAllShaderPrograms( void ) {
+    for (size_t i=0; i<SHADER_MAX_COUNT; i++)
+        if (programMap[i].program)
+            unloadShaderProgram( &programMap[i].program );
+}
+
+
+
+/// Load a shader program. Returns a pointer to the handle.
+/// The pointer is valid until the program is unloaded.
+/// Do not store the dereferenced handle anywhere across multiple frames.
+/// This allows the shader to be dynamically reloaded which makes shader development much easier.
+GLuint* loadShaderProgram( const char* name ) {
+    // Create the program
+    GLuint program = loadShaderProgramInternal( name );
+
+    // Record name/handle mapping
+    ProgramMap* map = mapConstruct( name, program );
+
+    // Give pointer to the mapped handle
+    return &map->program;
+}
+
+
+
 /// Load a shader program, compile it, link it and return the resulting handle.
-GLuint loadShaderProgram( const char* name ) {
+static GLuint loadShaderProgramInternal( const char* name ) {
     // Load the file and compile it
     void*  source = loadSourceFromFile( name );
     GLuint shader = compileShader( name, source );
     free( source );
     
-    // Link for usable program
+    // Link and return the fully formed program.
     return linkProgram( name, shader );
 }
 
 
 
-/// Load the shader source for compilation.
-static char* loadSourceFromFile( const char* name ) {
-    // Show what's happening
-    printf( "Loading shader source file: %s\n", name );
+/// Unload shader and free resources used by it.
+void unloadShaderProgram( GLuint* handle ) {
+    unloadShaderProgramInternal( *handle );
+    mapDestruct( *handle );
+}
 
-    FILE* file = fopen( name, "r" );
+
+
+/// Unload shader and free resources used by it.
+static void unloadShaderProgramInternal( GLuint handle ) {
+    glDeleteProgram( handle );
+}
+
+
+
+/// Load shader source for compilation.
+static char* loadSourceFromFile( const char* name ) {
+    char  pathDev[MAX_PATH] = { '\0' };
+    char  pathRel[MAX_PATH] = { '\0' };
+    
+    snprintf( pathDev, sizeof(pathDev), "%s/%s", SHADER_DIR_DEV,     name );
+    snprintf( pathRel, sizeof(pathRel), "%s/%s", SHADER_DIR_RELEASE, name );
+
+    // Try dev path first
+    FILE* file = fopen( pathDev, "rb" );
+
+    // Otherwise try release
+    if ( ! file) 
+        file = fopen( pathRel, "rb" ); 
+
     fseek( file, 0, SEEK_END);
     size_t size = ftell( file );
     fseek( file, 0, SEEK_SET);
@@ -129,8 +274,9 @@ static GLuint linkProgram( const char* name, GLuint shader ) {
     // Check
     checkLink( name, handle );
     
-    // Detach (has no effect on linked shader program)
+    // Detach and delete (has no effect on linked shader program)
     glDetachShader( handle, shader );
+    glDeleteShader( shader );
 
     // Return handle to use with glUseProgram
     return handle;
