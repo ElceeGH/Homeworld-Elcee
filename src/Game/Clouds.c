@@ -445,8 +445,8 @@ void ellipsoid_init(sdword n)
                 if (t0->flag == SlotNone)
                 {
                     theta = (real32)((M_PI_2 * j) / i);
-                    t0->cos = t1->sin = (real32)cos((double)theta);
-                    t0->sin = t1->cos = (real32)sin((double)theta);
+                    t0->cos = t1->sin = cosf(theta);
+                    t0->sin = t1->cos = sinf(theta);
                     t0->flag = t1->flag = SlotOnly;
                 }
 
