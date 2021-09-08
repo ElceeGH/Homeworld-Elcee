@@ -22,6 +22,7 @@
 #include "texreg.h"
 #include "Universe.h"
 #include "Vector.h"
+#include "rShaderProgram.h"
 
 #ifdef HW_BUILD_FOR_DEBUGGING
     #define BTG_VERBOSE_LEVEL  3    // print extra info
@@ -1280,6 +1281,20 @@ void btgRender()
         lastFade = btgFade;
     }
 
+    // Dithering alleviates banding on the backgrounds.
+    static GLuint* ditherProgram       = NULL;
+    static GLuint  ditherTemporalValue = 0;
+    static GLint   ditherTemporalLoc   = -1;
+
+    if ( ! ditherProgram) {
+        ditherProgram     = loadShaderProgram( "dither.frag" );
+        ditherTemporalLoc = glGetUniformLocation( *ditherProgram, "uDitherTemporal" );
+    }
+
+    glUseProgram( *ditherProgram );
+    glUniform1i( ditherTemporalLoc, ditherTemporalValue & 0x3F );
+    ditherTemporalValue++;
+
     //use DrawElements to render the bg polys
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -1296,6 +1311,9 @@ void btgRender()
         glDrawElements(GL_TRIANGLES, 3 * btgHead->numPolys, GL_UNSIGNED_SHORT, btgIndices);
     }
     glDisableClientState(GL_COLOR_ARRAY);
+
+    // Back to fixed function pipeline
+    glUseProgram( 0 );
 
     //stars
     rndPerspectiveCorrection(FALSE);
