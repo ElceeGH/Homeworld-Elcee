@@ -4684,5 +4684,5 @@ void rndFlush(void)
 #else
     SDL_GL_SwapWindow(sdlwindow);
 #endif
-    SDL_Delay(1);
+    //SDL_Delay(1);
 }
