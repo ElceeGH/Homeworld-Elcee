@@ -41,3 +41,4 @@ tools/kas2c/project/KAS2C/KAS2C/KAS2C.vcxproj.user
 Windows/prj/hwsdl.vcxproj.user
 bin/
 Windows/prj/hwsdl_releas_test/
+libav/
