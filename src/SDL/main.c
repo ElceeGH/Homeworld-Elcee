@@ -14,8 +14,6 @@
 
 #include "AIPlayer.h"
 #include "AutoLOD.h"
-#include "avi.h"
-// #include "bink.h"
 #include "BTG.h"
 #include "Camera.h"
 #include "Captaincy.h"

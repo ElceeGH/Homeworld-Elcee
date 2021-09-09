@@ -107,7 +107,6 @@
 #endif
 
 #include "main.h"
-#include "avi.h"
 
 #ifdef _WIN32_FIX_ME
  #pragma warning( 2 : 4142 )
@@ -155,7 +154,7 @@ extern int MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth;
 
 extern udword gDevcaps, gDevcaps2;
 
-extern udword aviPlayIntros;
+udword playIntros;
 udword loadedDevcaps  = 0xFFFFFFFF;
 udword loadedDevcaps2 = 0xFFFFFFFF;
 
@@ -799,7 +798,7 @@ scriptEntry utyOptionsList[] =
 
     {"CollectResourcesAtEndOfMission", scriptSetBool,     &spCollectResourcesAtEndOfMission},
     {"PauseOrders",                    scriptSetUdwordCB, &opPauseOrders},
-    {"PlayIntros",                     scriptSetUdwordCB, &aviPlayIntros},
+    {"PlayIntros",                     scriptSetUdwordCB, &playIntros},
     {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
     {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
@@ -812,7 +811,7 @@ scriptEntry utyOptionsList[] =
 
 void utyVideoPlay(char* name, featom* atom)
 {
-    animBinkPlay(0,1);
+    animPlay(0,1);
 
 #ifdef DEBUG_STOMP
     regVerify((regionhandle)&regRootRegion);
@@ -4083,7 +4082,7 @@ DONE_INTROS:
     utySet2(SS2_BabyCallBackRegistry);
 
 
-    aviIntroPlay();  // PlaceHolder for playing the intro Movies (Relic && Sierra)
+    //aviIntroPlay();  // PlaceHolder for playing the intro Movies (Relic && Sierra)
 
     universeInit();
     utySet(SSA_Universe);
