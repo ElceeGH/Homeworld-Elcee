@@ -2,7 +2,7 @@
     Name    : miscUtil.c
     Purpose : Miscellaneous utility functions used in fixes/workarounds
 
-    Created 03/09/2021 by ElceeGH
+    Created 03/09/2021 by Elcee
 =============================================================================*/
 
 
