@@ -465,6 +465,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\utility.c" />
+    <ClCompile Include="..\..\src\SDL\video.c" />
     <ClCompile Include="..\..\src\SDL\wave.c" />
     <ClCompile Include="..\..\src\SDL\win32glue.c" />
     <ClCompile Include="..\..\src\Ships\AdvanceSupportFrigate.c" />
