@@ -763,9 +763,6 @@
     <ClCompile Include="..\..\src\SDL\utility.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL\win32glue.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SDL\ClientCDKey.cpp">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
