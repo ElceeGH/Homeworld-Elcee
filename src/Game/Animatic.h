@@ -15,13 +15,6 @@ extern sdword animaticJustPlayed;
 
 void animStartup(void);
 void animShutdown(void);
-
-void animAviSetup(bool on);
-bool animAviPlay(sdword a, sdword b);
-void animAviEnd(void);
-
-bool animBinkPlay(sdword a, sdword b);
-
-void animAviDecode(sdword frame);
+void animPlay(sdword a, sdword b);
 
 #endif
