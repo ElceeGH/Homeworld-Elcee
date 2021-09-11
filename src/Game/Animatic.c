@@ -125,12 +125,12 @@ static void animSubtitlesClear(void)
 
     animSubtitlesSetup(TRUE);
 
-    rectangle r;
-    r.x0 = -1;
-    r.y0 =  0;
-    r.x1 = MAIN_WindowWidth;
-    r.y1 = (animSubY1 > 128) ? animSubY1 : 128;
-    primRectSolid2(&r, colBlack);
+    //rectangle r;
+    //r.x0 = -1;
+    //r.y0 =  0;
+    //r.x1 = MAIN_WindowWidth;
+    //r.y1 = (animSubY1 > 128) ? animSubY1 : 128;
+    //primRectSolid2(&r, colBlack);
 
     animSubtitlesSetup(FALSE);
 }
@@ -380,10 +380,6 @@ static bool animSetup( sdword a, sdword b ) {
 
     // Save the previous volume settings
     soundEventGetVolume( &animPreviousSFXVolume, &animPreviousSpeechVolume, &animPreviousMusicVolume );
-
-    // Hack for audio. If this is removed the background music doesn't always play.
-    // I think the fadeout for the existing track doesn't complete instantly.
-    SDL_Delay( 500 );
 
     // Hey, we got this far.
     return TRUE;
