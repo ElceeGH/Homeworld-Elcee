@@ -747,20 +747,26 @@ void isoundmixerqueueSDL(Uint8 *stream, int len)
 
 void soundfeedercb(void *userdata, Uint8 *stream, int len)
 {
-	SDL_SemPost( mixerThreadSem );
+	if (mixer.status >= SOUND_PLAYING) 
+	{
+		// Wake up the stream thread so it will soon fetch the next set of buffers.
+		// This doesn't actually have to happen RIGHT NOW, it's just a convenient place to wake the thread up.
+		SDL_SemPost( mixerThreadSem );
 
-	memset(stream, 0, len);
-	if (mixer.status >= SOUND_PLAYING) {
+		// Mix output and write to the audio buffer.
 		isoundmixerqueueSDL(stream, len);
 	}
-	else {
-		memset(stream, 0, len);
-		if (mixer.status == SOUND_STOPPED &&
-				!bSoundPaused && !bSoundDeactivated)
+	else 
+	{
+		// No mixing! Write silence.
+		memset( stream, 0x00, len );
+
+		if (mixer.status == SOUND_STOPPED && !bSoundPaused && !bSoundDeactivated)
 		{
 			mixer.status = SOUND_PLAYING;
 		}
 	}
+
 	if (mixer.status == SOUND_STOPPING)
 	{
 		/* check and see if its done yet */
@@ -771,10 +777,12 @@ void soundfeedercb(void *userdata, Uint8 *stream, int len)
 			SDL_PauseAudio(TRUE);
 		}
 	}
+
 	if (bSoundPaused && (mixer.status == SOUND_PLAYING))
 	{
 		mixer.status = SOUND_STOPPING;
 	}
+
 	if (bSoundDeactivated && (mixer.status == SOUND_PLAYING))
 	{
 		mixer.status = SOUND_STOPPED;
