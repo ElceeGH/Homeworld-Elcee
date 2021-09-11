@@ -248,267 +248,266 @@ sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2
 	memset(mixbuffer2R, 0, FQ_SIZE * sizeof(real32));
 	
 	/* mix the speech first */
-	if (streams != NULL)
-	{
-		for (i = 0; i < numstreams; i++)
-		{
-			if(speechchannels[i].status >= SOUND_PLAYING)
-			{
-				scaleLevel = 1.0f;
-
-				pstream = &streams[i];
-				pchan = &speechchannels[i];
-				pqueue = &pstream->queue[pstream->playindex];
 	
-				if (pstream->blockstatus[pstream->readblock] == 0)
+	for (i = 0; i < numstreams; i++)
+	{
+		if(speechchannels[i].status >= SOUND_PLAYING)
+		{
+			scaleLevel = 1.0f;
+
+			pstream = &streams[i];
+			pchan = &speechchannels[i];
+			pqueue = &pstream->queue[pstream->playindex];
+	
+			if (pstream->blockstatus[pstream->readblock] == 0)
+			{
+				if (pchan->status == SOUND_STOPPING)
 				{
-					if (pchan->status == SOUND_STOPPING)
+					pstream->writepos = 0;
+					pstream->playindex = pstream->writeindex;
+					pstream->numtoplay = 0;
+					pchan->status = SOUND_INUSE;
+				}
+				continue;
+			}
+	
+			if (pstream->blockstatus[pstream->readblock] == 1)
+			{
+				pstream->blockstatus[pstream->readblock] = 2;
+			}
+	
+			amountread = isoundmixerdecodeEffect(pchan->currentpos, pchan->mixbuffer1, pchan->mixbuffer2, pchan->exponentblockL,
+							pchan->fqsize, pchan->bitrate, pqueue->effect);
+			pchan->currentpos += amountread;
+			pchan->amountread += amountread;
+				
+			/* figure out any volume fades, pan fades, etc */
+			if (pchan->volticksleft)
+			{
+				pchan->volume += pchan->volfade;
+				pchan->volticksleft--;
+					
+				if (pchan->volticksleft <= 0)
+				{
+					pchan->volfade = 0.0f;
+					pchan->volume = (real32)pchan->voltarget;
+					pchan->volticksleft = 0;
+					pchan->voltarget = -1;
+				}
+	
+				if ((sword)pchan->volume > SOUND_VOL_MAX)
+				{
+					pchan->volume = SOUND_VOL_MAX;
+				}
+	
+				if ((sword)pchan->volume < SOUND_VOL_MIN)
+				{
+					pchan->volume = SOUND_VOL_MIN;
+				}
+	
+				if ((pchan->status == SOUND_STOPPING) && (pchan->volume == SOUND_VOL_MIN))
+				{
+					if (pstream->numqueued == 0)
 					{
-						pstream->writepos = 0;
-						pstream->playindex = pstream->writeindex;
-						pstream->numtoplay = 0;
-						pchan->status = SOUND_INUSE;
+						pstream->status = SOUND_STREAM_INUSE;
+						pstream->queueindex = 0;
+						pstream->writeindex = 0;
+						pstream->playindex = 0;
+						pstream->numqueued = 0;
 					}
+					else
+					{
+						pstream->status = SOUND_STREAM_STARTING;
+						pstream->writeindex = pstream->queueindex - pstream->numqueued;
+						if (pstream->writeindex < 0)
+						{
+							pstream->writeindex += SOUND_MAX_STREAM_QUEUE;
+						}
+						pstream->playindex = pstream->writeindex;
+					}
+					pchan->status = SOUND_FREE;
 					continue;
 				}
+					
+				SNDcalcvolpan(pchan);
+			}
 	
-				if (pstream->blockstatus[pstream->readblock] == 1)
+			/******************************************************************************/
+			/* Shane - pchan->volfactorL BELOW IS PROBABLY NOT THE PROPER VOLUME. - Janik */
+			/******************************************************************************/
+
+			if (pchan->numchannels < SOUND_STEREO)	// added this check because of a strange bug that caused the music to
+			{										// have a mixHandle of 0, which played a buzzing in the left channel
+													// this doesn't fix the bug, but it'll keep the buzzing from happening
+				/* mix in SFX */
+				if (pqueue->mixHandle >= SOUND_OK)
 				{
-					pstream->blockstatus[pstream->readblock] = 2;
+//					fqMix(pchan->mixbuffer1,channels[SNDchannel(pqueue->mixHandle)].mixbuffer1, pchan->volfactorL);
+//					fqMix(pchan->mixbuffer2,channels[SNDchannel(pqueue->mixHandle)].mixbuffer2, pchan->volfactorL);
+					chan = SNDchannel(pqueue->mixHandle);
+					fqMix(pchan->mixbuffer1,channels[chan].mixbuffer1, 1.0f);	//channels[chan].volfactorL);
+					fqMix(pchan->mixbuffer2,channels[chan].mixbuffer2, 1.0f);	//channels[chan].volfactorL);
 				}
 	
-				amountread = isoundmixerdecodeEffect(pchan->currentpos, pchan->mixbuffer1, pchan->mixbuffer2, pchan->exponentblockL,
-								pchan->fqsize, pchan->bitrate, pqueue->effect);
+				/* do the EQ and Delay or Acoustic Model stuff */
+				if (pqueue->eq != NULL)
+				{
+					if (pqueue->eq->flags && STREAM_FLAGS_EQ)
+					{
+						/* equalize this sucker */
+						fqEqualize(pchan->mixbuffer1, pqueue->eq->eq);
+						fqEqualize(pchan->mixbuffer2, pqueue->eq->eq);
+					}
+				}
+		
+				if (pqueue->effect != NULL)
+				{
+					// Add tone
+					fqAddToneE(pchan->mixbuffer1, pqueue->effect);
+					fqAddToneE(pchan->mixbuffer2, pqueue->effect);
+				
+					// Generate break
+					fqAddBreakE(pchan->mixbuffer1, pqueue->effect);
+					fqAddBreakE(pchan->mixbuffer2, pqueue->effect);
+						
+					// Add noise
+					fqAddNoiseE(pchan->mixbuffer1, pqueue->effect);
+					fqAddNoiseE(pchan->mixbuffer2, pqueue->effect);
+					
+					// Limit
+					fqLimitE(pchan->mixbuffer1, pqueue->effect);
+					fqLimitE(pchan->mixbuffer2, pqueue->effect);
+	
+					// Filter
+					fqFilterE(pchan->mixbuffer1, pqueue->effect);
+					fqFilterE(pchan->mixbuffer2, pqueue->effect);
+	
+					scaleLevel = pqueue->effect->fScaleLev;
+				}
+		
+				if (pqueue->delay != NULL)
+				{
+					if (pqueue->delay->flags & STREAM_FLAGS_ACMODEL)
+					{
+						fqAcModel(pchan->mixbuffer1, pqueue->delay->eq, pqueue->delay->duration,
+									pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
+						fqAcModel(pchan->mixbuffer2, pqueue->delay->eq, pqueue->delay->duration,
+									pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
+					}
+					else if (pqueue->delay->flags & STREAM_FLAGS_DELAY)
+					{
+						fqDelay(pchan->mixbuffer1, pqueue->delay->level, pqueue->delay->duration,
+									pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
+						fqDelay(pchan->mixbuffer2, pqueue->delay->level, pqueue->delay->duration,
+									pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
+					}
+				}
+			}
+	
+			/* add it to mix buffer */
+			fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL * scaleLevel);
+			fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL * scaleLevel);
+
+			/* if this is stereo, do the right channel */
+			if (pchan->numchannels == SOUND_STEREO)
+			{
+				amountread = isoundmixerdecode(pchan->currentpos, pchan->mixbuffer1R, pchan->mixbuffer2R, pchan->exponentblockR,
+								pchan->fqsize, pchan->bitrate);
 				pchan->currentpos += amountread;
 				pchan->amountread += amountread;
-				
-				/* figure out any volume fades, pan fades, etc */
-				if (pchan->volticksleft)
+
+				/*****************************************************/
+				/* Shane - The code below never gets called! - Janik */
+				/*****************************************************/
+/*
+				if (pqueue->effect != NULL)
 				{
-					pchan->volume += pchan->volfade;
-					pchan->volticksleft--;
-					
-					if (pchan->volticksleft <= 0)
-					{
-						pchan->volfade = 0.0f;
-						pchan->volume = (real32)pchan->voltarget;
-						pchan->volticksleft = 0;
-						pchan->voltarget = -1;
-					}
+					// Add tone
+					fqAddToneE(pchan->mixbuffer1R, pqueue->effect);
+					fqAddToneE(pchan->mixbuffer2R, pqueue->effect);
+				
+					// Generate break
+					fqAddBreakE(pchan->mixbuffer1R, pqueue->effect);
+					fqAddBreakE(pchan->mixbuffer2R, pqueue->effect);
+						
+					// Add noise
+					fqAddNoiseE(pchan->mixbuffer1R, pqueue->effect);
+					fqAddNoiseE(pchan->mixbuffer2R, pqueue->effect);
+
+					// Limit
+					fqLimitE(pchan->mixbuffer1R, pqueue->effect);
+					fqLimitE(pchan->mixbuffer2R, pqueue->effect);
+
+					// Filter
+					fqFilterE(pchan->mixbuffer1R, pqueue->effect);
+					fqFilterE(pchan->mixbuffer2R, pqueue->effect);
+				}
+*/
+
+				fqMix(mixbuffer1R,pchan->mixbuffer1R,pchan->volfactorR * scaleLevel);
+				fqMix(mixbuffer2R,pchan->mixbuffer2R,pchan->volfactorR * scaleLevel);
+			}
+			else
+			{
+				fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR * scaleLevel);
+				fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR * scaleLevel);
+			}
 	
-					if ((sword)pchan->volume > SOUND_VOL_MAX)
-					{
-						pchan->volume = SOUND_VOL_MAX;
-					}
+			/* this is a clock for the fequency filtering/effects */
+			if (pqueue->effect != NULL)
+			{
+				pqueue->effect->nClockCount++;
+			}
 	
-					if ((sword)pchan->volume < SOUND_VOL_MIN)
-					{
-						pchan->volume = SOUND_VOL_MIN;
-					}
+			if ((pchan->currentpos == (sbyte *)(pstream->buffer + (pstream->blocksize * (pstream->readblock + 1)))) ||
+				(pchan->currentpos == (sbyte *)pstream->writepos))
+			{
+				pstream->blockstatus[pstream->readblock++] = 0;
+				if (pstream->readblock >= 2)
+				{
+					pstream->readblock = 0;
+				}
+			}
 	
-					if ((pchan->status == SOUND_STOPPING) && (pchan->volume == SOUND_VOL_MIN))
+			if (pchan->amountread == pqueue->size)
+			{
+				pchan->amountread = 0;
+				if (pstream->numtoplay > 0)
+				{
+					/* finished this queued stream, go on to the next */
+					pstream->playindex++;
+					pstream->numtoplay--;
+					if (pstream->playindex >= SOUND_MAX_STREAM_QUEUE)
 					{
-						if (pstream->numqueued == 0)
+						pstream->playindex = 0;
+					}
+
+					if (pqueue->mixHandle >= SOUND_OK)
+					{
+						if (pqueue->pmixPatch != pstream->queue[pstream->playindex].pmixPatch)
 						{
-							pstream->status = SOUND_STREAM_INUSE;
-							pstream->queueindex = 0;
-							pstream->writeindex = 0;
-							pstream->playindex = 0;
-							pstream->numqueued = 0;
+							/* we're mixing in a patch to this stream, shut it down */
+							soundstop(pqueue->mixHandle, 0.0f);
+							pqueue->mixHandle = SOUND_DEFAULT;
+							pqueue->pmixPatch = NULL;
+							pqueue->mixLevel = SOUND_VOL_MIN;
 						}
 						else
 						{
-							pstream->status = SOUND_STREAM_STARTING;
-							pstream->writeindex = pstream->queueindex - pstream->numqueued;
-							if (pstream->writeindex < 0)
-							{
-								pstream->writeindex += SOUND_MAX_STREAM_QUEUE;
-							}
-							pstream->playindex = pstream->writeindex;
+							pstream->queue[pstream->playindex].mixHandle = pqueue->mixHandle;
 						}
-						pchan->status = SOUND_FREE;
-						continue;
-					}
-					
-					SNDcalcvolpan(pchan);
+					}			
 				}
+			}
 	
-				/******************************************************************************/
-				/* Shane - pchan->volfactorL BELOW IS PROBABLY NOT THE PROPER VOLUME. - Janik */
-				/******************************************************************************/
-
-				if (pchan->numchannels < SOUND_STEREO)	// added this check because of a strange bug that caused the music to
-				{										// have a mixHandle of 0, which played a buzzing in the left channel
-														// this doesn't fix the bug, but it'll keep the buzzing from happening
-					/* mix in SFX */
-					if (pqueue->mixHandle >= SOUND_OK)
-					{
-	//					fqMix(pchan->mixbuffer1,channels[SNDchannel(pqueue->mixHandle)].mixbuffer1, pchan->volfactorL);
-	//					fqMix(pchan->mixbuffer2,channels[SNDchannel(pqueue->mixHandle)].mixbuffer2, pchan->volfactorL);
-						chan = SNDchannel(pqueue->mixHandle);
-						fqMix(pchan->mixbuffer1,channels[chan].mixbuffer1, 1.0f);	//channels[chan].volfactorL);
-						fqMix(pchan->mixbuffer2,channels[chan].mixbuffer2, 1.0f);	//channels[chan].volfactorL);
-					}
-	
-					/* do the EQ and Delay or Acoustic Model stuff */
-					if (pqueue->eq != NULL)
-					{
-						if (pqueue->eq->flags && STREAM_FLAGS_EQ)
-						{
-							/* equalize this sucker */
-							fqEqualize(pchan->mixbuffer1, pqueue->eq->eq);
-							fqEqualize(pchan->mixbuffer2, pqueue->eq->eq);
-						}
-					}
-		
-					if (pqueue->effect != NULL)
-					{
-						// Add tone
-						fqAddToneE(pchan->mixbuffer1, pqueue->effect);
-						fqAddToneE(pchan->mixbuffer2, pqueue->effect);
-				
-						// Generate break
-						fqAddBreakE(pchan->mixbuffer1, pqueue->effect);
-						fqAddBreakE(pchan->mixbuffer2, pqueue->effect);
-						
-						// Add noise
-						fqAddNoiseE(pchan->mixbuffer1, pqueue->effect);
-						fqAddNoiseE(pchan->mixbuffer2, pqueue->effect);
-					
-						// Limit
-						fqLimitE(pchan->mixbuffer1, pqueue->effect);
-						fqLimitE(pchan->mixbuffer2, pqueue->effect);
-	
-						// Filter
-						fqFilterE(pchan->mixbuffer1, pqueue->effect);
-						fqFilterE(pchan->mixbuffer2, pqueue->effect);
-	
-						scaleLevel = pqueue->effect->fScaleLev;
-					}
-		
-					if (pqueue->delay != NULL)
-					{
-						if (pqueue->delay->flags & STREAM_FLAGS_ACMODEL)
-						{
-							fqAcModel(pchan->mixbuffer1, pqueue->delay->eq, pqueue->delay->duration,
-									  pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
-							fqAcModel(pchan->mixbuffer2, pqueue->delay->eq, pqueue->delay->duration,
-									  pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
-						}
-						else if (pqueue->delay->flags & STREAM_FLAGS_DELAY)
-						{
-							fqDelay(pchan->mixbuffer1, pqueue->delay->level, pqueue->delay->duration,
-									  pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
-							fqDelay(pchan->mixbuffer2, pqueue->delay->level, pqueue->delay->duration,
-									  pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
-						}
-					}
-				}
-	
-				/* add it to mix buffer */
-				fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL * scaleLevel);
-				fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL * scaleLevel);
-
-				/* if this is stereo, do the right channel */
-				if (pchan->numchannels == SOUND_STEREO)
-				{
-					amountread = isoundmixerdecode(pchan->currentpos, pchan->mixbuffer1R, pchan->mixbuffer2R, pchan->exponentblockR,
-									pchan->fqsize, pchan->bitrate);
-					pchan->currentpos += amountread;
-					pchan->amountread += amountread;
-
-					/*****************************************************/
-					/* Shane - The code below never gets called! - Janik */
-					/*****************************************************/
-/*
-					if (pqueue->effect != NULL)
-					{
-						// Add tone
-						fqAddToneE(pchan->mixbuffer1R, pqueue->effect);
-						fqAddToneE(pchan->mixbuffer2R, pqueue->effect);
-				
-						// Generate break
-						fqAddBreakE(pchan->mixbuffer1R, pqueue->effect);
-						fqAddBreakE(pchan->mixbuffer2R, pqueue->effect);
-						
-						// Add noise
-						fqAddNoiseE(pchan->mixbuffer1R, pqueue->effect);
-						fqAddNoiseE(pchan->mixbuffer2R, pqueue->effect);
-
-						// Limit
-						fqLimitE(pchan->mixbuffer1R, pqueue->effect);
-						fqLimitE(pchan->mixbuffer2R, pqueue->effect);
-
-						// Filter
-						fqFilterE(pchan->mixbuffer1R, pqueue->effect);
-						fqFilterE(pchan->mixbuffer2R, pqueue->effect);
-					}
-*/
-
-					fqMix(mixbuffer1R,pchan->mixbuffer1R,pchan->volfactorR * scaleLevel);
-					fqMix(mixbuffer2R,pchan->mixbuffer2R,pchan->volfactorR * scaleLevel);
-				}
-				else
-				{
-					fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR * scaleLevel);
-					fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR * scaleLevel);
-				}
-	
-				/* this is a clock for the fequency filtering/effects */
-				if (pqueue->effect != NULL)
-				{
-					pqueue->effect->nClockCount++;
-				}
-	
-				if ((pchan->currentpos == (sbyte *)(pstream->buffer + (pstream->blocksize * (pstream->readblock + 1)))) ||
-					(pchan->currentpos == (sbyte *)pstream->writepos))
-				{
-					pstream->blockstatus[pstream->readblock++] = 0;
-					if (pstream->readblock >= 2)
-					{
-						pstream->readblock = 0;
-					}
-				}
-	
-				if (pchan->amountread == pqueue->size)
-				{
-					pchan->amountread = 0;
-					if (pstream->numtoplay > 0)
-					{
-						/* finished this queued stream, go on to the next */
-						pstream->playindex++;
-						pstream->numtoplay--;
-						if (pstream->playindex >= SOUND_MAX_STREAM_QUEUE)
-						{
-							pstream->playindex = 0;
-						}
-
-						if (pqueue->mixHandle >= SOUND_OK)
-						{
-							if (pqueue->pmixPatch != pstream->queue[pstream->playindex].pmixPatch)
-							{
-								/* we're mixing in a patch to this stream, shut it down */
-								soundstop(pqueue->mixHandle, 0.0f);
-								pqueue->mixHandle = SOUND_DEFAULT;
-								pqueue->pmixPatch = NULL;
-								pqueue->mixLevel = SOUND_VOL_MIN;
-							}
-							else
-							{
-								pstream->queue[pstream->playindex].mixHandle = pqueue->mixHandle;
-							}
-						}			
-					}
-				}
-	
-				if (pchan->currentpos >= pchan->endpos)
-				{
-					/* get the next block */
-					pchan->currentpos = pchan->freqdata;
-				}
+			if (pchan->currentpos >= pchan->endpos)
+			{
+				/* get the next block */
+				pchan->currentpos = pchan->freqdata;
 			}
 		}
 	}
+	
 
 	/* mix the SFX channels */
 	for (i = 0; i < soundnumvoices; i++)
