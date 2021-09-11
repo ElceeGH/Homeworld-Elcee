@@ -92,59 +92,7 @@ void soundSetNumVoices(sdword num,sdword mode)
 	soundvoicemode=mode;
 }
 
-// Shut down necessary channels for panic
-void soundPanic(void)
-{
-	CHANNEL *pchan;
-	sdword	i;
-	sdword	lowchannel;
-	real32	lowvolume;
-	sdword	lowticks;
-	sdword	lowpriority;
 
-	while(channelsinuse > soundnumvoices)
-	{
-		lowpriority = SOUND_PRIORITY_LOW;
-		lowticks = 255;
-		lowvolume = (real32)SOUND_VOL_MAX;
-		lowchannel = SOUND_DEFAULT;
-
-		/* find the channel to steal */
-		for (i = 0; i < SOUND_MAX_VOICES; i++)
-		{
-			pchan = &channels[i];
-			/* don't want one that is already stopping */
-			if (pchan->status == SOUND_PLAYING)
-			{
-				if (pchan->priority < lowpriority)
-				{
-					if (pchan->volume <= lowvolume)
-					{
-						if (pchan->volticksleft <= lowticks)
-						{
-							lowpriority = pchan->priority;
-							lowticks = pchan->volticksleft;
-							lowvolume = pchan->volume;
-							lowchannel = i;
-						}
-					}
-				}
-			}
-		}
-
-		if (lowchannel > SOUND_DEFAULT)
-		{
-			/* stop the sound with the lowest priority */
-			soundstop(channels[lowchannel].handle, SOUND_FADE_STOPNOW);
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	return;
-}
 
 // Called by main.c on before and after[Alt]-[Tab]
 void sounddeactivate(bool bDeactivate)
@@ -1088,8 +1036,7 @@ sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lo
 ----------------------------------------------------------------------------*/	
 sdword SNDresetchannel(CHANNEL *pchan)
 {
-
-	memset(pchan, 0, sizeof(CHANNEL));
+    memset( pchan, 0, sizeof(*pchan) );
 
 	pchan->priority = SOUND_PRIORITY_NORMAL;
 	pchan->handle = SOUND_DEFAULT;
