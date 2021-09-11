@@ -159,7 +159,6 @@ sdword soundinit(bool mode);
 sdword soundreinit();
 void soundrestore(void);
 void soundclose(void);
-void soundupdate(void);
 
 void soundpause(bool bPause);
 void sounddeactivate(bool bDeactivate);
@@ -188,12 +187,6 @@ sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lo
 
 bool soundover(sdword handle);
 
-void soundSetMasterEQ(sdword startband, sdword endband, bool increment);
-void soundResetMasterEQ(void);
-
-
-udword soundgettick(void);
-
 
 #define soundplay(a)			soundplayFPRVL(a, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, SOUND_DEFAULT, FALSE)
 #define soundplayV(a, b)		soundplayFPRVL(a, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, b, FALSE)
@@ -221,7 +214,7 @@ sdword splayFPRVL(void *bankaddress, sdword patnum, real32 *eq, real32 freq, swo
 #define splayMUTE(f, a, b, c, d)	splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, b, c, d, FALSE, TRUE, TRUE)
 
 void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
-sdword soundstreaminit(void *pstreamer, sdword size, sdword numstreams, streamprintfunction printfunction);
+sdword soundstreaminit(void *pstreamer, sdword size, sdword numstreams);
 udword soundstreamopenfile(char *pszStreamFile, smemsize *handle);
 sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate);
 

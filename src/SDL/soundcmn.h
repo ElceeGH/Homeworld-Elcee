@@ -8,24 +8,23 @@
 #include "soundlow.h"
 #include "Types.h"
 
-#define NUM_FADE_BLOCKS		20
+#define NUM_FADE_BLOCKS 20
 
-#define DELAY_BUF_SIZE		(18 * FQ_SIZE) // approx 200 msec delay buffer
-#define SND_BLOCK_TIME      ((float)FQ_SLICE / 1000.0F) // approx 11.6 msec (in secs)
+#define DELAY_BUF_SIZE (18 * FQ_SIZE) // approx 200 msec delay buffer
+#define SND_BLOCK_TIME ((float)FQ_SLICE / 1000.0F) // approx 11.6 msec (in secs)
 
 #define VCE_BACKWARDS_COMPATIBLE    1   //backwards compatible with older version with the "DATA" before the "INFO"
 
 /* structures */
 
 /* Basic replacement for WAVEFORMATEX. */
-typedef struct
+typedef struct SDLWAVEFORMAT
 {
     Uint16 format;
     Uint16 channels;
     Uint32 frequency;
     Uint32 avgBytesPerSecond;
     Uint16 blockAlign;
-/*    Unit16 bitsPerSample; */
 } SDLWAVEFORMAT;
 
 typedef struct
@@ -57,7 +56,7 @@ typedef struct
 	sdword			firstpatch;
 } BANK;
 
-typedef struct
+typedef struct CHANNEL
 {
 	sdword			priority;
 	sdword			status;
@@ -116,7 +115,7 @@ typedef struct
 	bool			usecardiod;
 } CHANNEL;		/* 80 bytes + mixbuffers */
 
-typedef struct
+typedef struct STREAMQUEUE
 {
 	filehandle		fhandle;	/* this is the stream file handle */
 	smemsize		offset;		/* this is the offset within that file */
@@ -150,7 +149,7 @@ typedef struct
     sdword          speechEvent;//ditto
 } STREAMQUEUE;
 
-typedef struct
+typedef struct STREAMHEADER
 {
 	sdword			ID;			/* this is the ID to check that this is a valid stream */
 	sdword			size;		/* this is the size of this stream */
@@ -158,7 +157,7 @@ typedef struct
 
 #define UNINITIALISED_STREAM_HEADER  {0, 0}
 
-typedef struct
+typedef struct STREAM
 {
 	STREAMHEADER	header;
 
@@ -207,14 +206,14 @@ typedef struct
     real32          dataPeriod; //inverse of data rate, seconds per byte
 } STREAM;
 
-typedef struct
+typedef struct STREAMFILE
 {
 	FILE*			fp;	        /* this is the O/S handle to the file */
 	sdword			handle;		/* this handle is used for indexing into the streamfiles array */
 } STREAMFILE;
 
 
-typedef struct
+typedef struct SOUNDCOMPONENT
 {
 	sdword status;
 	udword timeout;
@@ -222,19 +221,13 @@ typedef struct
 
 /* functions */
 sdword isoundmixerinit(SDL_AudioSpec *aspec);
-void isoundmixerrestore(void);
-int isoundstreamupdate(void *dummy);
+void   isoundmixerrestore(void);
 
 sdword SNDreleasebuffer(CHANNEL *pchan);
 sdword SNDchannel(sdword handle);
-void SNDcalcvolpan(CHANNEL *pchan);
+void   SNDcalcvolpan(CHANNEL *pchan);
 
 sdword SNDcreatehandle(sdword channel);
 PATCH *SNDgetpatch(void *bankaddress, sdword patnum);
-
-sdword smixCreateDSoundBuffer(SDLWAVEFORMAT *pcmwf);
-sdword smixInitMixBuffer(SDL_AudioSpec *aspec);
-
-sdword streamStartThread(void);
 
 #endif

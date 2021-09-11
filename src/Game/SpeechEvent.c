@@ -416,14 +416,6 @@ void SEinitdelayEQ(void)
 }
 
 
-void soundEventDebugPrint(char *pszInformation)
-{
-#if SE_VERBOSE_LEVEL >= 1
-    dbgMessagef("%s", pszInformation);
-#endif
-}
-
-
 sdword speechEventInit(void)
 {
     sdword buffersize;
@@ -531,7 +523,7 @@ sdword speechEventInit(void)
 
     pspeechstream = memAlloc(streamersize, "StreamStructures", NonVolatile);
 
-    soundstreaminit(pspeechstream, streamersize, SE_NUM_STREAMS, soundEventDebugPrint);
+    soundstreaminit(pspeechstream, streamersize, SE_NUM_STREAMS);
 
     /* moved voice file from sfxdir to root */
     //  strcpy(loadfile, SOUNDFXDIR);

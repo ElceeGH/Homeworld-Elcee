@@ -73,7 +73,6 @@ void soundGetVoiceLimits(sdword *min,sdword *max)
 {
 	*min=SOUND_MIN_VOICES;
 	*max=SOUND_MAX_VOICES;
-	return;
 }
 
 // Get the current number of voices and mode
@@ -81,8 +80,6 @@ void soundGetNumVoices(sdword *num,sdword *mode)
 {
 	*num=soundnumvoices;
 	*mode=soundvoicemode;
-
-	return;
 }
 
 // Set the current number of voices and mode
@@ -93,7 +90,6 @@ void soundSetNumVoices(sdword num,sdword mode)
 	soundnumvoices=num;
 
 	soundvoicemode=mode;
-	return;
 }
 
 // Shut down necessary channels for panic

@@ -795,21 +795,19 @@ sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writep
 #ifdef _MACOSX_FIX_SOUND
     return 0;
 #else
-    sbyte tempblock[FQ_LEN];
+    char tempblock[FQ_LEN+32];
 
-	memset(tempblock, 0, FQ_LEN);
+	memset(tempblock, 0, sizeof(tempblock) );
 	memcpy(tempblock, readptr, (bitrate >> 3));
 
 	// Check size
-	if(size > dctsize) size=dctsize;
+	if (size > dctsize) 
+		size = dctsize;
 	
 	if (effect != NULL)
-	{
-		fqGenQNoiseE((char *)tempblock, bitrate, effect);
-	}
+		fqGenQNoiseE(tempblock, bitrate, effect);
 
-	fqDequantBlock((char *)tempblock, writeptr1, writeptr2, exponent,
-					FQ_LEN, bitrate, size);
+	fqDequantBlock(tempblock, writeptr1, writeptr2, exponent, FQ_LEN, bitrate, size);
 
 	return (bitrate >> 3);
 #endif 

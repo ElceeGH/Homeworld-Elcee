@@ -31,10 +31,6 @@
 /* functions */
 static sdword isoundstreamreadheader(STREAM *pstream);
 
-/* variables */
-streamprintfunction	debugfunction = NULL;
-char debugtext[256];
-
 //filehandle streamfile;
 CHANNEL speechchannels[SOUND_MAX_STREAM_BUFFERS];
 STREAM streams[SOUND_MAX_STREAM_BUFFERS];
@@ -101,7 +97,7 @@ static sdword streamStartThread(void)
 	Outputs		:
 	Return		:
 ----------------------------------------------------------------------------*/
-sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams, streamprintfunction printfunction)
+sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
 {
 	sdword i, j;
 	STREAM *pstream;
@@ -133,11 +129,6 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams, streampri
 		}
 
 		speechchannels[i].status = SOUND_FREE;
-	}
-
-	if (printfunction != NULL)
-	{
-		debugfunction = printfunction;
 	}
 
 	mixerThreadSem = SDL_CreateSemaphore( 1 );
