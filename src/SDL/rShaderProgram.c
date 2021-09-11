@@ -20,7 +20,7 @@
 
 #define SHADER_DIR_DEV     "../src/Shaders" ///< Checked first
 #define SHADER_DIR_RELEASE "Shaders"        ///< Checked second
-#define SHADER_MAX_COUNT   256               ///< Max number of simultaneously loaded shader programs
+#define SHADER_MAX_COUNT   256              ///< Max number of simultaneously loaded shader programs
 
 
 
@@ -222,28 +222,37 @@ static void unloadShaderProgramInternal( GLuint handle ) {
 
 
 
-/// Load shader source for compilation.
-static char* loadSourceFromFile( const char* name ) {
-    char  pathDev[MAX_PATH] = { '\0' };
-    char  pathRel[MAX_PATH] = { '\0' };
+/// Get FILE* for shader source.
+static FILE* openShaderSourceFile( const char* name ) {
+    char pathDev[MAX_PATH] = { '\0' };
+    char pathRel[MAX_PATH] = { '\0' };
     
     snprintf( pathDev, sizeof(pathDev), "%s/%s", SHADER_DIR_DEV,     name );
     snprintf( pathRel, sizeof(pathRel), "%s/%s", SHADER_DIR_RELEASE, name );
 
-    // Try dev path first
-    FILE* file = fopen( pathDev, "rb" );
+    // Try dev path first, then release, and if that fails then die.
+    FILE*        file = fopen( pathDev, "rb" );
+    if ( ! file) file = fopen( pathRel, "rb" );
+    if ( ! file) dbgFatalf( DBG_Loc, "Could not open shader '%s'", name );
 
-    // Otherwise try release
-    if ( ! file) 
-        file = fopen( pathRel, "rb" ); 
+    return file;
+}
+
+
+
+/// Load shader source for compilation.
+static char* loadSourceFromFile( const char* name ) {
+    FILE* file = openShaderSourceFile( name );
 
     fseek( file, 0, SEEK_END);
     size_t size = ftell( file );
     fseek( file, 0, SEEK_SET);
+
     size_t sizeWithNull = size + 1;
     char* source = malloc( sizeWithNull );
     memset( source, '\0', sizeWithNull );
     fread( source, sizeof(char), size, file );
+
     fclose( file );
     return source;
 }
