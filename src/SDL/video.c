@@ -282,10 +282,8 @@ static void videoUpload( Video* vid ) {
 /// Get height adjusted for scaling purposes. Does not affect positioning.
 /// Homeworld's animatic videos are 640x480 but their video framing is widescreen 16:10.
 /// For animatics we'll crop out the black bars, for anything else we make no assumptions.
-static real32 videoHeight( const Video* vid ) {
-    if (1)
-         return (real32) vid->lav.cparams->height;
-    else return (real32) vid->lav.cparams->width / 16.0f * 10.0f;
+static real32 videoScale( const Video* vid ) {
+    return (vid->params.animatic) ? 1.6f : 1.0f;
 }
 
 
@@ -307,8 +305,8 @@ static void videoRender( const Video* vid ) {
 
     // Aspect-correct inclusive scale
     const real32 scaleX = winW / vidW;
-    const real32 scaleY = winH / videoHeight( vid );
-    const real32 scale  = min( scaleX, scaleY );
+    const real32 scaleY = winH / vidH;
+    const real32 scale  = min(scaleX, scaleY) * videoScale(vid);
 
     // Translation to centre projection in window
     const real32 transX   = (winW - vidW) / 2.0f;
@@ -335,8 +333,8 @@ static void videoRender( const Video* vid ) {
     glBindTexture( GL_TEXTURE_2D, vid->texture );
     
     // Draw the textured video rectangle.
-    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
     glBegin( GL_TRIANGLE_STRIP );
+        glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
         glTexCoord2f( 1, 1 );  glVertex2f( vidW, vidH );
         glTexCoord2f( 1, 0 );  glVertex2f( vidW, 0    );
         glTexCoord2f( 0, 1 );  glVertex2f( 0,    vidH );
