@@ -171,8 +171,6 @@ typedef struct STREAM
 	sdword			blockstatus[2];
 
 //	sdword			bufferstatus[SOUND_STREAM_NUM_BUFFERS];
-//	sdword			readbuffer;	/* this is which buffer is being read to the DirectSound buffer */
-//	sdword			writebuffer;/* this is which buffer is being written into from the CD */
 	sdword			readblock;	/* this is which buffer is being read to the DirectSound buffer */
 	sdword			writeblock;	/* this is which buffer is being written into from the CD */
 
