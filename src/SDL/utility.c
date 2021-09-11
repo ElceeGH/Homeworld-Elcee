@@ -4102,7 +4102,7 @@ char *utyGameSystemsInit(void)
     tutStartup();
     utySet2(SS2_Tutorial);
 
-    animStartup();      //start the animatics module
+    animStartup();                                          //start the animatics module
 
     spStartup();                                            //start the scenario picker
     utySet(SSA_ScenarioPicker);
