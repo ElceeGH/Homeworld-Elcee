@@ -36,7 +36,7 @@ uniform float uDitherPattern[64] = float[64](  // Ordered dither pattern. 8x8 ba
 float bayerValue() {
     vec2  fp = gl_FragCoord.xy - 0.5;
     vec2  mp = mod( fp, 8.0 );
-    float bi =  mp.y*8.0 + mp.x;
+    float bi = mp.y*8.0 + mp.x;
     float ti = mod( bi + uDitherTemporal, 64.0 );
     return uDitherPattern[int(ti)] ;
 }
