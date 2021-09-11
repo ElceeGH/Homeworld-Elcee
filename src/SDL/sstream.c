@@ -32,17 +32,14 @@
 static sdword isoundstreamreadheader(STREAM *pstream);
 static int streamerThread( void* v );
 
-//filehandle streamfile;
-CHANNEL speechchannels[SOUND_MAX_STREAM_BUFFERS];
-STREAM  streams[SOUND_MAX_STREAM_BUFFERS];
-sdword  numstreams;
+SDL_sem* streamerThreadSem = NULL;
+CHANNEL  speechchannels[SOUND_MAX_STREAM_BUFFERS];
+STREAM   streams[SOUND_MAX_STREAM_BUFFERS];
+sdword   numstreams;
 
 #if VCE_BACKWARDS_COMPATIBLE
 bool ssOldFormatVCE = FALSE;
 #endif
-
-
-SDL_sem* mixerThreadSem = NULL;
 
 
 extern CHANNEL      channels[];
@@ -130,7 +127,7 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
         speechchannels[i].status = SOUND_FREE;
     }
 
-    mixerThreadSem = SDL_CreateSemaphore( 1 );
+    streamerThreadSem = SDL_CreateSemaphore( 1 );
     streamStartThread();
 
     return (SOUND_OK);
@@ -367,7 +364,7 @@ sdword soundstreamfading(sdword streamhandle)
 ----------------------------------------------------------------------------*/	
 sdword soundstreamqueuePatch(sdword streamhandle, smemsize filehandle, smemsize offset, udword flags, sword vol, sword pan, sword numchannels, sword bitrate, EFFECT *peffect, STREAMEQ *pEQ, STREAMDELAY *pdelay, void *pmixpatch, sdword level, real32 silence, real32 fadetime, sdword actornum, sdword speechEvent, bool bWait)
 {
-    if (streamer.status == SOUND_STOPPING)
+    if (streamer.status == SOUND_STOPPING) 
     {
         return SOUND_ERR;
     }
@@ -1127,8 +1124,15 @@ static void streamerProcess( void ) {
 
 static int streamerThread( void* v ) {
     while (soundinited && (streamer.status >= SOUND_STOPPED)) {
-        SDL_SemWait( mixerThreadSem );
-        streamerProcess();
+        // Streams are double buffered so iterate the streams at least twice per call.
+        for (udword i=0; i<2; i++)
+            streamerProcess();
+
+        // Don't wait around for the mixer semaphore when in a state that requires a fast response.
+        // Failure to exit these states quickly will break music playback started during savegame loading.
+        if (streamer.status != SOUND_STOPPING)
+        if (streamer.status != SOUND_STARTING)
+            SDL_SemWait( streamerThreadSem );
     }
 
     return 0;

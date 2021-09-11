@@ -68,7 +68,7 @@ real32 timebufferL[FQ_DSIZE], timebufferR[FQ_DSIZE], temptimeL[FQ_DSIZE], tempti
 real32 mixbuffer1L[FQ_SIZE], mixbuffer1R[FQ_SIZE], mixbuffer2L[FQ_SIZE], mixbuffer2R[FQ_SIZE];
 
 //extern LPDIRECTSOUND lpDirectSound;
-extern SDL_sem* mixerThreadSem;
+extern SDL_sem* streamerThreadSem;
 extern CHANNEL channels[];
 extern bool soundinited;
 extern STREAM streams[];
@@ -751,7 +751,7 @@ void soundfeedercb(void *userdata, Uint8 *stream, int len)
 	{
 		// Wake up the stream thread so it will soon fetch the next set of buffers.
 		// This doesn't actually have to happen RIGHT NOW, it's just a convenient place to wake the thread up.
-		SDL_SemPost( mixerThreadSem );
+		SDL_SemPost( streamerThreadSem );
 
 		// Mix output and write to the audio buffer.
 		isoundmixerqueueSDL(stream, len);
