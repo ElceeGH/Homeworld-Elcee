@@ -60,7 +60,6 @@
 #include "Tactical.h"
 #include "TaskBar.h"
 #include "Teams.h"
-#include "Transformer.h"
 #include "Tutor.h"
 #include "Tweak.h"
 #include "Universe.h"
@@ -1282,6 +1281,38 @@ void smwGeneratePing(vector location)
 }
 
 
+
+/*-----------------------------------------------------------------------------
+    Name        : screenSpaceTransform
+    Description : transforms a vertex by a modelview and projection matrix
+    Inputs      : screenSpace - output screenspace vector
+                  modelview, projection - matrices
+                  worldSpace - input worldspace vector
+    Outputs     : screenSpace vector is computed
+    Return      : void
+----------------------------------------------------------------------------*/
+static void screenSpaceTransform(vector* screenSpace, hmatrix* modelview, hmatrix* projection, vector* worldSpace)
+{
+    // Add W coord
+    hvector worldSpaceH = { worldSpace->x, worldSpace->y, worldSpace->z, 1.0f };
+
+    // Transform to clip space
+    hvector clipSpace;
+    hmatMultiplyHMatByHVec( &clipSpace, modelview, &worldSpaceH );
+    clipSpace.w = 1.0f; // It's already 1 isn't it? Well, I won't change this...
+
+    // Transform to screen space
+    hvector screen;
+    hmatMultiplyHMatByHVec(&screen, projection, &clipSpace);
+
+    // Perspective divide
+    screenSpace->x = screen.x / screen.w;
+    screenSpace->y = screen.y / screen.w;
+    screenSpace->z = screen.z / screen.w;
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : smSensorWeirdnessDraw
     Description : Draws the sensor manager malfunction in Missions 7 and 8
@@ -1291,29 +1322,25 @@ void smwGeneratePing(vector location)
 ----------------------------------------------------------------------------*/
 void smSensorWeirdnessDraw(hmatrix *modelView, hmatrix *projection)
 {
-    udword i,j, num_replaces;
-    static udword num_points;
     static udword redraw = 0;
-    vector tempvec;
-    rectangle rect;
+    static udword num_points;
 
     if (!redraw)
     {
         num_points   = (udword)randyrandom(RANDOM_AI_PLAYER, (smSensorWeirdness/3));
         num_points  += (2*smSensorWeirdness/3);
-        redraw       = randyrandombetween(RANDOM_AI_PLAYER, 20, 30);
+        redraw       = randyrandombetween(RANDOM_AI_PLAYER, 20, 30); // @todo Framerate dependency maybe. Might need to adapt
     }
     else
     {
         redraw--;
     }
 
-    num_replaces = (udword)randyrandom(RANDOM_AI_PLAYER, MAX_REPLACEMENTS);
-
-    for (i=0;i<num_replaces;i++)
+    const udword num_replaces = (udword)randyrandom(RANDOM_AI_PLAYER, MAX_REPLACEMENTS);
+    for (udword i=0;i<num_replaces;i++)
     {
         //chose a random point
-        j = (udword)randyrandom(RANDOM_AI_PLAYER, smSensorWeirdness);
+        udword j = (udword)randyrandom(RANDOM_AI_PLAYER, smSensorWeirdness);
 
         //generate a random location for it
         smWeird[j].location = smwGenerateRandomPoint();
@@ -1325,13 +1352,18 @@ void smSensorWeirdnessDraw(hmatrix *modelView, hmatrix *projection)
 
     primModeSet2();
     //    rndGLStateLog("RocksAreBig");
-    for (i=0;i<num_points;i++)
+    for (udword i=0;i<num_points;i++)
     {
-        transSingleTotalTransform(&tempvec, modelView, projection, &smWeird[i].location);
-        rect.x0 = primGLToScreenX(tempvec.x);
-        rect.y0 = primGLToScreenY(tempvec.y);
-        rect.x1 = rect.x0 + 2;
-        rect.y1 = rect.y0 + 2;
+        vector screenSpace;
+        screenSpaceTransform(&screenSpace, modelView, projection, &smWeird[i].location);
+
+        rectangle rect = {
+            .x0 = primGLToScreenX(screenSpace.x),
+            .y0 = primGLToScreenY(screenSpace.y),
+            .x1 = rect.x0 + 2,
+            .y1 = rect.y0 + 2,
+        };
+
         primRectSolid2(&rect, smWeird[i].color);
     }
     primModeClear2();

@@ -355,9 +355,6 @@
     <ClCompile Include="..\..\src\Game\KeyBindings.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Game\KNITransform.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Game\LagPrint.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
@@ -452,9 +449,6 @@
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\Trails.c">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Game\Transformer.c">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Game\Tutor.c">

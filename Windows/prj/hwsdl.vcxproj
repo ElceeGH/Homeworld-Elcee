@@ -307,7 +307,6 @@
     <ClCompile Include="..\..\src\Game\KASFunc.c" />
     <ClCompile Include="..\..\src\Game\Key.c" />
     <ClCompile Include="..\..\src\Game\KeyBindings.c" />
-    <ClCompile Include="..\..\src\Game\KNITransform.c" />
     <ClCompile Include="..\..\src\Game\LagPrint.c" />
     <ClCompile Include="..\..\src\Game\LaunchMgr.c" />
     <ClCompile Include="..\..\src\Game\LevelLoad.c" />
@@ -377,7 +376,6 @@
     <ClCompile Include="..\..\src\Game\Tracking.c" />
     <ClCompile Include="..\..\src\Game\TradeMgr.c" />
     <ClCompile Include="..\..\src\Game\Trails.c" />
-    <ClCompile Include="..\..\src\Game\Transformer.c" />
     <ClCompile Include="..\..\src\Game\Tutor.c" />
     <ClCompile Include="..\..\src\Game\Tweak.c" />
     <ClCompile Include="..\..\src\Game\Twiddle.c" />
