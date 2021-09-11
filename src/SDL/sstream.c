@@ -1130,9 +1130,12 @@ static int streamerThread( void* v ) {
 
         // Don't wait around for the mixer semaphore when in a state that requires a fast response.
         // Failure to exit these states quickly will break music playback started during savegame loading.
-        if (streamer.status != SOUND_STOPPING)
-        if (streamer.status != SOUND_STARTING)
-            SDL_SemWait( streamerThreadSem );
+        switch (streamer.status) {
+            case SOUND_STOPPING: SDL_Delay( 1 );                   break;
+            case SOUND_STARTING: SDL_Delay( 1 );                   break;
+            default:             SDL_SemWait( streamerThreadSem ); break;
+        }
+            
     }
 
     return 0;
