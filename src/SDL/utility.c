@@ -3980,71 +3980,6 @@ char *utyGameSystemsInit(void)
     soundEventInit();
     utySet2(SS2_SoundEngine);
 
-#ifndef HW_GAME_DEMO
-    /* Intro playing requires a window, which we have not made yet thanks to
-       how the code's been butchered. */
-#if 0
-    if (enableAVI)
-    {
-        SDL_Event e;
-        bool gotMsg;
-        sdword intro;
-
-        utilPlayingIntro = TRUE;
-
-        for (intro = 0;;)
-        {
-            SDL_Delay(0);
-            if (systemActive)
-            {
-                gotMsg = SDL_PollEvent(&e);
-            }
-            else
-            {
-                gotMsg = SDL_WaitEvent(&e);
-            }
-            if (gotMsg)
-            {
-                HandleEvent(&e);
-            }
-            else
-            {
-                switch (intro)
-                {
-                case 0:
-                    /*binkInit(-1);*/
-                    intro++;
-                    break;
-                case 1:
-                    /*binkPlay("Movies\\sierra.bik", NULL, NULL, S_RGB555, TRUE, ANIM00_Sierra);*/
-                    intro++;
-                    break;
-                case 2:
-                    /*binkPlay("Movies\\relicintro.bik", NULL, NULL, S_RGB555, TRUE, ANIM00_Relic);*/
-                    intro++;
-                    break;
-                case 3:
-                    /*binkCleanup();*/
-                    mainCleanupAfterVideo();
-                    intro++;
-                    break;
-                case 4:
-                    goto DONE_INTROS;
-                }
-            }
-        }
-    }
-#endif
-#else
-    //show the opening plugscreens later
-#endif
-
-#ifndef _MACOSX_FIX_ANIM
-#if 0
-DONE_INTROS:
-#endif
-#endif
-
     utilPlayingIntro = FALSE;
 
     renderData.width = MAIN_WindowWidth;                    //setup data for
@@ -4080,9 +4015,6 @@ DONE_INTROS:
 
     taskCallBackInit();
     utySet2(SS2_BabyCallBackRegistry);
-
-
-    //aviIntroPlay();  // PlaceHolder for playing the intro Movies (Relic && Sierra)
 
     universeInit();
     utySet(SSA_Universe);
