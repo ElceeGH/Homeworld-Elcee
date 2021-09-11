@@ -5,9 +5,13 @@
 #include "Types.h"
 
 
+typedef struct VideoStatus {
+    sdword frameIndex; ///< Current frame, starts from 1.
+    real32 frameRate;  ///< Framerate in Hertz
+} VideoStatus;
 
 /// Type of callback the video system uses.
-typedef void VideoCallback( sdword frame );
+typedef void VideoCallback( VideoStatus status );
 
 
 

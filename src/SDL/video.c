@@ -50,6 +50,7 @@ typedef struct LavContext {
 typedef struct Video {
     LavContext  lav;          ///< LibAV context
     VideoParams params;       ///< Input parameters
+    VideoStatus status;       ///< User-visible status
     GLuint      texture;      ///< OpenGL texture handle
     GLenum      texGpuFormat; ///< OpenGL internal texture format
     GLenum      texMemFormat; ///< OpenGL upload texture layout
@@ -68,8 +69,8 @@ static bool   videoUpdate      (       Video* vid );
 static void   videoConvert     (       Video* vid );
 static void   videoUpload      (       Video* vid );
 static void   videoRender      ( const Video* vid );
-static real32 videoHeight      ( const Video* vid );
-static sdword videoFrameIndex  ( const Video* vid );
+static real32 videoScale       ( const Video* vid );
+static void   videoUpdateStatus(       Video* vid );
 
 
 
@@ -229,9 +230,12 @@ static bool videoUpdate( Video* vid ) {
     // Update time reference.
     vid->time = SDL_GetTicks();
 
+    // Update status for the callback
+    videoUpdateStatus( vid );
+
     // Invoke callback if set
     if (vid->params.cbUpdate)
-        vid->params.cbUpdate( videoFrameIndex(vid) );
+        vid->params.cbUpdate( vid->status );
 
     // Let them know there's a new frame to show.
     return TRUE;
@@ -288,9 +292,15 @@ static real32 videoScale( const Video* vid ) {
 
 
 
-/// Get the current video frame index.
-static sdword videoFrameIndex( const Video* vid ) {
-    return vid->lav.cctx->frame_number;
+/// Update the video status. These values are passed to the callbacks.
+static void videoUpdateStatus( Video* vid ) {
+    const real64 frameN = vid->lav.stream->time_base.num;
+    const real64 frameD = vid->lav.stream->time_base.den;
+
+    vid->status = (VideoStatus) {
+        .frameRate  = (real32) (frameD / frameN),
+        .frameIndex = vid->lav.cctx->frame_number,
+    };
 }
 
 
@@ -347,7 +357,7 @@ static void videoRender( const Video* vid ) {
 
     // Invoke callback if set
     if (vid->params.cbRender)
-        vid->params.cbRender( videoFrameIndex(vid) );
+        vid->params.cbRender( vid->status );
 }
 
 

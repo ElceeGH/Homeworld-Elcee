@@ -300,12 +300,11 @@ void animShutdown(void)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-static void animUpdateCallback( sdword frame ) {
+static void animUpdateCallback( VideoStatus status ) {
     if (animScriptHeader == NULL)
         return;
 
-    real32 framerate   = 15.0f;
-    real32 timeElapsed = (real32)frame / framerate;
+    const real32 timeElapsed = (real32)status.frameIndex / status.frameRate;
     universe.totaltimeelapsed = timeElapsed;
 
     nisevent* event = &animScriptHeader->events[ animCurrentEvent ];
@@ -320,7 +319,6 @@ static void animUpdateCallback( sdword frame ) {
 
     speechEventUpdate();
     subTitlesUpdate();
-    //musicEventUpdateVolume(); // Something?
 }
 
 
@@ -332,7 +330,7 @@ static void animUpdateCallback( sdword frame ) {
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-static void animRenderCallback( sdword frame ) {
+static void animRenderCallback( VideoStatus video ) {
     animSubtitlesClear();
     animSubtitlesDraw();
 }
