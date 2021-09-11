@@ -716,36 +716,13 @@ sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writep
 	Outputs		:
 	Return		:
 ----------------------------------------------------------------------------*/	
-static Uint8 oddbuf[MIX_BLOCK_SIZE];
+static Uint8  oddbuf[MIX_BLOCK_SIZE];
 static udword oddbufpos = 0;
 
 void isoundmixerqueueSDL(Uint8 *stream, int len)
 {
 	udword size_written = 0;
 
-	/* dbgAssertOrIgnore((len % MIX_BLOCK_SIZE) == 0); */
-
-//GE01
-//This code is different, so I'll just put my code in a different block then come back
-//to fix it once I know that sound is working....
-#ifdef _X86_64_BROKEN	// this skips and makes noise; the original code in #else works ok on X86_64
-    while (size_written + MIX_BLOCK_SIZE < len) {
-        // process 256 samples, 16-bit (independent of # of channels)
-        isoundmixerprocess(stream + size_written,
-                FQ_SIZE * sizeof(short),
-                NULL, 0);
-        /* write(adump_fd, lpvWritePtr, FQ_SIZE * sizeof(short)); */
-        size_written += MIX_BLOCK_SIZE;
-    }
-    if (size_written < len) {    //Don't have a full block, so problem with memory overwrites..
-        isoundmixerprocess(stream + size_written,
-//              FQ_SIZE * sizeof(short),
-                (len - size_written) /2,
-                NULL, 0);
-        size_written += (len - size_written);
-    }
-        
-#else
 	if (oddbufpos > 0) {
 		memcpy(stream, oddbuf + oddbufpos, MIX_BLOCK_SIZE - oddbufpos);
 		size_written += MIX_BLOCK_SIZE - oddbufpos;
@@ -760,14 +737,10 @@ void isoundmixerqueueSDL(Uint8 *stream, int len)
 			memcpy(stream + size_written, oddbuf, oddbufpos);
 			size_written += oddbufpos;
 		} else {
-			isoundmixerprocess(stream + size_written,
-					FQ_SIZE * sizeof(short),
-					NULL, 0);
-			/* write(adump_fd, lpvWritePtr, FQ_SIZE * sizeof(short)); */
+			isoundmixerprocess(stream + size_written, FQ_SIZE * sizeof(short), NULL, 0);
 			size_written += MIX_BLOCK_SIZE;
 		}
 	}
-#endif
 }
 
 
