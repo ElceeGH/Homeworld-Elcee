@@ -1063,10 +1063,6 @@ void pingBattlePingsCreate(LinkedList *blobList)
     Save Game Stuff
 =============================================================================*/
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
-
 void SaveAnomalyPing(ping *tping)
 {
     SaveChunk *chunk;
@@ -1163,10 +1159,6 @@ void pingLoad(void)
         listAddNode(&pingList, &tping->link, tping);
     }
 }
-
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif
 
 /*=============================================================================
     End of Save Game Stuff

@@ -969,10 +969,6 @@ void InitShipForResourceCollection(Ship *ship,Resource *resource)
     ship->ShipXHarvestsResourceY = R1ResourcerHarvestsAsteroid;//DefaultShipHarvestsResource;
 }
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
-
 void PreFix_ShipXHarvestsResourceY(Ship *ship)
 {
     if (ship->ShipXHarvestsResourceY == DefaultShipHarvestsResource)
@@ -1006,10 +1002,6 @@ void Fix_ShipXHarvestsResourceY(Ship *ship)
             break;
     }
 }
-
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif
 
 /*-----------------------------------------------------------------------------
     Name        : processCollectResource

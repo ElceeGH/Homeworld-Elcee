@@ -237,10 +237,6 @@ void GenericCooperatingTeamDiedCB(AITeam *team)
     Some Save Game here
 =============================================================================*/
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
-
 void PreFixCooperatingTeamDiedCB(AITeam *team)
 {
     if (team->cooperatingTeamDiedCB == aitSpecialDefenseCoopTeamDiedCB)
@@ -275,10 +271,6 @@ void FixCooperatingTeamDiedCB(AITeam *team)
             break;
     }
 }
-
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif
 
 /*=============================================================================
     End of Some Save Game stuff
@@ -2298,10 +2290,6 @@ void aitMsgQueueFree(AITeam *teamp)
     Save Game stuff here on
 =============================================================================*/
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
-
 AITeam *savingThisAITeam = NULL;
 
 typedef void (*PreFix_Move)(AITeamMove *move);
@@ -2599,7 +2587,4 @@ void aitFix(struct AIPlayer *aiplayer)
     }
 }
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif
 

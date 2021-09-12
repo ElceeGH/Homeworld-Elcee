@@ -4349,10 +4349,6 @@ void cmDeterministicBuildProcess(void)
     Save Game Stuff:
 =============================================================================*/
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
-
 #define RaceAndTypeToRaceType(race,type) ( ((race)<<16) + (type) )
 #define GetRaceFromRaceType(racetype) ( ((racetype)>>16) & 0x0000ffff )
 #define GetTypeFromRaceType(racetype) ( (racetype) & 0x0000ffff )
@@ -4551,6 +4547,3 @@ void LoadConsMgrDetermOptional()
     }
 }
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif

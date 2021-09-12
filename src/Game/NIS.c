@@ -2634,9 +2634,6 @@ void nisDamageLevel(nisplaying *NIS, nisevent *event)
     goodShip->health = health * goodShip->staticinfo->maxhealth;
 }
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif 
 void nisRemainAtEnd(nisplaying *NIS, nisevent *event)
 {
     bitSet(NIS->objectsInMotion[event->shipID].flags, OMF_RemainAtEnd);
@@ -2656,9 +2653,6 @@ void nisRemainAtEnd(nisplaying *NIS, nisevent *event)
         event->param[0] = 0;
     }
 }
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif 
 
 void nisCameraFOV(nisplaying *NIS, nisevent *event)
 {
@@ -3553,9 +3547,6 @@ void nisAnimaticSpeechEventSet(char* directory, char* field, void* dataToFillIn)
         event->param[1] = param;
     }
 }
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
-#endif
 
 void nisRemainAtEndSet(char *directory,char *field,void *dataToFillIn)
 {
@@ -3575,9 +3566,6 @@ void nisRemainAtEndSet(char *directory,char *field,void *dataToFillIn)
         event->param[0] = 0;
     }
 }
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4047)      // turn back on "different levels of indirection warning"
-#endif
 
 void nisCameraFOVSet(char *directory,char *field,void *dataToFillIn)
 {
