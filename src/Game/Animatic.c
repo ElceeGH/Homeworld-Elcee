@@ -387,7 +387,7 @@ static bool animSetup( sdword a, sdword b ) {
 
 /*-----------------------------------------------------------------------------
     Name        : animPlay
-    Description : plays a Bink video file
+    Description : plays an animatic
     Inputs      : a, b - levels this video is playing between
     Outputs     :
     Return      :

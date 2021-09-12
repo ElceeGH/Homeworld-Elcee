@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "Attack.h"
-//#include "bink.h"
 #include "BTG.h"
 #include "CommandWrap.h"
 #include "Debug.h"
@@ -1709,13 +1708,6 @@ real32 nisUpdate(nisplaying *NIS, real32 timeElapsed)
     cameramotion *camPath;
     sdword index, j;
     nisevent *event;
-
-#if 0   /* Bink-specific */
-    if (!binkDonePlaying)
-    {
-        return 0.0000001f;
-    }
-#endif
 
 #if NIS_CAMERA_RELEASE
     if (keyIsStuck(NIS_CAMERA_RELEASE))

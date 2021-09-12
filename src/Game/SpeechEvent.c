@@ -8,7 +8,6 @@
 
 #include "SpeechEvent.h"
 
-//#include "bink.h"
 #include "Blobs.h"
 #include "Chatting.h"
 #include "File.h"
@@ -693,13 +692,8 @@ void speechQueueUpdate(void)
         }
 
         /* are we ready to play something? */
-#if 0   /* For reasons of Bink... */
-        if ((pSQueue->status == SOUND_STOPPED) && (pSQueue->nextevent >= SOUND_OK) && (!pSQueue->locked) &&
-            (((universe.totaltimeelapsed - pSQueue->timeover) >= SPEECH_PAUSE) || !gameIsRunning || !binkDonePlaying || FalkosFuckedUpTutorialFlag))
-#else
         if ((pSQueue->status == SOUND_STOPPED) && (pSQueue->nextevent >= SOUND_OK) && (!pSQueue->locked) &&
             (((universe.totaltimeelapsed - pSQueue->timeover) >= SPEECH_PAUSE) || !gameIsRunning || FalkosFuckedUpTutorialFlag))
-#endif
         {
             /* find the event that we should play */
 

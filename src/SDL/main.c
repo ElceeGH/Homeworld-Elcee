@@ -1077,12 +1077,6 @@ void DeactivateMe()
     keyBufferClear();
     systemActive = FALSE;
 
-#if 0	/* Bink stuff... */
-    if (!binkDonePlaying)
-    {
-        binkPause(TRUE);
-    }
-#endif
     /*
     if (utyTest2(SS2_ToggleKeys))
     {

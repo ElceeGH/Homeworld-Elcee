@@ -14,7 +14,6 @@
 #include "Alliance.h"
 #include "Animatic.h"
 #include "Attributes.h"
-//#include "bink.h"
 #include "Collision.h"
 #include "CommandDefs.h"
 #include "CommandWrap.h"
@@ -146,7 +145,7 @@ bool hyperspaceOverride               = FALSE;
 bool singlePlayerGameLoadNewLevelFlag = FALSE;
 bool singlePlayerHyperspacingInto     = FALSE;
 bool spHoldHyperspaceWindow           = FALSE;
-bool spBinkPlay                       = FALSE;
+bool spAnimPlay                       = FALSE;
 bool triggerNIS                       = FALSE;
 bool spCollectResourcesAtEndOfMission = FALSE;
 
@@ -2514,7 +2513,7 @@ void singlePlayerGameUpdate()
                     }
 
                     // all ships have hyperspaced out.
-                    spBinkPlay = TRUE;
+                    spAnimPlay = TRUE;
                     singlePlayerGameInfo.hyperspaceState = HYPERSPACE_WHITEOUT;
                     singlePlayerGameInfo.hyperspaceTimeStamp = universe.totaltimeelapsed + HYPERSPACE_WHITEOUTTIME;
 
@@ -2541,7 +2540,7 @@ void singlePlayerGameUpdate()
             if (universe.totaltimeelapsed >= singlePlayerGameInfo.hyperspaceTimeStamp)
             {
                 // playback level transition animatic
-                if (spBinkPlay)
+                if (spAnimPlay)
                 {
 #if defined(HW_GAME_RAIDER_RETREAT)
                     //no animatic between Missions 4 and 5 and thereafter
@@ -2572,18 +2571,11 @@ void singlePlayerGameUpdate()
                         utyCreditsSequence = TRUE;
                     }
 #endif
-                    spBinkPlay = FALSE;
+                    spAnimPlay = FALSE;
                     mrWhiteOut = FALSE;
                 }
                 else
                 {
-#if 0   /* Bink...the VOICES...MAKE IT STOP!#@$1 */
-                    if (!binkDonePlaying)
-                    {
-                        break;
-                    }
-#endif
-
                     // clear damage effects from ships
                     CleanupDamageEffects();
 

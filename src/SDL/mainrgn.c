@@ -16,7 +16,6 @@
 #include "AIVar.h"
 #include "Alliance.h"
 #include "Battle.h"
-//#include "bink.h"
 #include "CameraCommand.h"
 #include "Captaincy.h"
 #include "Chatting.h"
@@ -1567,17 +1566,7 @@ void mrKeyPress(sdword ID)
     }
     if (nisIsRunning && thisNisPlaying && (ID == ESCKEY || ID == SPACEKEY || ID == ENTERKEY))
     {
-        if (singlePlayerGame)
-        {
-            /*if (binkDonePlaying)*/
-            {
-                goto processEscapeKey;
-            }
-        }
-        else
-        {
-            goto processEscapeKey;
-        }
+        goto processEscapeKey;
     }
 
     //now translate

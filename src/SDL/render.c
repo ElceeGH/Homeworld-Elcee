@@ -16,7 +16,6 @@
 #include "AIShip.h"
 #include "Animatic.h"
 #include "AutoLOD.h"
-//#include "bink.h"
 #include "BTG.h"
 #include "CameraCommand.h"
 #include "Clipper.h"
@@ -2317,13 +2316,6 @@ void rndMainViewRenderFunction(Camera *camera)
     mouseCursorObjPtr  = NULL;               //Falko: got an obscure crash where mouseCursorObjPtr was mangled, will this work?
 
     dbgAssertOrIgnore(camera != NULL); //verify parameters
-
-#if 0   /* Bink stuff... */
-    if (!binkDonePlaying)
-    {                               //!!! can be cleaned up using the render function pointer
-        return;
-    }
-#endif
 
     primModeClear2();                                       //go to 3D rendering mode
 

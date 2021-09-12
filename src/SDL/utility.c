@@ -22,7 +22,6 @@
 #include "AutoLOD.h"
 #include "Battle.h"
 #include "BigFile.h"
-//#include "bink.h"
 #include "Bounties.h"
 #include "BTG.h"
 #include "Captaincy.h"
