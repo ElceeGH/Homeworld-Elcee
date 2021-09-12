@@ -28,11 +28,7 @@
 #define EXPLOSION_OFFSET	58
 #define HIT_OFFSET			65
 
-#ifdef _WIN32
-#define SOUNDFXDIR "SoundFX\\"
-#else
 #define SOUNDFXDIR "SoundFX/"
-#endif
 
 #if defined(HW_GAME_DEMO)
 #define SE_NUM_ACTORS		4

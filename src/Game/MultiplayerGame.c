@@ -58,11 +58,7 @@
     Defines:
 =============================================================================*/
 
-#ifdef _WIN32
-#define MG_FIBFile_SERVERS      "FEMan\\Choose_Server.FIB"
-#else
 #define MG_FIBFile_SERVERS      "FEMan/Choose_Server.FIB"
-#endif
 
 #define MG_FontNameLength       64
 

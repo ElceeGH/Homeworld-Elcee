@@ -20,11 +20,6 @@
 #include "Memory.h"
 #include "render.h"
 
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#endif
-
 #define sizeofverticearray(x)   sizeof(vertice_array) + (sizeof(vector) * (x-1))
 
 typedef struct

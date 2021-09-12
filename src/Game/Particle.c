@@ -8,10 +8,6 @@
 
 #define PART_TEST_MORPH 0
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -1816,11 +1812,7 @@ meshAnim* partSetupTestMeshMorphBlock()
 
     ma = (meshAnim*)memAlloc(5*sizeof(meshAnim), "mesh animation block", 0);
 
-#ifdef _WIN32
-#define TMP_MESH_PATH "etg\\meshes\\"
-#else
 #define TMP_MESH_PATH "etg/meshes/"
-#endif
 
     a = ma;
     a->mesh = meshLoad(TMP_MESH_PATH "head00.geo");

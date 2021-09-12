@@ -79,13 +79,6 @@
 #include "rResScaling.h"
 #include "rShaderProgram.h"
 
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#else
-    #include <sys/mman.h>
-#endif
-
 
 #define DEBUG_COLLISIONS            0
 #define DEBUG_DISPLAY_LOD_SCALE     0

@@ -50,11 +50,6 @@
 #include "Universe.h"
 #include "Vector.h"
 
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#endif
-
 
 /*=============================================================================
     Definitions:
@@ -64,11 +59,7 @@ extern char TM_TechListFont[64];
 extern char TM_Font[64];
 
 
-#ifdef _WIN32
-#define TM_FIBFile              "FEMan\\Trader_Interface.fib"
-#else
 #define TM_FIBFile              "FEMan/Trader_Interface.fib"
-#endif
 #define TM_TradeScreen          "Trader_Interface"
 #define TM_FontNameLength       64
 #define TM_HeadingColorFactor   1.5f

@@ -6,11 +6,6 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#ifndef SW_Render
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#endif
 #include <stdlib.h>
 #include "Vector.h"
 #include "FontReg.h"

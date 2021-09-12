@@ -867,10 +867,7 @@ void btgLoad(char* filename)
     btgIndices = (uword*)memAlloc(3 * btgHead->numPolys * sizeof(uword), "btg indices", NonVolatile);
     if (useVBO) glGenBuffers(1, &vboIndices);
 
-//#ifndef _WIN32_FIXME
-    //spherically project things, blend colours, &c
     btgConvertVerts();
-//#endif
 }
 
 /*-----------------------------------------------------------------------------

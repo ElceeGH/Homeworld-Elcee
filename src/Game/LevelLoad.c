@@ -1488,11 +1488,7 @@ static void scriptSetLightingCB(char *directory,char *field,void *dataToFillIn)
         }
         else
         {
-#ifdef _WIN32
-            strcpy(fullFileName, "HSF\\");
-#else
             strcpy(fullFileName, "HSF/");
-#endif
             strcat(fullFileName, lightingFileName);
             if (strchr(lightingFileName, '.') == NULL)
             {
@@ -1543,11 +1539,7 @@ static void scriptSetBackgroundCB(char* directory, char* field, void* dataToFill
         }
         else
         {
-#ifdef _WIN32
-            strcpy(fullFileName, "BTG\\");
-#else
             strcpy(fullFileName, "BTG/");
-#endif
             strcat(fullFileName, btgFileName);
             if (strchr(btgFileName, '.') == NULL)
             {
@@ -1560,21 +1552,13 @@ static void scriptSetBackgroundCB(char* directory, char* field, void* dataToFill
             }
             else
             {
-#ifdef _WIN32
-                btgLoad("BTG\\default.btg");
-#else
                 btgLoad("BTG/default.btg");
-#endif
             }
         }
     }
     else
     {
-#ifdef _WIN32
-        btgLoad("BTG\\default.btg");
-#else
         btgLoad("BTG/default.btg");
-#endif
     }
 }
 

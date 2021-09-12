@@ -39,7 +39,6 @@
 #include "utility.h"
 
 #ifdef _WIN32
-    #include <windows.h>
     #define strncasecmp _strnicmp
     #define wcscasecmp  _wcsicmp
 #else

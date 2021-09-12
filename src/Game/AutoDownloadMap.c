@@ -107,15 +107,9 @@ void autodownloadmapGotMapName(char *mapname,sdword numPlayers,sdword minPlayers
 {
     strcpy(autodownloadmapInfo.mapname,mapname);
 
-#ifdef _WIN32
-    strcpy(autodownloadmapInfo.dirname,"Multiplayer\\");
-    strcat(autodownloadmapInfo.dirname,autodownloadmapInfo.mapname);
-    strcat(autodownloadmapInfo.dirname,"\\");
-#else
     strcpy(autodownloadmapInfo.dirname,"Multiplayer/");
     strcat(autodownloadmapInfo.dirname,autodownloadmapInfo.mapname);
     strcat(autodownloadmapInfo.dirname,"/");
-#endif
 
     autodownloadmapInfo.numPlayers = numPlayers;
     autodownloadmapInfo.minPlayers = minPlayers;

@@ -102,27 +102,14 @@
 #include "UnivUpdate.h"
 #include "video.h"
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 4 : 4142 )     //turn off "benign redefinition of type" warning
-#endif
-
 #include "main.h"
 
-#ifdef _WIN32_FIX_ME
- #pragma warning( 2 : 4142 )
-#endif
-
 #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-    #include <winreg.h>
-    #include <shellapi.h>
+    // Nope
 #elif defined(_MACOSX)
     #include <sys/types.h>
-    #include <sys/mman.h>
     #include <unistd.h>
 #else
-    #include <sys/mman.h>
     #include <unistd.h>
     #include <X11/Xlib.h>
     #include <X11/keysym.h>

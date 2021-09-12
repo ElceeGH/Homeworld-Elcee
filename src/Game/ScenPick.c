@@ -6,9 +6,7 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#ifdef _WIN32
-    #include <io.h>
-#else
+#ifndef _WIN32
     #include <sys/stat.h>
     #include <dirent.h>
 #endif
@@ -68,19 +66,15 @@ fecallback spCallbacks[] =
 
 fedrawcallback spDrawCallbacks[] =
 {
-    {spScenarioNameDraw,   "CS_ScenarioName"},
-    {spScenarioBitmap, "CS_ScenarioBitmap"},
+    {spScenarioNameDraw, "CS_ScenarioName"  },
+    {spScenarioBitmap,   "CS_ScenarioBitmap"},
     {NULL, NULL}
 };
 
 listwindowhandle spScenarioListWindow = NULL;
 //regionhandle     spScenarioBitmapWindow = NULL;
 
-#ifdef _WIN32
-char *scenarioRootPath = "MultiPlayer\\";
-#else
 char *scenarioRootPath = "MultiPlayer/";
-#endif
 
 lifheader *scenarioImage;
 udword scenarioTexture = TR_InvalidInternalHandle;
@@ -260,24 +254,7 @@ char *spTitleFind(char *directory, char *fileName)
     sdword status;
 
     // <directory>/<filename>/<filename>.level
-    memStrncpy(fullName, directory, PATH_MAX - 1);
-    
-#ifdef _WIN32
-    strcat(fullName,"\\");
-#else
-    strcat(fullName,"/");
-#endif
-
-    strcat(fullName, fileName);
-
-#ifdef _WIN32
-    strcat(fullName,"\\");
-#else
-    strcat(fullName,"/");
-#endif
-
-    strcat(fullName, fileName);
-    strcat(fullName, ".level");
+    snprintf( fullName, sizeof(fullName), "%s/%s/%s.level", directory, fileName, fileName );
 
     handle = fileOpen(fullName, FF_TextMode|FF_ReturnNULLOnFail|FF_IgnorePrepend);
     if (!handle)
@@ -431,11 +408,7 @@ void spTitleListLoad(void)
             goto alreadyLoaded;
         }
 
-#ifdef _WIN32
-        title = spTitleFind("MultiPlayer\\", nameBuffer);
-#else
         title = spTitleFind("MultiPlayer/", nameBuffer);
-#endif
         if (title == NULL)
         {
             goto alreadyLoaded;                             //break-continue
@@ -910,11 +883,7 @@ void spGetScenarioDetails(char* bitmapFile, char *textFile, char *scenarioFile)
     {
         if (!foundText)
         {
-#ifdef _WIN32
-            sprintf(textFile, "%s%s%c\\description.txt", scenarioRootPath, scenarioFile, '0' + i);
-#else
             sprintf(textFile, "%s%s%c/description.txt", scenarioRootPath, scenarioFile, '0' + i);
-#endif
             if (fileExists(textFile, 0))
             {                                               //see if there is a description text file in this directory
                 foundText = TRUE;

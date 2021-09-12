@@ -1907,17 +1907,9 @@ void trMeshSortListLoad(trmeshsort *sortList)
 //            reg = &trTextureRegistry[sortList->textureList[0]];
             baseScalar = colUdwordToReal(reg->baseScalar);
             stripeScalar = colUdwordToReal(reg->stripeScalar);
-#ifdef _WIN32
-            if (strchr(reg->fileName, '\\') && (baseScalar != 0.0f || stripeScalar != 0.0f))
-#else
             if (strpbrk(reg->fileName, "\\/") && (baseScalar != 0.0f || stripeScalar != 0.0f))
-#endif
             {
-#ifdef _WIN32
-                count = strchr(reg->fileName, '\\') - (reg->fileName);
-#else
                 count = strpbrk(reg->fileName, "\\/") - (reg->fileName);
-#endif
                 dbgAssertOrIgnore(count > 0);
                 memStrncpy(fullName, reg->fileName, count + 1);
                 //fullName[count] = 0;

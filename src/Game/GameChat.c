@@ -26,10 +26,6 @@
 #include "Universe.h"
 #include "utility.h"
 
-#ifdef _WIN32
-    #include <windows.h>
-#endif
-
 #ifdef _MSC_VER
     #define strncasecmp strnicmp
 #else
@@ -41,11 +37,7 @@
     Defines:
 =============================================================================*/
 
-#ifdef _WIN32
-#define GC_FIBFile          "FEMan\\Game_Chat.FIB"
-#else
 #define GC_FIBFile          "FEMan/Game_Chat.FIB"
-#endif
 #define GC_ChatHistoryMax   200
 #define GC_MAXCHARACTERS    256
 

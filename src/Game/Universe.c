@@ -1559,11 +1559,7 @@ void InitStatAsteroidInfo(AsteroidStaticInfo *asteroidStatInfo,AsteroidType aste
 
     asteroidtypestr = AsteroidTypeToStr(asteroidtype);
 
-#ifdef _WIN32
-    strcpy(directory,"Resources\\Asteroids\\");
-#else
     strcpy(directory,"Resources/Asteroids/");
-#endif
 //    strcat(directory,asteroidtypestr);
 //    strcat(directory,"\\");
 
@@ -1605,11 +1601,7 @@ void InitStatDustCloudInfo(DustCloudStaticInfo *dustcloudStatInfo, DustCloudType
 
     dustcloudtypestr = DustCloudTypeToStr(dustcloudtype);
 
-#ifdef _WIN32
-    strcpy(directory,"Resources\\DustClouds\\");
-#else
     strcpy(directory,"Resources/DustClouds/");
-#endif
 //    strcat(directory,dustcloudtypestr);
 //    strcat(directory,"\\");
 
@@ -1659,11 +1651,7 @@ void InitStatGasCloudInfo(GasCloudStaticInfo *gascloudStatInfo, GasCloudType gas
 
     gascloudtypestr = GasCloudTypeToStr(gascloudtype);
 
-#ifdef _WIN32
-    strcpy(directory,"Resources\\GasClouds\\");
-#else
     strcpy(directory,"Resources/GasClouds/");
-#endif
 //    strcat(directory,gascloudtypestr);
 //    strcat(directory,"\\");
 
@@ -1702,11 +1690,7 @@ void InitStatNebulaInfo(NebulaStaticInfo* nebulaStatInfo, NebulaType nebulatype)
 
     nebulatypestr = NebulaTypeToStr(nebulatype);
 
-#ifdef _WIN32
-    strcpy(directory,"Resources\\Nebulae\\");
-#else
     strcpy(directory,"Resources/Nebulae/");
-#endif
 //    strcat(directory,nebulatypestr);
 //    strcat(directory,"\\");
 
@@ -1794,11 +1778,7 @@ void InitStatDerelictInfo(DerelictStaticInfo *derelictStatInfo, DerelictType der
 
     derelicttypestr = DerelictTypeToStr(derelicttype);
 
-#ifdef _WIN32
-    strcpy(directory,"Derelicts\\");
-#else
     strcpy(directory,"Derelicts/");
-#endif
 //    strcat(directory,derelicttypestr);
 //    strcat(directory,"\\");
 
@@ -1867,11 +1847,7 @@ void InitStatMissileInfo(MissileStaticInfo *missileStatInfo,ShipRace race)
 
     strcpy(directory,ShipRaceToStr(race));
 //    strcat(directory,"\\Missile\\");
-#ifdef _WIN32
-    strcat(directory, "\\");
-#else
     strcat(directory, "/");
-#endif
 
     strcpy(fullshipname,directory);
     strcat(fullshipname,shipname);
@@ -1915,11 +1891,7 @@ void InitStatMineInfo(MissileStaticInfo *mineStatInfo,ShipRace race)
 
     strcpy(directory,ShipRaceToStr(race));
 //    strcat(directory,"\\Mine\\");
-#ifdef _WIN32
-    strcat(directory, "\\");
-#else
     strcat(directory, "/");
-#endif
 
     strcpy(fullshipname,directory);
     strcat(fullshipname,shipname);
@@ -2008,11 +1980,7 @@ void InitStatShipInfo(ShipStaticInfo *statinfo,ShipType type,ShipRace race)
     strcpy(directory,ShipRaceToStr(race));
 //    strcat(directory,"\\");
 //    strcat(directory,shiptypestr);
-#ifdef _WIN32
-    strcat(directory,"\\");
-#else
     strcat(directory,"/");
-#endif
 
     strcpy(shipname,shiptypestr);
     strcat(shipname,".shp");
@@ -3049,11 +3017,7 @@ void universeStaticInit(void)
     }
 #endif
 
-#ifdef _WIN32
-#define TMP_DEFSHIP_PATH "DefaultShip\\"
-#else
 #define TMP_DEFSHIP_PATH "DefaultShip/"
-#endif
 
     //load some things shared by everyone
     if (sphereStaticInfo == NULL)

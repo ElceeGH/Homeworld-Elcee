@@ -206,13 +206,8 @@ lifheader *lmShipImage[MAX_RACES][NUM_LMTEXTURES] =
 
 char *lmShipImagePaths[] =
 {
-#ifdef _WIN32
-    "FEMan\\Construction_Manager\\Build_race1_",
-    "FEMan\\Construction_Manager\\Build_race2_"
-#else
     "FEMan/Construction_Manager/Build_race1_",
     "FEMan/Construction_Manager/Build_race2_"
-#endif
 };
 
 char *lmShipIcons[] =

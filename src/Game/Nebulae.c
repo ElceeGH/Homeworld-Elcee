@@ -28,12 +28,6 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
-
 ubyte nebColor[4];
 
 #define TENDRILBRIGHTEN 60

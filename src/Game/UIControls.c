@@ -25,12 +25,6 @@
 #include "Universe.h"
 #include "utility.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
-
 // Keyboard navigation callback functions
 #define ATOM_FLAG   0
 #define REGION_FLAG 1
@@ -47,9 +41,9 @@ color FEC_ListItemInactive;
 color FEC_ListItemInvalid;
 color FEC_Background;
 
-color TB_SelectedColor = colRGB(255,255,255);
+color TB_SelectedColor   = colRGB(255,255,255);
 color TB_HyperspaceColor = colRGB(32,220,32);
-color TB_CompleteColor = colRGB(0,160,200);
+color TB_CompleteColor   = colRGB(0,160,200);
 color TB_IncompleteColor = colRGB(25,90,90);
 
 scriptEntry FrontEndColourTweaks[] =

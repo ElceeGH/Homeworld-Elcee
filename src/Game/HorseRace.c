@@ -50,11 +50,7 @@
 #include "utility.h"
 
 #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
     #define strcasecmp _stricmp
-    #include <direct.h>
-    #include <io.h>
-    #include <windows.h>
 #else
     #include <dirent.h>
     #include <unistd.h>
@@ -341,21 +337,12 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
 
             // NB: hrDrawFile deals with coordinate mapping
 
-#ifdef _WIN32
-            hrDrawFile("feman\\loadscreen\\ring.lif",
-                SP_LOADING_HYPERSPACE_DEST_CIRCLE_X, SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y
-            );
-            hrDrawFile("feman\\loadscreen\\arrows.lif",
-                SP_LOADING_HYPERSPACE_DEST_ARROWS_X, SP_LOADING_HYPERSPACE_DEST_ARROWS_Y
-            );
-#else
             hrDrawFile("feman/loadscreen/ring.lif",
                 SP_LOADING_HYPERSPACE_DEST_CIRCLE_X, SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y
             );
             hrDrawFile("feman/loadscreen/arrows.lif",
                 SP_LOADING_HYPERSPACE_DEST_ARROWS_X, SP_LOADING_HYPERSPACE_DEST_ARROWS_Y
             );
-#endif
         }
     }
     else
@@ -429,20 +416,12 @@ void hrChooseSinglePlayerBitmap(char* pFilenameBuffer)
 #if defined(HW_GAME_RAIDER_RETREAT)
     if (spGetCurrentMission() == MISSION_5B_TURANIC_RAIDER_PLANETOID)
     {
-#ifdef _WIN32
-        sprintf(fname, "SinglePlayer\\mission05_OEM\\loading.jpg");
-#else
         sprintf(fname, "SinglePlayer/mission05_OEM/loading.jpg");
-#endif
     }
     else
 #endif
     {
-#ifdef _WIN32
-        sprintf(fname, "SinglePlayer\\mission%02d\\loading.jpg", spGetCurrentMission());
-#else
         sprintf(fname, "SinglePlayer/mission%02d/loading.jpg", spGetCurrentMission());
-#endif
     }
 
     if (!fileExists(fname, 0))
@@ -611,11 +590,7 @@ void hrChooseRandomBitmap(char *pFilenameBuffer)
     else // look in the big file for fallback images
     {   
         // First, find screen shots listed in the BigFile
-#ifdef _WIN32
-        handle = fileOpen("ScreenShots\\ShotList.script", FF_ReturnNULLOnFail | FF_TextMode);
-#else
         handle = fileOpen("ScreenShots/ShotList.script", FF_ReturnNULLOnFail | FF_TextMode);
-#endif
         if(handle)
         {
             do {
@@ -632,12 +607,7 @@ void hrChooseRandomBitmap(char *pFilenameBuffer)
         if (BigFileCount > 0)
         {
             chosenFileIndex = (utyTimerLast % 32777) % BigFileCount;
-
-#ifdef _WIN32
-            handle = fileOpen("ScreenShots\\ShotList.script", FF_ReturnNULLOnFail | FF_TextMode);
-#else
-            handle = fileOpen("ScreenShots/ShotList.script", FF_ReturnNULLOnFail | FF_TextMode);
-#endif
+            handle          = fileOpen("ScreenShots/ShotList.script", FF_ReturnNULLOnFail | FF_TextMode);
             if(handle)
             {
                 do {
@@ -647,11 +617,7 @@ void hrChooseRandomBitmap(char *pFilenameBuffer)
                         chosenFileIndex--;
 
                 } while( (chosenFileIndex >= 0) && (Result != FR_EndOfFile));
-#ifdef _WIN32
-                strcpy(pFilenameBuffer, "ScreenShots\\");
-#else
                 strcpy(pFilenameBuffer, "ScreenShots/");
-#endif
                 strcat(pFilenameBuffer, BigName);
             }
         }

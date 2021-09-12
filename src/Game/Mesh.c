@@ -6,11 +6,6 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#ifdef _WIM32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 #include "glinc.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -221,30 +216,17 @@ StaticInfo *meshNameToStaticInfo(char *fileName)
     ShipRace race;
     ShipType type;
 
-#ifdef _WIN32
-    dbgAssertOrIgnore(strchr(fileName, '\\'));
-    length = strchr(fileName, '\\') - fileName;
-#else
     dbgAssertOrIgnore(strpbrk(fileName, "\\/"));
     length = strpbrk(fileName, "\\/") - fileName;
-#endif
     memcpy(raceString, fileName, length);
     raceString[length] = 0;                                 //make a race name
     fileName += length + 1;
 //    dbgAssertOrIgnore(strchr(fileName, '\\'));                      //make a type name
-#ifdef _WIN32
-    if (strchr(fileName, '\\') == NULL)
-#else
     if (strpbrk(fileName, "\\/") == NULL)
-#endif
     {
         return(NULL);
     }
-#ifdef _WIN32
-    length = strchr(fileName, '\\') - fileName;
-#else
     length = strpbrk(fileName, "\\/") - fileName;
-#endif
     memcpy(typeString, fileName, length);
     typeString[length] = 0;
     if (strcasecmp(raceString, "Derelicts") == 0)
@@ -356,17 +338,10 @@ void meshTextureNameToPath(char *out, char *mesh, char *tex)
     strcpy(out, mesh);
 
     char* string = out;
-#ifdef _WIN32
-    while (strchr(string, '\\'))
-    {                                               //find last backslash
-        string = strchr(string, '\\') + 1;
-    }
-#else
     while (strpbrk(string, "\\/"))
     {                                               /* find last backslash */
         string = strpbrk(string, "\\/") + 1;
     }
-#endif
     dbgAssertOrIgnore(string != out);
     dbgAssertOrIgnore(*string);
     *string = 0;                                    //NULL terminate and append texture name
@@ -409,11 +384,7 @@ void meshPagedName(char* outFileName, char* inFileName)
         else
         {
             strcat(outFileName, token);
-#ifdef _WIN32
-            strcat(outFileName, "\\");
-#else
             strcat(outFileName, "/");
-#endif
         }
 
         token = strtok(NULL, "\\/");

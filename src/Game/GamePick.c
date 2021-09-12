@@ -36,12 +36,7 @@
 #include "utility.h"
 #include "miscUtil.h"
 
-#ifdef _WIN32
-    #include <windows.h>
-#endif
-
 #ifdef _MSC_VER
-    #include <io.h>
     #define strcasecmp _stricmp
 #else
     #include <dirent.h>
@@ -75,28 +70,11 @@ void gpOverwriteNo(char *name, featom *atom);
 bool gpLoadSinglePlayerGame = FALSE;
 bool gpLoadTutorial = FALSE;
 
-#ifdef _WIN32
-//SinglePlayerSavedGamesPath is non-static because it is used in KASFunc.c
-char SinglePlayerSavedGamesPath[] = "SavedGames\\SinglePlayer\\";
-static char MultiPlayerSavedGamesPath[] = "SavedGames\\MultiPlayer\\";
-static char RecordedGamesPath[] = "SavedGames\\RecordedGames\\";
-//TutorialSavedGamesPath is non-static because it is used in Tutor.c
-char TutorialSavedGamesPath[] = "SavedGames\\Training\\";
-#else
-
-//SinglePlayerSavedGamesPath is non-static because it is used in KASFunc.c
-#if defined(HW_GAME_RAIDER_RETREAT) && defined(_MACOSX)
-char SinglePlayerSavedGamesPath[] = "SavedGames/Raider\ Retreat/";
-#else
-char SinglePlayerSavedGamesPath[] = "SavedGames/SinglePlayer/";
-#endif
-
-static char MultiPlayerSavedGamesPath[] = "SavedGames/MultiPlayer/";
-static char RecordedGamesPath[] = "SavedGames/RecordedGames/";
-//TutorialSavedGamesPath is non-static because it is used in Tutor.c
-char TutorialSavedGamesPath[] = "SavedGames/Training/";
-#endif
-static char QuickSaveName[] = "Quick Save";
+       char TutorialSavedGamesPath[]     = "SavedGames/Training/";     //used in Tutor.c
+       char SinglePlayerSavedGamesPath[] = "SavedGames/SinglePlayer/"; //used in KASFunc.c
+static char MultiPlayerSavedGamesPath[]  = "SavedGames/MultiPlayer/";
+static char RecordedGamesPath[]          = "SavedGames/RecordedGames/";
+static char QuickSaveName[]              = "Quick Save";
 
 char *SavedGamesPath = NULL;
 

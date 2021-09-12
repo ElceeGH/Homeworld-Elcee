@@ -341,11 +341,8 @@ void SEloadscripts(void)
 {
     sdword i;
 
-#ifdef _WIN32
-#define SFX_SCRIPT_PATH "SoundFX\\Scripts\\"
-#else
+
 #define SFX_SCRIPT_PATH "SoundFX/Scripts/"
-#endif
 
     scriptSetStruct(SFX_SCRIPT_PATH, "eq_fleet.script", streamEQScriptTable, (ubyte *)&streamEQ[SPEECH_FLEET]);
     scriptSetStruct(SFX_SCRIPT_PATH, "eq_intel.script", streamEQScriptTable, (ubyte *)&streamEQ[SPEECH_INTEL]);
@@ -2757,6 +2754,7 @@ sdword musicEventStop(sdword tracknum, real32 fadetime)
                 tracknum = musicinfo[NISSTREAM].tracknum;
             }
         }
+
         if ((tracknum >= MUS_FIRST_NIS) && (tracknum <= MUS_LAST_ANIMATIC))
         {
             /* this is an NIS */

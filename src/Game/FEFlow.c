@@ -30,11 +30,6 @@
 #include "UIControls.h"
 #include "utility.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
 
 
 /*=============================================================================

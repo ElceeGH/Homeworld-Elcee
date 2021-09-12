@@ -16,8 +16,7 @@
 #include "soundcmn.h"
 #include "main.h"
 
-#define SOUNDFXDIR "SoundFX\\"
-
+#define SOUNDFXDIR "SoundFX/"
 #define EQ_STEP			0.1
 
 #ifdef _WIN32

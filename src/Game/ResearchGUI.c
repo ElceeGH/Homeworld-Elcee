@@ -46,12 +46,6 @@
 #include "Universe.h"
 #include "rResScaling.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
-
 
 /*=============================================================================
     Defines:
@@ -303,13 +297,8 @@ TechNames TechImageNames[]=
 
 char* TechImagePaths[]=
 {
-#ifdef _WIN32
-    "ResearchGUI\\Race1\\",
-    "ResearchGUI\\Race2\\",
-#else
     "ResearchGUI/Race1/",
     "ResearchGUI/Race2/",
-#endif
     NULL
 };
 

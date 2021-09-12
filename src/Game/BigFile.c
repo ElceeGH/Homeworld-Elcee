@@ -323,11 +323,7 @@ static void bigFilenameExtract(char *filenameonly, char *fullpathname)
     // backslash or the start of the string
     while (p != fullpathname)
     {
-#ifdef _WIN32
-        if (*p == '\\')
-#else
         if (*p == '\\' || *p == '/')
-#endif
         {
             ++p;
             break;

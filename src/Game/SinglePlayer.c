@@ -402,21 +402,12 @@ void GetMissionsDirAndFile(MissionEnum mission)
 #ifdef HW_GAME_RAIDER_RETREAT
     if (mission == MISSION_5B_TURANIC_RAIDER_PLANETOID)
     {
-#ifdef _WIN32
-        sprintf(spMissionsDir, "SinglePlayer\\Mission05_OEM\\");
-#else
-        sprintf(spMissionsDir, "SinglePlayer/Mission05_OEM/");
-#endif
         sprintf(spMissionsFile, "Mission05_OEM.mission");
     }
     else
 #endif
     {
-#ifdef _WIN32
-        sprintf(spMissionsDir, "SinglePlayer\\Mission%02d\\", mission);
-#else
         sprintf(spMissionsDir, "SinglePlayer/Mission%02d/", mission);
-#endif
         sprintf(spMissionsFile,"Mission%02d.mission", mission);
     }
 }
@@ -940,11 +931,7 @@ sdword HyperspaceRollCallBegin(regionhandle region, sdword ID, udword event, udw
     {
         feCallbackAddMultiple(spHyperspaceCallback);      //add in the callbacks
         feDrawCallbackAddMultiple(spHyperspaceDrawCallback);
-#ifdef _WIN32
-        spHyperspaceRollCallHandle = feScreensLoad("FEMan\\Hyperspace_Roll_Call.fib");   //load in the screen
-#else
         spHyperspaceRollCallHandle = feScreensLoad("FEMan/Hyperspace_Roll_Call.fib");   //load in the screen
-#endif
     }
 
     CalculateRollCall();
@@ -3067,11 +3054,7 @@ const void** MissionEnumToFunctionList(MissionEnum mission)
 //      to Mission 14, with the Headshot asteroid level (old mission 14)
 //      is now Mission 15.  The only change this effects is the nislet names
 
-#ifdef _WIN32
-    #define NIS_PATH "nis\\"
-#else
-    #define NIS_PATH "nis/"
-#endif
+#define NIS_PATH "nis/"
 
 char *singlePlayerNISName = NULL;
 

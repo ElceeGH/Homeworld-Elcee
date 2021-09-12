@@ -45,12 +45,6 @@
 #include "UnivUpdate.h"
 #include "miscUtil.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
-
 #ifdef _MSC_VER
 	#define strcasecmp _stricmp
 #else
@@ -283,13 +277,8 @@ nisstatic *nisStatic[NIS_NumberStatics + NIS_NumberExtraStatics] = {NULL, NULL, 
 char *nisLanguageSubpath[] =
 {
     "",
-#ifdef _WIN32
-    "French\\",
-    "German\\",
-#else
     "French/",
     "German/",
-#endif
     "",         // Spanish uses the same script settings as English as the audio isn't localized
     ""          // Italian uses the same script settings as English as the audio isn't localized
 };
@@ -1968,11 +1957,7 @@ real32 nisUpdate(nisplaying *NIS, real32 timeElapsed)
                         if (pString != NULL)
                         {
                             strcat(nisInfoString, pString);
-#ifdef _WIN32
-                            strcat(nisInfoString, "\\");
-#else
                             strcat(nisInfoString, "/");
-#endif
                         }
                     }
                     strcat(nisInfoString, ShipTypeToStr(((Ship *)NIS->objectsInMotion[index].spaceobj)->shiptype));
@@ -2120,11 +2105,7 @@ sdword nisFindObjectByName(nisheader *header, char *name)
                     pType = DerelictTypeToStr(path->type);
                     break;
                 case NSR_Effect:
-#ifdef _WIN32
-                    for (pType = ((etgeffectstatic *)path->type)->name; strchr(pType, '\\'); pType = strchr(pType, '\\'))
-#else
                     for (pType = ((etgeffectstatic *)path->type)->name; strpbrk(pType, "\\/"); pType = strpbrk(pType, "\\/"))
-#endif
                     {                                       //find just the name
                         ;
                     }
@@ -3249,22 +3230,14 @@ void nisNewEnvironment(nisplaying *NIS, nisevent *event)
     {
         nisPreviousLighting = memStringDupeNV(lightCurrentLighting);
     }
-#ifdef _WIN32
-    sprintf(path, "BTG\\%s.btg", env->name);                //load the background
-#else
     sprintf(path, "BTG/%s.btg", env->name);                //load the background
-#endif
     nisPreviousTheta = btgGetTheta();
     nisPreviousPhi = btgGetPhi();
     btgSetTheta(env->theta);
     btgSetPhi(env->phi);
     btgLoad(path);
 
-#ifdef _WIN32
-    sprintf(path,"hsf\\%s.hsf",env->name);
-#else
     sprintf(path,"hsf/%s.hsf",env->name);
-#endif
     lightParseHSF(path);                               //load the lighting
 }
 
@@ -3554,6 +3527,7 @@ void nisFleetSpeechEventSet(char *directory,char *field,void *dataToFillIn)
         event->param[1] = param;
     }
 }
+
 void nisAnimaticSpeechEventSet(char* directory, char* field, void* dataToFillIn)
 {
     nisevent* event = nisNewAnimaticEvent(NEO_AnimaticSpeechEvent);
@@ -3582,6 +3556,7 @@ void nisAnimaticSpeechEventSet(char* directory, char* field, void* dataToFillIn)
 #ifdef _WIN32_FIX_ME
  #pragma warning( 4 : 4047)      // turns off "different levels of indirection warning"
 #endif
+
 void nisRemainAtEndSet(char *directory,char *field,void *dataToFillIn)
 {
     char optionalTeamName[50];
@@ -4302,19 +4277,11 @@ void nisNewNISSet(char *directory, char *field, void *dataToFillIn)
     dbgAssertOrIgnore(nScanned == 2);
     dbgAssertOrIgnore(strlen(nisName) > 0);
     dbgAssertOrIgnore(strlen(scriptName) > 0);
-#ifdef _WIN32
-    strcpy(fileName, "nis\\");
-#else
     strcpy(fileName, "nis/");
-#endif
     strcat(fileName, nisName);
     dbgAssertOrIgnore(fileExists(fileName, 0));
     event->param[0] = (memsize)memStringDupeNV(fileName);
-#ifdef _WIN32
-    strcpy(fileName, "nis\\");
-#else
     strcpy(fileName, "nis/");
-#endif
     strcat(fileName, scriptName);
     dbgAssertOrIgnore(fileExists(fileName, 0));
     event->param[1] = (memsize)memStringDupeNV(fileName);
@@ -4521,11 +4488,7 @@ sdword nisGenericObjectRegister(nisheader *header, char *name)
     generic->staticInfo = memAlloc(sizeof(DerelictStaticInfo), "NISGenericStat", 0);
     strcpy(shipFile, name);
     strcat(shipFile, ".shp");
-#ifdef _WIN32
-    InitStatDerelictInfoByPath(generic->staticInfo, NUM_DERELICTTYPES + index, "Misc\\", shipFile);
-#else
     InitStatDerelictInfoByPath(generic->staticInfo, NUM_DERELICTTYPES + index, "Misc/", shipFile);
-#endif
     return(header->nGenericObjects - 1);
 }
 
@@ -4715,11 +4678,7 @@ nisheader *nisLoad(char *fileName, char *scriptName)
                 type = StrToDerelictType(string);
                 break;
             case NSR_Effect:
-#ifdef _WIN32
-                sprintf(effectPath, "ETG\\%s.ebg", string);
-#else
                 sprintf(effectPath, "ETG/%s.ebg", string);
-#endif
                 etgErrorRecoverable = FALSE;
                 type = (ShipType)etgEffectCodeLoad(effectPath);
                 break;
@@ -4839,11 +4798,7 @@ foundOne:;
         {
             for (pString = localisedPath + strlen(localisedPath); pString > localisedPath; pString--)
             {                                               //find the end of the path
-#ifdef _WIN32
-                if (*pString == '\\')
-#else
                 if (*pString == '\\' || *pString == '/')
-#endif
                 {
                     strcpy(string, pString + 1);            //save the file name
                     strcpy(pString + 1, nisLanguageSubpath[strCurLanguage]);//add the language sub-path

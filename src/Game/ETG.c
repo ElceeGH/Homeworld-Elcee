@@ -51,10 +51,6 @@
 #include "wrapped_unlisted_functions.h"
 #endif
 
-#ifdef _WIN32
-    #include <windows.h>
-#endif
-
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
 #else
@@ -2687,11 +2683,7 @@ etgeffectstatic *etgEffectStaticFind(char *name, bool bRegister)
     etgevent *free = NULL;
 
     //strip all the path crap off, so we have just a name
-#ifdef _WIN32
-    for (slash = strchr(name, '\\'); slash != NULL; slash = strchr(slash + 1, '\\'))
-#else
     for (slash = strpbrk(name, "\\/"); slash != NULL; slash = strpbrk(slash + 1, "\\/"))
-#endif
     {
         name = slash + 1;
     }

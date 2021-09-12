@@ -16,12 +16,6 @@
 #include "Universe.h"
 #include "rResScaling.h"
 
-#ifndef SW_Render
-    #ifdef _WIN32
-        #include <windows.h>
-    #endif
-#endif
-
 /*-----------------------------------------------------------------------------
     Name        : navLightBillboardEnable
     Description : setup modelview matrix for rendering billboarded sprites

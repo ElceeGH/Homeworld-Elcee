@@ -38,10 +38,6 @@
 #include "utility.h"
 #include "rResScaling.h"
 
-#ifdef _WIN32
-    #include <windows.h>
-#endif
-
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
 #else
@@ -508,11 +504,7 @@ static char *tutTutorialNames[4] = {"", "Tutorial1"};
 
 void tutPreInitTutorial(char *dirfile, char *levelfile)
 {
-#ifdef _WIN32
-    sprintf(dirfile, "Tutorials\\%s\\", tutTutorialNames[tutorial]);
-#else
     sprintf(dirfile, "Tutorials/%s/", tutTutorialNames[tutorial]);
-#endif
     sprintf(levelfile, "%s.mission", tutTutorialNames[tutorial]);
 
     tutEnableEverything();
@@ -1864,11 +1856,7 @@ void tutInitialize(void)
         if (tutTexture[i] == TR_InvalidInternalHandle)
         {
             dbgAssertOrIgnore(tutImage[i] == NULL);
-#ifdef _WIN32
-            strcpy(Filename, "feman\\texdecorative\\");
-#else
             strcpy(Filename, "feman/texdecorative/");
-#endif
 
             //load the correct texture depending on language. defaults to english
             switch (strCurLanguage) {

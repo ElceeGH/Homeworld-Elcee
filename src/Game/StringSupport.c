@@ -10,11 +10,6 @@
 #include "Memory.h"
 #include "StatScript.h"
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 #define strEntry(var)  {#var,strSetStringCB,&MessageStrings[var]}
 
 udword strCurLanguage=0;

@@ -7263,11 +7263,7 @@ void univCheckRegrowResources(void)
 ----------------------------------------------------------------------------*/
 bool univUpdate(real32 phystimeelapsed)
 {
-#ifdef _WIN32
-#define TMP_SAVEDGAMES_PATH "SavedGames\\"
-#else
 #define TMP_SAVEDGAMES_PATH "SavedGames/"
-#endif
 
     if ((autoSaveDebug) && ((universe.univUpdateCounter & 31) == 0))    // every 2s
     {
