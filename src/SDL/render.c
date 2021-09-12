@@ -3971,22 +3971,9 @@ DEFINE_TASK(rndRenderTask)
             primRectSolid2(&r, rndFillColour);
             rndFillCounter--;
         }
-#if 0
-#if defined (HW_GAME_DEMO)
-        ;
-#else
-        {
-            extern bool mainPlayAVIs;
 
-            if (mainPlayAVIs)
-            {
-                mainPlayAVIs = FALSE;
-                animSmackPlay(-1, (sdword)"Movies\\sierra.smk");
-                animSmackPlay(-1, (sdword)"Movies\\relicintro.smk");
-            }
-        }
-#endif
-#endif
+
+
         //demo-specific update code
         if (demDemoPlaying && gameIsRunning)
         {                                                   //if a demo is playing and we're in the actual game

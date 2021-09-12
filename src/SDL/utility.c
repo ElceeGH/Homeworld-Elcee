@@ -100,6 +100,7 @@
 #include "Undo.h"
 #include "Universe.h"
 #include "UnivUpdate.h"
+#include "video.h"
 
 #ifdef _WIN32_FIX_ME
  #pragma warning( 4 : 4142 )     //turn off "benign redefinition of type" warning
@@ -184,8 +185,6 @@ extern unsigned char *updateNewerAvailable;
 /*=============================================================================
     Data:
 =============================================================================*/
-
-bool utilPlayingIntro = FALSE;
 
 void *utyMemoryHeap;
 char errorString[UTY_ErrorStringLength];
@@ -3871,6 +3870,34 @@ char* utyGameSystemsPreInit(void)
     return NULL;
 }
 
+
+
+/*-----------------------------------------------------------------------------
+    Name        : utyPlayIntro
+    Description : Play video and music track.
+----------------------------------------------------------------------------*/
+static void utyPlayIntro( char* movieName, sdword musicTrack ) {
+    soundEventPlayMusic( musicTrack );
+    videoPlay( movieName, NULL, NULL, FALSE );
+    soundEventStopMusic( 0.0f );
+    SDL_Delay( 500 ); // Let the music fade complete before going further
+}
+
+
+
+/*-----------------------------------------------------------------------------
+    Name        : utyPlayIntros
+    Description : Plays the intro videos and music tracks, if enabled.
+----------------------------------------------------------------------------*/
+static void utyPlayIntros( void ) {
+    if (enableAVI) {
+        utyPlayIntro( "Movies/sierra.bik",     ANIM00_Sierra );
+        utyPlayIntro( "Movies/relicintro.bik", ANIM00_Relic  );
+    }
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : utyGameSystemsInit
     Description : Starts up all miscellaneous game systems.  call occurs after the
@@ -3978,8 +4005,6 @@ char *utyGameSystemsInit(void)
     // initialize sound engine
     soundEventInit();
     utySet2(SS2_SoundEngine);
-
-    utilPlayingIntro = FALSE;
 
     renderData.width = MAIN_WindowWidth;                    //setup data for
     renderData.height = MAIN_WindowHeight;                  //initializing the
@@ -4164,6 +4189,8 @@ char *utyGameSystemsInit(void)
     utySystemStarted = TRUE;
 
     opUpdateSettings();
+
+    utyPlayIntros();
 
     soundEventPlayMusic(SOUND_FRONTEND_TRACK);
 

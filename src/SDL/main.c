@@ -1053,64 +1053,7 @@ void mainDevStatsShutdown(void)
     }
 }
 
-void IntroDeactivateMe()
-{
-    sounddeactivate(TRUE);
 
-#if 0	/* Bink, no? */
-    if (!binkDonePlaying)
-    {
-        binkPause(TRUE);
-        hwSetRes(0, 0, 0);
-    }
-#endif
-
-    wasDemoPlaying = demDemoPlaying;                        //save demo playback state
-    demDemoPlaying = FALSE;                                 //stop the demo playback for now
-
-#if MAIN_MOUSE_FREE
-    if (utySystemStarted)
-    {
-        utyClipMouse(FALSE);
-    }
-#endif
-    utyTaskTimerClear();                                    //clear pending timer ticks
-    keyClearAll();
-    keyBufferClear();
-    systemActive = FALSE;
-}
-
-void IntroActivateMe()
-{
-    sounddeactivate(FALSE);
-
-    /*hwSetRes(-1, -1, -1);*/
-
-    demDemoPlaying = wasDemoPlaying;                        //keep playing demo if it was playing when we minimized
-#if MAIN_MOUSE_FREE
-    if (utySystemStarted)
-    {
-        utyClipMouse(startupClipMouse);                     //optionally trap the mouse
-    }
-#endif
-    systemActive = TRUE;
-
-    utyForceTopmost(fullScreen);
-    SDL_ShowCursor(SDL_DISABLE);
-    //make sure that the mouse is rotating properly when we come back
-    utyMouseButtonsClear();
-
-    keyClearAll();
-    keyBufferClear();
-    mrTacticalOverlayState(utyCapsLockToggleState());
-
-#if 0	/* More bink... */
-    if (!binkDonePlaying)
-    {
-        binkPause(FALSE);
-    }
-#endif
-}
 
 /*-----------------------------------------------------------------------------
     Name        : DeactivateMe
@@ -1201,13 +1144,6 @@ void ActivateMe()
     }
     */
     mrTacticalOverlayState(utyCapsLockToggleState());
-
-#if 0	/* Bink stuff... */
-    if (!binkDonePlaying)
-    {
-        binkPause(FALSE);
-    }
-#endif
 }
 
 /*-----------------------------------------------------------------------------
@@ -1705,8 +1641,6 @@ udword keyLanguageTranslate(udword wParam)
 //long FAR PASCAL WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 sdword HandleEvent (const SDL_Event* pEvent)
 {
-    extern bool utilPlayingIntro;
-
     /* Mouse button press times for double-click support. */
     static Uint32 mbDownTime[3] = { 0, 0, 0 };
     static Uint8 mbDouble[3] = { 0, 0, 0 };
@@ -1721,44 +1655,18 @@ sdword HandleEvent (const SDL_Event* pEvent)
     {
         case SDL_APP_DIDENTERFOREGROUND:
             if (systemActive == FALSE)
-            {                                               //we're being activated
-                if (utilPlayingIntro)
-                {
-                    IntroActivateMe();
-                }
-                else
-                {
-                    ActivateMe();
-                }
-            }
-            else
-                return 0;
+                ActivateMe(); //we're being activated
+            else return 0;
+
         case SDL_APP_WILLENTERBACKGROUND:
             if (systemActive == TRUE)
-            {                                               //we're being deactivated
-                if (utilPlayingIntro)
-                {
-                    IntroDeactivateMe();
-                }
-                else
-                {
-                    DeactivateMe();
-                }
-            }
-            else
-                return 0;                                   //per documentation
+                DeactivateMe(); //we're being deactivated
+            else return 0; //per documentation
 
         case SDL_KEYUP:                                     //keys up/down
             switch (pEvent->key.keysym.sym)
             {
                 case SDLK_ESCAPE:
-#if 0	/* Bink */
-                    if (!binkDonePlaying)
-                    {
-                        binkStop();
-                    }
-                    else
-#endif
                     {
                         keyPressUp(pEvent->key.keysym.scancode);
                     }
