@@ -129,10 +129,10 @@
 #endif
 
 #ifdef _MSC_VER
-	#define strcasecmp _stricmp
-	#define stat _stat
-	#define S_ISDIR(mode) ((mode) & _S_IFDIR)
-	#define mkdir(p) _mkdir(p)
+    #define strcasecmp _stricmp
+    #define stat _stat
+    #define S_ISDIR(mode) ((mode) & _S_IFDIR)
+    #define mkdir(p) _mkdir(p)
     
     #include <direct.h>  // for _mkdir
 #else
@@ -3508,8 +3508,8 @@ void utyGrowthHeapFree(void *heap)
     result = VirtualFree(heap, 0, MEM_RELEASE);
     dbgAssertOrIgnore(result);
 #elif _MACOSX
-	//not sure if this is an equivalent statement, but it fixes a crash on exit
-	free(heap);
+    //not sure if this is an equivalent statement, but it fixes a crash on exit
+    free(heap);
 #else
     int result;
     result = munmap(heap, 0);
@@ -3628,30 +3628,30 @@ char* utyGameSystemsPreInit(void)
         fileOverrideBigPathSet(overrideBigPath);
     }
 
-	// Attempt to set the user settings path.
-	if (fileUserSettingsPath[0] == '\0')
-	{
+    // Attempt to set the user settings path.
+    if (fileUserSettingsPath[0] == '\0')
+    {
 #ifdef _WIN32
         const char* appdata = getenv("APPDATA");
         char dir[PATH_MAX];
         sprintf( dir, "%s/%s", appdata, CONFIGDIR );
-		fileUserSettingsPathSet( dir );
+        fileUserSettingsPathSet( dir );
 #else
-		// Use the user's own Homeworld configuration dir if possible or
-		// else use the Homeworld data directory itself.
+        // Use the user's own Homeworld configuration dir if possible or
+        // else use the Homeworld data directory itself.
         char *homeDir = getenv("HOME");
         
-		if (homeDir != NULL)
-		{
-			snprintf(filePathTempBuffer, PATH_MAX, "%s/" CONFIGDIR, homeDir);
-			fileUserSettingsPathSet(filePathTempBuffer);
-		}
-		else
-		{
-			fileUserSettingsPathSet(fileHomeworldDataPath);
-		}
+        if (homeDir != NULL)
+        {
+            snprintf(filePathTempBuffer, PATH_MAX, "%s/" CONFIGDIR, homeDir);
+            fileUserSettingsPathSet(filePathTempBuffer);
+        }
+        else
+        {
+            fileUserSettingsPathSet(fileHomeworldDataPath);
+        }
 #endif
-	}
+    }
 
     // CD-ROM path
     if (fileCDROMPath[0] == '\0')
@@ -3789,9 +3789,9 @@ char* utyGameSystemsPreInit(void)
         GlobalMemoryStatus(&memStat);
         newSize = (sdword)((real32)memStat.dwTotalPhys * MEM_HeapDefaultScalar);
 #elif defined(_MACOSX)
-		int phys_pages = 32768;
-		int page_size = getpagesize();
-		newSize = (sdword)((real32)phys_pages * (real32)page_size
+        int phys_pages = 32768;
+        int page_size = getpagesize();
+        newSize = (sdword)((real32)phys_pages * (real32)page_size
             * MEM_HeapDefaultScalar);
 #else
         long phys_pages = sysconf(_SC_PHYS_PAGES);
@@ -4627,8 +4627,8 @@ char *utyGameSystemsShutdown(void)
         result = VirtualFree(utyMemoryHeap, 0, MEM_RELEASE);
         dbgAssertOrIgnore(result);
 #elif _MACOSX
-		//not sure if this is an equivalent statement, but it fixes a crash on exit
-		free(utyMemoryHeap);
+        //not sure if this is an equivalent statement, but it fixes a crash on exit
+        free(utyMemoryHeap);
 #else
         int result;
         result = munmap(utyMemoryHeap, 0);
