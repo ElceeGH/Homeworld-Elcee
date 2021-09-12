@@ -3487,11 +3487,7 @@ void PrepareVersionStringStuff()
 void *utyGrowthHeapAlloc(sdword size)
 {
     dbgAssertOrIgnore(size > 0);
-#ifdef _WIN32
-    return((void *)VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE));
-#else
-    return mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
+    return malloc(size);
 }
 
 /*-----------------------------------------------------------------------------
@@ -3503,18 +3499,7 @@ void *utyGrowthHeapAlloc(sdword size)
 ----------------------------------------------------------------------------*/
 void utyGrowthHeapFree(void *heap)
 {
-#ifdef _WIN32
-    BOOL result;
-    result = VirtualFree(heap, 0, MEM_RELEASE);
-    dbgAssertOrIgnore(result);
-#elif _MACOSX
-    //not sure if this is an equivalent statement, but it fixes a crash on exit
     free(heap);
-#else
-    int result;
-    result = munmap(heap, 0);
-    dbgAssertOrIgnore(result != -1);
-#endif
 }
 
 char *utyMissingCDMessages[] =
@@ -3783,34 +3768,10 @@ char* utyGameSystemsPreInit(void)
     //start up the memory manager
     if (MemoryHeapSize == MEM_HeapSizeDefault)
     {                                                       //if the user has not specified a heap size
-        sdword newSize = 0;
-#ifdef _WIN32
-        MEMORYSTATUS memStat;
-        GlobalMemoryStatus(&memStat);
-        newSize = (sdword)((real32)memStat.dwTotalPhys * MEM_HeapDefaultScalar);
-#elif defined(_MACOSX)
-        int phys_pages = 32768;
-        int page_size = getpagesize();
-        newSize = (sdword)((real32)phys_pages * (real32)page_size
-            * MEM_HeapDefaultScalar);
-#else
-        long phys_pages = sysconf(_SC_PHYS_PAGES);
-        long page_size = sysconf (_SC_PAGE_SIZE);
-        newSize = (sdword)((real32)phys_pages * (real32)page_size
-            * MEM_HeapDefaultScalar);
-#endif
-        if (newSize > MEM_HeapSizeDefault)
-        {
-            MemoryHeapSize = min(newSize, MEM_HeapDefaultMax);
-        }
+        MemoryHeapSize = MEM_HeapDefaultMax;
     }
     
-#ifdef _WIN32
-    utyMemoryHeap = (void *)VirtualAlloc(NULL, MemoryHeapSize + sizeof(memcookie) * 4, MEM_COMMIT, PAGE_READWRITE);
-#else
-    utyMemoryHeap = mmap(0, MemoryHeapSize + sizeof(memcookie) * 4,
-        PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
+    utyMemoryHeap = malloc( MemoryHeapSize + sizeof(memcookie) * 4 );
 
     if (utyMemoryHeap == NULL)
     {
@@ -4275,12 +4236,7 @@ char* utyGameSystemsPreShutdown(void)
     }
     if (utyTest(SSA_MemoryHeap))
     {
-#ifdef _WIN32
-        bool result = VirtualFree(utyMemoryHeap, 0, MEM_RELEASE);
-        dbgAssertOrIgnore(result);
-#else
-        dbgAssertAlwaysDo(munmap(utyMemoryHeap, 0) != -1);
-#endif
+        free(utyMemoryHeap);
         utyClear(SSA_MemoryHeap);
     }
 
@@ -4622,18 +4578,7 @@ char *utyGameSystemsShutdown(void)
     }
     if (utyTest(SSA_MemoryHeap))
     {
-#ifdef _WIN32
-        bool result;
-        result = VirtualFree(utyMemoryHeap, 0, MEM_RELEASE);
-        dbgAssertOrIgnore(result);
-#elif _MACOSX
-        //not sure if this is an equivalent statement, but it fixes a crash on exit
         free(utyMemoryHeap);
-#else
-        int result;
-        result = munmap(utyMemoryHeap, 0);
-        dbgAssertOrIgnore(result != -1);
-#endif
         utyClear(SSA_MemoryHeap);
     }
 
