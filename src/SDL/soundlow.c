@@ -18,12 +18,7 @@
 
 #define SOUNDFXDIR "SoundFX/"
 #define EQ_STEP			0.1
-
-#ifdef _WIN32
-#define SDL_BUFFERSIZE  4*FQ_SIZE
-#else
 #define SDL_BUFFERSIZE  FQ_SIZE
-#endif
 
 typedef struct
 {
