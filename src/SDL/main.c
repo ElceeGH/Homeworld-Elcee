@@ -69,29 +69,19 @@
 
 extern udword gDevcaps, gDevcaps2;
 
-bool mainSafeGL = FALSE;
-
-udword* devTable = NULL;
+udword* devTable       = NULL;
 sdword  devTableLength = 0;
 
 static bool mainActuallyQuit = TRUE;
-
-bool selectedRES = FALSE;
-bool selectedDEVICE = FALSE;
-bool selectedGL = FALSE;
-
-sdword mainReinitRenderer = 0;
 static bool reinitInProgress = FALSE;
 
-bool bMustFree = TRUE;
-
-bool mainPlayAVIs;
-
-bool windowNeedsDeleting = FALSE;
-
-bool mainNoPerspective = FALSE;
-
-bool systemActive = FALSE;              //active flag for the program
+bool   selectedRES    = FALSE;
+bool   selectedDEVICE = FALSE;
+bool   selectedGL     = FALSE;
+sdword mainReinitRenderer = 0;
+bool   bMustFree           = TRUE;
+bool   windowNeedsDeleting = FALSE;
+bool   systemActive        = FALSE; //active flag for the program
 
 #ifndef _MACOSX
 static char windowTitle[] = "Homeworld";//name of window
@@ -101,11 +91,11 @@ static char windowTitle[] = "Homeworld";//name of window
 char ersWindowInit[] = "Error creating window";
 
 //screen width, height
-int MAIN_WindowWidth = 640;
+int MAIN_WindowWidth  = 640;
 int MAIN_WindowHeight = 480;
-int MAIN_WindowDepth = 16;
+int MAIN_WindowDepth  = 16;
 
-sdword mainWidthAdd = 0;
+sdword mainWidthAdd  = 0;
 sdword mainHeightAdd = 0;
 
 int mainWindowWidth;
@@ -113,7 +103,7 @@ int mainWindowHeight;
 int mainWindowDepth;
 #ifdef _WIN32
 void *ghMainWindow = NULL;
-void *ghInstance = NULL;
+void *ghInstance   = NULL;
 #endif
 
 extern bool CompareBigfiles;
@@ -121,6 +111,9 @@ extern bool IgnoreBigfiles;
 extern bool LogFileLoads;
 
 //command-line switches and parameters
+bool mainSafeGL         = FALSE;
+bool mainNoPerspective  = FALSE;
+bool mainPlayAVIs       = TRUE;
 bool mainNoDrawPixels = FALSE;
 bool mainOutputCRC = FALSE;
 bool mainNoPalettes = TRUE;
@@ -1256,7 +1249,7 @@ bool mainStartupParticularRGL(char* device, char* data)
 
     mainRescaleMainWindow();
 
-    renderData.width = MAIN_WindowWidth;
+    renderData.width  = MAIN_WindowWidth;
     renderData.height = MAIN_WindowHeight;
 #ifdef _WIN32
     renderData.hWnd = ghMainWindow;
