@@ -32,17 +32,7 @@
     #include <limits.h>
 #endif
 
-/*-----------------------------------------------------------------------------
-    Warning turn ons:
------------------------------------------------------------------------------*/
-#ifdef _MSC_VER
-#pragma warning( 2 : 4013)  //function undefined
-#pragma warning( 2 : 4035)  //no return value
-#pragma warning( 2 : 4101)  //unreferenced local variable
-#pragma warning( 2 : 4245)  //signed/unsigned mismatch
-#pragma warning( 2 : 4505)  //spots unused local functions
-#pragma warning( 2 : 4706)  //spots '=' instead of '==' in conditional statements
-#endif
+
 
 /*-------------------------------------------------------------------------
    Declare basic integer data types
