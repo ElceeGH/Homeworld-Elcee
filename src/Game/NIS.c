@@ -4998,7 +4998,7 @@ void nisTextCardListDraw(void)
             if (card->NIS->timeElapsed >= card->creationTime + card->duration - card->fadeOut)
             {                                               //if it in the fading part
                 fadeValue = (card->NIS->timeElapsed - (card->creationTime + card->duration - card->fadeOut)) / card->fadeOut;
-                fadeValue = max(0.0, 1.0f - fadeValue);
+                fadeValue = max(0.0f, 1.0f - fadeValue);
                 multiplier = (udword)(fadeValue * 256.0f);
                 c = colRGB(colRed(c) * multiplier / 256, colGreen(c) * multiplier / 256, colBlue(c) * multiplier / 256);
 //                dbgMessagef("<0x%2x>", multiplier);

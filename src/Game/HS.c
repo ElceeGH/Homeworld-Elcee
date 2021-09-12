@@ -363,7 +363,7 @@ void hsContinue(Ship* ship, bool displayEffect)
 
         vecToRotate.x = 0.0f;
         vecToRotate.y = 0.0f;
-        vecToRotate.z = -equation[2] * equation[3];
+        vecToRotate.z = (real32) (-equation[2] * equation[3]);
         
         {
             vecToRotate.z *= ship->magnitudeSquared;

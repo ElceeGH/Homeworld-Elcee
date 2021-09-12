@@ -648,8 +648,8 @@ unsigned char hrBilinear(ColorQuad *pQuad, double X, double Y)
     float Top, Bot, Final;
     long FinalLong;
 
-    Top = (float)pQuad->v[0][0] + ((float)pQuad->v[1][0] - (float)pQuad->v[0][0]) * X;
-    Bot = (float)pQuad->v[0][1] + ((float)pQuad->v[1][1] - (float)pQuad->v[0][1]) * X;
+    Top = (float)pQuad->v[0][0] + ((float)pQuad->v[1][0] - (float)pQuad->v[0][0]) * (float) X;
+    Bot = (float)pQuad->v[0][1] + ((float)pQuad->v[1][1] - (float)pQuad->v[0][1]) * (float) X;
 
     Final = (Top + (Bot - Top) * Y) + 0.5f;
 

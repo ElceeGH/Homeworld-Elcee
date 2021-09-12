@@ -451,7 +451,7 @@ void scriptSetBarsToDo(char *directory,char *field,void *dataToFillIn)
 void scriptSetBlobPropertyOverlap(char *directory,char *field,void *dataToFillIn)
 {
     sscanf(field,"%f",&((BlobProperties *)dataToFillIn)->bobOverlapFactor);
-    ((BlobProperties *)dataToFillIn)->bobSqrtOverlapFactor = sqrt(((BlobProperties *)dataToFillIn)->bobOverlapFactor);
+    ((BlobProperties *)dataToFillIn)->bobSqrtOverlapFactor = sqrtf(((BlobProperties *)dataToFillIn)->bobOverlapFactor);
 }
 
 void scriptSetBlobBiggestRadius(char *directory,char *field,void *dataToFillIn)

@@ -5030,8 +5030,8 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
 
                 if (ship->command)
                 {
-                    bns.shiporder = ship->command->ordertype.order;
-                    bns.shipattributes = ship->command->ordertype.attributes;
+                    bns.shiporder      = (sbyte) ship->command->ordertype.order;
+                    bns.shipattributes = (sbyte) ship->command->ordertype.attributes;
                 }
                 else
                 {
@@ -5040,13 +5040,13 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
                 }
 
                 bns.tacticstype = ship->tacticstype;
-                bns.isDodging = ship->isDodging;
-                bns.DodgeDir = ship->DodgeDir;
+                bns.isDodging   = ship->isDodging;
+                bns.DodgeDir    = ship->DodgeDir;
 
                 bns.health = ship->health;
-                bns.x = ship->posinfo.position.x;    bns.y = ship->posinfo.position.y;    bns.z = ship->posinfo.position.z;
-                bns.vx = ship->posinfo.velocity.x;  bns.vy = ship->posinfo.velocity.y;    bns.vz = ship->posinfo.velocity.z;
-                bns.fuel = ship->fuel;
+                bns.x      = ship->posinfo.position.x;  bns.y  = ship->posinfo.position.y;    bns.z  = ship->posinfo.position.z;
+                bns.vx     = ship->posinfo.velocity.x;  bns.vy = ship->posinfo.velocity.y;    bns.vz = ship->posinfo.velocity.z;
+                bns.fuel   = ship->fuel;
 
                 fwrite(&bns, sizeof(bns), 1 ,netlogfile);
 #else

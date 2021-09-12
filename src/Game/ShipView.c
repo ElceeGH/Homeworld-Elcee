@@ -287,7 +287,7 @@ sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword dat
 }
 
 
-#define SPIN_FEEDBACK 0.5
+#define SPIN_FEEDBACK 0.5f
 /*-----------------------------------------------------------------------------
     Name        : svShipViewRender
     Description : Callback which draws the main ship view.
@@ -410,7 +410,7 @@ void svShipViewRender(featom* atom, regionhandle region)
         else // auto rotate ship model
         {
             // continual 360 degree yaw rotation
-            real_time_angle = DEG_TO_RAD(remainder(universe.totaltimeelapsed, SV_360_ROTATION_SECS) / SV_360_ROTATION_SECS * 360);
+            real_time_angle = DEG_TO_RAD(remainderf(universe.totaltimeelapsed, SV_360_ROTATION_SECS) / SV_360_ROTATION_SECS * 360.0f);
 
             if (angle_user_rotated_to >= 0.0) {
                 user_real_angle_offset = angle_user_rotated_to - real_time_angle;
@@ -1037,13 +1037,13 @@ uword svShipCoverage(ShipStaticInfo *statinfo)
             coverage+=0.1f;
             break;
         case GUN_Gimble:
-            gunvalue = (acos(gun->cosmaxAngleFromNorm))*2.0f;
+            gunvalue = (acosf(gun->cosmaxAngleFromNorm))*2.0f;
                         for(j=i+1;j<numGuns;j++)
                         {
                                 gun2 = &guninfo->gunstatics[i];
                                 //angle difference between normals of two guns.
-                                gunangledif = acos(vecDotProduct(gun->gunnormal,gun2->gunnormal));
-                                gunangledif = gunangledif - acos(gun->cosmaxAngleFromNorm) - acos(gun2->cosmaxAngleFromNorm);
+                                gunangledif = acosf(vecDotProduct(gun->gunnormal,gun2->gunnormal));
+                                gunangledif = gunangledif - acosf(gun->cosmaxAngleFromNorm) - acosf(gun2->cosmaxAngleFromNorm);
                                 if(gunangledif < 0.0f)
                                         gunvalue+=gunangledif;
                                 if(gunvalue <= 0.0f)
@@ -1064,7 +1064,7 @@ uword svShipCoverage(ShipStaticInfo *statinfo)
     }
 
 donecoveragecalc:
-    coverage = 100.0*coverage/(2*PI);
+    coverage = 100.0f*coverage/(2.0f*PI);
     return(min(((uword) coverage),100));
 }
 
