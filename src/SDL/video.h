@@ -5,9 +5,11 @@
 #include "Types.h"
 
 
+/// Video callback parameters.
 typedef struct VideoStatus {
-    sdword frameIndex; ///< Current frame, starts from 1.
-    real32 frameRate;  ///< Framerate in Hertz
+    sdword frameIndex;  ///< Current frame, starts from 1.
+    real32 frameRate;   ///< Framerate in Hertz
+    bool   isLastFrame; ///< Whether this is the last frame.
 } VideoStatus;
 
 /// Type of callback the video system uses.

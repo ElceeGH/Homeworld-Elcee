@@ -298,8 +298,9 @@ static void videoUpdateStatus( Video* vid ) {
     const real64 frameD = vid->lav.stream->time_base.den;
 
     vid->status = (VideoStatus) {
-        .frameRate  = (real32) (frameD / frameN),
-        .frameIndex = vid->lav.cctx->frame_number,
+        .frameRate   = (real32) (frameD / frameN),
+        .frameIndex  = vid->lav.cctx->frame_number,
+        .isLastFrame = vid->finished,
     };
 }
 
@@ -362,13 +363,33 @@ static void videoRender( const Video* vid ) {
 
 
 
+/// Handle events during video playback.
+/// It only allows skipping the video using ESC or SPACE.
+/// Note: Allowing any key to skip isn't a good idea. Don't skip a video just because I adjust the volume.
+static void videoHandleEvents( bool* more ) {
+    SDL_Event ev;
+    while (SDL_PollEvent( &ev )) {
+        if (ev.type != SDL_KEYDOWN)
+            continue;
+
+        switch (ev.key.keysym.sym) {
+            case SDLK_ESCAPE:
+            case SDLK_RETURN:
+            case SDLK_SPACE:
+                *more = FALSE;
+        }
+    }
+}
+
+
+
 /// Play a video. Blocks until complete/skipped.
 /// The video can be skipped by pressing any key.
 /// Callbacks allow external code to take action after each update and render.
 void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, bool isAnimatic ) {
     // Create the full file path
     char path[ MAX_PATH ];
-    strcpy( path, filePathPrepend(filename, FF_HomeworldDataPath) );
+    snprintf( path, sizeof(path), "%s%s", fileHomeworldDataPath, filename );
 
     // Video param struct
     VideoParams params = { 0 };
@@ -394,10 +415,7 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
         videoRender( &video );
         rndFlush();
 
-        SDL_Event ev;
-        while (SDL_PollEvent( &ev ))
-            if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE)
-                more = FALSE;
+        videoHandleEvents( &more );
     }
 
     // Clean up.
