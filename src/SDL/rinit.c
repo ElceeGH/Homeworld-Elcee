@@ -63,12 +63,9 @@ extern unsigned int glCapNT(void);
 
 static void* rinMemAlloc(int size)
 {
-    unsigned char* block;
-
-    block = (unsigned char*)malloc(size);
+    void* block = malloc(size);
     memset(block, 0, size);
-
-    return (void*)block;
+    return block;
 }
 
 static void rinMemFree(void* memblock)
