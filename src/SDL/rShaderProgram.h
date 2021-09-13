@@ -21,3 +21,4 @@ extern PFNGLUNIFORMMATRIX4FVPROC   glUniformMatrix4fv;
 void    loadShaderFunctions( void );
 GLuint* loadShaderProgram( const char* name );
 void    unloadShaderProgram( GLuint* program );
+void    reloadAllShaderPrograms( void );
