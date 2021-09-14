@@ -22,6 +22,8 @@ uniform vec4      uClipPlane; // Clip plane equation params
 uniform float     uGlowDist;  // Radius of hyperspace glow
 uniform vec4      uGlowCol;   // Colour of hyperspace glow
 uniform vec4      uCrossCol;  // Colour of hyperspace intersect
+uniform bool      uTexMode;   // 0=replace, 1=modulate
+uniform bool      uTexEnable; // Whether to use the texure, or just a flat colour.
 
 
 
@@ -63,6 +65,21 @@ float nearPlaneGlow( float dist ) {
 
 
 
+vec4 fixedFunctionColour() {
+    vec4 col = gl_Color;
+    
+    if (uTexEnable) {
+        vec4 tex = texture2D( uTex, gl_TexCoord[0].xy );
+        if (uTexMode)
+             col *= tex; // Modulate
+        else col  = tex; // Replace
+    }
+    
+    return col;
+}
+
+
+
 void main() {
     // Get the distance to the clip plane.
     vec4  pos  = eyeSpacePosition();
@@ -73,9 +90,12 @@ void main() {
         discard;
     
     // Basic colour
+    vec4 col = fixedFunctionColour();
+    
+    // Add glow near the plane.
+    // The glow is modulated with the texture so it doesn't appear too flat.
     float glow = nearPlaneGlow( dist );
-    vec4  tex  = texture2D( uTex, gl_TexCoord[0].xy );
-    vec4  col  = tex * gl_Color + glow * uGlowCol;
+    col += (col*glow*0.5*uGlowCol) + (glow*glow*uGlowCol);
     
     // Back faces become the cross section colour.
     if ( ! gl_FrontFacing)
