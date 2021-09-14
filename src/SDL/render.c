@@ -2269,6 +2269,93 @@ void rndMainViewAllButRenderFunction(Camera *camera)
     ;
 }
 
+
+
+
+static GLuint* hsProgram       = NULL;
+static bool    hsProgramActive = FALSE;
+
+
+
+void hsProgramMeshCallback( void ) {
+    const GLint locTexMode   = glGetUniformLocation( *hsProgram, "uTexMode"   );
+    const GLint locTexEnable = glGetUniformLocation( *hsProgram, "uTexEnable" );
+    glUniform1i( locTexMode,   rndTextureEnviron == RTE_Modulate );
+    glUniform1i( locTexEnable, rndTextureEnabled );
+
+    // Override backface culling. Must be off for hyperspace shader.
+    rndBackFaceCullEnable( FALSE );
+}
+
+
+
+void hsProgramUpdate( void ) {
+    // Initialise
+    if ( ! hsProgram)
+        hsProgram = loadShaderProgram( "hyperspace.frag" );
+
+    // Only use the shader when the clipping plane is active.
+    if ( ! glIsEnabled(GL_CLIP_PLANE0))
+        return;
+
+    // Add callback to update the shader texture environment and such.
+    meshAddMatCallback( hsProgramMeshCallback );
+
+    // Remember to clean up after.
+    hsProgramActive = TRUE;
+    
+    // Get the clipping plane.
+    GLdouble planed[4];
+    glGetClipPlane( GL_CLIP_PLANE0, planed );
+    const hvector plane = { (real32) planed[0], (real32) planed[1], (real32) planed[2],(real32) planed[3] };
+
+    // Make viewport vector
+    const hvector viewport = { 0.0f, 0.0f, (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight };
+
+    // Hyperspace colours. (TODO: use the actual colour, it's cooler.)
+    const hvector glowCol  = { 1.0f, 1.0f, 1.0f, 1.0f };
+    const hvector crossCol = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    // Create the inverse of the projection matrix.
+    hmatrix per,inv;
+    glGetFloatv( GL_PROJECTION_MATRIX, &per.m11 );
+    shInvertMatrix( &inv.m11, &per.m11 );
+
+    // Update uniforms
+    const GLint locTex       = glGetUniformLocation( *hsProgram, "uTex"       );
+    const GLint locClipPlane = glGetUniformLocation( *hsProgram, "uClipPlane" );
+    const GLint locProjInv   = glGetUniformLocation( *hsProgram, "uProjInv"   );
+    const GLint locViewport  = glGetUniformLocation( *hsProgram, "uViewport"  );
+    const GLint locGlowDist  = glGetUniformLocation( *hsProgram, "uGlowDist"  );
+    const GLint locGlowCol   = glGetUniformLocation( *hsProgram, "uGlowCol"   );
+    const GLint locCrossCol  = glGetUniformLocation( *hsProgram, "uCrossCol"  );
+
+    glUseProgram( *hsProgram );
+    glUniform1i       ( locTex,          0                  );
+    glUniform4fv      ( locClipPlane, 1, &plane.x           );
+    glUniform4fv      ( locViewport,  1, &viewport.x        );
+    glUniformMatrix4fv( locProjInv,   1, GL_FALSE, &inv.m11 );
+    glUniform1f       ( locGlowDist,     160.0f             ); // (TODO: scale with the ship. or maybe not, looks pretty good as-is...)
+    glUniform4fv      ( locGlowCol,   1, &glowCol.x         );
+    glUniform4fv      ( locCrossCol,  1, &crossCol.x        );
+}
+
+
+
+void hsProgramCleanup() {
+    if (hsProgramActive) {
+        hsProgramActive = FALSE;
+        glUseProgram( 0 );
+        meshRemoveMatCallback( hsProgramMeshCallback );
+    }
+}
+
+
+
+
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : rndMainViewRenderFunction
     Description : Render a mission sphere as referenced by a specific camera.
@@ -2710,10 +2797,13 @@ dontdraw2:;
                                                 hsNoGate(TRUE);
                                             }
                                             hsContinue((Ship*)spaceobj, displayEffect);
+
                                             if (ssinfo->staticHyperspaceGate)
                                             {
                                                 hsNoGate(FALSE);
                                             }
+
+                                            hsProgramUpdate();
                                         }
 
                                         //
@@ -2797,11 +2887,12 @@ dontdraw2:;
                                             {
                                                 RenderNAVLights((Ship*)spaceobj);
                                             }
+
+                                            hsProgramCleanup();
                                         }
 
                                         g_WireframeHack = FALSE;
                                         g_HiddenRemoval = TRUE;
-
                                         shDockLight(0.0f);
 
 #if DEBUG_VERBOSE_SHIP_STATS

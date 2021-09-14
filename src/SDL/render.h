@@ -64,8 +64,6 @@
 
 #define RTE_Modulate        GL_MODULATE
 #define RTE_Replace         GL_REPLACE
-#define RTE_Decal           GL_DECAL
-#define RTE_Blend           GL_BLEND
 
 //scale cap debug stuff
 #define RND_CapScaleCapKey          NUMPAD4
