@@ -254,6 +254,9 @@ shipbindings;
 //mesh hierarchy walking callback
 typedef bool (*meshcallback)(meshdata *mesh, polygonobject *object, sdword iObject);
 
+typedef void MeshMaterialCallback( void );
+
+
 /*=============================================================================
     Data:
 =============================================================================*/
@@ -276,6 +279,9 @@ extern bool meshMorphDebug;
 /*=============================================================================
     Functions:
 =============================================================================*/
+void meshAddMatCallback   ( MeshMaterialCallback* callback );
+void meshRemoveMatCallback( MeshMaterialCallback* callback );
+
 //startup the mesh module
 void meshStartup(void);
 //shutdown the mesh module

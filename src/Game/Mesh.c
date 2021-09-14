@@ -132,6 +132,8 @@ meshMorphLineColors[] =
     Functions:
 =============================================================================*/
 
+static void meshRunMatCallbacks( void );
+
 /*-----------------------------------------------------------------------------
     Name        : meshStartup
     Description : startup the mesh module
@@ -1331,6 +1333,8 @@ void meshCurrentMaterialDefault(materialentry *material, sdword iColorScheme)
             glShadeModel(GL_FLAT);
         }
     }
+
+    meshRunMatCallbacks();
 }
 
 /*-----------------------------------------------------------------------------
@@ -1371,6 +1375,8 @@ void meshCurrentMaterialTex(materialentry *material, sdword iColorScheme)
         meshPolyMode = MPM_Texture;
         glShadeModel(GL_FLAT);
     }
+
+    meshRunMatCallbacks();
 }
 
 /*-----------------------------------------------------------------------------
@@ -1407,6 +1413,8 @@ void meshAlmostCurrentMaterial(materialentry* material, sdword iColorScheme)
             meshPolyMode = MPM_Flat;
         }
     }
+
+    meshRunMatCallbacks();
 }
 
 /*-----------------------------------------------------------------------------
@@ -2678,4 +2686,48 @@ void meshHierarchyWalk(meshdata *mesh, meshcallback preCallback, meshcallback po
             break;
         }
     }
+}
+
+
+
+
+
+#define MAX_MATERIAL_CALLBACKS 8
+static MeshMaterialCallback* meshMatCallbacks[MAX_MATERIAL_CALLBACKS] = { NULL };
+
+
+
+/// Add a callback which is invoked every time the mesh material changes.
+/// This is to allow shaders to hook the change in material and update their uniforms.
+void meshAddMatCallback( MeshMaterialCallback* callback ) {
+     for (sdword i=0; i<MAX_MATERIAL_CALLBACKS; i++) {
+        if (meshMatCallbacks[i] == NULL) {
+            meshMatCallbacks[i] = callback;
+            return;
+        }
+    }
+
+    dbgFatalf( DBG_Loc, "Couldn't add mesh material callback: callback array is full." );
+}
+
+
+
+/// Remove a callback added before.
+void meshRemoveMatCallback( MeshMaterialCallback* callback ) {
+    for (sdword i=0; i<MAX_MATERIAL_CALLBACKS; i++) {
+        if (meshMatCallbacks[i] == callback) {
+            meshMatCallbacks[i] = NULL;
+            return;
+        }
+    }
+
+    dbgMessagef( "Couldn't remove mesh material callback, not in array." );
+}
+
+
+
+static void meshRunMatCallbacks( void ) {
+    for (sdword i=0; i<MAX_MATERIAL_CALLBACKS; i++)
+        if (meshMatCallbacks[i])
+            meshMatCallbacks[i]();
 }
