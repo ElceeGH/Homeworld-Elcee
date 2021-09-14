@@ -48,11 +48,6 @@
     Definitions:
 =============================================================================*/
 
-extern udword gDevcaps;
-extern udword gDevcaps2;
-static udword opDevcaps;
-static udword opDevcaps2;
-
 bool   opTimerActive = FALSE;
 real32 opTimerStart;
 real32 opTimerLength = 22.0f;
@@ -380,8 +375,6 @@ sdword opNoPalMB = 64;
 
 static regionhandle opNoPalDrawRegion = NULL;
 
-static udword opOldDevcaps;
-static udword opOldDevcaps2;
 static sdword opOldDeviceIndex;
 
 udword opDeviceCRC = 0;
@@ -1147,8 +1140,6 @@ void opCountdownNo(char* name, featom* atom)
     soundEventShutdown();
     opGLCStop();
     mainShutdownRenderer();
-    gDevcaps  = opOldDevcaps;
-    gDevcaps2 = opOldDevcaps2;
     mainRestoreRender();
     opGLCStart();
     soundEventRestart();
@@ -1276,8 +1267,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
 
     opReloading = TRUE;
     opOldDeviceIndex = opDeviceIndex;
-    opOldDevcaps  = gDevcaps;
-    opOldDevcaps2 = gDevcaps2;
 
     if (opResChanged() || opDeviceIndex != opRenderCurrentSelected)
     {
@@ -1291,10 +1280,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
             MAIN_WindowHeight = opSaveMAIN_WindowHeight;
             MAIN_WindowDepth  = opSaveMAIN_WindowDepth;
 
-            opDevcaps  = gDevcaps;
-            opDevcaps2 = gDevcaps2;
-            gDevcaps  = rnd->dev->devcaps;
-            gDevcaps2 = rnd->dev->devcaps2;
             if (mainLoadGL(rnd->data))
             {
                 opDeviceIndex = opRenderCurrentSelected;
@@ -1302,8 +1287,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
             }
             else
             {
-                gDevcaps  = opDevcaps;
-                gDevcaps2 = opDevcaps2;
                 mainRestoreRender();
                 opModeswitchFailed();
             }

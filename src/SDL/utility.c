@@ -138,12 +138,6 @@
 extern SDL_Window *sdlwindow;
 extern int MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth;
 
-extern udword gDevcaps, gDevcaps2;
-
-udword playIntros;
-udword loadedDevcaps  = 0xFFFFFFFF;
-udword loadedDevcaps2 = 0xFFFFFFFF;
-
 /*-----------------------------------------------------------------------------
     Name        : utyBrowserExec
     Description : Spawns the default web browser with the specified URL
@@ -650,11 +644,7 @@ scriptEntry utyOptionsList[] =
 
 
     {"deviceCRC",       scriptSetUdwordCB, &opDeviceCRC},
-    {"deviceCaps",      scriptSetUdwordCB, &loadedDevcaps},
-    {"deviceCaps2",     scriptSetUdwordCB, &loadedDevcaps2},
     {"deviceIndex",     scriptSetUdwordCB, &opDeviceIndex},
-//    {"deviceToSelect",  scriptSetStringCB, &mainDeviceToSelect},
-//    {"glToSelect",      scriptSetStringCB, &mainGLToSelect},
 
 
   {"\n[graphics options]\n", scriptSetStringCB, &filecfgblankspace},
@@ -782,7 +772,6 @@ scriptEntry utyOptionsList[] =
 
     {"CollectResourcesAtEndOfMission", scriptSetBool,     &spCollectResourcesAtEndOfMission},
     {"PauseOrders",                    scriptSetUdwordCB, &opPauseOrders},
-    {"PlayIntros",                     scriptSetUdwordCB, &playIntros},
     {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
     {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
@@ -1804,7 +1793,7 @@ void gameStart(char *loadfilename)
     #else //MAIN_SENSOR_LEVEL
             player->sensorLevel = 0;
     #endif //MAIN_SENSOR_LEVEL
-            player->playerIndex = (uword)i;
+            player->playerIndex = (ubyte) i;
             player->aiPlayer = NULL;
             if (ComputerPlayerEnabled[i])
             {

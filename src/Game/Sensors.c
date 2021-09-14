@@ -95,10 +95,7 @@ bool smFocusOnMothershipOnClose = FALSE;
 
 //arrays of stars for quick star rendering
 extern ubyte* stararray;
-
 extern color HorseRaceDropoutColor;
-
-extern udword gDevcaps2;
 
 //region handle for the sensors manager viewport
 regionhandle smViewportRegion;
@@ -1879,10 +1876,10 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
                 nSegments = min(nSegments, SEL_SegmentsMax);
                 */
                 nSegments = pieCircleSegmentsCompute(thisBlob->screenRadius * smCircleBorder);
-                if (smFuzzyBlobs && !bitTest(gDevcaps2, DEVSTAT2_NO_IALPHA))
+                if (smFuzzyBlobs)
                 {
                     primCircleBorder(o.centreX, o.centreY, o.radiusX, radius, nSegments, c);
-                }
+                } 
                 else
                 {
                     primCircleSolid2(o.centreX, o.centreY, radius, nSegments, c);
@@ -2584,8 +2581,7 @@ void smPlayerNamesDraw(rectangle *viewportRect)
                 if ((allianceArePlayersAllied(&universe.players[sigsPlayerIndex],&universe.players[index])) ||
                     ((universe.players[sigsPlayerIndex].Allies!=0)&&(index == sigsPlayerIndex)))
                 {
-                    fontPrint(x,
-                              playerColorRect.y0, playerhasdroppedOutOrQuit ? HorseRaceDropoutColor : alliescolor, strGetString(strPlayersAllied));
+                    fontPrint(x, playerColorRect.y0, playerhasdroppedOutOrQuit ? HorseRaceDropoutColor : alliescolor, strGetString(strPlayersAllied));
                 }
             }
 

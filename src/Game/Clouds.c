@@ -27,8 +27,6 @@
 
 #define TEST_LIGHTNING 0
 
-extern udword gDevcaps2;
-
 static real32 fogColor[4];
 
 static GLuint _counter = 0;

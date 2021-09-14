@@ -60,7 +60,6 @@
 #define ShouldHaveMousePtr (FALSE)
 
 extern Uint32 utyTimerLast;
-extern udword gDevcaps2;
 
 /*=============================================================================
     defines:

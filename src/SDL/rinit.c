@@ -32,8 +32,6 @@ extern int devTableLength;
 static rdevice* rDeviceList;
 static int nDevices;
 
-unsigned int gDevcaps  = 0xFFFFFFFF;
-unsigned int gDevcaps2 = 0x00000000;
 
 
 static void* rinMemAlloc(int size)

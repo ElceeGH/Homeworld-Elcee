@@ -90,9 +90,6 @@ typedef struct
 //so we need to include singlePlayerGameInfo
 extern SinglePlayerGameInfo singlePlayerGameInfo;
 
-extern udword gDevcaps2;
-
-
 sdword mouseCursorXPosition, mouseCursorYPosition;
 uword mouseButtons;
 udword mouseModuleInit;

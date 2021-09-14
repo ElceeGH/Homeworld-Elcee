@@ -4280,23 +4280,14 @@ void rndHintInc()
 ----------------------------------------------------------------------------*/
 sdword rndAdditiveBlends(sdword bAdditive)
 {
-    sdword oldStatus;
-    extern udword gDevcaps2;
+    sdword oldStatus = rndAdditiveBlending;
 
-    oldStatus = rndAdditiveBlending;
     if (bAdditive != rndAdditiveBlending)
     {
         rndAdditiveBlending = bAdditive;
-        if (bAdditive)
+        if (bAdditive) 
         {
-            if (bitTest(gDevcaps2, DEVSTAT2_NO_ADDITIVE))
-            {
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
-            else
-            {
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            }
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         }
         else
         {
@@ -4304,7 +4295,7 @@ sdword rndAdditiveBlends(sdword bAdditive)
         }
     }
 
-    return(oldStatus);
+    return oldStatus;
 }
 
 #define vcSub(a,b,c) \
