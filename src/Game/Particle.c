@@ -456,7 +456,8 @@ void partBillboardDisable()
 ----------------------------------------------------------------------------*/
 void storeIllum()
 {
-    glGetFloatv(GL_LIGHT_MODEL_AMBIENT, illumSave);
+    shGetGlobalAmbient( illumSave );
+    //glGetFloatv(GL_LIGHT_MODEL_AMBIENT, illumSave);
 }
 
 /*-----------------------------------------------------------------------------

@@ -43,6 +43,7 @@ void shInvertMatrix(real32* out, real32 const* m);
 void shSetExponent(sdword index, real32 exponent);
 void shSetLightPosition(sdword index, real32* position, real32* m);
 void shSetGlobalAmbient(real32* ambient);
+void shGetGlobalAmbient(real32* ambient);
 void shSetMaterial(real32* ambient, real32* diffuse);
 void shSetLighting(sdword index, real32* diffuse, real32* ambient);
 void shUpdateLighting(void);

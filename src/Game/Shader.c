@@ -208,6 +208,21 @@ void shSetGlobalAmbient(real32* ambient)
 }
 
 /*-----------------------------------------------------------------------------
+    Name        : shGetGlobalAmbient
+    Description : Write lst saved global ambient light values to the target array
+    Inputs      : ambient - where to write 4 floats
+    Outputs     : ambient - amount of global ambient light (4-element array)
+    Return      :
+----------------------------------------------------------------------------*/
+void shGetGlobalAmbient(real32* ambient)
+{
+    ambient[0] = shGlobalAmbient[0];
+    ambient[1] = shGlobalAmbient[1];
+    ambient[2] = shGlobalAmbient[2];
+    ambient[3] = shGlobalAmbient[3];
+}
+
+/*-----------------------------------------------------------------------------
     Name        : shSetMaterial
     Description : interface to set shMaterial
     Inputs      : ambient - ambient components
