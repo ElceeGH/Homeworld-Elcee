@@ -2271,13 +2271,12 @@ void rndMainViewAllButRenderFunction(Camera *camera)
 
 
 
-
 static GLuint* hsProgram       = NULL;
 static bool    hsProgramActive = FALSE;
 
 
 
-void hsProgramMeshCallback( void ) {
+void hsProgramMeshMatCallback( void ) {
     const GLint locTexMode   = glGetUniformLocation( *hsProgram, "uTexMode"   );
     const GLint locTexEnable = glGetUniformLocation( *hsProgram, "uTexEnable" );
     glUniform1i( locTexMode,   rndTextureEnviron == RTE_Modulate );
@@ -2295,11 +2294,11 @@ void hsProgramUpdate( void ) {
         hsProgram = loadShaderProgram( "hyperspace.frag" );
 
     // Only use the shader when the clipping plane is active.
-    if ( ! glIsEnabled(GL_CLIP_PLANE0))
+    if ( ! glIsEnabled( GL_CLIP_PLANE0 ))
         return;
 
     // Add callback to update the shader texture environment and such.
-    meshAddMatCallback( hsProgramMeshCallback );
+    meshAddMatCallback( hsProgramMeshMatCallback );
 
     // Remember to clean up after.
     hsProgramActive = TRUE;
@@ -2307,7 +2306,7 @@ void hsProgramUpdate( void ) {
     // Get the clipping plane.
     GLdouble planed[4];
     glGetClipPlane( GL_CLIP_PLANE0, planed );
-    const hvector plane = { (real32) planed[0], (real32) planed[1], (real32) planed[2],(real32) planed[3] };
+    const hvector plane = { (real32) planed[0], (real32) planed[1], (real32) planed[2], (real32) planed[3] };
 
     // Make viewport vector
     const hvector viewport = { 0.0f, 0.0f, (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight };
@@ -2346,7 +2345,7 @@ void hsProgramCleanup() {
     if (hsProgramActive) {
         hsProgramActive = FALSE;
         glUseProgram( 0 );
-        meshRemoveMatCallback( hsProgramMeshCallback );
+        meshRemoveMatCallback( hsProgramMeshMatCallback );
     }
 }
 
