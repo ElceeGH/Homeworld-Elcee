@@ -4712,13 +4712,7 @@ void rndAllClearToBlack(void)
 ----------------------------------------------------------------------------*/
 void rndClear(void)
 {
-    sdword i;
-
-    for (i = 0; i < 3; i++)
-    {
-        glClear(GL_COLOR_BUFFER_BIT);
-        rndFlush();
-    }
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 /*-----------------------------------------------------------------------------
