@@ -4730,7 +4730,7 @@ void rndClear(void)
 ----------------------------------------------------------------------------*/
 void rndFlush(void)
 {
-    glFlush();
+    //glFlush();
     primErrorMessagePrint();
 #ifdef HW_ENABLE_GLES
     eglSwapBuffers(egl_display, egl_surface);
