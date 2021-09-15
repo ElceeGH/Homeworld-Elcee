@@ -3719,7 +3719,10 @@ udword uicTextEntryProcess(regionhandle reg, smemsize ID, udword event, udword d
                     }
                     break;
                 default:
-                    keyname = (int)(SDL_GetKeyName(SDL_GetKeyFromScancode(data))[0]);
+                    keyname = (int)SDL_GetKeyFromScancode(data);
+                    if (keyname > SDLK_z)
+                        break;
+
                     switch (strCurKeyboardLanguage)
                     {
                         case languageEnglish:
