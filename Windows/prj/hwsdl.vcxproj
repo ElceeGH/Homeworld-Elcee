@@ -54,26 +54,27 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)..\..\bin\</OutDir>
-    <IntDir>.\hwsdl_debug\</IntDir>
+    <IntDir>$(ProjectDir)temp\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir)..\..\libav\include;$(ProjectDir)..\..\SDL\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>vs_analysis.ruleset</CodeAnalysisRuleSet>
+    <TargetName>Homeworld-$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)..\..\bin\</OutDir>
-    <IntDir>.\hwsdl_releas_test\</IntDir>
+    <IntDir>$(ProjectDir)temp\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir)..\..\libav\include;$(ProjectDir)..\..\SDL\include;$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_rel</TargetName>
+    <TargetName>Homeworld-$(Configuration)</TargetName>
     <CodeAnalysisRuleSet>vs_analysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-ASAN|Win32'">
     <OutDir>$(ProjectDir)..\..\bin\</OutDir>
-    <IntDir>.\hwsdl_releas_test\</IntDir>
+    <IntDir>$(ProjectDir)temp\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)..\..\libav\include;$(ProjectDir)..\..\SDL\include;$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_rel</TargetName>
+    <TargetName>Homeworld-$(Configuration)</TargetName>
     <CodeAnalysisRuleSet>vs_analysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -95,7 +96,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <SDLCheck>false</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <ExceptionHandling>Sync</ExceptionHandling>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -105,7 +106,6 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>msvcrtd.lib;winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hwsdl.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -158,10 +158,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hwsdl_rel.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)hwsdl.pdb</ProgramDatabaseFile>
@@ -209,10 +209,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;ddraw.lib;..\..\src\obj\fqcodec.obj;..\..\src\obj\fqeffect.obj;..\..\src\obj\fquant.obj;..\..\src\obj\dct.obj;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hwsdl_rel.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)hwsdl.pdb</ProgramDatabaseFile>
