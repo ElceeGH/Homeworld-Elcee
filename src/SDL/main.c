@@ -1105,19 +1105,11 @@ void mainRescaleMainWindow(void)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-bool mainStartupGL(char* data)
+bool mainStartupGL(void)
 {
-    rndinitdata renderData;
-
     mainRescaleMainWindow();
 
-    renderData.width = MAIN_WindowWidth;
-    renderData.height = MAIN_WindowHeight;
-    renderData.hWnd = 0;
-#ifdef _WIN32
-    renderData.hWnd = ghMainWindow;
-#endif
-    if (!rndSmallInit(&renderData, TRUE))
+    if (!rndSmallInit())
     {
         return FALSE;
     }
@@ -1158,19 +1150,11 @@ void mainMemFree(void* pointer)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-bool mainStartupParticularRGL(char* device, char* data)
+bool mainStartupParticularRGL(void)
 {
-    rndinitdata renderData;
-
     mainRescaleMainWindow();
-
-    renderData.width  = MAIN_WindowWidth;
-    renderData.height = MAIN_WindowHeight;
-#ifdef _WIN32
-    renderData.hWnd = ghMainWindow;
-#endif
-    renderData.hWnd = 0;
-    if (!rndSmallInit(&renderData, FALSE))
+    
+    if (!rndSmallInit())
     {
         return FALSE;
     }
@@ -1307,36 +1291,6 @@ void mainSetupSoftware(void)
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : mainRestoreSoftware
-    Description : load 640x480@16, rGL+software rendering system
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void mainRestoreSoftware(void)
-{
-    mainSetupSoftware();
-
-    mainRescaleMainWindow();
-
-    bMustFree = FALSE;
-    if (!mainLoadParticularRGL("sw", ""))
-    {
-        SDL_Event e;
-/*
-        MessageBox(NULL,
-                   "couldn't initialize default rendering system",
-                   windowTitle, MB_APPLMODAL | MB_OK);
-*/
-        fprintf(stderr, "Fatal Error: Couldn't initialize default rendering system.\n");
-        e.user.type = SDL_USEREVENT;
-        e.user.code = CID_ExitError;
-        SDL_PushEvent(&e);
-    }
-    bMustFree = TRUE;
-}
-
-/*-----------------------------------------------------------------------------
     Name        : mainRestoreRender
     Description : restore saved rendering system (mainSaveRender())
     Inputs      :
@@ -1352,10 +1306,15 @@ void mainRestoreRender(void)
     mainRescaleMainWindow();
 
     bMustFree = FALSE;
-    if (!mainLoadGL(NULL))
+    if (!mainLoadGL())
     {
-        //couldn't restore, try basic software
-        mainRestoreSoftware();
+        //couldn't restore, die
+        fprintf(stderr, "mainRestoreRender: Fatal Error: Couldn't initialize rendering system.\n");
+        SDL_Event e = {
+            .user.type = SDL_USEREVENT,
+            .user.code = CID_ExitError
+        };
+        SDL_PushEvent(&e);
     }
     bMustFree = TRUE;
 
@@ -1382,11 +1341,11 @@ bool mainShutdownRenderer(void)
 /*-----------------------------------------------------------------------------
     Name        : mainLoadGL
     Description : close existing renderer, startup a GL
-    Inputs      : data - possible name of GL .DLL
+    Inputs      : 
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-bool mainLoadGL(char* data)
+bool mainLoadGL(void)
 {
     dbgMessage("-- load OpenGL --");
 
@@ -1396,7 +1355,7 @@ bool mainLoadGL(char* data)
         mainShutdownGL();
     }
 
-    if (!mainStartupGL(data))
+    if (!mainStartupGL())
     {
         return FALSE;
     }
@@ -1405,38 +1364,6 @@ bool mainLoadGL(char* data)
 
     lodScaleFactor = 1.0f;
     alodStartup();
-
-    return TRUE;
-}
-
-/*-----------------------------------------------------------------------------
-    Name        : mainLoadParticularRGL
-    Description : close existing render, startup rGL w/ specified device
-    Inputs      : device - device name {sw, fx}
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-bool mainLoadParticularRGL(char* device, char* data)
-{
-    dbgMessagef("-- load rGL device %s --", device);
-
-    if (bMustFree)
-    {
-        mainCloseRender();
-        mainShutdownGL();
-    }
-
-    if (!mainStartupParticularRGL(device, data))
-    {
-        return FALSE;
-    }
-
-    mainOpenRender();
-
-    lodScaleFactor = 1.0f;
-    alodStartup();
-
-    mainReinitRenderer = 2;
 
     return TRUE;
 }
@@ -1517,7 +1444,7 @@ sdword HandleEvent (const SDL_Event* pEvent)
 {
     /* Mouse button press times for double-click support. */
     static Uint32 mbDownTime[3] = { 0, 0, 0 };
-    static Uint8 mbDouble[3] = { 0, 0, 0 };
+    static Uint8  mbDouble[3]   = { 0, 0, 0 };
 
     dbgAssertOrIgnore(pEvent);
 
@@ -1561,7 +1488,6 @@ sdword HandleEvent (const SDL_Event* pEvent)
                     {
                         mainCloseRender();
                         mainShutdownGL();
-                        mainRestoreSoftware();
                         mainOpenRender();
                         lodScaleFactor = LOD_ScaleFactor;
                         alodStartup();

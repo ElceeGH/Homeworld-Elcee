@@ -1169,7 +1169,6 @@ void opCountdownBoxStart(void)
 void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
 {
     udword i, temp;
-    oprender* rnd;
 
     //copy temporary changed data to permanent storage
 
@@ -1207,7 +1206,7 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
             }
         }
     }
-
+    
     if (opRenderListWindow != NULL &&
         opRenderListWindow->CurLineSelected != NULL)
     {
@@ -1235,8 +1234,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
 
     //rswitch
 
-    rnd = opSaveRndSelected;
-
     mainWindowWidth  = opSaveMAIN_WindowWidth;
     mainWindowHeight = opSaveMAIN_WindowHeight;
     mainWindowDepth  = opSaveMAIN_WindowDepth;
@@ -1253,7 +1250,7 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
             MAIN_WindowHeight = opSaveMAIN_WindowHeight;
             MAIN_WindowDepth  = opSaveMAIN_WindowDepth;
 
-            if (mainLoadGL(rnd->data))
+            if (mainLoadGL())
             {
                 opCountdownBoxStart();
             }

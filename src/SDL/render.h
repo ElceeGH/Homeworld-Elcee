@@ -75,15 +75,6 @@
     Type definitions:
 =============================================================================*/
 
-//structure for info passed to the rndInit() functions
-typedef struct
-{
-    sdword width;
-    sdword height;
-    void   *hWnd;    // don't want to include windows.h just for this!
-}
-rndinitdata;
-
 //user-defined render callback functions
 typedef void (*rendercallback)(void);
 typedef void (*renderfunction)(Camera *camera);
@@ -122,8 +113,8 @@ extern renderfunction rndMainViewRender;
 =============================================================================*/
 
 //startup/shutdown the rendering module.
-sdword rndInit(rndinitdata *initData);
-sdword rndSmallInit(rndinitdata* initData, bool GL);
+sdword rndInit(void);
+sdword rndSmallInit(void);
 void rndClose(void);
 
 //render a mission sphere using a specific camera.  Or don't render; it's your call.

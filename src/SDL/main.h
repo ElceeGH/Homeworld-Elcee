@@ -142,18 +142,12 @@ void utyOptionsFileRead(void);
 void utyOptionsFileWrite(void);
 
 //renderer swapping functions
-bool mainLoadGL(char* data);
-bool mainLoadRGL(void);
-bool mainLoadParticularRGL(char* device, char* data);
-sdword mainActiveRenderer(void);
-bool mainReinitRGL(void);
+bool mainLoadGL(void);
 bool mainShutdownRenderer(void);
 
 void mainSaveRender(void);
 void mainRestoreRender(void);
-void mainRestoreSoftware(void);
 
 //video playback module convenience functions
-void mainCleanupAfterVideo(void);
 
 #endif

@@ -3801,9 +3801,6 @@ static void utyPlayIntros( void ) {
 ----------------------------------------------------------------------------*/
 char *utyGameSystemsInit(void)
 {
-    rndinitdata renderData;
-    Uint32 sdlSubsystemFlags;
-
     utyToggleKeyStatesSave();
     utySet2(SS2_ToggleKeys);
 
@@ -3832,7 +3829,7 @@ char *utyGameSystemsInit(void)
     );
     
     // startup any SDL systems we want that haven't already been kicked off
-    sdlSubsystemFlags = SDL_WasInit(SDL_INIT_EVERYTHING);
+    Uint32 sdlSubsystemFlags = SDL_WasInit(SDL_INIT_EVERYTHING);
 
     if (!(sdlSubsystemFlags & SDL_INIT_TIMER))
     {
@@ -3899,14 +3896,10 @@ char *utyGameSystemsInit(void)
     soundEventInit();
     utySet2(SS2_SoundEngine);
 
-    renderData.width = MAIN_WindowWidth;                    //setup data for
-    renderData.height = MAIN_WindowHeight;                  //initializing the
-    renderData.hWnd = ghMainWindow;                         //rendering system
-    //renderData.hWnd = 0;                                    //rendering system
-    if (rndInit(&renderData) != OKAY)                       //startup the rendering system
+    if (rndInit() != OKAY)                       //startup the rendering system
     {
         //fallback to 640x480@16 rGL+sw, and fatally exit if that doesn't work either
-        mainRestoreSoftware();
+        // @todo Add the debug message here. There is no fallback of course...
     }
 
     if (mouseStartup() != OKAY)

@@ -1081,7 +1081,7 @@ static bool setupPalette( void )
 
 
 
-sdword rndSmallInit(rndinitdata* initData, bool GL)
+sdword rndSmallInit(void)
 {
     if (!setupPixelFormat())
     {
@@ -1119,7 +1119,7 @@ sdword rndSmallInit(rndinitdata* initData, bool GL)
     Outputs     : ??
     Return      : ERROR if an error occurred.
 ----------------------------------------------------------------------------*/
-sdword rndInit(rndinitdata *initData)
+sdword rndInit(void)
 {
     static GLfloat  ambientProperties[] = {0.9f, 0.5f, 0.5f, 1.0f};
     static GLfloat  diffuseProperties[] = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -1171,7 +1171,6 @@ sdword rndInit(rndinitdata *initData)
 
     rndPreObjectCallback = rndPostObjectCallback = NULL;    //no render callbacks yet
 
-    rndAspectRatio = (GLfloat)initData->width / (GLfloat)initData->height;
 
     rndFrameCount = 0;
 
