@@ -958,6 +958,12 @@
     <ClCompile Include="..\..\src\SDL\video.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rStateCache.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rMatrixStack.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Game\precompiled.h">

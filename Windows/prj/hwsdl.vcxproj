@@ -439,10 +439,12 @@
     <ClCompile Include="..\..\src\SDL\prim3d.c" />
     <ClCompile Include="..\..\src\SDL\Queue.c" />
     <ClCompile Include="..\..\src\SDL\render.c" />
+    <ClCompile Include="..\..\src\SDL\rMatrixStack.c" />
     <ClCompile Include="..\..\src\SDL\rResScaling.c" />
     <ClCompile Include="..\..\src\SDL\rglu.c" />
     <ClCompile Include="..\..\src\SDL\rinit.c" />
     <ClCompile Include="..\..\src\SDL\rShaderProgram.c" />
+    <ClCompile Include="..\..\src\SDL\rStateCache.c" />
     <ClCompile Include="..\..\src\SDL\screenshot.c" />
     <ClCompile Include="..\..\src\SDL\smixer.c" />
     <ClCompile Include="..\..\src\SDL\soundlow.c" />
