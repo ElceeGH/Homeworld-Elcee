@@ -1492,9 +1492,7 @@ bool rndShipVisibleUsingCoordSys(SpaceObj* spaceobj, Camera* camera)
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    rgluLookAt(camera->eyeposition.x, camera->eyeposition.y, camera->eyeposition.z,
-               camera->lookatpoint.x, camera->lookatpoint.y, camera->lookatpoint.z,
-               camera->upvector.x, camera->upvector.y, camera->upvector.z);
+    rgluLookAt(camera->eyeposition, camera->lookatpoint, camera->upvector);
 
     hmatMakeHMatFromMat(&coordMatrixForGL, &((SpaceObjRot*)spaceobj)->rotinfo.coordsys);
     hmatPutVectIntoHMatrixCol4(spaceobj->posinfo.position, coordMatrixForGL);
@@ -2443,13 +2441,12 @@ void rndMainViewRenderFunction(Camera *camera)
         cameraOffset[2] = (0.5f * cameraOffset[0]) + (0.5f * cameraOffset[1]);
     }
     rndScaleCameraOffsets(scaledOffset, camera, cameraOffset);
-    rgluLookAt(camera->eyeposition.x + scaledOffset[2],
-               camera->eyeposition.y + scaledOffset[0],
-               camera->eyeposition.z + scaledOffset[1],
-               camera->lookatpoint.x, camera->lookatpoint.y, camera->lookatpoint.z,
-               camera->upvector.x, camera->upvector.y, camera->upvector.z);
+    vector offsetVec = { scaledOffset[2], scaledOffset[0], scaledOffset[1] };
+    vector offsetEyePos;
+    vecAdd( offsetEyePos, camera->eyeposition, offsetVec );
+    rgluLookAt(offsetEyePos, camera->lookatpoint, camera->upvector );
     //get local copy of matrices
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&rndCameraMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
     glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     //position light(s) in world

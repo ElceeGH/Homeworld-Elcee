@@ -3084,17 +3084,15 @@ void smViewportRender(featom *atom, regionhandle region)
 
     glLoadIdentity();
 #if RND_CAMERA_OFFSET
-    rgluLookAt(smCamera.eyeposition.x + RND_CameraOffsetX, smCamera.eyeposition.y,
-              smCamera.eyeposition.z, smCamera.lookatpoint.x + RND_CameraOffsetX,
-              smCamera.lookatpoint.y, smCamera.lookatpoint.z,
-              smCamera.upvector.x, smCamera.upvector.y, smCamera.upvector.z);
+    vector lookEye = smCamera.eyeposition;
+    vector lookAt  = smCamera.lookatpoint;
+    lookEye.x += RND_CameraOffsetX;
+    lookAt .x += RND_CameraOffsetX;
+    rgluLookAt(lookEye, lookAt, smCamera.upvector);
 #else
-    rgluLookAt(smCamera.eyeposition.x, smCamera.eyeposition.y,
-              smCamera.eyeposition.z, smCamera.lookatpoint.x,
-              smCamera.lookatpoint.y, smCamera.lookatpoint.z,
-              smCamera.upvector.x, smCamera.upvector.y, smCamera.upvector.z);
+    rgluLookAt(smCamera.eyeposition, smCamera.lookatpoint, smCamera.upvector);
 #endif
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&rndCameraMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
     glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     //Draw the BTG background

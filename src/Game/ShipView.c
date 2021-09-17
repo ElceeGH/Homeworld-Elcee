@@ -493,22 +493,13 @@ void svShipViewRender(featom* atom, regionhandle region)
 
     glLoadIdentity();
 
-    rgluLookAt(
-        svCamera.eyeposition.x,
-        svCamera.eyeposition.y,
-        svCamera.eyeposition.z,
-        svCamera.lookatpoint.x,
-        svCamera.lookatpoint.y,
-        svCamera.lookatpoint.z,
-        svCamera.upvector.x,
-        svCamera.upvector.y,
-        svCamera.upvector.z);
+    rgluLookAt( svCamera.eyeposition, svCamera.lookatpoint, svCamera.upvector );
 
     glPushMatrix();
 
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
 
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&rndCameraMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
     glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     glEnable(GL_NORMALIZE);
