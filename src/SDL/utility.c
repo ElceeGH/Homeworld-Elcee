@@ -125,10 +125,6 @@
     #include <strings.h>
 #endif
 
-#ifdef _WIN32
-    #include "debugwnd.h"
-#endif
-
 // #define REG_MAGIC_STR  "D657E436967616D4"   // used for CD-checking code
 
 #define CD_VALIDATION_ENABLED  0            // toggle checking CD is in drive and anti-piracy checks
@@ -4214,17 +4210,6 @@ char* utyGameSystemsPreShutdown(void)
         free(utyMemoryHeap);
         utyClear(SSA_MemoryHeap);
     }
-
-    if (DebugWindow)
-    {
-        if (utyTest(SSA_DebugWindow))
-        {
-            /* Debug window disabled...search for other dbw*() functions if
-               reenabling. */
-            /*dbwClose();*/
-            utyClear(SSA_DebugWindow);
-        }
-    }
     return NULL;
 }
 
@@ -4242,17 +4227,6 @@ char *utyGameSystemsShutdown(void)
 
     // save the game options
     utyOptionsFileWrite();
-
-    // write the debug window's options if so required
-    if (DebugWindow)
-    {
-        if (utyTest(SSA_DebugWindow))
-        {
-            /* Debug window disabled...search for other dbw*() functions if
-               reenabling. */
-            /*dbwWriteOptions();*/
-        }
-    }
 
     if (demDemoRecording)
     {                                                   //if recording a demo
@@ -4557,18 +4531,6 @@ char *utyGameSystemsShutdown(void)
         utyClear(SSA_MemoryHeap);
     }
 
-    // close down the debug window if so required
-    if (DebugWindow)
-    {
-        if (utyTest(SSA_DebugWindow))
-        {
-            /* Debug window disabled...search for other dbw*() functions if
-               reenabling. */
-            /*dbwClose();*/
-            utyClear(SSA_DebugWindow);
-        }
-    }
-
     globalsClose();
 
     if (utyTest2(SS2_ToggleKeys))
@@ -4667,21 +4629,6 @@ void utyClientRectGet(rectangle *rect)
     }
 }
 #endif
-
-/*-----------------------------------------------------------------------------
-    Name        : utyForceTopmost
-    Description : Determine if the window should be forced topmost
-    Inputs      : bTopMost - if TRUE, window will be forced topmost (and above the taskbar)
-    Outputs     :
-    Return      : void
-----------------------------------------------------------------------------*/
-void utyForceTopmost(bool bTopMost)
-{
-#if 0
-    SetWindowPos(ghMainWindow, bTopMost ? HWND_TOPMOST : HWND_NOTOPMOST,
-        0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOSENDCHANGING);
-#endif
-}
 
 /*-----------------------------------------------------------------------------
     Name        : utyClipMouse

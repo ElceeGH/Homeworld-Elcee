@@ -40,10 +40,6 @@
     #define strcasecmp _stricmp
 #endif
 
-#ifdef _WIN32
-    #include "debugwnd.h"
-#endif
-
 /*=============================================================================
     Definitions:
 =============================================================================*/
@@ -1106,28 +1102,16 @@ bool opResChanged(void)
     }
 }
 
-static void opGLCStop(void)
-{
-    // only glcompat function here, should be remove
-}
-
-static void opGLCStart(void)
-{
-    utyForceTopmost(fullScreen);
-}
-
 void opModeswitchFailed(void)
 {
     GeneralMessageBox(strGetString(strOPFailed0),
                       strGetString(strOPFailed1));
-    opGLCStart();
 }
 
 void opCountdownYes(char* name, featom* atom)
 {
     opTimerActive = FALSE;
     feScreenDisappear(NULL, NULL);
-    opGLCStart();
 }
 
 void opCountdownNo(char* name, featom* atom)
@@ -1138,10 +1122,8 @@ void opCountdownNo(char* name, featom* atom)
         feScreenDisappear(NULL, NULL);
     }
     soundEventShutdown();
-    opGLCStop();
     mainShutdownRenderer();
     mainRestoreRender();
-    opGLCStart();
     soundEventRestart();
     opDeviceIndex = opOldDeviceIndex;
 }
@@ -1274,7 +1256,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
         {
             soundEventShutdown();
             mainSaveRender();
-            opGLCStop();
 
             MAIN_WindowWidth  = opSaveMAIN_WindowWidth;
             MAIN_WindowHeight = opSaveMAIN_WindowHeight;
@@ -1293,7 +1274,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
 
             soundEventRestart();
             SDL_Delay(20);
-            opGLCStart();
         }
     }
 
@@ -1734,16 +1714,6 @@ void opOptionsSaveSettings(void)
 
     // save settings to .cfg file
     utyOptionsFileWrite();
-    if (DebugWindow)
-    {
-        if (utyTest(SSA_DebugWindow))
-        {
-            /* dbw*() functions in other parts of code (main.c, utility.c, and
-               Debug.c) will need to be uncommented if the debug window is
-               reenabled. */
-            /*dbwWriteOptions();*/
-        }
-    }
 }
 
 void opOptionsStartHelper(char* name, featom* atom, char* linkName)

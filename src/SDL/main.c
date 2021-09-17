@@ -59,7 +59,6 @@
 
 #ifdef _WIN32
     #define strcasecmp _stricmp
-    #include "debugwnd.h"
 #endif
 
 
@@ -137,7 +136,6 @@ bool enableAVI = TRUE;
 bool mainAllowPacking = TRUE;
 bool mainOnlyPacking = FALSE;
 bool gShowDamage = TRUE;
-bool DebugWindow = FALSE;
 sdword MemoryHeapSize = MEM_HeapSizeDefault;
 #if MAIN_MOUSE_FREE
 bool startupClipMouse = TRUE;
@@ -266,46 +264,6 @@ udword initialSensorLevel = 0;
 bool pilotView = FALSE;
 
 
-/*=============================================================================
-    Functions:
-=============================================================================*/
-
-                // guess what?  The game code defines HKEY to 'H' which messes up the registry code.  So the
-                // registry code gets to go here
-#if 0	/* Not registering command line... */
-int RegisterCommandLine(char *commandLine)
-{
-    HKEY key;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, BASEKEYNAME,
-                        0, KEY_SET_VALUE, &key) != ERROR_SUCCESS)
-    {
-        return FALSE;
-    }
-
-    if ((commandLine == NULL) || (commandLine[0] == 0))
-    {
-        if (RegSetValueEx(key, "CmdLine", 0, REG_SZ, "", 1) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return FALSE;
-        }
-    }
-    else
-    {
-        if (RegSetValueEx(key, "CmdLine", 0, REG_SZ, (BYTE *)commandLine, strlen(commandLine)+1) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return FALSE;
-        }
-    }
-
-    RegCloseKey(key);
-
-    return TRUE;
-}
-#endif
-
 
 /*-----------------------------------------------------------------------------
     Command-line parsing functions called when a certain flags are set
@@ -316,11 +274,6 @@ bool SetDisplayNum(char *string)
   return TRUE;
 }
 
-bool XcodeDebug(char *string)
-{
-    DebugWindow=TRUE;
-    return TRUE;
-}
 bool HeapSizeSet(char *string)
 {
     sscanf(string, "%d", &MemoryHeapSize);
@@ -605,14 +558,11 @@ commandoption commandOptions[] =
 {
 #ifdef HW_BUILD_FOR_DEBUGGING
     entryComment("DEBUGGING OPTIONS"),//-----------------------------------------------------
-    entryFnParam("/NSDocumentRevisionsDebugMode",XcodeDebug," - Enable debug window."),
-    entryVr("/debug",               DebugWindow, TRUE,                  " - Enable debug window."),
     entryVr("/nodebugInt",          dbgAllowInterrupts, FALSE,          " - Fatal errors don't generate an interrupt before exiting."),
 #if DBW_TO_FILE
     entryVr("/debugToFile",         debugToFile, TRUE,                  " - output debugging info to a file."),
 #endif
 #else
-    entryVrHidden("/debug",         DebugWindow, TRUE,                  " - Enable debug window."),
     entryVrHidden("/nodebugInt",    dbgAllowInterrupts, FALSE,          " - Fatal errors don't generate an interrupt before exiting."),
 #if DBW_TO_FILE
     entryVrHidden("/debugToFile",   debugToFile, TRUE,                  " - output debugging info to a file."),
@@ -921,9 +871,6 @@ void DebugHelpDefault(char *string)
                   argv - Array of command-line arguments
     Outputs     : sets command-line switch variables
     Return      : void
-    Remarks:
-        Here are the command-line switches for Homeworld:
-            -debug: Enable debug window by setting the DebugWindow flag
 ----------------------------------------------------------------------------*/
 sdword ProcessCommandLine (int argc, char* argv[])
 {
@@ -1106,7 +1053,6 @@ void ActivateMe()
     }
     systemActive = TRUE;
 
-    utyForceTopmost(fullScreen);
     SDL_ShowCursor(SDL_DISABLE);
     //make sure that the mouse is rotating proper when we come back
     utyMouseButtonsClear();
@@ -1193,8 +1139,6 @@ bool mainStartupGL(char* data)
         return FALSE;
     }
 
-    utyForceTopmost(fullScreen);
-
     return TRUE;
 }
 
@@ -1248,8 +1192,6 @@ bool mainStartupParticularRGL(char* device, char* data)
         return FALSE;
     }
 
-    utyForceTopmost(fullScreen);
-
     return TRUE;
 }
 
@@ -1260,27 +1202,8 @@ void mainDestroyWindow(void)
     mainWindowTotalWidth  = MAIN_WindowWidth  + mainWidthAdd;
     mainWindowTotalHeight = MAIN_WindowHeight + mainHeightAdd;
 
-#ifdef _WIN32
-    if (DebugWindow)
-    {
-        dbwClose();
-    }
-#endif
-
 //    mainUnregisterClass(ghInstance);
 //    mainRegisterClass(ghInstance);
-
-    utyForceTopmost(fullScreen);
-
-#ifdef _WIN32
-    if (DebugWindow)
-    {
-        /* If porting this back to Windows, you'll need to get a hold of
-           values for these (hWnd is in the SDL_SysWMinfo structure, hInst
-           would need to be acquired through Windows API calls). */
-        dbwStart((udword)ghInstance, (udword)ghMainWindow);
-    }
-#endif
 }
 
 /*-----------------------------------------------------------------------------
@@ -1904,7 +1827,6 @@ static bool InitWindow ()
 
     if (mainForceSoftware)
     {
-        utyForceTopmost(fullScreen);
         mainRescaleMainWindow();
         opDeviceIndex = -1;
     }
@@ -2047,27 +1969,11 @@ int main (int argc, char* argv[])
     //startup the game window
     if (errorString == NULL)
     {
-#ifdef _WIN32
-        if (DebugWindow)
-        {
-            dbwClose();
-        }
-#endif
         preInit = TRUE;
         if (!InitWindow())
         {
             errorString = ersWindowInit;
         }
-#ifdef _WIN32
-        if (DebugWindow)
-        {
-            /* If porting this back to Windows, you'll need to get a hold of
-               values for these (hWnd is in the SDL_SysWMinfo structure, hInst
-               would need to be acquired through Windows API calls). */
-            dbwStart((udword)ghInstance, (udword)ghMainWindow);
-            utySet(SSA_DebugWindow);
-        }
-#endif
     }
 
     mainPlayAVIs = FALSE;
@@ -2084,18 +1990,15 @@ int main (int argc, char* argv[])
                 hwSetRes(640, 480, 16);
             }
             */
-            utyForceTopmost(TRUE);
         }
         else
         {
             windowNeedsDeleting = FALSE;
             /*(void)hwCreateWindow((int)ghMainWindow, MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth);*/
-            utyForceTopmost(fullScreen);
         }
 #else
         windowNeedsDeleting = FALSE;
         /*(void)hwCreateWindow((int)ghMainWindow, MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth);*/
-        utyForceTopmost(fullScreen);
 #endif
         //startup game systems
         if (errorString == NULL)

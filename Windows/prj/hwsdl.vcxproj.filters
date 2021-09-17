@@ -691,9 +691,6 @@
     <ClCompile Include="..\..\src\ThirdParty\LZSS\LZSS.c">
       <Filter>Source Files\ThirdParty\LZSS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL\debugwnd.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SDL\font.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
@@ -755,9 +752,6 @@
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\utility.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SDL\ClientCDKey.cpp">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\TitanInterface.cpp">

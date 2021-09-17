@@ -774,8 +774,6 @@ void psScreenStart(char *name)
     {
         mouseDisable();
     }
-
-    utyForceTopmost(fullScreen);
 }
 
 /*-----------------------------------------------------------------------------
