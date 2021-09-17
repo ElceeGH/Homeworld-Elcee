@@ -88,10 +88,9 @@ static char windowTitle[] = "Homeworld";//name of window
 char ersWindowInit[] = "Error creating window";
 
 //screen width, height
-int MAIN_WindowWidth  = 640;
-int MAIN_WindowHeight = 480;
-int MAIN_WindowDepth  = 16;
-
+int MAIN_WindowWidth  = 1280;
+int MAIN_WindowHeight = 720;
+int MAIN_WindowDepth  = 24;
 
 int mainWindowWidth;
 int mainWindowHeight;
