@@ -3431,7 +3431,7 @@ void rndShamelessPlug()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluOrtho2D(0.0f, winWidth, 0.0f, winHeight);
+    glOrtho(0.0f, winWidth, 0.0f, winHeight,-1,+1);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
