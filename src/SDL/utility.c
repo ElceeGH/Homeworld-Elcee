@@ -847,102 +847,71 @@ void versionNumDraw(featom *atom, regionhandle region)
 }
 
 /*-----------------------------------------------------------------------------
+    Name        : getOptionsFileDir
+    Description : Determine where options file is stored.
+    Outputs     : Full path of directory without trailing slash
+----------------------------------------------------------------------------*/
+static void getOptionsFileDir( char* buffer, size_t bufferSize ) {
+    const char* base = getenv( APPDATADIR );
+    if (base)
+         snprintf( buffer, bufferSize, "%s/%s", base, CONFIGDIR );
+    else memset( buffer, '\0', bufferSize );
+}
+
+/*-----------------------------------------------------------------------------
     Name        : utyOptionsFileRead
-    Description : Read a set of options from the Homeworld.ini file
+    Description : Read a set of options from the Homeworld.cfg file
     Inputs      : void
     Outputs     : reads in the switches listed in utyOptionsList array
     Return      :
 ----------------------------------------------------------------------------*/
 void utyOptionsFileRead(void)
 {
-#ifdef _WINDOWS
-    char *home_dir = getenv("APPDATA");
-#else
-    char *home_dir = getenv("HOME");
-#endif
-    char ch_buf[PATH_MAX];
-
-    if (home_dir)
-    {
-        strcpy(ch_buf, home_dir);
-        strcat(ch_buf, "/" CONFIGDIR "/");
-    }
-    else
-    {
-        ch_buf[0] = '\0';
-    }
-    scriptSetFileSystem(ch_buf, UTY_CONFIG_FILENAME, utyOptionsList);
+    char dir[ PATH_MAX ];
+    getOptionsFileDir( dir, sizeof(dir) );
+    scriptSetFileSystem( dir, "/" UTY_CONFIG_FILENAME, utyOptionsList );
 
     //call any functions that need to acknowledge a change due to loading
     cameraSensitivitySet(opMouseSens);
     battleChatterFrequencySet(opBattleChatter);
-
 }
 
 /*-----------------------------------------------------------------------------
     Name        : utyOptionsFileWrite
-    Description : Write a set of options from the Homeworld.ini file
+    Description : Write a set of options from the Homeworld.cfg file
     Inputs      : void
     Outputs     : writes out the switches listed in utyOptionsList array
     Return      :
 ----------------------------------------------------------------------------*/
 void utyOptionsFileWrite(void)
 {
-    const char* home_dir;
-    char ch_buf[PATH_MAX];
-    char dir_buf[PATH_MAX];
-    sdword index;
-    FILE *f;
+    char dir[PATH_MAX];
+    getOptionsFileDir( dir, sizeof(dir) );
 
-#ifdef _WINDOWS
-    home_dir = getenv("APPDATA");
-#else
-    home_dir = getenv("HOME");
-#endif
+    mkdir(dir);
 
-    if (home_dir)
+    char path[PATH_MAX];
+    snprintf( path, sizeof(path), "%s/%s", dir, UTY_CONFIG_FILENAME );
+
+    FILE* f = fopen(path, "w");
+
+    for (sdword i=0; utyOptionsList[i].name!=NULL; i++)
     {
-        strcpy(ch_buf, home_dir);
-        strcat(ch_buf, "/" CONFIGDIR "/" UTY_CONFIG_FILENAME);
+        void*       data = utyOptionsList[i].dataPtr;
+        setVarCback cb   = utyOptionsList[i].setVarCB;
+        char*       name = utyOptionsList[i].name;
 
-        strcpy(dir_buf, home_dir);
-        strcat(dir_buf, "/" CONFIGDIR );
-        mkdir(dir_buf);
-    }
-    else
-    {
-        strcpy(ch_buf, UTY_CONFIG_FILENAME);
-    }
-
-    f = fopen(ch_buf, "w");
-
-    for (index = 0; utyOptionsList[index].name != NULL; index++)
-    {
-        if (utyOptionsList[index].setVarCB == scriptSetUbyteCB) {
-            fprintf(f, "%s    %u\n", utyOptionsList[index].name,
-                *((ubyte *)utyOptionsList[index].dataPtr));
-        }
-        else if (utyOptionsList[index].setVarCB == scriptSetUwordCB) {
-            fprintf(f, "%s    %u\n", utyOptionsList[index].name,
-                *((uword *)utyOptionsList[index].dataPtr));
-        }
-        else if (utyOptionsList[index].setVarCB == scriptSetUdwordCB) {
-            fprintf(f, "%s    %u\n", utyOptionsList[index].name,
-                *((udword *)utyOptionsList[index].dataPtr));
-        }
-        else if (utyOptionsList[index].setVarCB == scriptSetStringCB) {
-            fprintf(f, "%s    %s\n", utyOptionsList[index].name,
-                (char*)utyOptionsList[index].dataPtr);
-        }
-        else if (utyOptionsList[index].setVarCB == scriptSetBool) {
-            fprintf(f, "%s    %s\n", utyOptionsList[index].name,
-                *((bool *)utyOptionsList[index].dataPtr) ? "TRUE" : "FALSE");
-        }
+             if (cb == scriptSetUbyteCB)  { fprintf(f, "%s    %u\n", name, *((ubyte *) data)                   ); }
+        else if (cb == scriptSetUwordCB)  { fprintf(f, "%s    %u\n", name, *((uword *) data)                   ); }
+        else if (cb == scriptSetUdwordCB) { fprintf(f, "%s    %u\n", name, *((udword*) data)                   ); }
+        else if (cb == scriptSetStringCB) { fprintf(f, "%s    %s\n", name,   (char  *) data                    ); }
+        else if (cb == scriptSetBool)     { fprintf(f, "%s    %s\n", name, *((bool  *) data) ? "TRUE" : "FALSE"); }
     }
     
     fclose(f);
-
 }
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : utyPickColors
