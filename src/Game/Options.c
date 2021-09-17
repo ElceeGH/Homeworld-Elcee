@@ -1254,7 +1254,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
     {
         if (opResHackSupported())
         {
-            soundEventShutdown();
             mainSaveRender();
 
             MAIN_WindowWidth  = opSaveMAIN_WindowWidth;
@@ -1271,9 +1270,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
                 mainRestoreRender();
                 opModeswitchFailed();
             }
-
-            soundEventRestart();
-            SDL_Delay(20);
         }
     }
 
