@@ -4690,6 +4690,7 @@ bool utyChangeResolution(sdword width, sdword height, sdword depth)
 
     ghMainRegion->rect.x1 = width;
     ghMainRegion->rect.y1 = height;
+    rndAspectRatio        = (float)width / (float)height;
 
     (void)feAllScreensReposition();
 

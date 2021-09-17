@@ -1171,6 +1171,7 @@ sdword rndInit(void)
 
     rndPreObjectCallback = rndPostObjectCallback = NULL;    //no render callbacks yet
 
+    rndAspectRatio = (float)MAIN_WindowWidth / (float)MAIN_WindowHeight;
 
     rndFrameCount = 0;
 
@@ -4468,12 +4469,27 @@ void rndSetScreenFill(sdword count, color c)
     Outputs     : GL_COLOR_CLEAR_VALUE is perhaps modified
     Return      :
 ----------------------------------------------------------------------------*/
+
+static bool  clearColorSet = FALSE;
+static color clearColorCur;
 void rndSetClearColor(color c)
 {
-    glClearColor(colReal32(colRed(c)),
-                    colReal32(colGreen(c)),
-                    colReal32(colBlue(c)),
-                    1.0f);
+    glClearColor(colReal32(colRed  (c)),
+                 colReal32(colGreen(c)),
+                 colReal32(colBlue (c)),
+                 1.0f);
+}
+
+
+
+static real32 lineWidthLast = -1.0f;
+void rndSetLineWidth( real32 width ) {
+    if (lineWidthLast == -1.0f)
+        glGetFloatv( GL_LINE_WIDTH, &lineWidthLast );
+
+    float ret = lineWidthLast;
+    glLineWidth( width );
+    lineWidthLast = width;
 }
 
 /*-----------------------------------------------------------------------------
@@ -4729,3 +4745,7 @@ void rndFlush(void)
 #endif
     //SDL_Delay(1);
 }
+
+
+
+
