@@ -635,14 +635,6 @@ scriptEntry utyOptionsList[] =
     {"fullScreen",          scriptSetUdwordCB, &fullScreen},
     {"displayNum",          scriptSetUdwordCB, &displayNum},
 
-
-  {"\n[old reg data - to be deprecated]\n", scriptSetStringCB, &filecfgblankspace},
-
-
-    {"deviceCRC",       scriptSetUdwordCB, &opDeviceCRC},
-    {"deviceIndex",     scriptSetUdwordCB, &opDeviceIndex},
-
-
   {"\n[graphics options]\n", scriptSetStringCB, &filecfgblankspace},
 
 

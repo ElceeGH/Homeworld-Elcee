@@ -1079,7 +1079,7 @@ static bool setupPalette( void )
 	return FALSE;
 }
 
-typedef int (*AUXINITPOSITIONPROC)(GLuint, GLuint, GLuint, GLuint, GLuint);
+
 
 sdword rndSmallInit(rndinitdata* initData, bool GL)
 {

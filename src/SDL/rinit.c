@@ -22,15 +22,14 @@
 #include "Types.h"
 
 
-extern unsigned int mainSoftwareDirectDraw;
-extern unsigned int mainOutputCRC;
+
 extern unsigned long strCurLanguage;
 
 extern unsigned int* devTable;
-extern int devTableLength;
+extern int           devTableLength;
 
 static rdevice* rDeviceList;
-static int nDevices;
+static int      nDevices;
 
 
 
@@ -46,48 +45,7 @@ static void rinMemFree(void* memblock)
     free(memblock);
 }
 
-extern unsigned int crc32Compute(void*, unsigned int);
 
-/*-----------------------------------------------------------------------------
-    Name        : rinDeviceCRC
-    Description : generate a CRC of the detected devices for detection of
-                  changing hardware (light assurance that previous video
-                  mode will still be working correctly)
-    Inputs      :
-    Outputs     :
-    Return      : crc32
-----------------------------------------------------------------------------*/
-unsigned int rinDeviceCRC(void)
-{
-    rdevice* cdev;
-    rdevice* devlist;
-    rdevice* pdevlist;
-    unsigned int crc;
-
-    if (nDevices == 0 || rDeviceList == NULL)
-    {
-        return 0;
-    }
-
-    devlist = (rdevice*)rinMemAlloc(nDevices * sizeof(rdevice));
-    pdevlist = devlist;
-
-    cdev = rDeviceList;
-    do
-    {
-        memcpy(pdevlist, cdev, sizeof(rdevice));
-        pdevlist->modes = NULL;
-        pdevlist->next = NULL;
-        pdevlist++;
-        cdev = cdev->next;
-    } while (cdev != NULL);
-
-    crc = crc32Compute((void*)devlist, nDevices * sizeof(rdevice));
-
-    rinMemFree(devlist);
-
-    return crc;
-}
 
 /*-----------------------------------------------------------------------------
     Name        : rinAddMode
@@ -98,7 +56,7 @@ unsigned int rinDeviceCRC(void)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void rinAddMode(rdevice* dev, int width, int height, int depth)
+static void rinAddMode(rdevice* dev, int width, int height, int depth)
 {
     rmode* mode = rinMemAlloc(sizeof(rmode));
     mode->width  = width;
@@ -147,7 +105,7 @@ static bool rinModeAccepted(rdevice* dev, int width, int height, int depth)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void rinSortModes(rdevice* dev)
+static void rinSortModes(rdevice* dev)
 {
     rmode* cmode;
     rmode* freeMode;
@@ -200,7 +158,7 @@ void rinSortModes(rdevice* dev)
     Outputs     : rDeviceList is modified
     Return      :
 ----------------------------------------------------------------------------*/
-void rinAddDevice(rdevice* dev)
+static void rinAddDevice(rdevice* dev)
 {
     rdevice* cdev;
 
@@ -237,7 +195,7 @@ rdevice* rinGetDeviceList(void)
     Outputs     : rDeviceList and constituents are freed
     Return      :
 ----------------------------------------------------------------------------*/
-int rinFreeDevices(void)
+void rinFreeDevices(void)
 {
     rdevice* dev;
     rdevice* freeDev;
@@ -252,20 +210,17 @@ int rinFreeDevices(void)
         mode = dev->modes;
         while (mode != NULL)
         {
-            freeMode = mode;    //save to free
-            mode = mode->next;  //next
-            rinMemFree(freeMode);  //free
+            freeMode = mode;      //save to free
+            mode = mode->next;    //next
+            rinMemFree(freeMode); //free
         }
 
         freeDev = dev;          //save to free
         dev = dev->next;        //next
-        rinMemFree(freeDev);       //free
+        rinMemFree(freeDev);    //free
     }
 
     rDeviceList = NULL;
-
-    //success
-    return 1;
 }
 
 /*-----------------------------------------------------------------------------
@@ -275,17 +230,13 @@ int rinFreeDevices(void)
     Outputs     :
     Return      : true or false (could or couldn't enumerate)
 ----------------------------------------------------------------------------*/
-bool rinEnumeratePrimary(rdevice* dev)
+static bool rinEnumeratePrimary(rdevice* dev)
 {
-	SDL_DisplayMode mode;
-    Uint32 flags;
-	const int display_index = 0;
-
 	if (!dev)
 		return FALSE;
 
 	/* Make sure SDL video is initialized. */
-	flags = SDL_WasInit(SDL_INIT_EVERYTHING);
+	Uint32 flags = SDL_WasInit(SDL_INIT_EVERYTHING);
 	if (!flags)
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
@@ -297,9 +248,11 @@ bool rinEnumeratePrimary(rdevice* dev)
 			return FALSE;
 	}
 
-	for(int i=SDL_GetNumDisplayModes(display_index); i>0; i--){
-		if(SDL_GetDisplayMode(display_index, i-1, &mode)){
-			dbgMessagef("Error in SDL_GetDisplayMode(): %d %s",i-1,SDL_GetError());
+    const int display_index = 0;
+	for (int i=SDL_GetNumDisplayModes(display_index); i>0; i--){
+        SDL_DisplayMode mode;
+		if (SDL_GetDisplayMode(display_index, i-1, &mode)) {
+			dbgMessagef("Error in SDL_GetDisplayMode(): %d %s", i-1, SDL_GetError() );
 			return FALSE;
 		}
 		if (mode.w >= 640 && mode.h >= 480)
@@ -313,26 +266,22 @@ bool rinEnumeratePrimary(rdevice* dev)
 
 /*-----------------------------------------------------------------------------
     Name        : rinEnumerateDevices
-    Description : populate the device list by enumerating available renderers
+    Description : Enumerate available display modes.
     Inputs      :
-    Outputs     : rDeviceList is filled
+    Outputs     : rDeviceList is filled.
     Return      :
 ----------------------------------------------------------------------------*/
-int rinEnumerateDevices(void)
+void rinEnumerateDevices(void)
 {
     rdevice* dev = rinMemAlloc(sizeof(rdevice));
 
+    // Fixed as OpenGL.
     dev->type = RIN_TYPE_OPENGL;
 
-    switch (strCurLanguage) {
-        case 1:  snprintf( dev->name, sizeof(dev->name), "%s", "OpenGL Standard"       ); break;
-        case 2:  snprintf( dev->name, sizeof(dev->name), "%s", "Standard-OpenGL"       ); break;
-        case 3:  snprintf( dev->name, sizeof(dev->name), "%s", "OpenGL predeterminado" ); break;
-        case 4:  snprintf( dev->name, sizeof(dev->name), "%s", "OpenGL di Default"     ); break;
-        default: snprintf( dev->name, sizeof(dev->name), "%s", "Default OpenGL"        ); break;
-    }
+    // Just use the basic name
+    snprintf(dev->name, sizeof(dev->name), "%s", "OpenGL");
 
-    // Enumerate video modes. If it fails, assume certain modes are supported
+    // Enumerate video modes. If it fails, assume certain basic modes are supported
     if ( ! rinEnumeratePrimary(dev))
     {
         //assume these are supported
@@ -346,5 +295,4 @@ int rinEnumerateDevices(void)
     rinSortModes(dev);
     rinAddDevice(dev);
     nDevices = 1;
-    return 1; //success
 }

@@ -371,11 +371,6 @@ sdword opNoPalMB = 64;
 
 static regionhandle opNoPalDrawRegion = NULL;
 
-static sdword opOldDeviceIndex;
-
-udword opDeviceCRC = 0;
-sdword opDeviceIndex = -1;
-
 sdword opMusicVol=75;
 sdword opSaveMusicVol;
 sdword opSFXVol=75;
@@ -1125,7 +1120,6 @@ void opCountdownNo(char* name, featom* atom)
     mainShutdownRenderer();
     mainRestoreRender();
     soundEventRestart();
-    opDeviceIndex = opOldDeviceIndex;
 }
 
 void opTimerExpired(void)
@@ -1248,9 +1242,8 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
     mainWindowDepth  = opSaveMAIN_WindowDepth;
 
     opReloading = TRUE;
-    opOldDeviceIndex = opDeviceIndex;
 
-    if (opResChanged() || opDeviceIndex != opRenderCurrentSelected)
+    if (opResChanged())
     {
         if (opResHackSupported())
         {
@@ -1262,7 +1255,6 @@ void opOptionsAcceptHelper(char* name, featom* atom, char* linkName)
 
             if (mainLoadGL(rnd->data))
             {
-                opDeviceIndex = opRenderCurrentSelected;
                 opCountdownBoxStart();
             }
             else
@@ -2703,12 +2695,6 @@ void opRenderListLoad(void)
 
         //next device
         dev = dev->next;
-    }
-
-    if (opDeviceIndex != -1)
-    {
-        opRenderCurrentSelected = opDeviceIndex;
-        opRndSelected = &opRnd[opDeviceIndex];
     }
 }
 

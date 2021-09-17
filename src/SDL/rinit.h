@@ -11,8 +11,7 @@
 
 typedef struct rmode
 {
-    int width, height;
-    int depth;
+    int width, height, depth;
     struct rmode* next;
 } rmode;
 
@@ -29,20 +28,9 @@ typedef struct rdevice
     struct rdevice* next;
 } rdevice;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int rinEnumerateDevices(void);
-int rinFreeDevices(void);
-unsigned int rinDirectXVersion(void);
+void     rinEnumerateDevices(void);
+void     rinFreeDevices(void);
 rdevice* rinGetDeviceList(void);
-
-unsigned int rinDeviceCRC(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

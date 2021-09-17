@@ -92,8 +92,6 @@ int MAIN_WindowWidth  = 640;
 int MAIN_WindowHeight = 480;
 int MAIN_WindowDepth  = 16;
 
-sdword mainWidthAdd  = 0;
-sdword mainHeightAdd = 0;
 
 int mainWindowWidth;
 int mainWindowHeight;
@@ -112,7 +110,6 @@ bool mainSafeGL         = FALSE;
 bool mainNoPerspective  = FALSE;
 bool mainPlayAVIs       = TRUE;
 bool mainNoDrawPixels = FALSE;
-bool mainOutputCRC = FALSE;
 bool mainNoPalettes = TRUE;
 bool mainSoftwareDirectDraw = FALSE;
 bool mainDirectDraw = FALSE;
@@ -249,9 +246,6 @@ char languageVersion[50] = "";    // constructed at beginning of program
 
 char versionString[MAX_VERSION_STRING_LEN] = "";        // constructed at beginning of program
 
-
-sdword mainWindowTotalWidth = 0;
-sdword mainWindowTotalHeight = 0;
 
 bool noAuthorization = FALSE;
 
@@ -1071,17 +1065,6 @@ void ActivateMe()
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : mainFreeLibraries
-    Description : Release references to possible GL libraries.
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void mainFreeLibraries(void)
-{
-}
-
-/*-----------------------------------------------------------------------------
     Name        : mainRescaleMainWindow
     Description : rescale the main window (ghMainWindow) and call fn to
                   reinit game systems that require it
@@ -1198,9 +1181,6 @@ bool mainStartupParticularRGL(char* device, char* data)
 void mainDestroyWindow(void)
 {
     mainActuallyQuit = FALSE;
-
-    mainWindowTotalWidth  = MAIN_WindowWidth  + mainWidthAdd;
-    mainWindowTotalHeight = MAIN_WindowHeight + mainHeightAdd;
 
 //    mainUnregisterClass(ghInstance);
 //    mainRegisterClass(ghInstance);
@@ -1324,8 +1304,6 @@ void mainSetupSoftware(void)
     mainWindowWidth  = MAIN_WindowWidth;
     mainWindowHeight = MAIN_WindowHeight;
     mainWindowDepth  = MAIN_WindowDepth;
-
-    opDeviceIndex = -1;
 }
 
 /*-----------------------------------------------------------------------------
@@ -1397,7 +1375,6 @@ bool mainShutdownRenderer(void)
 
     mainCloseRender();
     mainShutdownGL();
-    mainFreeLibraries();
 
     return TRUE;
 }
@@ -1417,7 +1394,6 @@ bool mainLoadGL(char* data)
     {
         mainCloseRender();
         mainShutdownGL();
-        mainFreeLibraries();
     }
 
     if (!mainStartupGL(data))
@@ -1448,7 +1424,6 @@ bool mainLoadParticularRGL(char* device, char* data)
     {
         mainCloseRender();
         mainShutdownGL();
-        mainFreeLibraries();
     }
 
     if (!mainStartupParticularRGL(device, data))
@@ -1759,7 +1734,7 @@ sdword HandleEvent (const SDL_Event* pEvent)
             if (mainActuallyQuit)
             {
                 SDL_Event e;
-                WindowsCleanup();
+                WindowsCleanup(); /* TODO this is premature. It should be done later, right? */
                 e.quit.type = SDL_QUIT;
                 SDL_PushEvent(&e);
             }
@@ -1782,12 +1757,6 @@ sdword HandleEvent (const SDL_Event* pEvent)
 ----------------------------------------------------------------------------*/
 static bool InitWindow ()
 {
-    unsigned int rinDevCRC;
-
-    /*
-     * create a window
-     */
-
     if (mainAutoRenderer)
     {
         if (selectedRES)
@@ -1804,32 +1773,8 @@ static bool InitWindow ()
         }
     }
 
-    mainWidthAdd  = 0;
-    mainHeightAdd = 0;
-
-    mainWindowTotalWidth  = MAIN_WindowWidth  + mainWidthAdd;
-    mainWindowTotalHeight = MAIN_WindowHeight + mainHeightAdd;
-
     /* Window created in renderer initialization.. */
-
     rinEnumerateDevices();
-
-	rinDevCRC = rinDeviceCRC();
-    if (opDeviceCRC != rinDevCRC)
-    {
-        opDeviceIndex = -1;
-        if (mainAutoRenderer)
-        {
-            opDeviceCRC = rinDeviceCRC();
-            mainForceSoftware = TRUE;
-        }
-    }
-
-    if (mainForceSoftware)
-    {
-        mainRescaleMainWindow();
-        opDeviceIndex = -1;
-    }
 
     lodScaleFactor = 1.0f;
 
@@ -1847,22 +1792,6 @@ void WindowsCleanup(void)
 {
     utyGameSystemsShutdown();
     rinFreeDevices();
-}
-
-/*-----------------------------------------------------------------------------
-    Name        : mainCleanupAfterVideo
-    Description : possibly delete main DDraw window after playing an AVI if a renderer
-                  is about to be initialized that wants to create its own
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void mainCleanupAfterVideo(void)
-{
-    if (windowNeedsDeleting)
-    {
-        windowNeedsDeleting = FALSE;
-    }
 }
 
 /*-----------------------------------------------------------------------------
