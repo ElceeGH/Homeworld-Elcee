@@ -1177,15 +1177,9 @@ void gunShoot(Ship *ship, Gun *gun, SpaceObjRotImpTarg *target)
     etgLOD = etgGunEventTable[shipstatic->shiprace][gunstatic->gunsoundtype][EGT_GunFire];//get pointer to bullet effect
     if (etgLOD != NULL)
     {
-        LOD = ship->currentLOD;
-        if (LOD >= etgLOD->nLevels)
-        {
-            stat = NULL;
-        }
-        else
-        {
-            stat = etgLOD->level[LOD];
-        }
+        LOD  = lodLevelComputeDefault( (SpaceObj*) ship, &mrCamera->eyeposition );
+        LOD  = min( LOD, etgLOD->nLevels - 1 );
+        stat = etgLOD->level[ LOD ];
     }
     else
     {
