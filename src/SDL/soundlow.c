@@ -124,7 +124,7 @@ extern void soundfeedercb(void *userdata, Uint8 *stream, int len);
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/
-sdword soundinit(bool mode)
+sdword soundinit(void)
 {
 #ifdef _MACOSX_FIX_SOUND
     return SOUND_ERR;
@@ -149,10 +149,6 @@ sdword soundinit(bool mode)
     mixer.timeout = 0;
     streamer.status = SOUND_FREE;
     streamer.timeout = 0;
-
-    useWaveout = TRUE;
-    useDSound = FALSE;
-    coopDSound = FALSE;
 
     // Set up wave format structure.
     aspec.freq = FQ_RATE;
@@ -180,17 +176,6 @@ sdword soundinit(bool mode)
     /* dbgAssertOrIgnore(aspec.samples == SDL_BUFFERSIZE); */
 
     return result;
-}
-
-
-sdword soundreinit(void)
-{
-    // couldn't init DSound so use Waveout instead
-    useWaveout = TRUE;
-    useDSound = FALSE;
-    coopDSound = FALSE;
-
-    return SOUND_ERR;
 }
 
 

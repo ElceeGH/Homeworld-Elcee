@@ -162,9 +162,6 @@ bool8 RENDER_LIGHTLINES;
 bool enableSFX = TRUE;
 bool enableSpeech = TRUE;
 bool reverseStereo = FALSE;
-bool useWaveout = FALSE;
-bool useDSound = FALSE;
-bool coopDSound = FALSE;
 bool accelFirst = FALSE;
 bool8 RENDER_BOXES = FALSE;
 bool8 RENDER_LIGHTLINES = FALSE;
@@ -595,9 +592,6 @@ commandoption commandOptions[] =
     entryVr("/noSound",             enableSFX, FALSE,                   " - turn all sound effects off."),
     entryVr("/noSpeech",            enableSpeech, FALSE,                " - turn all speech off."),
 #endif
-    entryVr("/dsound",              useDSound, TRUE,                    " - forces mixer to write to DirectSound driver, even if driver reports not certified."),
-    entryVr("/dsoundCoop",          coopDSound, TRUE,                   " - switches to co-operative mode of DirectSound (if supported) to allow sharing with other applications."),
-    entryVr("/waveout",             useWaveout, TRUE,                   " - forces mixer to write to Waveout even if a DirectSound supported object is available."),
     entryVr("/reverseStereo",       reverseStereo, TRUE,                " - swap the left and right audio channels."),
 
     entryComment("DETAIL OPTIONS"), //-----------------------------------------------------

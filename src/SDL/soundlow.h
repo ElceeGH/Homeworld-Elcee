@@ -149,8 +149,7 @@ void soundMixerGetMode(sdword *mode);   // mode SOUND_MODE_NORM or SOUND_MODE_AU
 void soundMixerSetMode(sdword mode);    // mode SOUND_MODE_NORM or SOUND_MODE_AUTO or SOUND_MODE_LOW
 
 /* functions */
-sdword soundinit(bool mode);
-sdword soundreinit(void);
+sdword soundinit(void);
 void soundrestore(void);
 void soundclose(void);
 

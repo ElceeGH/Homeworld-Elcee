@@ -65,7 +65,6 @@ sdword dctpanicmode = SOUND_MODE_NORM;	// DCT panic mode, normal by default
 real32 timebufferL[FQ_DSIZE], timebufferR[FQ_DSIZE], temptimeL[FQ_DSIZE], temptimeR[FQ_DSIZE];
 real32 mixbuffer1L[FQ_SIZE], mixbuffer1R[FQ_SIZE], mixbuffer2L[FQ_SIZE], mixbuffer2R[FQ_SIZE];
 
-//extern LPDIRECTSOUND lpDirectSound;
 extern SDL_sem* streamerThreadSem;
 extern CHANNEL channels[];
 extern bool soundinited;

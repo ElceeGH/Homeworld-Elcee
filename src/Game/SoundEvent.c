@@ -28,7 +28,6 @@
 #include "Switches.h"
 #include "VolTweakDefs.h"
 
-#define DIRECTSOUND     1
 #define SE_MAX_STRIKECRAFT  10
 #define SE_MAX_CAPITALSHIPS 6
 #define SE_MAX_MOSHIPS		3
@@ -718,7 +717,6 @@ void soundEventInit(void)
 {
 #if SOUND
 
-#if DIRECTSOUND
     char loadfile[100];
 	sdword i, size;
 
@@ -727,7 +725,7 @@ void soundEventInit(void)
         return;
     }
 
-    if (soundinit(useWaveout) == SOUND_ERR)
+    if (soundinit() == SOUND_ERR)
     {
         enableSFX = FALSE;
         enableSpeech = FALSE;
@@ -802,7 +800,6 @@ void soundEventInit(void)
 
     soundeventinited = TRUE;
     
-#endif // DIRECTSOUND
 #endif // SOUND
 }
 
@@ -817,7 +814,6 @@ void soundEventInit(void)
 void soundEventClose(void)
 {
 #if SOUND
-#if DIRECTSOUND
 
     if (!enableSFX && !enableSpeech)
     {
@@ -857,16 +853,16 @@ void soundEventClose(void)
         speechEventClose();
     }
 #endif
-#endif
 }
 
 
 void soundEventShutdown(void)
 {
-    if (enableSFX || enableSpeech)
+    if (enableSFX || enableSpeech) {
 		soundclose();
-//        sounddeactivate(TRUE);
-//	soundrestore();
+	}
+	soundpause(TRUE);
+	sounddeactivate(TRUE);
 }
 
 
@@ -874,17 +870,11 @@ void soundEventRestart(void)
 {
 	if (enableSFX || enableSpeech)
 	{
-		soundreinit();
 		soundEventPlayMusic(SOUND_FRONTEND_TRACK);
 	}
 
-//        sounddeactivate(FALSE);
-//    if (soundinit(ghMainWindow, useWaveout) == SOUND_ERR)
-//    {
-//        enableSFX = FALSE;
-//        enableSpeech = FALSE;
-//    }
-//	soundpause(FALSE);
+	sounddeactivate(FALSE);
+	soundpause(FALSE);
 }
 
 /*-----------------------------------------------------------------------------
