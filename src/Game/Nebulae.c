@@ -599,7 +599,7 @@ real32 nebAngularDeviation(nebChunk* newChunk, nebChunk* oldChunka, nebChunk* ol
     vecNormalize(&nextVec);
 
     val = vecDotProduct(nextVec, lastVec);
-    return _fabs(RAD_TO_DEG((real32)acos((real64)val)));
+    return fabsf(RAD_TO_DEG(acosf(val)));
 }
 
 /*-----------------------------------------------------------------------------

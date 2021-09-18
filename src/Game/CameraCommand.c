@@ -744,7 +744,7 @@ void GetDistanceAngleDeclination(Camera *camera,vector *distvec)
     camera->distance = sqrtf(vecMagnitudeSquared(*distvec));
 
     // now calculate angle and declination to face target
-    camera->angle = (real32)atan2(distvec->y,distvec->x);
+    camera->angle = atan2f(distvec->y,distvec->x);
     value = -distvec->z/camera->distance;
 
     dbgAssertOrIgnore( ABS(value) <= 1.01f );       // USE 1.01 SO ROUND OFF ERRORS DON'T CRASH US
@@ -883,13 +883,8 @@ CameraStackEntry *entry;
 real32 GetObjAngle(SpaceObjRot *robj)
 {
     vector heading;
-    real32 angle;
-
     matGetVectFromMatrixCol3(heading,robj->rotinfo.coordsys);
-
-    angle = (real32)atan2(heading.y,heading.x);
-
-    return angle;
+    return atan2f(heading.y,heading.x);
 }
 
 /*-----------------------------------------------------------------------------
@@ -1078,13 +1073,13 @@ void ccFocusGeneral(CameraCommand *cameracommand,FocusCommand *focuscom, bool bC
     if (lookatdiffdist >= RENDER_VIEWABLE_DISTANCE_SQR)
     {
         // now calculate angle and declination to face target
-        entry->remembercam.angle = (real32)atan2(distvec.y,distvec.x);
+        entry->remembercam.angle = atan2f(distvec.y,distvec.x);
         if (entry->remembercam.angle < 0)
         {
             entry->remembercam.angle += TWOPI;
         }
 
-        entry->remembercam.declination = (real32)acos(distvec.z/newDist) - (PI/2.0f);
+        entry->remembercam.declination = acosf(distvec.z/newDist) - (PI/2.0f);
     }
 
     cameraSetEyePosition(&entry->remembercam);

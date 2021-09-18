@@ -781,7 +781,7 @@ void gunRecoilTableCompute(void)
     for (; index < GUN_RecoilTableLength; index++, timeIndex += 1.0f / (real32)GUN_RecoilTableLength)
     {
         //y = ((-atan((x-.4)*8)/PI+.5-.06538)/.825433
-        gunRecoilTable[index] = (((real32)-atan((timeIndex-0.4f)*8.0f)/PI+0.5f)-0.06538f)/0.825433f;
+        gunRecoilTable[index] = ((-atanf((timeIndex-0.4f)*8.0f)/PI+0.5f)-0.06538f)/0.825433f;
     }
     gunRecoilTable[GUN_RecoilTableLength] = 0.0f;
 }

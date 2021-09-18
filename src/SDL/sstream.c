@@ -149,7 +149,7 @@ udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
         if (!fileExists(pszStreamFile, flags))
         {
             /* Death, destruction and general chaos! Should never happen (taken care of in utyGameSystemsInit()...*/
-            dbgFatalf(DBG_Loc, "Homeworld CD not detected.");
+            dbgFatalf(DBG_Loc, "Sound file not in data dir and Homeworld CD not detected.");
         }
     }
 
@@ -690,53 +690,18 @@ foundInfo:;
     time = (real32)header->size * dataPeriod;
     if (actornum >= 0 && length > 0)
     {
-        if (actornum == 0)
-        {                                                   //all single-player voices are on the same channel
-            if (bitTest(speechEvent, SPEECH_ACTOR_FLEET_COMMAND))
-            {
-                actornum = STA_FleetCommand;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_FLEET_INTELLIGENCE))
-            {
-                actornum = STA_FleetIntel;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_TRADERS))
-            {
-                actornum = STA_Traders;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_P2_KADESHI))
-            {
-                actornum = STA_Pirates2;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_ALL_ENEMY_SHIPS))
-            {
-                actornum = STA_AllEnemyShips;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_AMBASSADOR))
-            {
-                actornum = STA_Ambassador;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_NARRATOR))
-            {
-                actornum = STA_Narrator;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_DEFECTOR))
-            {
-                actornum = STA_Defector;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_EMPEROR))
-            {
-                actornum = STA_Emperor;
-            }
-            else if (bitTest(speechEvent, SPEECH_ACTOR_KHAR_SELIM))
-            {
-                actornum = STA_KharSelim;
-            }
-            else
-            {
-                //dbgFatalf(DBG_Loc, "Invalid actor 0x%x with speech event 0x%x", actornum, speechEvent);
-                ;//just assume fleet command!!!is this valid?
-            }
+        if (actornum == 0) //all single-player voices are on the same channel
+        {                                                   
+                 if (bitTest(speechEvent, SPEECH_ACTOR_FLEET_COMMAND))      actornum = STA_FleetCommand;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_FLEET_INTELLIGENCE)) actornum = STA_FleetIntel;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_TRADERS))            actornum = STA_Traders;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_P2_KADESHI))         actornum = STA_Pirates2;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_ALL_ENEMY_SHIPS))    actornum = STA_AllEnemyShips;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_AMBASSADOR))         actornum = STA_Ambassador;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_NARRATOR))           actornum = STA_Narrator;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_DEFECTOR))           actornum = STA_Defector;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_EMPEROR))            actornum = STA_Emperor;
+            else if (bitTest(speechEvent, SPEECH_ACTOR_KHAR_SELIM))         actornum = STA_KharSelim;
         }
         subTitleAdd(actornum, speechEvent, subTitle, length, time);
     }
@@ -859,7 +824,7 @@ sdword isoundstreamreadheader(STREAM *pstream)
             pqueue->mixHandle = splayMUTE((void *)pqueue->pmixPatch, SOUND_FLAGS_PATCHPOINTER, pqueue->pan, SOUND_PRIORITY_STREAM, pqueue->mixLevel);
         }
     }
-        
+    
     pstream->dataleft = pstream->header.size;
     pstream->numqueued--;
     
@@ -1127,7 +1092,6 @@ static int streamerThread( void* v ) {
             case SOUND_STARTING: SDL_Delay( 1 );                   break;
             default:             SDL_SemWait( streamerThreadSem ); break;
         }
-            
     }
 
     return 0;

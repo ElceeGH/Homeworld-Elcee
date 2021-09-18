@@ -1627,7 +1627,7 @@ static void scriptSetMissionSphereCB(char *directory,char *field,void *dataToFil
 
     if (sphererotz >= 1000.0)
     {
-        missionSphereInfo.sphererotz = (real32)atan2((double)position.y,(double)position.x) - (PI/2.0f);
+        missionSphereInfo.sphererotz = atan2f(position.y,position.x) - (PI/2.0f);
     }
     else
     {
@@ -1713,7 +1713,7 @@ static void scriptPreMissionSphereCB(char *directory,char *field,void *dataToFil
 
     if (sphererotz >= 1000.0)
     {
-        missionSphereInfo.sphererotz = (real32)atan2((double)position.y,(double)position.x) - (PI/2.0f);
+        missionSphereInfo.sphererotz = atan2f(position.y,position.x) - (PI/2.0f);
     }
     else
     {

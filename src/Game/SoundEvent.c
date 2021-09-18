@@ -2954,7 +2954,7 @@ sword getPanAngle(vector WorldVector, real32 objsize, real32 distance)
         dotprod = -1.0f;
     else if(dotprod > 1.0f)
         dotprod = 1.0f;
-    angle = (float) acos(dotprod);
+    angle = acosf(dotprod);
 
     if(Prright < 0.0f)
        angle = -angle;
@@ -2986,7 +2986,7 @@ sword SEgetAngleToCamera(Ship *ship)
 
     dotprod = vecDotProduct(ShipToCamera,ShipDest);
 
-    angle = (float) acos(dotprod);
+    angle = acosf(dotprod);
 
     return((sword) (angle*PI_UNDER_180));
 }

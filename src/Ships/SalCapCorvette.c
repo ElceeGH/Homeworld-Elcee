@@ -2729,7 +2729,7 @@ void SalCapCorvetteHouseKeep(Ship *ship)
                 matGetVectFromMatrixCol2(CurrentUp,spec->target->clamInfo->clampCoordsys);
                 matGetVectFromMatrixCol3(CurrentHeading,spec->target->clamInfo->clampCoordsys);
 
-                if(acos(vecDotProduct(newHeding,CurrentHeading)) < 10.0f
+                if(acosf(vecDotProduct(newHeding,CurrentHeading)) < 10.0f
 
 
 
@@ -3195,7 +3195,7 @@ void dockDrawSalvageInfo(SpaceObjRotImpTargGuidanceShipDerelict *obj)
 
         matGetVectFromMatrixCol1(realHeading,obj->rotinfo.coordsys);
         cosAngle = vecDotProduct(fakeHeading,velocityN);
-        Angle = acos(cosAngle);
+        Angle = acosf(cosAngle);
 
                 matMultiplyVecByMat(&N,&fakeHeading,&obj->rotinfo.coordsys);
                 vecScalarMultiply(to,N,6000.0f);

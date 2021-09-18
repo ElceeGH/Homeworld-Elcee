@@ -3384,11 +3384,11 @@ void singlePlayerStartNis(char *nisname, char *scriptname, bool centreMothership
         cross = vecDotProduct(heading, normal);
         if (heading.y < 0.0f)
         {
-            angle = TWOPI - (real32)acos((double)cross);
+            angle = TWOPI - acosf(cross);
         }
         else
         {
-            angle = (real32)acos((double)cross);
+            angle = acosf(cross);
         }
 
     }
