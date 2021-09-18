@@ -95,7 +95,7 @@ void main() {
     // Add glow near the plane.
     // The glow is modulated with the texture so it doesn't appear too flat.
     float glow = nearPlaneGlow( dist );
-    col += (col*glow*0.5*uGlowCol) + (glow*glow*uGlowCol);
+    col += (col*glow*0.25*uGlowCol) + (0.25*glow*glow*uGlowCol);
     
     // Back faces become the cross section colour.
     if ( ! gl_FrontFacing)
