@@ -22,26 +22,116 @@
 
 /* functions */
 static sdword isoundstreamreadheader(STREAM *pstream);
-static int streamerThread( void* v );
+static int    streamerThread( void* v );
 
-SDL_sem* streamerThreadSem = NULL;
-CHANNEL  speechchannels[SOUND_MAX_STREAM_BUFFERS];
-STREAM   streams[SOUND_MAX_STREAM_BUFFERS];
-sdword   numstreams;
+static void   soundstreamqueryUnsynchronised(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
+static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword size, uword bitrate);
+static sdword soundstreamnumqueuedUnsynchronised(sdword streamhandle);
+static void   soundstreamstopallUnsynchronised(real32 fadetime);
+static sdword soundstreamoverUnsynchronised(sdword streamhandle);
+static sdword soundstreamfadingUnsynchronised(sdword streamhandle);
+static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize filehandle, smemsize, udword, sword, sword, sword, sword, EFFECT*, STREAMEQ*, STREAMDELAY*, void*, sdword, real32, real32, sdword, sdword, bool);
+static sword  soundstreamgetvolUnsynchronised(sdword handle);
+static sdword soundstreamvolumeUnsynchronised(sdword handle, sword vol, real32 fadetime);
+
+
+/* data */
+SDL_mutex* streamerDataMutex = NULL;
+SDL_sem*   streamerThreadSem = NULL;
+
+CHANNEL speechchannels[SOUND_MAX_STREAM_BUFFERS];
+STREAM  streams[SOUND_MAX_STREAM_BUFFERS];
+sdword  numstreams;
 
 #if VCE_BACKWARDS_COMPATIBLE
 bool ssOldFormatVCE = FALSE;
 #endif
 
 
-extern CHANNEL      channels[];
-extern SENTENCELUT *SentenceLUT;
-extern bool         soundinited;
+/* extern data */
+extern CHANNEL        channels[];
+extern SENTENCELUT*   SentenceLUT;
+extern bool           soundinited;
 extern SOUNDCOMPONENT streamer;
-extern udword mixerticks;
+extern udword         mixerticks;
 
 extern bool bSoundPaused;
 extern bool bSoundDeactivated;
+
+
+
+static void streamStartThread(void)
+{
+    streamerThreadSem = SDL_CreateSemaphore( 1 );
+    streamerDataMutex = SDL_CreateMutex();
+    SDL_CreateThread(streamerThread, "soundstream", NULL);
+}
+
+
+/// These are all just mutex wrappers for the stream functions.
+
+void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize) {
+    SDL_LockMutex( streamerDataMutex );
+    soundstreamqueryUnsynchronised( maxstreams, pbuffersize, pstreamersize);
+    SDL_UnlockMutex( streamerDataMutex );
+}
+
+sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamcreatebufferUnsynchronised( pstreambuffer, size, bitrate);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+sdword soundstreamnumqueued(sdword streamhandle) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamnumqueuedUnsynchronised(streamhandle);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+void soundstreamstopall(real32 fadetime) {
+    SDL_LockMutex( streamerDataMutex );
+    soundstreamstopallUnsynchronised(fadetime);
+    SDL_UnlockMutex( streamerDataMutex );
+}
+
+
+sdword soundstreamover(sdword streamhandle) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamoverUnsynchronised(streamhandle);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+sdword soundstreamfading(sdword streamhandle) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamfadingUnsynchronised(streamhandle);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+sdword soundstreamqueuePatch(sdword streamhandle, smemsize filehandle, smemsize offset, udword flags, sword vol, sword pan, sword numchannels, sword bitrate, EFFECT *peffect, STREAMEQ *pEQ, STREAMDELAY *pdelay, void *pmixpatch, sdword level, real32 silence, real32 fadetime, sdword actornum, sdword speechEvent, bool bWait) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamqueuePatchUnsynchronised(streamhandle, filehandle, offset, flags, vol, pan, numchannels, bitrate, peffect, pEQ, pdelay, pmixpatch, level, silence, fadetime, actornum, speechEvent, bWait);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+sword soundstreamgetvol(sdword handle) {
+    SDL_LockMutex( streamerDataMutex );
+    sword ret = soundstreamgetvolUnsynchronised(handle);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
+sdword soundstreamvolume(sdword handle, sword vol, real32 fadetime) {
+    SDL_LockMutex( streamerDataMutex );
+    sdword ret = soundstreamvolumeUnsynchronised(handle, vol, fadetime);
+    SDL_UnlockMutex( streamerDataMutex );
+    return ret;
+}
+
 
 
 /*-----------------------------------------------------------------------------
@@ -51,7 +141,7 @@ extern bool bSoundDeactivated;
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/
-void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize)
+void soundstreamqueryUnsynchronised(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize)
 {
     if (maxstreams > SOUND_MAX_STREAM_BUFFERS)
     {
@@ -71,13 +161,6 @@ void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamers
 
 
 
-static void streamStartThread(void)
-{
-    streamer.status = SOUND_PLAYING;
-    SDL_CreateThread(streamerThread, "soundstream", NULL);
-}
-
-
 /*-----------------------------------------------------------------------------
     Name		:
     Description	:
@@ -87,42 +170,32 @@ static void streamStartThread(void)
 ----------------------------------------------------------------------------*/
 sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
 {
-    sdword i, j;
-    STREAM *pstream;
-
     memset(pstreamer, 0, size);
-
     dbgAssertOrIgnore(streamer.status == SOUND_FREE);
 
     /* go through stream structures and init */
-    for (i = 0; i < numstreams; i++)
+    for (sdword i = 0; i < numstreams; i++)
     {
-        pstream = &streams[i];
+        STREAM* pstream = &streams[i];
 
         pstream->buffer = NULL;
-        for (j = 0; j < SOUND_MAX_STREAM_QUEUE; j++)
+        for (sdword j = 0; j < SOUND_MAX_STREAM_QUEUE; j++)
         {
             pstream->queue[j].fhandle = SOUND_ERR;
-            pstream->queue[j].offset = SOUND_ERR;
+            pstream->queue[j].offset  = SOUND_ERR;
         }
         pstream->numqueued = 0;
         pstream->numtoplay = 0;
-        if (i < SentenceLUT->numactors)
-        {
-            pstream->dataPeriod = SND_BLOCK_TIME / (SentenceLUT->compbitrate[i] / 8);
-        }
-        else
-        {
-            pstream->dataPeriod = SND_BLOCK_TIME / (SentenceLUT->compbitrate[0] / 8);
-        }
+
+        sdword index = (i < SentenceLUT->numactors) ? i : 0;
+        pstream->dataPeriod = SND_BLOCK_TIME / (SentenceLUT->compbitrate[index] / 8);
 
         speechchannels[i].status = SOUND_FREE;
     }
 
-    streamerThreadSem = SDL_CreateSemaphore( 1 );
     streamStartThread();
 
-    return (SOUND_OK);
+    return SOUND_OK;
 }
 
 
@@ -135,7 +208,7 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
 ----------------------------------------------------------------------------*/
 udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
 {
-    filehandle streamfile;
+    ;
     udword identifier;
     udword checksum;
     udword flags;
@@ -153,7 +226,7 @@ udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
         }
     }
 
-    streamfile = fileOpen(pszStreamFile, flags);
+    filehandle streamfile = fileOpen(pszStreamFile, flags);
     *handle = streamfile;
 
 #if VCE_BACKWARDS_COMPATIBLE
@@ -191,10 +264,10 @@ udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
     Outputs		:
     Return		: the handle to the stream
 ----------------------------------------------------------------------------*/	
-sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate)
+static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword size, uword bitrate)
 {
-    sdword	channel = 0;
-    CHANNEL	*pchan = NULL;
+    sdword	channel  = 0;
+    CHANNEL	*pchan   = NULL;
     STREAM	*pstream = NULL;
 
     for (sdword i = 0; i < numstreams; i++)
@@ -214,7 +287,6 @@ sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate)
             fqAcModel(NULL, NULL, 0, pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
             fqAcModel(NULL, NULL, 0, pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
 #endif
-
             break;
         }
     }
@@ -254,7 +326,7 @@ sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword soundstreamnumqueued(sdword streamhandle)
+static sdword soundstreamnumqueuedUnsynchronised(sdword streamhandle)
 {
 #if 1
     if (speechchannels[SNDchannel(streamhandle)].status <= SOUND_INUSE)
@@ -277,7 +349,7 @@ sdword soundstreamnumqueued(sdword streamhandle)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-void soundstreamstopall(real32 fadetime)
+static void soundstreamstopallUnsynchronised(real32 fadetime)
 {
     sdword i;
 
@@ -293,7 +365,7 @@ void soundstreamstopall(real32 fadetime)
 }
 
 
-sdword soundstreamover(sdword streamhandle)
+static sdword soundstreamoverUnsynchronised(sdword streamhandle)
 {
     sdword channel;
 
@@ -320,7 +392,7 @@ sdword soundstreamover(sdword streamhandle)
 }
 
 
-sdword soundstreamfading(sdword streamhandle)
+static sdword soundstreamfadingUnsynchronised(sdword streamhandle)
 {
     sdword channel;
 
@@ -354,7 +426,7 @@ sdword soundstreamfading(sdword streamhandle)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword soundstreamqueuePatch(sdword streamhandle, smemsize filehandle, smemsize offset, udword flags, sword vol, sword pan, sword numchannels, sword bitrate, EFFECT *peffect, STREAMEQ *pEQ, STREAMDELAY *pdelay, void *pmixpatch, sdword level, real32 silence, real32 fadetime, sdword actornum, sdword speechEvent, bool bWait)
+static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize filehandle, smemsize offset, udword flags, sword vol, sword pan, sword numchannels, sword bitrate, EFFECT *peffect, STREAMEQ *pEQ, STREAMDELAY *pdelay, void *pmixpatch, sdword level, real32 silence, real32 fadetime, sdword actornum, sdword speechEvent, bool bWait)
 {
     if (streamer.status == SOUND_STOPPING) 
     {
@@ -482,7 +554,7 @@ sdword soundstreamqueuePatch(sdword streamhandle, smemsize filehandle, smemsize 
     Outputs		:
     Return		: SOUND_OK if successful, SOUND_ERR on error
 ----------------------------------------------------------------------------*/	
-sdword soundstreamvolume(sdword handle, sword vol, real32 fadetime)
+static sdword soundstreamvolumeUnsynchronised(sdword handle, sword vol, real32 fadetime)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -621,7 +693,7 @@ sdword soundstreamvolume(sdword handle, sword vol, real32 fadetime)
                     to read this here to determine the length of the phrase.
     Return      : length of subtitle info read or -1 if there is no subtitle
 ----------------------------------------------------------------------------*/
-sdword ssSubtitleRead(STREAMHEADER *header, filehandle handle, sdword actornum, sdword speechEvent, real32 dataPeriod)
+static sdword ssSubtitleRead(STREAMHEADER *header, filehandle handle, sdword actornum, sdword speechEvent, real32 dataPeriod)
 {
     sdword length, length2 = 0;
     char subTitle[SUB_SubtitleLength];
@@ -708,7 +780,9 @@ foundInfo:;
     return(length + length2 + sizeof(STREAMHEADER));
 }
 
-sword soundstreamgetvol(sdword handle)
+
+
+static sword soundstreamgetvolUnsynchronised(sdword handle)
 {
     sdword channel;
     
@@ -732,7 +806,8 @@ sword soundstreamgetvol(sdword handle)
 }
 
 
-sdword isoundstreamreadheader(STREAM *pstream)
+
+static sdword isoundstreamreadheader(STREAM *pstream)
 {
     sdword ret, length, i;
     STREAMQUEUE * pqueue = &pstream->queue[pstream->writeindex];
@@ -832,7 +907,8 @@ sdword isoundstreamreadheader(STREAM *pstream)
 }
 
 
-sdword isoundstreamreadblock(STREAMQUEUE *pqueue, void *buffer, smemsize position, sdword size)
+
+static sdword isoundstreamreadblock(STREAMQUEUE *pqueue, void *buffer, smemsize position, sdword size)
 {
     sdword ret = SOUND_ERR;
 
@@ -1036,11 +1112,31 @@ static void streamerWriteStream( STREAM* const pstream, CHANNEL* const pchan, ST
 
 
 
+static void streamerUpdateStreams( void ) {
+    SDL_LockMutex( streamerDataMutex );
+
+    for (sdword i=0; i<numstreams; i++) {
+        STREAM* const  pstream = &streams[i];
+        CHANNEL* const pchan   = &speechchannels[i];
+        STREAMQUEUE*   pqueue  = &pstream->queue[pstream->writeindex];
+            
+        if (pstream->status == SOUND_STREAM_STARTING)
+            streamerStartStream( pstream, pchan, pqueue );
+            
+        if (pstream->status == SOUND_STREAM_WRITING)
+            streamerWriteStream( pstream, pchan, pqueue );
+    }
+
+    SDL_UnlockMutex( streamerDataMutex );
+}
+
+
+
 static void streamerProcess( void ) {   
     if (streamer.status == SOUND_STOPPING && streamer.timeout <= mixerticks) { /* stopping, check and see if its done yet */
         streamerFree();
         streamer.timeout = 0;
-        streamer.status = SOUND_STOPPED;
+        streamer.status  = SOUND_STOPPED;
     }
     
     if (bSoundDeactivated && (streamer.status == SOUND_PLAYING)  && !bSoundPaused) {
@@ -1051,18 +1147,8 @@ static void streamerProcess( void ) {
         if (bSoundPaused && (streamer.status == SOUND_PLAYING)) {
             streamer.status = SOUND_STOPPING;
         }
-        
-        for (sdword i=0; i<numstreams; i++) {
-            STREAM* const  pstream = &streams[i];
-            CHANNEL* const pchan   = &speechchannels[i];
-            STREAMQUEUE*   pqueue  = &pstream->queue[pstream->writeindex];
-    
-            if (pstream->status == SOUND_STREAM_STARTING)
-                streamerStartStream( pstream, pchan, pqueue );
-            
-            if (pstream->status == SOUND_STREAM_WRITING)
-                streamerWriteStream( pstream, pchan, pqueue );
-        }
+
+        streamerUpdateStreams();
     }
     else if (streamer.status == SOUND_STOPPED) {
         /* mixer is paused so don't do nothing */
@@ -1080,6 +1166,8 @@ static void streamerProcess( void ) {
 
 
 static int streamerThread( void* v ) {
+    streamer.status = SOUND_PLAYING;
+
     while (soundinited && (streamer.status >= SOUND_STOPPED)) {
         // Streams are double buffered so iterate the streams at least twice per call.
         for (udword i=0; i<2; i++)
