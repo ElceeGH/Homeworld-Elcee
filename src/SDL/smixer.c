@@ -48,10 +48,8 @@ struct fake_wavehdr {
 } WaveHead[WO_NUM_BUFFER_BLOCKS];
 
 udword mixerticks = 0;
-udword panicdur = 0L;
 udword framecount = 0L;
 
-bool panicflag=FALSE;
 sdword numvoices = 0;
 
 udword buffersize;
@@ -159,14 +157,6 @@ void soundMixerSetMode(sdword mode)		// mode SOUND_MODE_NORM or SOUND_MODE_AUTO 
 
 #endif // _MACOSX_FIX_SOUND
 
-	return;
-}
-
-void soundPanicReset(void)
-{
-	// reset frame count
-	framecount=0;
-	panicflag=TRUE;
 	return;
 }
 

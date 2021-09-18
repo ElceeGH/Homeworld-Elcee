@@ -148,15 +148,9 @@ void soundSetNumVoices(sdword num,sdword mode);     // mode SOUND_MODE_NORM or S
 void soundMixerGetMode(sdword *mode);   // mode SOUND_MODE_NORM or SOUND_MODE_AUTO or SOUND_MODE_LOW
 void soundMixerSetMode(sdword mode);    // mode SOUND_MODE_NORM or SOUND_MODE_AUTO or SOUND_MODE_LOW
 
-// Panic mode functions
-void soundPanic(void);
-void soundPanicReset(void); // mixer.c
-
 /* functions */
-//sdword soundinit(HWND hWnd, sdword mode);
 sdword soundinit(bool mode);
-//sdword soundreinit(HWND hWnd);
-sdword soundreinit();
+sdword soundreinit(void);
 void soundrestore(void);
 void soundclose(void);
 

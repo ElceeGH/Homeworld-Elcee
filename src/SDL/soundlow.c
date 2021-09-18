@@ -99,9 +99,6 @@ void sounddeactivate(bool bDeactivate)
             SDL_PauseAudio(FALSE);
         }
     }
-
-    /* reset panic mode */
-    soundPanicReset(); // mixer.c
 }
 
 
@@ -186,7 +183,7 @@ sdword soundinit(bool mode)
 }
 
 
-sdword soundreinit()
+sdword soundreinit(void)
 {
     // couldn't init DSound so use Waveout instead
     useWaveout = TRUE;
