@@ -2275,6 +2275,7 @@ static bool    hsProgramActive = FALSE;
 
 
 void hsProgramMeshMatCallback( void ) {
+    // Get the texturing mode. Homeworld does fullbright by disabling lighting.
     const GLint locTexMode   = glGetUniformLocation( *hsProgram, "uTexMode"   );
     const GLint locTexEnable = glGetUniformLocation( *hsProgram, "uTexEnable" );
     glUniform1i( locTexMode,   rndTextureEnviron == RTE_Modulate );
@@ -2332,7 +2333,7 @@ void hsProgramUpdate( void ) {
     glUniform4fv      ( locClipPlane, 1, &plane.x           );
     glUniform4fv      ( locViewport,  1, &viewport.x        );
     glUniformMatrix4fv( locProjInv,   1, GL_FALSE, &inv.m11 );
-    glUniform1f       ( locGlowDist,     160.0f             ); // (TODO: scale with the ship. or maybe not, looks pretty good as-is...)
+    glUniform1f       ( locGlowDist,     256.0f             ); // (TODO: scale with the ship. or maybe not, looks pretty good as-is...)
     glUniform4fv      ( locGlowCol,   1, &glowCol.x         );
     glUniform4fv      ( locCrossCol,  1, &crossCol.x        );
 }
