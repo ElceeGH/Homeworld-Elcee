@@ -343,9 +343,8 @@ sdword soundEventPlay(void *object, sdword event, Gun *gun)
 					// don't want to play this sound from the manager screens
 					break;
 				}
-				dbgMessagef("SoundEventPlay: Explosion event %d", event);
 				effect = (Effect *)object;
-				dist = (real32)sqrtf(effect->cameraDistanceSquared);
+				dist = sqrtf(effect->cameraDistanceSquared);
 				if (SEinrange((event - Exp_Flag) + EXPLOSION_OFFSET, dist))
 				{
 					vol = SEequalize((event - Exp_Flag) + EXPLOSION_OFFSET, dist, tempEQ);
