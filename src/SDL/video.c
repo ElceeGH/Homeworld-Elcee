@@ -69,7 +69,7 @@ static bool   videoUpdate      (       Video* vid );
 static void   videoConvert     (       Video* vid );
 static void   videoUpload      (       Video* vid );
 static void   videoRender      ( const Video* vid );
-static real32 videoScale       ( const Video* vid );
+static real32 videoScale       ( const Video* vid, const float aspect );
 static void   videoUpdateStatus(       Video* vid );
 
 
@@ -283,11 +283,13 @@ static void videoUpload( Video* vid ) {
 
 
 
-/// Get height adjusted for scaling purposes. Does not affect positioning.
+/// Get height adjusted for scaling purposes.
 /// Homeworld's animatic videos are 640x480 but their video framing is widescreen 16:10.
 /// For animatics we'll crop out the black bars, for anything else we make no assumptions.
-static real32 videoScale( const Video* vid ) {
-    return (vid->params.animatic) ? 1.6f : 1.0f;
+static real32 videoScale( const Video* vid, float aspectW ) {
+    if (vid->params.animatic)
+         return min( aspectW, 1.6f );
+    else return 1.0f;
 }
 
 
@@ -315,9 +317,10 @@ static void videoRender( const Video* vid ) {
     const real32 vidH = (real32) vid->lav.cparams->height;
 
     // Aspect-correct inclusive scale
+    const real32 aspect = winW / winH;
     const real32 scaleX = winW / vidW;
-    const real32 scaleY = winH / vidH;
-    const real32 scale  = min(scaleX, scaleY) * videoScale(vid);
+    const real32 scaleY = winH / videoScale(vid,aspect);
+    const real32 scale  = min(scaleX, scaleY);
 
     // Translation to centre projection in window
     const real32 transX   = (winW - vidW) / 2.0f;
@@ -384,7 +387,6 @@ static void videoHandleEvents( bool* more ) {
 
 
 /// Play a video. Blocks until complete/skipped.
-/// The video can be skipped by pressing any key.
 /// Callbacks allow external code to take action after each update and render.
 void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, bool isAnimatic ) {
     // Create the full file path
