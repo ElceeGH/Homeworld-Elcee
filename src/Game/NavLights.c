@@ -111,8 +111,8 @@ void RenderNAVLights(Ship* ship)
         // Scaling params
         bool   isBig      = ship->flags & SOF_BigObject;
         real32 resScaling = getResDensityRelative();
-        real32 nearThresh = isBig ? 1500 : 100;
-        real32 farThresh  = isBig ? 6000 : 4000;
+        real32 nearThresh = isBig ? 1500.0f : 100.0f;
+        real32 farThresh  = isBig ? 6000.0f : 4000.0f;
         real32 nearScale  = 5.0f * resScaling;
         real32 farScale   = 1.0f * resScaling;
 
