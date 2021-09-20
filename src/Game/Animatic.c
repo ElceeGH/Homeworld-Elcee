@@ -14,6 +14,7 @@
 #include "NIS.h"
 #include "SinglePlayer.h"
 #include "SoundEvent.h"
+#include "SoundEventPrivate.h" // musicEventUpdateVolume required
 #include "soundlow.h"
 #include "StringSupport.h"
 #include "Subtitle.h"
@@ -67,6 +68,10 @@ static void animCleanup( void )
     soundEventSFXVol   ( animPreviousSFXVolume    );
 
     animaticJustPlayed = 8;
+
+    rndSetClearColor(colBlack);
+    rndClear();
+    rndFlush();
 }
 
 
@@ -317,6 +322,7 @@ static void animUpdateCallback( VideoStatus status ) {
         event++;
     }
 
+    musicEventUpdateVolume();
     speechEventUpdate();
     subTitlesUpdate();
 }
