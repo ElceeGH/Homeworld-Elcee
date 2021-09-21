@@ -33,6 +33,7 @@
 #include "Tactics.h"
 #include "Teams.h"
 #include "Universe.h"
+#include "rResScaling.h"
 
 #define MIN2(x,y) ((x) < (y) ? (x) : (y))
 #define MAX2(x,y) ((x) > (y) ? (x) : (y))
@@ -1718,27 +1719,6 @@ void trailLine(sdword LOD, sdword i, vector vectors[], color c,
 #undef COLw
 
 /*-----------------------------------------------------------------------------
-    Name        : mistrailDrawLine
-    Description :
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void mistrailDrawLine(vector* a, vector* b, sdword segment, sdword nSegments, color c0, color c1)
-{
-    sdword alpha;
-
-    alpha = (sdword)(255.0f * (1.0f - ((real32)segment / (real32)nSegments)));
-
-    glBegin(GL_LINES);
-    glColor4ub(colRed(c0), colGreen(c0), colBlue(c0), (GLubyte)alpha);
-    glVertex3fv((GLfloat*)a);
-    glColor4ub(colRed(c1), colGreen(c1), colBlue(c1), (GLubyte)alpha);
-    glVertex3fv((GLfloat*)b);
-    glEnd();
-}
-
-/*-----------------------------------------------------------------------------
     Name        : mistrailDraw
     Description : draw missile trails
     Inputs      :
@@ -1747,50 +1727,43 @@ void mistrailDrawLine(vector* a, vector* b, sdword segment, sdword nSegments, co
 ----------------------------------------------------------------------------*/
 void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamIndex)
 {
-    sdword index, count;
-    vector* lastVector;
-    trailstatic* trailStatic = trail->staticInfo;
-    color prevColor = colBlack;
-    color* segmentArray;
-
     if (!enableTrails)
-    {
         return;
-    }
 
     dbgAssertOrIgnore(teamIndex >= 0 && teamIndex < MAX_MULTIPLAYER_PLAYERS);
+
+    if (trail->nLength < 1)
+        return;
 
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
     glShadeModel(GL_SMOOTH);
-
-    index = trail->iHead <= 0 ? trailStatic->nSegments - 1 : trail->iHead - 1;
-    lastVector = current;
-    segmentArray = trail->staticInfo->segmentColor[teamIndex];
-
     rndAdditiveBlends(TRUE);
     glEnable(GL_BLEND);
+    glLineWidth( sqrtf(getResDensityRelative()) );
+    glBegin( GL_LINE_STRIP );
 
-    for (count = 1; count < trail->nLength; count++)
+    color* const segmentArray = trail->staticInfo->segmentColor[teamIndex];
+    const sdword segmentCount = trail->staticInfo->nSegments;
+    const sdword limit        = min( trail->nLength, segmentCount );
+    sdword       index        = (trail->iHead <= 0 ? limit : trail->iHead) - 1;
+
+    for (sdword count=0; count<limit; count++)
     {
-        dbgAssertOrIgnore(index >= 0 && index < trailStatic->nSegments);
+        const real32 fraction = 1.0f - (real32)count / (real32)limit;
+        const ubyte  alpha    = (ubyte)(255.0f * fraction);
+        const color  col      = segmentArray[ count ];
 
-        if (count == 1)
-        {
-            prevColor = segmentArray[count];
-        }
-        mistrailDrawLine(lastVector, &trail->segments[index].position,
-                         count, trail->nLength, prevColor, segmentArray[count]);
-        prevColor = segmentArray[count];
+        glColor4ub(colRed(col), colGreen(col), colBlue(col), alpha );
+        glVertex3fv( &trail->segments[index].position.x );
 
-        lastVector = &trail->segments[index].position;
-        index = index <= 1 ? trailStatic->nSegments - 1: index - 1;
+        index = (index <= 0 ? limit : index) - 1;
         if (index == trail->iHead)
-        {
             break;
-        }
     }
 
+    glEnd();
+    glLineWidth(1.0f);
     rndLightingEnable(TRUE);
     glDisable(GL_BLEND);
     rndAdditiveBlends(FALSE);
