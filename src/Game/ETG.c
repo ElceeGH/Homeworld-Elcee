@@ -847,13 +847,14 @@ real32 etgTimeIndexTime;
 
 //variables for ETG user tweaks:
 real32 etgSoftwareScalarDamage = ETG_SoftwareScalarDamage;//scale damage effects down when in software mode.
-real32 etgSoftwareScalarHit = ETG_SoftwareScalarHit;//scale down hits, deflections, bullet deaths
-real32 etgSoftwareScalarFire = ETG_SoftwareScalarFire;//scale down muzzle flash effects
-sdword etgHistoryScalar = 256;                  //scale down the number of effects at the user's command
-sdword etgHistoryScalarMin = ETG_HistoryScalarMin;//minimum frequency scale-down
+real32 etgSoftwareScalarHit    = ETG_SoftwareScalarHit;//scale down hits, deflections, bullet deaths
+real32 etgSoftwareScalarFire   = ETG_SoftwareScalarFire;//scale down muzzle flash effects
+real32 etgEffectFrequencyScale = 2.0f;          //scale up/down number of effects. @todo expose as an option.
+sdword etgHistoryScalar        = 256;                  //scale down the number of effects at the user's command
+sdword etgHistoryScalarMin     = ETG_HistoryScalarMin;//minimum frequency scale-down
 bool   etgDamageEffectsEnabled = TRUE;          //damage effects on
-bool   etgHitEffectsEnabled = TRUE;             //hit effects on
-bool   etgFireEffectsEnabled = TRUE;            //muzzle flash effects on
+bool   etgHitEffectsEnabled    = TRUE;          //hit effects on
+bool   etgFireEffectsEnabled   = TRUE;          //muzzle flash effects on
 bool   etgBulletEffectsEnabled = TRUE;          //bullet effects on
 
 /*=============================================================================
@@ -7899,6 +7900,7 @@ bool etgFrequencyExceeded(etgeffectstatic *stat)
     }
 
     max = max * etgHistoryScalar / 256;
+    max = (sdword) ((real32)max * etgEffectFrequencyScale);
     if (countThisSecond >= max)
     {
         return(TRUE);                                       //all used, don't play
