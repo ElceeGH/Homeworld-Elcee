@@ -348,7 +348,13 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, udword maxDet
         if (obj->flags & SOF_BigObject)
             dist = 0.0f;
 
-        // @todo Mines... Haven't tried those yet.
+        // Mines are a special case with special visibility needs.
+        if (obj->objtype == OBJ_MissileType) {
+            const Missile* missile = (const Missile*) spaceObj;
+            if (missile->missileType == MISSILE_Mine) {
+                dist = vecMagnitudeSquared(vec);
+            }
+        }
     }
     
 #if LOD_SCALE_DEBUG
