@@ -56,7 +56,6 @@ static sdword       numchans[4] = {0,0,0,0};
 static BANKPOINTERS bankpointers[4];
 
 /* Imports */
-extern SDL_mutex* mixerDataMutex;
 extern real32 cardiod[];
 extern udword mixerticks;
 
@@ -99,93 +98,6 @@ void sounddeactivate(bool bDeactivate)
         }
     }
 }
-
-
-
-/// Mutex wrappers
-static void   soundstopallSFXasync (real32 fadetime, bool stopStreams);
-static bool   soundoverasync       (sdword handle);
-static sdword soundstopasync       (sdword handle, real32 fadetime);
-static sdword soundrestartasync    (sdword handle);
-static sdword soundvolumeFasync    (sdword handle, sword vol, real32 fadetime);
-static sdword soundpanFasync       (sdword handle, sword pan, real32 fadetime);
-static sdword soundfrequencyasync  (sdword handle, real32 freq);
-static sdword soundequalizeasync   (sdword handle, real32 *eq);
-static sdword soundshipheadingasync(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor);
-static sdword splayFPRVLasync      (void *bankaddress, sdword patnum, real32 *eq, real32 freq, sword pan, sdword priority, sword vol, bool startatloop, bool fadein, bool mute);
-
-
-
-void soundstopallSFX(real32 fadetime, bool stopStreams) {
-    SDL_LockMutex(mixerDataMutex);
-    soundstopallSFXasync(fadetime,stopStreams);
-    SDL_UnlockMutex(mixerDataMutex);
-}
-
-bool soundover(sdword handle) {
-    SDL_LockMutex(mixerDataMutex);
-    bool ret = soundoverasync(handle);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundstop(sdword handle, real32 fadetime) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundstopasync( handle, fadetime );
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundrestart(sdword handle) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundrestartasync( handle );
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundvolumeF(sdword handle, sword vol, real32 fadetime) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundvolumeFasync(handle, vol, fadetime);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundpanF(sdword handle, sword pan, real32 fadetime) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundpanFasync(handle, pan, fadetime);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundfrequency(sdword handle, real32 freq) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundfrequencyasync(handle, freq);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundequalize(sdword handle, real32 *eq) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundequalizeasync(handle, eq);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = soundshipheadingasync(handle, heading, highband, lowband, velfactor, shipfactor);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-sdword splayFPRVL(void *bankaddress, sdword patnum, real32 *eq, real32 freq, sword pan, sdword priority, sword vol, bool startatloop, bool fadein, bool mute) {
-    SDL_LockMutex(mixerDataMutex);
-    sdword ret = splayFPRVLasync( bankaddress, patnum, eq, freq, pan, priority, vol, startatloop, fadein, mute);
-    SDL_UnlockMutex(mixerDataMutex);
-    return ret;
-}
-
-
 
 
 
@@ -278,7 +190,7 @@ void soundpause(bool bPause)
     }
 }
 
-void soundstopallSFXasync(real32 fadetime, bool stopStreams)
+void soundstopallSFX(real32 fadetime, bool stopStreams)
 {
     for (sdword i = 0; i < soundnumvoices; i++) {
         if (channels[i].handle > SOUND_DEFAULT) {
@@ -331,7 +243,7 @@ udword soundbankadd(void *bankaddress)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-bool soundoverasync(sdword handle)
+bool soundover(sdword handle)
 {
     if (handle < SOUND_OK) {
         return TRUE;
@@ -361,7 +273,7 @@ bool soundoverasync(sdword handle)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/
-sdword soundstopasync(sdword handle, real32 fadetime)
+sdword soundstop(sdword handle, real32 fadetime)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -435,7 +347,7 @@ sdword soundstopasync(sdword handle, real32 fadetime)
     Outputs		:
     Return		: SOUND_OK if successful, SOUND_ERR on error
 ----------------------------------------------------------------------------*/	
-sdword soundrestartasync(sdword handle)
+sdword soundrestart(sdword handle)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -475,7 +387,7 @@ sdword soundrestartasync(sdword handle)
     Outputs		:
     Return		: SOUND_OK if successful, SOUND_ERR on error
 ----------------------------------------------------------------------------*/	
-sdword soundvolumeFasync(sdword handle, sword vol, real32 fadetime)
+sdword soundvolumeF(sdword handle, sword vol, real32 fadetime)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -557,7 +469,7 @@ dbgAssertOrIgnore(pchan->volticksleft != 0);
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword soundpanFasync(sdword handle, sword pan, real32 fadetime)
+sdword soundpanF(sdword handle, sword pan, real32 fadetime)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -634,7 +546,7 @@ sdword soundpanFasync(sdword handle, sword pan, real32 fadetime)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword soundfrequencyasync(sdword handle, real32 freq)
+sdword soundfrequency(sdword handle, real32 freq)
 {
     CHANNEL *pchan;
     sdword channel;
@@ -681,7 +593,7 @@ sdword soundfrequencyasync(sdword handle, real32 freq)
     Outputs		:
     Return		: SOUND_OK if successful, SOUND_ERR on error
 ----------------------------------------------------------------------------*/	
-sdword soundequalizeasync(sdword handle, real32 *eq)
+sdword soundequalize(sdword handle, real32 *eq)
 {
     if (!soundinited) {
         return SOUND_ERR;
@@ -718,7 +630,7 @@ sdword soundequalizeasync(sdword handle, real32 *eq)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword soundshipheadingasync(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor)
+sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor)
 {
     if (!soundinited) {
         return SOUND_ERR;
@@ -926,7 +838,7 @@ void SNDcalcvolpan(CHANNEL *pchan)
     Outputs		:
     Return		:
 ----------------------------------------------------------------------------*/	
-sdword splayFPRVLasync(void *bankaddress, sdword patnum, real32 *eq, real32 freq, sword pan, sdword priority, sword vol, bool startatloop, bool fadein, bool mute)
+sdword splayFPRVL(void *bankaddress, sdword patnum, real32 *eq, real32 freq, sword pan, sdword priority, sword vol, bool startatloop, bool fadein, bool mute)
 {
     PATCH* ppatch = NULL;
 

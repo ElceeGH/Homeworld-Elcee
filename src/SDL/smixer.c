@@ -45,14 +45,9 @@ static real32 mixbuffer1R[FQ_SIZE];
 static real32 mixbuffer2L[FQ_SIZE];
 static real32 mixbuffer2R[FQ_SIZE];
 
-// Thread safety (also used in soundlow.c)
-SDL_mutex* mixerDataMutex = NULL;
-
 // Length of audio buffer for SDL out
-static udword mixerBufferOutLen = 0;
-
+static udword		mixerBufferOutLen = 0;
 extern SDL_sem*		streamerThreadSem;
-extern SDL_mutex*	streamerDataMutex;
 extern CHANNEL		channels[];
 extern bool			soundinited;
 extern STREAM		streams[];
@@ -158,7 +153,6 @@ sdword isoundmixerinit(void)
 
 	// When using NULL for the "obtained" parameter to OpenAudio, SDL guarantees the parameters are exactly as requested.
 	// So we don't need to go farting around with ring buffers to deal with mismatched buffer lengths / block sizes.
-    mixerDataMutex	  = SDL_CreateMutex();
 	mixerBufferOutLen = aspec.size;
 
 	// Done
@@ -484,14 +478,10 @@ static void isoundmixerprocess( void* buffer, udword bufferSize )
 	memset(mixbuffer2R, 0, FQ_SIZE * sizeof(real32));
 	
 	/* mix the speech first */
-	SDL_LockMutex(streamerDataMutex);
 	mixerMixStreams();
-	SDL_UnlockMutex(streamerDataMutex);
 	
 	/* mix the SFX channels */
-	SDL_LockMutex(mixerDataMutex);
 	mixerMixSFX();
-	SDL_UnlockMutex(mixerDataMutex);
 	
 	/* Equalize */
 	fqEqualize(mixbuffer1L, MasterEQ);
