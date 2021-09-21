@@ -271,7 +271,6 @@ static void mixerMixStreams( void )
 			
 		
 			if (pqueue->effect != NULL) {
-				printf( "Mixing buffer 0x%p effect fNoiseLev = %f\n", &pchan->mixbuffer1, pqueue->effect->fNoiseLev );
 				// Add tone
 				fqAddToneE(pchan->mixbuffer1, pqueue->effect);
 				fqAddToneE(pchan->mixbuffer2, pqueue->effect);
