@@ -50,9 +50,9 @@ void Make3dStar(Star3d *star,real32 innerlimit,real32 outerlimit)
 
     position1.z = distance;
 
-    matMakeRotAboutX(&rotxmat,(real32)cos(rotaboutx),(real32)sin(rotaboutx));
-    matMakeRotAboutY(&rotymat,(real32)cos(rotabouty),(real32)sin(rotabouty));
-    matMakeRotAboutZ(&rotzmat,(real32)cos(rotaboutz),(real32)sin(rotaboutz));
+    matMakeRotAboutX(&rotxmat,cosf(rotaboutx),sinf(rotaboutx));
+    matMakeRotAboutY(&rotymat,cosf(rotabouty),sinf(rotabouty));
+    matMakeRotAboutZ(&rotzmat,cosf(rotaboutz),sinf(rotaboutz));
 
     matMultiplyMatByVec(&position2,&rotxmat,&position1);
     matMultiplyMatByVec(&position1,&rotymat,&position2);
