@@ -368,7 +368,7 @@ static bool animSetup( sdword a, sdword b ) {
     animScriptHeader = animLoadNISScript( scriptFile );
 
     // Stop sounds
-    soundEventStopMusic(0.0f);
+    //soundEventStopMusic(0.0f);
     soundstopall(0.0f);
 
     // Clear the screen (todo: remove this, it's pointless? Then again I don't actually clear the screen, do I...)
