@@ -3146,17 +3146,20 @@ renderDefault:
                         case LT_TinySprite:
                             dbgFatalf(DBG_Loc, "Unsupported LOD type 0x%x", level->flags);
                             break;
+
                         case LT_SubPixel:
                             rndTextureEnable(FALSE);
                             rndLightingEnable(FALSE);
-                            primPointSize3(&spaceobj->posinfo.position,
-                                           ((Ship *)spaceobj)->collInfo.selCircleRadius,
-                                           spaceobj->staticinfo->staticheader.LOD->pointColor);
+                            const real32 radius    = ((Ship *)spaceobj)->collInfo.selCircleRadius; // original scaling, too small now...
+                            const real32 pointSize = max(radius,0.65f) * max(1.0f, getResDensityRelative());
+                            primPointSize3(&spaceobj->posinfo.position, pointSize, spaceobj->staticinfo->staticheader.LOD->pointColor);
                             rndLightingEnable(TRUE);
                             break;
+
                         case LT_Function:
                             dbgFatalf(DBG_Loc, "Unsupported LOD type 0x%x", level->flags);
                             break;
+
                         case LT_NULL:
                             break;
                         default:
@@ -3177,8 +3180,7 @@ renderDefault:
                         if (mis->trail != NULL)
                         {
                             playerIndex = (sdword)mis->playerowner->playerIndex;
-                            mistrailDraw(&mis->enginePosition, mis->trail,
-                                         spaceobj->currentLOD, mis->colorScheme);
+                            mistrailDraw(&mis->enginePosition, mis->trail, spaceobj->currentLOD, mis->colorScheme);
                         }
                     }
                 }
