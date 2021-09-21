@@ -20,144 +20,101 @@
 #include "main.h"
 #include "Globals.h"
 
-#define MIX_BLOCK_SIZE			FQ_SIZE * sizeof(short) * 2 // 256 samples, 16-bit, stereo = 1024 bytes
 
-#define DS_NUM_BUFFER_BLOCKS	32
-#define DS_MIX_BUFFER_SIZE		(32 * MIX_BLOCK_SIZE)
-#define DS_MIX_BUFFER_AHEAD		(16 * MIX_BLOCK_SIZE)
-#define DS_MIX_SLEEP			0L
-
-#define WO_NUM_BUFFER_BLOCKS	32
-#define WO_MIX_BUFFER_SIZE		(WO_NUM_BUFFER_BLOCKS * MIX_BLOCK_SIZE)
-#define WO_MIX_BUFFER_AHEAD		(WO_NUM_BUFFER_BLOCKS * MIX_BLOCK_SIZE)
-#define WO_MIX_SLEEP			0L
-
-#define MIX_PANIC_THRES			22L // approx 4 fps - 1000/(11.60997732426*fps)
-#define MIX_PANIC_DUR			16L	// approx 4 seconds - dur*fps
 
 /* function prototypes */
-sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2);
-sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect);
-#define isoundmixerdecode(a, b, c, d, e, f)		isoundmixerdecodeEffect(a, b, c, d, e, f, NULL);
+static void   isoundmixerprocess(void* buffer, udword bufferSize);
+static void   soundmixerDeviceCallback(void *userdata, Uint8 *stream, int len);
+static sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect);
 
-/* variables */
-struct fake_wavehdr {
-    char *lpData;
-    udword dwBufferLength;
-    udword dwFlags;
-} WaveHead[WO_NUM_BUFFER_BLOCKS];
+
 
 udword mixerticks = 0;
-udword framecount = 0L;
 
-sdword numvoices = 0;
+static sdword dctmode	   = FQ_MNORM;		  // DCT mode
+static sdword dctsize	   = FQ_HSIZE;		  // DCT block size
+static sdword dctpanicmode = SOUND_MODE_NORM; // DCT panic mode, normal by default
 
-udword buffersize;
-udword dwBlockSize;
-udword dwWritePos;
-udword dwMixAhead;
+// Intermediate buffers
+static real32 timebufferL[FQ_DSIZE];
+static real32 timebufferR[FQ_DSIZE];
+static real32 temptimeL  [FQ_DSIZE];
+static real32 temptimeR  [FQ_DSIZE];
+static real32 mixbuffer1L[FQ_SIZE];
+static real32 mixbuffer1R[FQ_SIZE];
+static real32 mixbuffer2L[FQ_SIZE];
+static real32 mixbuffer2R[FQ_SIZE];
 
-sdword dctmode = FQ_MNORM;	// DCT mode
-sdword dctsize = FQ_HSIZE;	// DCT block size
+// Thread safety (also used in soundlow.c)
+SDL_mutex* mixerDataMutex = NULL;
 
-sdword dctpanicmode = SOUND_MODE_NORM;	// DCT panic mode, normal by default
+// Length of audio buffer for SDL out
+static udword mixerBufferOutLen = 0;
 
-real32 timebufferL[FQ_DSIZE], timebufferR[FQ_DSIZE], temptimeL[FQ_DSIZE], temptimeR[FQ_DSIZE];
-real32 mixbuffer1L[FQ_SIZE], mixbuffer1R[FQ_SIZE], mixbuffer2L[FQ_SIZE], mixbuffer2R[FQ_SIZE];
+extern SDL_sem*		streamerThreadSem;
+extern SDL_mutex*	streamerDataMutex;
+extern CHANNEL		channels[];
+extern bool			soundinited;
+extern STREAM		streams[];
+extern CHANNEL		speechchannels[];
+extern sdword		numstreams;
+extern SENTENCELUT* SentenceLUT;
+extern real32		MasterEQ[];
 
-extern SDL_sem* streamerThreadSem;
-extern CHANNEL channels[];
-extern bool soundinited;
-extern STREAM streams[];
-extern CHANNEL speechchannels[];
-extern sdword numstreams;
-extern SENTENCELUT *SentenceLUT;
-extern real32 MasterEQ[];
-
-extern SOUNDCOMPONENT	mixer;
-extern SOUNDCOMPONENT	streamer;
+extern SOUNDCOMPONENT mixer;
+extern SOUNDCOMPONENT streamer;
 
 extern bool bSoundPaused;
 extern bool bSoundDeactivated;
 
 extern sdword soundnumvoices;
-extern sdword soundvoicemode;
 
-extern udword rndFrameCount;
+
 
 // DCT mode functions
 void soundMixerGetMode(sdword *mode)	// mode SOUND_MODE_NORM or SOUND_MODE_AUTO or SOUND_MODE_LOW
 {
 	// check DCT mode and panic mode
-	if((dctmode == FQ_MHALF) && (dctpanicmode == SOUND_MODE_NORM))
-	{
+	if((dctmode == FQ_MHALF) && (dctpanicmode == SOUND_MODE_NORM))	{
 		*mode=SOUND_MODE_LOW;
-
 		return;
 	}
 
 	// check DCT mode and panic mode
-	if((dctmode == FQ_MNORM) && (dctpanicmode == SOUND_MODE_AUTO))
-	{
+	if((dctmode == FQ_MNORM) && (dctpanicmode == SOUND_MODE_AUTO))	{
 		*mode=SOUND_MODE_AUTO;
-
 		return;
 	}
 
 	*mode=SOUND_MODE_NORM;
-
-	return;
 }
+
+
 
 void soundMixerSetMode(sdword mode)		// mode SOUND_MODE_NORM or SOUND_MODE_AUTO or SOUND_MODE_LOW
 {
-#ifndef _MACOSX_FIX_SOUND
+	switch (mode) {
+		case SOUND_MODE_LOW:
+			dctmode		 = FQ_MHALF;		// set DCT mode
+			dctsize		 = FQ_QSIZE;	    // set block size for effects
+			dctpanicmode = SOUND_MODE_NORM; // set panic mode
+			break;
 
-	if(mode == SOUND_MODE_LOW)
-	{
-		// set DCT mode
-		dctmode=FQ_MHALF;
+		case SOUND_MODE_AUTO:
+			dctmode		 = FQ_MNORM;
+			dctsize		 = FQ_HSIZE;
+			dctpanicmode = SOUND_MODE_AUTO;
+			break;
 
-		// set block size for effects
-		dctsize=FQ_QSIZE;
-		fqSize(dctsize);
-
-		// set panic mode
-		dctpanicmode=SOUND_MODE_NORM;
-
-		return;
+		default:
+			dctmode		 = FQ_MNORM;
+			dctsize		 = FQ_HSIZE;
+			dctpanicmode = SOUND_MODE_NORM;
+			break;
 	}
-
-	if(mode == SOUND_MODE_AUTO)
-	{
-		// set DCT mode
-		dctmode=FQ_MNORM;
-
-		// set block size for effects
-		dctsize=FQ_HSIZE;
-		fqSize(dctsize);
-
-		// set panic mode
-		dctpanicmode=SOUND_MODE_AUTO;
-
-		return;
-	}
-
-	// if mode is SOUND_MODE_NORM
-	// set DCT mode
-	dctmode=FQ_MNORM;
-
-	// set block size for effects
-	dctsize=FQ_HSIZE;
-	fqSize(dctsize);
-
-	// set panic mode
-	dctpanicmode=SOUND_MODE_NORM;
-
-#endif // _MACOSX_FIX_SOUND
-
-	return;
 }
+
+
 
 /*-----------------------------------------------------------------------------
 	Name		:
@@ -166,37 +123,49 @@ void soundMixerSetMode(sdword mode)		// mode SOUND_MODE_NORM or SOUND_MODE_AUTO 
 	Outputs		:
 	Return		:
 ----------------------------------------------------------------------------*/	
-sdword isoundmixerinit(SDL_AudioSpec *aspec)
+sdword isoundmixerinit(void)
 {
-#ifndef _MACOSX_FIX_SOUND
-
 	// Initialize codec
 	fqInitDequant();
 
 	// Set random number generator for effects
-	fqRand((int (*)(int))ranRandomFnSimple,RANDOM_SOUND);
+	fqRand(ranRandomFnSimple,RANDOM_SOUND);
 
 	// Set square root function for effects
-	fqSqrt((double (*)(double))sqrt);
+	fqSqrt(sqrt);
 
 	// Set block size for effects
 	fqSize(dctsize);
 
 	// init the iDCT function
-	if (SOUND_OK != fqDecBlock(mixbuffer1L, mixbuffer2L, timebufferL, temptimeL, FQ_MINIT, FQ_MINIT))
-	{
-		return (SOUND_ERR);
-	}
+	if (SOUND_OK != fqDecBlock(mixbuffer1L, mixbuffer2L, timebufferL, temptimeL, FQ_MINIT, FQ_MINIT)) return SOUND_ERR;
+	if (SOUND_OK != fqDecBlock(mixbuffer1R, mixbuffer2R, timebufferR, temptimeR, FQ_MINIT, FQ_MINIT)) return SOUND_ERR;
 
-	if (SOUND_OK != fqDecBlock(mixbuffer1R, mixbuffer2R, timebufferR, temptimeR, FQ_MINIT, FQ_MINIT))
-	{
-		return (SOUND_ERR);
-	}
+	// Set up wave format structure.
+    SDL_AudioSpec aspec = {
+        .freq     = FQ_RATE,
+        .format   = AUDIO_S16,
+        .channels = 2,
+        .samples  = FQ_SIZE,
+        .callback = soundmixerDeviceCallback,
+        .userdata = NULL,
+    };
 
-#endif // _MACOSX_FIX_SOUND
+    if (SDL_OpenAudio(&aspec, NULL) < 0) {
+        dbgMessagef("Couldn't open audio: %s", SDL_GetError());
+        return SOUND_ERR;
+    }
 
-	return (SOUND_OK);
+	// When using NULL for the "obtained" parameter to OpenAudio, SDL guarantees the parameters are exactly as requested.
+	// So we don't need to go farting around with ring buffers to deal with mismatched buffer lengths / block sizes.
+    mixerDataMutex	  = SDL_CreateMutex();
+	mixerBufferOutLen = aspec.size;
+
+	// Done
+	mixer.status = SOUND_PLAYING;
+	return SOUND_OK;
 }
+
 
 
 /*-----------------------------------------------------------------------------
@@ -212,24 +181,303 @@ void isoundmixerrestore(void)
 }
 
 
+
+static void mixerMixStreams( void ) 
+{
+	for (sdword i=0; i<numstreams; i++) {
+		if (speechchannels[i].status < SOUND_PLAYING) {
+			continue;
+		}
+		
+		STREAM*      const pstream = &streams[i];
+		CHANNEL*     const pchan   = &speechchannels[i];
+		STREAMQUEUE* const pqueue  = &pstream->queue[pstream->playindex];
+
+		if (pstream->blockstatus[pstream->readblock] == 0) {
+			if (pchan->status == SOUND_STOPPING) {
+				pstream->writepos  = 0;
+				pstream->playindex = pstream->writeindex;
+				pstream->numtoplay = 0;
+				pchan->status      = SOUND_INUSE;
+			}
+			continue;
+		}
+	
+		if (pstream->blockstatus[pstream->readblock] == 1) {
+			pstream->blockstatus[pstream->readblock] = 2;
+		}
+	
+		const sdword amountread = isoundmixerdecodeEffect( pchan->currentpos,  pchan->mixbuffer1,  pchan->mixbuffer2, pchan->exponentblockL, pchan->fqsize,  pchan->bitrate,  pqueue->effect );
+		pchan->currentpos += amountread;
+		pchan->amountread += amountread;
+
+		real32 scaleLevel = 1.0f;
+			
+		/* figure out any volume fades, pan fades, etc */
+		if (pchan->volticksleft) {
+			pchan->volticksleft--;
+			pchan->volume += pchan->volfade;
+				
+			if (pchan->volticksleft <= 0) {
+				pchan->volfade	    = 0.0f;
+				pchan->volume       = (real32)pchan->voltarget;
+				pchan->volticksleft = 0;
+				pchan->voltarget	= -1;
+			}
+			
+			if ((sword)pchan->volume > SOUND_VOL_MAX) pchan->volume = SOUND_VOL_MAX;
+			if ((sword)pchan->volume < SOUND_VOL_MIN) pchan->volume = SOUND_VOL_MIN;
+			
+			if ((pchan->status == SOUND_STOPPING) && (pchan->volume == SOUND_VOL_MIN))
+			{
+				if (pstream->numqueued == 0) {
+					pstream->status     = SOUND_STREAM_INUSE;
+					pstream->queueindex = 0;
+					pstream->writeindex = 0;
+					pstream->playindex  = 0;
+					pstream->numqueued  = 0;
+				} else {
+					pstream->status     = SOUND_STREAM_STARTING;
+					pstream->writeindex = pstream->queueindex - pstream->numqueued;
+					if (pstream->writeindex < 0) {
+						pstream->writeindex += SOUND_MAX_STREAM_QUEUE;
+					}
+					pstream->playindex = pstream->writeindex;
+				}
+				
+				pchan->status = SOUND_FREE;
+				continue;
+			}
+			
+			SNDcalcvolpan(pchan);
+		}
+		
+		if (pchan->numchannels < SOUND_STEREO) {// added this check because of a strange bug that caused the music to
+												// have a mixHandle of 0, which played a buzzing in the left channel
+												// this doesn't fix the bug, but it'll keep the buzzing from happening
+			/* mix in SFX */
+			if (pqueue->mixHandle >= SOUND_OK) {
+				sdword chan = SNDchannel(pqueue->mixHandle);
+				fqMix(pchan->mixbuffer1,channels[chan].mixbuffer1, 1.0f);
+				fqMix(pchan->mixbuffer2,channels[chan].mixbuffer2, 1.0f);
+			}
+	
+			/* do the EQ and Delay or Acoustic Model stuff */
+			if (pqueue->eq && pqueue->eq->flags && STREAM_FLAGS_EQ) {
+				/* equalize this sucker */
+				fqEqualize(pchan->mixbuffer1, pqueue->eq->eq);
+				fqEqualize(pchan->mixbuffer2, pqueue->eq->eq);
+			}
+			
+		
+			if (pqueue->effect != NULL) {
+				printf( "Mixing buffer 0x%p effect fNoiseLev = %f\n", &pchan->mixbuffer1, pqueue->effect->fNoiseLev );
+				// Add tone
+				fqAddToneE(pchan->mixbuffer1, pqueue->effect);
+				fqAddToneE(pchan->mixbuffer2, pqueue->effect);
+			
+				// Generate break
+				fqAddBreakE(pchan->mixbuffer1, pqueue->effect);
+				fqAddBreakE(pchan->mixbuffer2, pqueue->effect);
+					
+				// Add noise
+				fqAddNoiseE(pchan->mixbuffer1, pqueue->effect);
+				fqAddNoiseE(pchan->mixbuffer2, pqueue->effect);
+				
+				// Limit
+				fqLimitE(pchan->mixbuffer1, pqueue->effect);
+				fqLimitE(pchan->mixbuffer2, pqueue->effect);
+	
+				// Filter
+				fqFilterE(pchan->mixbuffer1, pqueue->effect);
+				fqFilterE(pchan->mixbuffer2, pqueue->effect);
+	
+				scaleLevel = pqueue->effect->fScaleLev;
+			}
+		
+			if (pqueue->delay && pqueue->delay->flags & STREAM_FLAGS_ACMODEL) {
+				fqAcModel(pchan->mixbuffer1, pqueue->delay->eq, pqueue->delay->duration, pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
+				fqAcModel(pchan->mixbuffer2, pqueue->delay->eq, pqueue->delay->duration, pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
+			}
+			else if (pqueue->delay &&  pqueue->delay->flags & STREAM_FLAGS_DELAY) {
+				fqDelay(pchan->mixbuffer1, pqueue->delay->level, pqueue->delay->duration, pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
+				fqDelay(pchan->mixbuffer2, pqueue->delay->level, pqueue->delay->duration, pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
+			}
+		}
+	
+		/* add it to mix buffer */
+		fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL * scaleLevel);
+		fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL * scaleLevel);
+
+		/* if this is stereo, do the right channel */
+		if (pchan->numchannels == SOUND_STEREO) {
+			const sdword amountread = isoundmixerdecodeEffect(pchan->currentpos, pchan->mixbuffer1R, pchan->mixbuffer2R, pchan->exponentblockR, pchan->fqsize, pchan->bitrate, NULL);
+			pchan->currentpos += amountread;
+			pchan->amountread += amountread;
+			fqMix(mixbuffer1R,pchan->mixbuffer1R,pchan->volfactorR * scaleLevel);
+			fqMix(mixbuffer2R,pchan->mixbuffer2R,pchan->volfactorR * scaleLevel);
+		} else {
+			fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR * scaleLevel);
+			fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR * scaleLevel);
+		}
+	
+		/* this is a clock for the frequency filtering/effects */
+		if (pqueue->effect != NULL) {
+			pqueue->effect->nClockCount++;
+		}
+	
+		if ((pchan->currentpos == (sbyte *)(pstream->buffer + (pstream->blocksize * (pstream->readblock + 1)))) ||
+			(pchan->currentpos == (sbyte *)pstream->writepos)) {
+			pstream->blockstatus[pstream->readblock++] = 0;
+			pstream->readblock %= 2;
+		}
+	
+		if (pchan->amountread == pqueue->size) {
+			pchan->amountread = 0;
+			if (pstream->numtoplay > 0) {
+				/* finished this queued stream, go on to the next */
+				pstream->numtoplay--;
+				pstream->playindex = (pstream->playindex + 1) % SOUND_MAX_STREAM_QUEUE;
+
+				if (pqueue->mixHandle >= SOUND_OK) {
+					if (pqueue->pmixPatch != pstream->queue[pstream->playindex].pmixPatch) {
+						/* we're mixing in a patch to this stream, shut it down */
+						soundstop(pqueue->mixHandle, 0.0f);
+						pqueue->mixHandle = SOUND_DEFAULT;
+						pqueue->pmixPatch = NULL;
+						pqueue->mixLevel  = SOUND_VOL_MIN;
+					} else {
+						pstream->queue[pstream->playindex].mixHandle = pqueue->mixHandle;
+					}
+				}
+			}
+		}
+		
+		if (pchan->currentpos >= pchan->endpos) {
+			pchan->currentpos = pchan->freqdata; /* get the next block */
+		}
+	}
+}
+
+
+
+static void mixerMixSFX(void) 
+{
+	for (sdword i=0; i<soundnumvoices; i++) {
+		if (channels[i].status < SOUND_PLAYING)
+			continue;
+		
+		CHANNEL* const pchan = &channels[i];
+
+		if ( ! pchan->looping){
+			if (pchan->currentpos >= (sbyte *)pchan->ppatch->datasize) {
+				SNDreleasebuffer(pchan);
+				continue;
+			}
+		}
+		
+		if (pchan->status == SOUND_LOOPEND) {
+			pchan->status     = SOUND_PLAYING;
+			pchan->currentpos = (sbyte *)pchan->ppatch->loopend;
+			pchan->looping    = FALSE;
+		}
+		else if (pchan->status == SOUND_RESTART) {
+			pchan->status     = SOUND_PLAYING;
+			pchan->currentpos = (sbyte *)pchan->ppatch->dataoffset;
+		}
+
+		const sdword amountread = isoundmixerdecodeEffect(pchan->currentpos, pchan->mixbuffer1, pchan->mixbuffer2, pchan->exponentblockL, pchan->fqsize, pchan->ppatch->bitrate,NULL);
+		pchan->currentpos += amountread;
+
+		if (pchan->looping) {
+			if (pchan->currentpos >= (sbyte *)pchan->ppatch->loopend) {
+				pchan->currentpos  = (sbyte *)pchan->ppatch->loopstart;
+			}
+		}
+
+		/* figure out any volume fades, pan fades, etc */
+		if (pchan->volticksleft) {
+			pchan->volume       += pchan->volfade;
+			pchan->volticksleft -= 1;
+			
+			if (pchan->volticksleft <= 0) {
+				pchan->volfade		= 0.0f;
+				pchan->volume	    = (real32)pchan->voltarget;
+				pchan->volticksleft = 0;
+				pchan->voltarget	= -1;
+			}
+
+			if ((sword)pchan->volume > SOUND_VOL_MAX) pchan->volume = SOUND_VOL_MAX;
+			if ((sword)pchan->volume < SOUND_VOL_MIN) pchan->volume = SOUND_VOL_MIN;
+
+			if ((pchan->status == SOUND_STOPPING) && ((sword)pchan->volume == SOUND_VOL_MIN)) {
+				SNDreleasebuffer(pchan);
+				continue;
+			}
+			
+			SNDcalcvolpan(pchan);
+		}
+
+		if (pchan->panticksleft) {
+			pchan->pan += pchan->panfade;
+			pchan->panticksleft--;
+			
+			if (pchan->panticksleft <= 0) {
+				pchan->panfade	    = 0;
+				pchan->pan			= pchan->pantarget;
+				pchan->panticksleft = 0;
+			}
+		
+			if (pchan->pan > SOUND_PAN_MAX) pchan->pan = SOUND_PAN_MIN + (pchan->pan - SOUND_PAN_MAX);
+			if (pchan->pan < SOUND_PAN_MIN) pchan->pan = SOUND_PAN_MAX + (pchan->pan - SOUND_PAN_MIN);
+			SNDcalcvolpan(pchan);
+		}
+
+		if (pchan->pitchticksleft) {
+			pchan->pitch		  += pchan->pitchfade;
+			pchan->pitchticksleft -= 1;
+			
+			if (pchan->pitchticksleft <= 0) {
+				pchan->pitchfade	  = 0.0f;
+				pchan->pitch		  = pchan->pitchtarget;
+				pchan->pitchticksleft = 0;
+			}
+		}
+		
+		/* do pitch shift */
+		fqPitchShift(pchan->mixbuffer1, pchan->pitch);
+		fqPitchShift(pchan->mixbuffer2, pchan->pitch);
+
+		if (pchan->usecardiod) {
+			/* apply cardiod filter for fake doppler */
+			fqEqualize(pchan->mixbuffer1, pchan->cardiodfilter);
+			fqEqualize(pchan->mixbuffer2, pchan->cardiodfilter);
+		}
+		
+		/* equalize this sucker */
+		fqEqualize(pchan->mixbuffer1, pchan->filter);
+		fqEqualize(pchan->mixbuffer2, pchan->filter);
+
+		if (!pchan->mute) {
+			fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL);
+			fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL);
+			fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR);
+			fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR);
+		}
+	}
+}
+
+
+
 /*-----------------------------------------------------------------------------
-	Name		:
-	Description	:
+	Name		: isoundmixerprocess
+	Description	: mix the audio into the target buffer.
 	Inputs		:
 	Outputs		:
 	Return		:
 ----------------------------------------------------------------------------*/	
-sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2)
+static void isoundmixerprocess( void* buffer, udword bufferSize )
 {
-#ifndef _MACOSX_FIX_SOUND
-
-	sdword i, amountread;
-	CHANNEL	*pchan;
-	STREAM *pstream;
-	STREAMQUEUE *pqueue;
-	real32 scaleLevel;
-	sdword chan;
-	
 	/* clear the mixbuffers */
 	memset(mixbuffer1L, 0, FQ_SIZE * sizeof(real32));
 	memset(mixbuffer1R, 0, FQ_SIZE * sizeof(real32));
@@ -237,435 +485,34 @@ sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2
 	memset(mixbuffer2R, 0, FQ_SIZE * sizeof(real32));
 	
 	/* mix the speech first */
+	SDL_LockMutex(streamerDataMutex);
+	mixerMixStreams();
+	SDL_UnlockMutex(streamerDataMutex);
 	
-	for (i = 0; i < numstreams; i++)
-	{
-		if(speechchannels[i].status >= SOUND_PLAYING)
-		{
-			scaleLevel = 1.0f;
-
-			pstream = &streams[i];
-			pchan = &speechchannels[i];
-			pqueue = &pstream->queue[pstream->playindex];
-	
-			if (pstream->blockstatus[pstream->readblock] == 0)
-			{
-				if (pchan->status == SOUND_STOPPING)
-				{
-					pstream->writepos = 0;
-					pstream->playindex = pstream->writeindex;
-					pstream->numtoplay = 0;
-					pchan->status = SOUND_INUSE;
-				}
-				continue;
-			}
-	
-			if (pstream->blockstatus[pstream->readblock] == 1)
-			{
-				pstream->blockstatus[pstream->readblock] = 2;
-			}
-	
-			amountread = isoundmixerdecodeEffect(pchan->currentpos, pchan->mixbuffer1, pchan->mixbuffer2, pchan->exponentblockL,
-							pchan->fqsize, pchan->bitrate, pqueue->effect);
-			pchan->currentpos += amountread;
-			pchan->amountread += amountread;
-				
-			/* figure out any volume fades, pan fades, etc */
-			if (pchan->volticksleft)
-			{
-				pchan->volume += pchan->volfade;
-				pchan->volticksleft--;
-					
-				if (pchan->volticksleft <= 0)
-				{
-					pchan->volfade = 0.0f;
-					pchan->volume = (real32)pchan->voltarget;
-					pchan->volticksleft = 0;
-					pchan->voltarget = -1;
-				}
-	
-				if ((sword)pchan->volume > SOUND_VOL_MAX)
-				{
-					pchan->volume = SOUND_VOL_MAX;
-				}
-	
-				if ((sword)pchan->volume < SOUND_VOL_MIN)
-				{
-					pchan->volume = SOUND_VOL_MIN;
-				}
-	
-				if ((pchan->status == SOUND_STOPPING) && (pchan->volume == SOUND_VOL_MIN))
-				{
-					if (pstream->numqueued == 0)
-					{
-						pstream->status = SOUND_STREAM_INUSE;
-						pstream->queueindex = 0;
-						pstream->writeindex = 0;
-						pstream->playindex = 0;
-						pstream->numqueued = 0;
-					}
-					else
-					{
-						pstream->status = SOUND_STREAM_STARTING;
-						pstream->writeindex = pstream->queueindex - pstream->numqueued;
-						if (pstream->writeindex < 0)
-						{
-							pstream->writeindex += SOUND_MAX_STREAM_QUEUE;
-						}
-						pstream->playindex = pstream->writeindex;
-					}
-					pchan->status = SOUND_FREE;
-					continue;
-				}
-					
-				SNDcalcvolpan(pchan);
-			}
-	
-			/******************************************************************************/
-			/* Shane - pchan->volfactorL BELOW IS PROBABLY NOT THE PROPER VOLUME. - Janik */
-			/******************************************************************************/
-
-			if (pchan->numchannels < SOUND_STEREO)	// added this check because of a strange bug that caused the music to
-			{										// have a mixHandle of 0, which played a buzzing in the left channel
-													// this doesn't fix the bug, but it'll keep the buzzing from happening
-				/* mix in SFX */
-				if (pqueue->mixHandle >= SOUND_OK)
-				{
-//					fqMix(pchan->mixbuffer1,channels[SNDchannel(pqueue->mixHandle)].mixbuffer1, pchan->volfactorL);
-//					fqMix(pchan->mixbuffer2,channels[SNDchannel(pqueue->mixHandle)].mixbuffer2, pchan->volfactorL);
-					chan = SNDchannel(pqueue->mixHandle);
-					fqMix(pchan->mixbuffer1,channels[chan].mixbuffer1, 1.0f);	//channels[chan].volfactorL);
-					fqMix(pchan->mixbuffer2,channels[chan].mixbuffer2, 1.0f);	//channels[chan].volfactorL);
-				}
-	
-				/* do the EQ and Delay or Acoustic Model stuff */
-				if (pqueue->eq != NULL)
-				{
-					if (pqueue->eq->flags && STREAM_FLAGS_EQ)
-					{
-						/* equalize this sucker */
-						fqEqualize(pchan->mixbuffer1, pqueue->eq->eq);
-						fqEqualize(pchan->mixbuffer2, pqueue->eq->eq);
-					}
-				}
-		
-				if (pqueue->effect != NULL)
-				{
-					// Add tone
-					fqAddToneE(pchan->mixbuffer1, pqueue->effect);
-					fqAddToneE(pchan->mixbuffer2, pqueue->effect);
-				
-					// Generate break
-					fqAddBreakE(pchan->mixbuffer1, pqueue->effect);
-					fqAddBreakE(pchan->mixbuffer2, pqueue->effect);
-						
-					// Add noise
-					fqAddNoiseE(pchan->mixbuffer1, pqueue->effect);
-					fqAddNoiseE(pchan->mixbuffer2, pqueue->effect);
-					
-					// Limit
-					fqLimitE(pchan->mixbuffer1, pqueue->effect);
-					fqLimitE(pchan->mixbuffer2, pqueue->effect);
-	
-					// Filter
-					fqFilterE(pchan->mixbuffer1, pqueue->effect);
-					fqFilterE(pchan->mixbuffer2, pqueue->effect);
-	
-					scaleLevel = pqueue->effect->fScaleLev;
-				}
-		
-				if (pqueue->delay != NULL)
-				{
-					if (pqueue->delay->flags & STREAM_FLAGS_ACMODEL)
-					{
-						fqAcModel(pchan->mixbuffer1, pqueue->delay->eq, pqueue->delay->duration,
-									pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
-						fqAcModel(pchan->mixbuffer2, pqueue->delay->eq, pqueue->delay->duration,
-									pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
-					}
-					else if (pqueue->delay->flags & STREAM_FLAGS_DELAY)
-					{
-						fqDelay(pchan->mixbuffer1, pqueue->delay->level, pqueue->delay->duration,
-									pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
-						fqDelay(pchan->mixbuffer2, pqueue->delay->level, pqueue->delay->duration,
-									pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
-					}
-				}
-			}
-	
-			/* add it to mix buffer */
-			fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL * scaleLevel);
-			fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL * scaleLevel);
-
-			/* if this is stereo, do the right channel */
-			if (pchan->numchannels == SOUND_STEREO)
-			{
-				amountread = isoundmixerdecode(pchan->currentpos, pchan->mixbuffer1R, pchan->mixbuffer2R, pchan->exponentblockR,
-								pchan->fqsize, pchan->bitrate);
-				pchan->currentpos += amountread;
-				pchan->amountread += amountread;
-
-				/*****************************************************/
-				/* Shane - The code below never gets called! - Janik */
-				/*****************************************************/
-/*
-				if (pqueue->effect != NULL)
-				{
-					// Add tone
-					fqAddToneE(pchan->mixbuffer1R, pqueue->effect);
-					fqAddToneE(pchan->mixbuffer2R, pqueue->effect);
-				
-					// Generate break
-					fqAddBreakE(pchan->mixbuffer1R, pqueue->effect);
-					fqAddBreakE(pchan->mixbuffer2R, pqueue->effect);
-						
-					// Add noise
-					fqAddNoiseE(pchan->mixbuffer1R, pqueue->effect);
-					fqAddNoiseE(pchan->mixbuffer2R, pqueue->effect);
-
-					// Limit
-					fqLimitE(pchan->mixbuffer1R, pqueue->effect);
-					fqLimitE(pchan->mixbuffer2R, pqueue->effect);
-
-					// Filter
-					fqFilterE(pchan->mixbuffer1R, pqueue->effect);
-					fqFilterE(pchan->mixbuffer2R, pqueue->effect);
-				}
-*/
-
-				fqMix(mixbuffer1R,pchan->mixbuffer1R,pchan->volfactorR * scaleLevel);
-				fqMix(mixbuffer2R,pchan->mixbuffer2R,pchan->volfactorR * scaleLevel);
-			}
-			else
-			{
-				fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR * scaleLevel);
-				fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR * scaleLevel);
-			}
-	
-			/* this is a clock for the fequency filtering/effects */
-			if (pqueue->effect != NULL)
-			{
-				pqueue->effect->nClockCount++;
-			}
-	
-			if ((pchan->currentpos == (sbyte *)(pstream->buffer + (pstream->blocksize * (pstream->readblock + 1)))) ||
-				(pchan->currentpos == (sbyte *)pstream->writepos))
-			{
-				pstream->blockstatus[pstream->readblock++] = 0;
-				if (pstream->readblock >= 2)
-				{
-					pstream->readblock = 0;
-				}
-			}
-	
-			if (pchan->amountread == pqueue->size)
-			{
-				pchan->amountread = 0;
-				if (pstream->numtoplay > 0)
-				{
-					/* finished this queued stream, go on to the next */
-					pstream->playindex++;
-					pstream->numtoplay--;
-					if (pstream->playindex >= SOUND_MAX_STREAM_QUEUE)
-					{
-						pstream->playindex = 0;
-					}
-
-					if (pqueue->mixHandle >= SOUND_OK)
-					{
-						if (pqueue->pmixPatch != pstream->queue[pstream->playindex].pmixPatch)
-						{
-							/* we're mixing in a patch to this stream, shut it down */
-							soundstop(pqueue->mixHandle, 0.0f);
-							pqueue->mixHandle = SOUND_DEFAULT;
-							pqueue->pmixPatch = NULL;
-							pqueue->mixLevel = SOUND_VOL_MIN;
-						}
-						else
-						{
-							pstream->queue[pstream->playindex].mixHandle = pqueue->mixHandle;
-						}
-					}			
-				}
-			}
-	
-			if (pchan->currentpos >= pchan->endpos)
-			{
-				/* get the next block */
-				pchan->currentpos = pchan->freqdata;
-			}
-		}
-	}
-	
-
 	/* mix the SFX channels */
-	for (i = 0; i < soundnumvoices; i++)
-	{
-		if (channels[i].status >= SOUND_PLAYING)
-		{
-			pchan = &channels[i];
-
-			if (!pchan->looping)
-			{
-				if (pchan->currentpos >= (sbyte *)pchan->ppatch->datasize)
-				{
-					SNDreleasebuffer(pchan);
-					continue;
-				}
-			}
-			
-			if (pchan->status == SOUND_LOOPEND)
-			{
-				pchan->status = SOUND_PLAYING;
-				pchan->currentpos = (sbyte *)pchan->ppatch->loopend;
-				pchan->looping = FALSE;
-			}
-			else if (pchan->status == SOUND_RESTART)
-			{
-				pchan->status = SOUND_PLAYING;
-				pchan->currentpos = (sbyte *)pchan->ppatch->dataoffset;
-			}
-
-
-			amountread = isoundmixerdecode(pchan->currentpos, pchan->mixbuffer1, pchan->mixbuffer2, pchan->exponentblockL,
-							pchan->fqsize, pchan->ppatch->bitrate);
-			pchan->currentpos += amountread;
-
-			if (pchan->looping)
-			{
-				if (pchan->currentpos >= (sbyte *)pchan->ppatch->loopend)
-				{
-					pchan->currentpos = (sbyte *)pchan->ppatch->loopstart;
-				}
-			}
-
-			/* figure out any volume fades, pan fades, etc */
-			if (pchan->volticksleft)
-			{
-				pchan->volume += pchan->volfade;
-				pchan->volticksleft--;
-				
-				if (pchan->volticksleft <= 0)
-				{
-					pchan->volfade = 0.0f;
-					pchan->volume = (real32)pchan->voltarget;
-					pchan->volticksleft = 0;
-					pchan->voltarget = -1;
-				}
-
-				if ((sword)pchan->volume > SOUND_VOL_MAX)
-				{
-					pchan->volume = SOUND_VOL_MAX;
-				}
-
-				if ((sword)pchan->volume < SOUND_VOL_MIN)
-				{
-					pchan->volume = SOUND_VOL_MIN;
-				}
-
-				if ((pchan->status == SOUND_STOPPING) && ((sword)pchan->volume == SOUND_VOL_MIN))
-				{
-					SNDreleasebuffer(pchan);
-					continue;
-				}
-				
-				SNDcalcvolpan(pchan);
-			}
-
-			if (pchan->panticksleft)
-			{
-				pchan->pan += pchan->panfade;
-				pchan->panticksleft--;
-				
-				if (pchan->panticksleft <= 0)
-				{
-					pchan->panfade = 0;
-					pchan->pan = pchan->pantarget;
-					pchan->panticksleft = 0;
-				}
-			
-				if (pchan->pan > SOUND_PAN_MAX)
-				{
-					pchan->pan =  SOUND_PAN_MIN + (pchan->pan - SOUND_PAN_MAX);
-				}
-			
-				if (pchan->pan < SOUND_PAN_MIN)
-				{
-					pchan->pan = SOUND_PAN_MAX + (pchan->pan - SOUND_PAN_MIN);
-				}
-				
-				SNDcalcvolpan(pchan);
-			}
-
-			if (pchan->pitchticksleft)
-			{
-				pchan->pitch += pchan->pitchfade;
-				pchan->pitchticksleft--;
-				
-				if (pchan->pitchticksleft <= 0)
-				{
-					pchan->pitchfade = 0.0f;
-					pchan->pitch = pchan->pitchtarget;
-					pchan->pitchticksleft = 0;
-				}
-			}
-			
-			/******************************************************/
-			/* Shane - Try the pitch shift again below... - Janik */
-			/******************************************************/
-#if 1
-			/* do pitch shift */
-			fqPitchShift(pchan->mixbuffer1, pchan->pitch);
-			fqPitchShift(pchan->mixbuffer2, pchan->pitch);
-#endif
-
-			if (pchan->usecardiod)
-			{
-				/* apply cardiod filter for fake doppler */
-				fqEqualize(pchan->mixbuffer1, pchan->cardiodfilter);
-				fqEqualize(pchan->mixbuffer2, pchan->cardiodfilter);
-			}
-			
-			/* equalize this sucker */
-			fqEqualize(pchan->mixbuffer1, pchan->filter);
-			fqEqualize(pchan->mixbuffer2, pchan->filter);
-
-			if (!pchan->mute)
-			{
-				fqMix(mixbuffer1L,pchan->mixbuffer1,pchan->volfactorL);
-				fqMix(mixbuffer2L,pchan->mixbuffer2,pchan->volfactorL);
-				fqMix(mixbuffer1R,pchan->mixbuffer1,pchan->volfactorR);
-				fqMix(mixbuffer2R,pchan->mixbuffer2,pchan->volfactorR);
-			}
-		}
-		
-	}
+	SDL_LockMutex(mixerDataMutex);
+	mixerMixSFX();
+	SDL_UnlockMutex(mixerDataMutex);
 	
+	/* Equalize */
 	fqEqualize(mixbuffer1L, MasterEQ);
 	fqEqualize(mixbuffer2L, MasterEQ);
 	fqEqualize(mixbuffer1R, MasterEQ);
 	fqEqualize(mixbuffer2R, MasterEQ);
 
+	/* Magic */
 	fqDecBlock(mixbuffer1L, mixbuffer2L, timebufferL, temptimeL, dctmode, FQ_MNORM);
 	fqDecBlock(mixbuffer1R, mixbuffer2R, timebufferR, temptimeR, dctmode, FQ_MNORM);
 
-	if (!reverseStereo)
-	{
-		/* play normally */
-		fqWriteTBlock(timebufferL, timebufferR, 2, pBuf1, nSize1, pBuf2, nSize2);
-	}
-	else
-	{
-		/* swap the left and right channels */
-		fqWriteTBlock(timebufferR, timebufferL, 2, pBuf1, nSize1, pBuf2, nSize2);
-	}
+	/* select channel targets */
+	real32* const left  = reverseStereo ? timebufferR : timebufferL;
+	real32* const right = reverseStereo ? timebufferL : timebufferR;
+	fqWriteTBlock(left, right, 2, buffer, bufferSize, NULL, 0 );
 
+	/* update tick count */
 	mixerticks++;
-
-#endif // _MAOSX_FIX_ME
-
-	return (SOUND_OK);
 }
+
 
 
 /*-----------------------------------------------------------------------------
@@ -675,15 +522,11 @@ sdword isoundmixerprocess(void *pBuf1, udword nSize1, void *pBuf2, udword nSize2
 	Outputs		:
 	Return		:
 ----------------------------------------------------------------------------*/
-sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect)
+static sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect)
 {
-#ifdef _MACOSX_FIX_SOUND
-    return 0;
-#else
-    char tempblock[FQ_LEN+32];
-
-	memset(tempblock, 0, sizeof(tempblock) );
-	memcpy(tempblock, readptr, (bitrate >> 3));
+    char tempblock[FQ_LEN];
+	memset(tempblock, 0,       sizeof(tempblock) );
+	memcpy(tempblock, readptr, bitrate / 8       );
 
 	// Check size
 	if (size > dctsize) 
@@ -694,86 +537,49 @@ sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writep
 
 	fqDequantBlock(tempblock, writeptr1, writeptr2, exponent, FQ_LEN, bitrate, size);
 
-	return (bitrate >> 3);
-#endif 
-}
-
-/*-----------------------------------------------------------------------------
-	Name		:
-	Description	:
-	Inputs		:
-	Outputs		:
-	Return		:
-----------------------------------------------------------------------------*/	
-static Uint8  oddbuf[MIX_BLOCK_SIZE];
-static udword oddbufpos = 0;
-
-void isoundmixerqueueSDL(Uint8 *stream, int len)
-{
-	udword size_written = 0;
-
-	if (oddbufpos > 0) {
-		memcpy(stream, oddbuf + oddbufpos, MIX_BLOCK_SIZE - oddbufpos);
-		size_written += MIX_BLOCK_SIZE - oddbufpos;
-		oddbufpos = 0;
-	}
-
-	while (size_written < len) {
-		// process 256 samples, 16-bit (independent of # of channels)
-		if (size_written + MIX_BLOCK_SIZE > len) {
-			isoundmixerprocess(oddbuf, FQ_SIZE * sizeof(short), NULL, 0);
-			oddbufpos = len - size_written;
-			memcpy(stream + size_written, oddbuf, oddbufpos);
-			size_written += oddbufpos;
-		} else {
-			isoundmixerprocess(stream + size_written, FQ_SIZE * sizeof(short), NULL, 0);
-			size_written += MIX_BLOCK_SIZE;
-		}
-	}
+	return bitrate >> 3;
 }
 
 
 
-void soundfeedercb(void *userdata, Uint8 *stream, int len)
+static void soundmixerDeviceCallback(void *userdata, Uint8 *stream, int len)
 {
-	if (mixer.status >= SOUND_PLAYING) 
-	{
-		// Wake up the stream thread so it will soon fetch the next set of buffers.
+	// This should never happena according to the SDL spec.
+	if (len != mixerBufferOutLen) {
+		dbgFatalf( DBG_Loc, "Buffer length in audio mixer callback does not match specified length!" );
+	}
+
+	if (mixer.status >= SOUND_PLAYING) {
+		// Mix into the audio device.
+		isoundmixerprocess( stream, len );
+
+		// Wake up the stream thread so it will soon fetch data for the mixer.
 		// This doesn't actually have to happen RIGHT NOW, it's just a convenient place to wake the thread up.
 		SDL_SemPost( streamerThreadSem );
-
-		// Mix output and write to the audio buffer.
-		isoundmixerqueueSDL(stream, len);
 	}
-	else 
-	{
+	else {
 		// No mixing! Write silence.
 		memset( stream, 0x00, len );
 
-		if (mixer.status == SOUND_STOPPED && !bSoundPaused && !bSoundDeactivated)
-		{
+		if (mixer.status == SOUND_STOPPED && !bSoundPaused && !bSoundDeactivated) {
 			mixer.status = SOUND_PLAYING;
 		}
 	}
 
-	if (mixer.status == SOUND_STOPPING)
-	{
+	if (mixer.status == SOUND_STOPPING) {
 		/* check and see if its done yet */
-		if (mixer.timeout <= mixerticks)
-		{
+		if (mixer.timeout <= mixerticks) {
 			mixer.timeout = 0;
 			mixer.status = SOUND_STOPPED;
 			SDL_PauseAudio(TRUE);
 		}
 	}
 
-	if (bSoundPaused && (mixer.status == SOUND_PLAYING))
-	{
+	if (bSoundPaused && (mixer.status == SOUND_PLAYING)) {
 		mixer.status = SOUND_STOPPING;
 	}
 
-	if (bSoundDeactivated && (mixer.status == SOUND_PLAYING))
-	{
+	if (bSoundDeactivated && (mixer.status == SOUND_PLAYING)) {
 		mixer.status = SOUND_STOPPED;
 		SDL_PauseAudio(TRUE);
 	}

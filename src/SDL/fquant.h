@@ -49,29 +49,11 @@
 #define	FQ_SBDATA	aSBDBlock	// Sub-band data
 #define FQ_SBNUM	256			// # of sub-bands
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Functions
-//int fqInitQuant(FILE *pStream);
-
-//int fqQuantBlock(char *aQBlock,float *aFPBlock,float *aFSBlock,float *aFMBlock,unsigned char *aEBlock,
-//				 udword nLen,udword nRate,udword nSize,int nFlags);
-
-int fqInitDequant(void);
-
-int fqDequantBlock(char *aQBlock,float *aFPBlock,float *aFSBlock,unsigned char *aEBlock,
-				 udword nLen,udword nRate,udword nSize);
-
-//int fqSPack(short nVal,udword nLen,udword nPos,char *aBlock);
+int    fqInitDequant(void);
+int    fqDequantBlock(char *aQBlock,float *aFPBlock,float *aFSBlock,unsigned char *aEBlock, udword nLen,udword nRate,udword nSize);
 sdword fqSUnpack(udword nLen,udword nPos,char *aBlock);
 udword fqUnpack(udword nLen,udword nPos,char *aBlock);
 
-//int linint(float *xa,float *ya,udword n,float x,float *y);
-
-#ifdef __cplusplus
-}		// extern "C"
-#endif
 
 #endif

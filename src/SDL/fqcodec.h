@@ -30,55 +30,16 @@
 #define FQ_SIZE		256
 #define FQ_DSIZE	512
 
-// Coef constants
-#define FQ_HCOEF	aCHBlock
-#define FQ_COEF		aCBlock
-#define FQ_DCOEF	aCDBlock
-
-// Window constants
-#define FQ_HWIN		aWHBlock
-#define FQ_WIN		aWBlock
-#define FQ_DWIN		aWDBlock
-
 // Mode constants
 #define FQ_MINIT	0x0000		// Initialize CODEC
 #define FQ_MDOUBLE	0x0001		// Double mode
 #define FQ_MNORM	0x0002		// Normal mode
 #define FQ_MHALF	0x0004		// Half mode
 
-// Macro constants
-#define FQ_BNUM ((float)(1<<26)*(1<<26)*1.5)
-extern double fChopT;
-
-// Macros
-#define rfabs(x)	((x<0.0F)?(-(x)):(x)) // Fast floating point absolute value
-#define rmax(x,y)	((x>y)?(x):(y)) // Fast maximize
-#if 0 // Clashes with math.h and apparently not used.
-#define rint(x)		((fChopT = (double)(x)+FQ_BNUM), *(int*)(&fChopT)) // Fast integer cast
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Functions
-//int fqEncOver(float *aTPBlock,float *aTSBlock,float *aFPBlock,float *aFSBlock,
-//		float *aCBlock,float *aWBlock,udword nSize);
-
-//int fqEncBlock(float *aTPBlock,float *aTSBlock,
-//	float *aFPBlock,float *aFSBlock,int nMode);
-
-int fqDecOver(float *aFPBlock,float *aFSBlock,float *aTPBlock,float *aTSBlock,
-		float *aCBlock,float *aWBlock,udword nSize);
-
-int fqDecBlock(float *aFPBlock,float *aFSBlock,
-	float *aTPBlock,float *aTSBlock,int nMode,int nFact);
-
-int fqWriteTBlock(float *aLBlock,float *aRBlock,short nChan,
-	void *pBuf1,udword nSize1,void *pBuf2,udword nSize2);
-
-#ifdef __cplusplus
-}		// extern "C"
-#endif
+int fqDecOver(float *aFPBlock,float *aFSBlock,float *aTPBlock,float *aTSBlock, float *aCBlock,float *aWBlock,udword nSize);
+int fqDecBlock(float *aFPBlock,float *aFSBlock, float *aTPBlock,float *aTSBlock,int nMode,int nFact);
+int fqWriteTBlock(float *aLBlock,float *aRBlock,short nChan, void *pBuf1,udword nSize1,void *pBuf2,udword nSize2);
 
 #endif

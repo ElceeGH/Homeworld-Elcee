@@ -82,7 +82,6 @@
 
 #define SOUND_STREAM_BUFFER_SIZE    (8 * 1024)      // this seems to be some magic number, acts poorly if increased to 16
 #define SOUND_STREAM_DSBUFFER_SIZE  (SOUND_STREAM_BUFFER_SIZE * 2)
-#define SOUND_STREAM_SLEEP          0L
 
 #define SOUND_STREAM_FREE       0
 #define SOUND_STREAM_INUSE      1
@@ -119,25 +118,22 @@
 #define STREAM_FLAGS_EQ         0x4
 
 #define SOUND_PAUSE_DELAY       100
-#define SOUND_PAUSE_BREAKOUT        50
+#define SOUND_PAUSE_BREAKOUT    50
+
+
 
 /* structures */
-typedef struct
-{
-    sdword          flags;
-    real32          level;
-    udword          duration;
-    real32          eq[SOUND_EQ_SIZE];
+typedef struct STREAMDELAY {
+    sdword flags;
+    real32 level;
+    udword duration;
+    real32 eq[SOUND_EQ_SIZE];
 } STREAMDELAY;
 
-typedef struct
-{
-    sdword          flags;
-    real32          eq[SOUND_EQ_SIZE];
+typedef struct STREAMEQ {
+    sdword flags;
+    real32 eq[SOUND_EQ_SIZE];
 } STREAMEQ;
-
-
-typedef void (*streamprintfunction)(char *pszInformation);
 
 // channel functions
 void soundGetVoiceLimits(sdword *min,sdword *max);
@@ -150,16 +146,11 @@ void soundMixerSetMode(sdword mode);    // mode SOUND_MODE_NORM or SOUND_MODE_AU
 
 /* functions */
 sdword soundinit(void);
-void soundrestore(void);
-void soundclose(void);
-
-void soundpause(bool bPause);
-void sounddeactivate(bool bDeactivate);
-
-sword soundloadpatch(char *pszFileName, sword looped);
+void   soundrestore(void);
+void   soundclose(void);
+void   soundpause(bool bPause);
+void   sounddeactivate(bool bDeactivate);
 udword soundbankadd(void *bankaddress);
-
-sdword soundplayFPRVL(sword patnum, real32 freq, sword pan, sdword priority, sword vol, bool startatloop);
 
 sdword soundvolumeF(sdword handle, sword vol, real32 fadetime);
 #define soundvolume(a, b)       soundvolumeF(a, b, 0)
@@ -172,27 +163,13 @@ sdword soundequalize(sdword handle, real32 *eq);
 
 void soundstopallSFX(real32 fadetime, bool stopStreams);
 #define soundstopall(a)     soundstopallSFX(a, TRUE)
+
 sdword soundstop(sdword handle, real32 fade);
-
 sdword soundrestart(sdword handle);
-
 sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor);
-
-bool soundover(sdword handle);
-
-
-#define soundplay(a)                    soundplayFPRVL(a, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, SOUND_DEFAULT, FALSE)
-#define soundplayV(a, b)                soundplayFPRVL(a, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, b,             FALSE)
-#define soundplayP(a, b)                soundplayFPRVL(a, (real32)SOUND_DEFAULT, b,                SOUND_DEFAULT, SOUND_DEFAULT, FALSE)
-#define soundplayF(a, b)                soundplayFPRVL(a, b,                     SOUND_PAN_CENTER, SOUND_DEFAULT, SOUND_DEFAULT, FALSE)
-#define soundplayPV(a, b, c)            soundplayFPRVL(a, (real32)SOUND_DEFAULT, b,                SOUND_DEFAULT, c,             FALSE)
-#define soundplayPRV(a, b, c, d)        soundplayFPRVL(a, (real32)SOUND_DEFAULT, b,                c,             d,             FALSE)
-#define soundplayFPRV(a, b, c, d, e)    soundplayFPRVL(a, b,                     c,                d,             e,             FALSE)
-#define soundplayPRVL(a, b, c, d, e)    soundplayFPRVL(a, (real32)SOUND_DEFAULT, b,                c,             d,             e)
-
+bool   soundover(sdword handle);
 
 sdword splayFPRVL(void *bankaddress, sdword patnum, real32 *eq, real32 freq, sword pan, sdword priority, sword vol, bool startatloop, bool fadein, bool mute);
-
 #define splay(f, a)                     splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, SOUND_DEFAULT, FALSE, TRUE,  FALSE)
 #define splayV(f, a, b)                 splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, b,             FALSE, TRUE,  FALSE)
 #define splayP(f, a, b)                 splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, b,                SOUND_DEFAULT, SOUND_DEFAULT, FALSE, TRUE,  FALSE)
@@ -206,7 +183,7 @@ sdword splayFPRVL(void *bankaddress, sdword patnum, real32 *eq, real32 freq, swo
 #define splayNOFADE(f, a)               splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, SOUND_PAN_CENTER, SOUND_DEFAULT, SOUND_DEFAULT, FALSE, FALSE, FALSE)
 #define splayMUTE(f, a, b, c, d)        splayFPRVL(f, a, NULL, (real32)SOUND_DEFAULT, b,                c,             d,             FALSE,  TRUE, TRUE)
 
-void soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
+void   soundstreamquery(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
 sdword soundstreaminit(void *pstreamer, sdword size, sdword numstreams);
 udword soundstreamopenfile(char *pszStreamFile, smemsize *handle);
 sdword soundstreamcreatebuffer(void *pstreambuffer, sdword size, uword bitrate);
@@ -222,7 +199,6 @@ void   soundstreamstopall(real32 fadetime);
 sdword soundstreamover(sdword streamhandle);
 sdword soundstreamvolume(sdword handle, sword vol, real32 fadetime);
 sword  soundstreamgetvol(sdword handle);
-real32 soundusage(void);
 sdword soundstreamfading(sdword streamhandle);
 
 #endif

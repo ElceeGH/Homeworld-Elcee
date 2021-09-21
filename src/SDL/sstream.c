@@ -20,19 +20,19 @@
 #include "Types.h"
 
 
-/* functions */
-static sdword isoundstreamreadheader(STREAM *pstream);
-static int    streamerThread( void* v );
 
-static void   soundstreamqueryUnsynchronised(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
+/* functions */
+static int    streamerThread( void* v );
+static void   soundstreamqueryUnsynchronised       (sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize);
 static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword size, uword bitrate);
-static sdword soundstreamnumqueuedUnsynchronised(sdword streamhandle);
-static void   soundstreamstopallUnsynchronised(real32 fadetime);
-static sdword soundstreamoverUnsynchronised(sdword streamhandle);
-static sdword soundstreamfadingUnsynchronised(sdword streamhandle);
-static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize filehandle, smemsize, udword, sword, sword, sword, sword, EFFECT*, STREAMEQ*, STREAMDELAY*, void*, sdword, real32, real32, sdword, sdword, bool);
-static sword  soundstreamgetvolUnsynchronised(sdword handle);
-static sdword soundstreamvolumeUnsynchronised(sdword handle, sword vol, real32 fadetime);
+static sdword soundstreamnumqueuedUnsynchronised   (sdword streamhandle);
+static void   soundstreamstopallUnsynchronised     (real32 fadetime);
+static sdword soundstreamoverUnsynchronised        (sdword streamhandle);
+static sdword soundstreamfadingUnsynchronised      (sdword streamhandle);
+static sdword soundstreamqueuePatchUnsynchronised  (sdword streamhandle, smemsize filehandle, smemsize, udword, sword, sword, sword, sword, EFFECT*, STREAMEQ*, STREAMDELAY*, void*, sdword, real32, real32, sdword, sdword, bool);
+static sword  soundstreamgetvolUnsynchronised      (sdword handle);
+static sdword soundstreamvolumeUnsynchronised      (sdword handle, sword vol, real32 fadetime);
+
 
 
 /* data */
@@ -46,6 +46,7 @@ sdword  numstreams;
 #if VCE_BACKWARDS_COMPATIBLE
 bool ssOldFormatVCE = FALSE;
 #endif
+
 
 
 /* extern data */
@@ -66,6 +67,7 @@ static void streamStartThread(void)
     streamerDataMutex = SDL_CreateMutex();
     SDL_CreateThread(streamerThread, "soundstream", NULL);
 }
+
 
 
 /// These are all just mutex wrappers for the stream functions.
@@ -143,8 +145,7 @@ sdword soundstreamvolume(sdword handle, sword vol, real32 fadetime) {
 ----------------------------------------------------------------------------*/
 void soundstreamqueryUnsynchronised(sdword maxstreams, sdword *pbuffersize, sdword *pstreamersize)
 {
-    if (maxstreams > SOUND_MAX_STREAM_BUFFERS)
-    {
+    if (maxstreams > SOUND_MAX_STREAM_BUFFERS) {
         *pstreamersize = 0;
         *pbuffersize   = 0;
         return;
@@ -174,13 +175,11 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
     dbgAssertOrIgnore(streamer.status == SOUND_FREE);
 
     /* go through stream structures and init */
-    for (sdword i = 0; i < numstreams; i++)
-    {
+    for (sdword i = 0; i < numstreams; i++) {
         STREAM* pstream = &streams[i];
 
         pstream->buffer = NULL;
-        for (sdword j = 0; j < SOUND_MAX_STREAM_QUEUE; j++)
-        {
+        for (sdword j = 0; j < SOUND_MAX_STREAM_QUEUE; j++) {
             pstream->queue[j].fhandle = SOUND_ERR;
             pstream->queue[j].offset  = SOUND_ERR;
         }
@@ -208,13 +207,8 @@ sdword soundstreaminit(void *pstreamer, sdword size, sdword nostreams)
 ----------------------------------------------------------------------------*/
 udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
 {
-    ;
-    udword identifier;
-    udword checksum;
-    udword flags;
-
     /* Check Data dir on HD... */
-    flags = 0;
+    udword flags = 0;
     if (!fileExists(pszStreamFile, flags))
     {
         /* Check first CDROM drive... */
@@ -230,6 +224,7 @@ udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
     *handle = streamfile;
 
 #if VCE_BACKWARDS_COMPATIBLE
+    udword identifier;
     fileBlockRead(streamfile, &identifier, sizeof(identifier));//read in an identifier
 
 #if FIX_ENDIAN
@@ -244,6 +239,7 @@ udword soundstreamopenfile(char *pszStreamFile, smemsize *handle)
     fileSeek(streamfile, 4, FS_Start);
 #endif
 
+    udword checksum;
     fileBlockRead(streamfile, &checksum, sizeof(checksum));
 
 #if FIX_ENDIAN
@@ -270,10 +266,8 @@ static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword 
     CHANNEL	*pchan   = NULL;
     STREAM	*pstream = NULL;
 
-    for (sdword i = 0; i < numstreams; i++)
-    {
-        if (streams[i].status == SOUND_STREAM_FREE)
-        {
+    for (sdword i = 0; i < numstreams; i++) {
+        if (streams[i].status == SOUND_STREAM_FREE) {
             pchan   = &speechchannels[i];
             pstream = &streams[i];
             channel = i;
@@ -283,27 +277,26 @@ static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword 
             pstream->playing    = FALSE;
             memset(pstream->buffer, 0, pstream->buffersize);
 
-#ifndef _MACOSX_FIX_SOUND			
             fqAcModel(NULL, NULL, 0, pstream->delaybuffer1, DELAY_BUF_SIZE, &(pstream->delaypos1));
             fqAcModel(NULL, NULL, 0, pstream->delaybuffer2, DELAY_BUF_SIZE, &(pstream->delaypos2));
-#endif
             break;
         }
     }
 
     // This used to free the stream, but it would cause a nullptr deref anyway in that case.
     // Really if it's null there's nothing that can be done so just die.
-    if (pstream == NULL)
+    if (pstream == NULL || pchan==NULL)
     {
-        dbgFatal( DBG_Loc, "soundstreamcreatebuffer: pstream is nullptr." );
+        dbgFatal( DBG_Loc, "soundstreamcreatebuffer: pstream or pchan is null." );
         return 0;
     }
 
-    if (pstream->buffersize % ((bitrate >> 3) * 4))
-    {
-        pstream->buffersize /= ((bitrate >> 3) * 4);
-        pstream->buffersize *= ((bitrate >> 3) * 4);
+    const sdword bufferchunk = ((bitrate >> 3) * 4);
+    if (pstream->buffersize %  bufferchunk) {
+        pstream->buffersize /= bufferchunk;
+        pstream->buffersize *= bufferchunk;
     }
+
     pchan->currentpos   = pchan->freqdata = (sbyte *)pstream->buffer;
     pchan->endpos       = (sbyte *)(pstream->buffer + pstream->buffersize);
     pchan->fqsize       = FQ_HSIZE;
@@ -328,17 +321,7 @@ static sdword soundstreamcreatebufferUnsynchronised(void *pstreambuffer, sdword 
 ----------------------------------------------------------------------------*/	
 static sdword soundstreamnumqueuedUnsynchronised(sdword streamhandle)
 {
-#if 1
-    if (speechchannels[SNDchannel(streamhandle)].status <= SOUND_INUSE)
-    {
-        return (0);
-    }
-    else
-    {
-        return (1);
-    }
-#endif
-    return (streams[SNDchannel(streamhandle)].numqueued);
+    return speechchannels[SNDchannel(streamhandle)].status <= SOUND_INUSE;
 }
 
 
@@ -351,70 +334,50 @@ static sdword soundstreamnumqueuedUnsynchronised(sdword streamhandle)
 ----------------------------------------------------------------------------*/	
 static void soundstreamstopallUnsynchronised(real32 fadetime)
 {
-    sdword i;
-
-    for (i = 0; i < numstreams; i++)
-    {
+    for (sdword i = 0; i < numstreams; i++) {
         soundstreamvolume(speechchannels[i].handle, SOUND_VOL_AUTOSTOP, fadetime);
-//		streams[i].status = SOUND_STREAM_INUSE;
-//		streams[i].queueindex = 0;
-//		streams[i].writeindex = 0;
-//		streams[i].playindex = 0;
-//		speechchannels[i].status = SOUND_FREE;
     }
 }
 
 
 static sdword soundstreamoverUnsynchronised(sdword streamhandle)
 {
-    sdword channel;
-
-    if (!soundinited)
-    {
+    if (!soundinited) {
         return (TRUE);
     }
     
-    if (streamer.status != SOUND_PLAYING)
-    {
+    if (streamer.status != SOUND_PLAYING) {
         return (TRUE);
     }
     
-    channel = SNDchannel(streamhandle);
+    sdword channel = SNDchannel(streamhandle);
 
     if (channel >= SOUND_OK)
-    {
-        if (speechchannels[SNDchannel(streamhandle)].status <= SOUND_STOPPED)
-        {
-            return (TRUE);
-        }
+    if (speechchannels[SNDchannel(streamhandle)].status <= SOUND_STOPPED) {
+        return (TRUE);
     }
+
     return (FALSE);
 }
 
 
 static sdword soundstreamfadingUnsynchronised(sdword streamhandle)
 {
-    sdword channel;
-
-    if (!soundinited)
-    {
+    if (!soundinited) {
         return (FALSE);
     }
     
-    if (streamer.status != SOUND_PLAYING)
-    {
+    if (streamer.status != SOUND_PLAYING) {
         return (FALSE);
     }
     
-    channel = SNDchannel(streamhandle);
+    sdword channel = SNDchannel(streamhandle);
 
     if (channel >= SOUND_OK)
-    {
-        if (speechchannels[channel].volfade != 0.0f)
-        {
-            return (TRUE);
-        }
+    if (speechchannels[channel].volfade != 0.0f) {
+        return (TRUE);
     }
+
     return (FALSE);
 }
 
@@ -428,68 +391,56 @@ static sdword soundstreamfadingUnsynchronised(sdword streamhandle)
 ----------------------------------------------------------------------------*/	
 static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize filehandle, smemsize offset, udword flags, sword vol, sword pan, sword numchannels, sword bitrate, EFFECT *peffect, STREAMEQ *pEQ, STREAMDELAY *pdelay, void *pmixpatch, sdword level, real32 silence, real32 fadetime, sdword actornum, sdword speechEvent, bool bWait)
 {
-    if (streamer.status == SOUND_STOPPING) 
-    {
+    if (streamer.status == SOUND_STOPPING) {
         return SOUND_ERR;
     }
 
-    sdword chan = SNDchannel(streamhandle);
+    const sdword chan = SNDchannel(streamhandle);
     dbgAssertOrIgnore(chan >= 0);
 
-    STREAM	*pstream = &streams[chan];
-    if (pstream->handle != streamhandle)
-    {
+    STREAM* const pstream = &streams[chan];
+    if (pstream->handle != streamhandle){
         /* hmmm, bad.  do something */
         return SOUND_ERR;
     }
 
-    if ((pstream->queueindex == pstream->playindex) && (pstream->status > SOUND_STREAM_INUSE))
-    {
+    if ((pstream->queueindex == pstream->playindex) && (pstream->status > SOUND_STREAM_INUSE)) {
         return SOUND_ERR;
     }
 
-    STREAMQUEUE *pqueue = NULL;
+    STREAMQUEUE* pqueue = NULL;
 
-    if ((flags & SOUND_FLAGS_QUEUESTREAM) || (flags & SOUND_FLAGS_QUEUESILENCE))
-    {
-        if (pstream->numqueued < (SOUND_MAX_STREAM_QUEUE - 1))
-        {
+    if ((flags & SOUND_FLAGS_QUEUESTREAM) || (flags & SOUND_FLAGS_QUEUESILENCE)) {
+        if (pstream->numqueued < (SOUND_MAX_STREAM_QUEUE - 1)) {
             pqueue = &pstream->queue[pstream->queueindex];
-            pqueue->offset = offset;
-            pqueue->flags = flags;
-            pqueue->vol = vol;
-            pqueue->pan = pan;
+            pqueue->offset      = offset;
+            pqueue->flags       = flags;
+            pqueue->vol         = vol;
+            pqueue->pan         = pan;
             pqueue->numchannels = numchannels;
 
-            pqueue->bitrate = bitrate;
-            pqueue->fadetime = fadetime;
-            pqueue->volfactorL = (real32)vol / SOUND_VOL_MAX;
-            pqueue->volfactorR = (real32)vol / SOUND_VOL_MAX;
+            pqueue->bitrate     = bitrate;
+            pqueue->fadetime    = fadetime;
+            pqueue->volfactorL  = (real32)vol / SOUND_VOL_MAX;
+            pqueue->volfactorR  = (real32)vol / SOUND_VOL_MAX;
             pqueue->silencetime = silence;
-            pqueue->actornum = actornum;
+            pqueue->actornum    = actornum;
             pqueue->speechEvent = speechEvent;
 
-            if (pmixpatch != NULL)
-            {
+            if (pmixpatch != NULL) {
                 pqueue->pmixPatch = (PATCH *)pmixpatch;
-                pqueue->mixLevel = level;
-            }
-            else
-            {
+                pqueue->mixLevel  = level;
+            } else {
                 pqueue->pmixPatch = NULL;
-                pqueue->mixLevel = SOUND_VOL_MIN;
+                pqueue->mixLevel  = SOUND_VOL_MIN;
             }
             pqueue->mixHandle = SOUND_DEFAULT;
         }
     }
-    else if (flags & SOUND_FLAGS_QUEUEPATCH)
-    {
-        if (pstream->numqueued < (SOUND_MAX_STREAM_QUEUE - 1))
-        {
+    else if (flags & SOUND_FLAGS_QUEUEPATCH) {
+        if (pstream->numqueued < (SOUND_MAX_STREAM_QUEUE - 1)) {
             PATCH *ppatch = SNDgetpatch((void *)filehandle, offset);
-
-            if (ppatch != NULL)
-            {
+            if (ppatch != NULL) {
                 pqueue = &pstream->queue[pstream->queueindex];
                 pqueue->offset      = (smemsize)ppatch;
                 pqueue->flags       = flags;
@@ -508,38 +459,30 @@ static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize 
         }
     }
 
-    if (pqueue == NULL)
+    if (pqueue == NULL) {
         return SOUND_OK;
+    }
 
     /* pan left = attenuate right and vice versa */
     if (pan < SOUND_PAN_CENTER) pqueue->volfactorR *= (real32)(SOUND_PAN_RIGHT + pan) / SOUND_PAN_RIGHT; 
     if (pan > SOUND_PAN_CENTER) pqueue->volfactorL *= (real32)(SOUND_PAN_RIGHT - pan) / SOUND_PAN_RIGHT;
     
-    if (pEQ != NULL)
-         pqueue->eq = pEQ;
-    else pqueue->eq = NULL;
-    
-    if (pdelay != NULL)
-         pqueue->delay = pdelay;
-    else pqueue->delay = NULL;
-    
-    if (peffect != NULL)
-         pqueue->effect = peffect;
-    else pqueue->effect = NULL;
-
     pstream->numqueued++;
     pstream->numtoplay++;
     pstream->queueindex = (pstream->queueindex + 1) % SOUND_MAX_STREAM_QUEUE;
-    pqueue->fhandle     = filehandle;
 
-    if ((pstream->status == SOUND_STREAM_INUSE) && !bWait)
-    {
+    pqueue->eq      = pEQ;
+    pqueue->delay   = pdelay;
+    pqueue->effect  = peffect;
+    pqueue->fhandle = filehandle;
+
+    if ((pstream->status == SOUND_STREAM_INUSE) && !bWait) {
         pstream->blockstatus[0] = 0;
         pstream->blockstatus[1] = 0;
-        pstream->readblock = 0;
-        pstream->writeblock = 0;
-        pstream->writepos = 0;
-        pstream->status = SOUND_STREAM_STARTING;
+        pstream->readblock      = 0;
+        pstream->writeblock     = 0;
+        pstream->writepos       = 0;
+        pstream->status         = SOUND_STREAM_STARTING;
     }
 
     return SOUND_OK;
@@ -556,124 +499,76 @@ static sdword soundstreamqueuePatchUnsynchronised(sdword streamhandle, smemsize 
 ----------------------------------------------------------------------------*/	
 static sdword soundstreamvolumeUnsynchronised(sdword handle, sword vol, real32 fadetime)
 {
-    CHANNEL *pchan;
-    sdword channel;
-    bool stop = FALSE;
-    sdword fadeblocks = -1;
-    STREAM *pstream;
-    sdword i;
-
-    if (!soundinited)
-    {
-        return (SOUND_ERR);
+    if (!soundinited) {
+        return SOUND_ERR;
     }
     
-    if (streamer.status != SOUND_PLAYING)
-    {
-    return (SOUND_ERR);
+    if (streamer.status != SOUND_PLAYING) {
+        return SOUND_ERR;
     }
 
-    if (vol > SOUND_VOL_MAX)
-    {
-        vol = SOUND_VOL_MAX;
-    }
-    else if (vol == -1)
-    {
-        vol = SOUND_VOL_MIN;
-        stop = TRUE;
-    }
-    else if (vol <= SOUND_VOL_MIN)
-    {
-        vol = SOUND_VOL_MIN;
+    const bool stop = (vol == SOUND_VOL_AUTOSTOP);
+    vol = min( vol, SOUND_VOL_MAX );
+    vol = max( vol, SOUND_VOL_MIN );
+
+    const sdword channel = SNDchannel(handle);
+    if (channel < 0) {
+        return SOUND_ERR;
     }
 
-    channel = SNDchannel(handle);
+    CHANNEL* const pchan = &speechchannels[channel];
+    if (pchan == NULL)
+        return SOUND_OK;
 
-    if (channel < 0)
-    {
-        return (SOUND_ERR);
-    }
+    if ((vol != pchan->voltarget) || stop) {
+        const sdword fadeblocks = max( (sdword)(fadetime * SOUND_FADE_TIMETOBLOCKS), NUM_FADE_BLOCKS );
 
-    pchan = &speechchannels[channel];
-
-    if (pchan != NULL)
-    {
-        fadeblocks = (sdword)(fadetime * SOUND_FADE_TIMETOBLOCKS);
-
-        if (fadeblocks < NUM_FADE_BLOCKS)
-        {
-            fadeblocks = NUM_FADE_BLOCKS;
+        if (vol == (sword)pchan->volume) {
+            pchan->voltarget    = vol;
+            pchan->volticksleft = 1;
+            pchan->volfade      = 0.0f;
         }
+        else if (fadeblocks > 0) {
+            pchan->voltarget    = vol;
+            pchan->volticksleft = fadeblocks;
+            pchan->volfade      = (real32)(pchan->voltarget - pchan->volume) / (real32)pchan->volticksleft;
 
-        if ((vol != pchan->voltarget) || stop)
-        {
-            if (vol == (sword)pchan->volume)
-            {
-                pchan->voltarget = vol;
-                pchan->volticksleft = 1;
-                pchan->volfade = 0.0f;
-            }
-            else if (fadeblocks > 0)
-            {
-                pchan->voltarget = vol;
-                pchan->volticksleft = fadeblocks;
-                pchan->volfade = (real32)(pchan->voltarget - pchan->volume) / (real32)pchan->volticksleft;
-
-                if (pchan->volfade == 0.0f)
-                {
-                    pchan->volfade = 0.01f;
-                    if (pchan->voltarget < pchan->volume)
-                    {
-                        pchan->volfade = -0.01f;
-                    }
-                }
-            }
-            else if (fadeblocks == -1)
-            {
-                pchan->voltarget = vol;
+            if (pchan->volfade == 0.0f) {
                 pchan->volfade = 0.01f;
-                pchan->volticksleft = ((sword)pchan->volume - vol) * 100;
-                if (pchan->volticksleft < 0)
-                {
-                    pchan->volticksleft *= -1;
+                if (pchan->voltarget < pchan->volume) {
+                    pchan->volfade = -0.01f;
                 }
             }
-            else
-            {
-                pchan->volume = vol;
-                pchan->voltarget = vol;
-                pchan->volticksleft = 1;
-                pchan->volfade = 0.0f;
+        }
+        else if (fadeblocks == -1) {
+            pchan->voltarget    = vol;
+            pchan->volfade      = 0.01f;
+            pchan->volticksleft = ((sword)pchan->volume - vol) * 100;
+            if (pchan->volticksleft < 0) {
+                pchan->volticksleft *= -1;
             }
-            
-            if (stop)
-            {
-                pchan->status = SOUND_STOPPING;
-                /* need to clean up the queue */
-                pstream = &streams[channel];
-                pstream->writeindex = pstream->playindex;
-                if (pstream->status == SOUND_STREAM_INUSE)
-                {
-                    pstream->queueindex = pstream->writeindex;
-                }
-                else
-                {
-                    pstream->queueindex = pstream->writeindex + 1;
-                    if (pstream->queueindex >= SOUND_MAX_STREAM_QUEUE)
-                    {
-                        pstream->queueindex = 0;
-                    }
-                }
-//				pstream->queue[pstream->writeindex].fhandle = SOUND_ERR;
-                pstream->numqueued = 0;
-                for (i = 0; i < SOUND_MAX_STREAM_QUEUE; i++)
-                {
-                    if (i != pstream->playindex)
-                    {
-                        pstream->queue[i].fhandle = SOUND_ERR;
-                    }
-                }
+        } else {
+            pchan->volume       = vol;
+            pchan->voltarget    = vol;
+            pchan->volticksleft = 1;
+            pchan->volfade      = 0.0f;
+        }
+        
+        if (stop) {
+            pchan->status = SOUND_STOPPING;
 
+            /* need to clean up the queue */
+            STREAM *pstream = &streams[channel];
+            pstream->writeindex = pstream->playindex;
+            if (pstream->status == SOUND_STREAM_INUSE)
+                 pstream->queueindex = pstream->writeindex;
+            else pstream->queueindex = (pstream->writeindex + 1) % SOUND_MAX_STREAM_QUEUE;
+
+            pstream->numqueued = 0;
+            for (sdword i = 0; i < SOUND_MAX_STREAM_QUEUE; i++){
+                if (i != pstream->playindex) {
+                    pstream->queue[i].fhandle = SOUND_ERR;
+                }
             }
         }
     }
@@ -784,24 +679,20 @@ foundInfo:;
 
 static sword soundstreamgetvolUnsynchronised(sdword handle)
 {
-    sdword channel;
-    
-    if (!soundinited)
-    {
+    if (!soundinited) {
         return (SOUND_ERR);
     }
     
-    if (streamer.status != SOUND_PLAYING)
-    {
+    if (streamer.status != SOUND_PLAYING) {
         return (SOUND_ERR);
     }
 
-    channel = SNDchannel(handle);
+    const sdword channel = SNDchannel(handle);
 
-    if (channel >= SOUND_OK)
-    {
+    if (channel >= SOUND_OK) {
         return ((sword)speechchannels[channel].volume);
     }
+
     return (SOUND_ERR);
 }
 
@@ -990,8 +881,9 @@ static void streamerStartStream( STREAM* const pstream, CHANNEL* const pchan, ST
     isoundstreamreadheader(pstream);
                 
     if (pstream->readblock != pstream->writeblock)
-    if (pstream->blockstatus[pstream->readblock] == 0)
+    if (pstream->blockstatus[pstream->readblock] == 0) {
         pstream->writeblock = pstream->readblock;
+    }
 
     pstream->status   = SOUND_STREAM_WRITING;
     pchan->volfactorL = pqueue->volfactorL;
@@ -1007,9 +899,9 @@ static void streamerStartStream( STREAM* const pstream, CHANNEL* const pchan, ST
             pchan->volfade = (pchan->voltarget < pchan->volume) ? -0.01f : +-0.01f;
         }
     } else {
-        pchan->volume = (real32)pqueue->vol;
+        pchan->volume       = (real32)pqueue->vol;
         pchan->volticksleft = 0;
-        pchan->volfade = 0.0f;
+        pchan->volfade      = 0.0f;
     }
     
     pchan->pan         = pqueue->pan;
@@ -1039,9 +931,9 @@ static void streamerWriteStream( STREAM* const pstream, CHANNEL* const pchan, ST
             isoundstreamreadheader(pstream);
         } else {
             /* IS THERE ANOTHER STREAM IN THE HOUSE? */
-            pqueue->fhandle = SOUND_ERR;
+            pqueue->fhandle     = SOUND_ERR;
             pstream->writeindex = (pstream->writeindex + 1) % SOUND_MAX_STREAM_QUEUE;
-            pqueue = &pstream->queue[pstream->writeindex];
+            pqueue              = &pstream->queue[pstream->writeindex];
     
             if (pqueue->fhandle != SOUND_ERR) {
                 isoundstreamreadheader(pstream);
@@ -1055,7 +947,7 @@ static void streamerWriteStream( STREAM* const pstream, CHANNEL* const pchan, ST
             }
         }
     }
-                
+    
     if (pstream->dataleft >= pstream->blocksize) {
         /* WE HAVE LOTS OF DATA HERE */
         pstream->lastpos  += isoundstreamreadblock(pqueue, streamerNextBuffer(pstream), pstream->lastpos, pstream->blocksize);

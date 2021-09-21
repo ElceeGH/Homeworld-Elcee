@@ -27,8 +27,7 @@ typedef struct SDLWAVEFORMAT
     Uint16 blockAlign;
 } SDLWAVEFORMAT;
 
-typedef struct
-{
+typedef struct PATCH {
 	udword			id;
 	udword			priority;
 	sdword			pitch;
@@ -48,16 +47,14 @@ typedef struct
 	sword			wavepad;
 } PATCH;
 
-typedef struct
-{
+typedef struct BANK {
 	udword			id;
 	udword			checksum;
 	sdword			numpatches;
 	sdword			firstpatch;
 } BANK;
 
-typedef struct CHANNEL
-{
+typedef struct CHANNEL {
 	sdword			priority;
 	sdword			status;
 	sdword			handle;
@@ -218,7 +215,7 @@ typedef struct SOUNDCOMPONENT
 } SOUNDCOMPONENT;
 
 /* functions */
-sdword isoundmixerinit(SDL_AudioSpec *aspec);
+sdword isoundmixerinit(void);
 void   isoundmixerrestore(void);
 
 sdword SNDreleasebuffer(CHANNEL *pchan);
