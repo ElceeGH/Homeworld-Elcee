@@ -1530,8 +1530,7 @@ void trailLineFuzzySheath(sdword LOD, sdword i, vector* vectora, vector* vectorb
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void trailLineBillboard(
-    sdword LOD, sdword i, vector* vectora, vector* vectorb, color c)
+void trailLineBillboard(sdword LOD, sdword i, vector* vectora, vector* vectorb, color c)
 {
     vector veye, vseg, vcross;
     vector from, fromHi;

@@ -44,7 +44,7 @@
     Type definitions:
 =============================================================================*/
 //static trail information block
-typedef struct
+typedef struct trailstatic
 {
     sdword nSegments;                           //number in segments in trail
     sdword granularity;                         //frame-granularity counter.  Will act as a trail-length multiplier
@@ -52,7 +52,7 @@ typedef struct
 }
 trailstatic;
 
-typedef struct
+typedef struct trailsegment
 {
     real32 position[3];
     real32 rotation[9];
@@ -62,8 +62,7 @@ typedef struct
     real32 direction[3];
     bool8  wide;
     ubyte  pad[3];
-}
-trailsegment;
+} trailsegment;
 
 typedef struct
 {
@@ -77,7 +76,7 @@ missiletrailsegment;
 #define TRAIL_EXPANDED    8
 
 //dynamic trail structure
-typedef struct
+typedef struct shiptrail
 {
     trailstatic *staticInfo;            //non-dynamic trail info reference
     void*  vship;
@@ -101,10 +100,9 @@ typedef struct
     sdword grainCounter;                //counter to reflect if the trail should be updated this time around
     sdword iHead, iTail, nLength;       //circular queue members
     trailsegment segments[1];           //trail segments
-}
-shiptrail;
+} shiptrail;
 
-typedef struct
+typedef struct missiletrail
 {
     trailstatic* staticInfo;
     void* vmissile;
@@ -113,8 +111,7 @@ typedef struct
     sdword grainCounter;
     sdword iHead, iTail, nLength;
     missiletrailsegment segments[1];
-}
-missiletrail;
+} missiletrail;
 
 /*=============================================================================
     Data:
