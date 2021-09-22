@@ -324,45 +324,20 @@ ubyte lodLevelComputeDefault( const void* spaceObj, const vector* camera )
 
 
 
-/// Compute LOD for the object.
-/// Does not modify the object.
-ubyte lodLevelCompute( const void* spaceObj, const vector* camera, udword maxDetail )
-{
-    const SpaceObj* obj  = spaceObj;
-    const lodinfo*  info = obj->staticinfo->staticheader.LOD;
+/// Check if an object is a mine.
+static bool isObjectAMine( const SpaceObj* obj ) {
+    if (obj->objtype == OBJ_MissileType) {
+        const Missile* missile = (const Missile*) obj;
+        return missile->missileType == MISSILE_Mine;
+    } else {
+        return FALSE;
+    }
+}
 
+
+
+static ubyte lodSelectFromStaticInfo( const lodinfo* info, const real32 dist ) {
     ubyte lod = 0;
-    vector vec = { 0 };
-    vecSub( vec, *camera, obj->posinfo.position );
-    real32 dist = vecMagnitudeSquared(vec);
-
-    if (maxDetail) {
-        // Increase detail for we are now in the far off year of 2021.
-        // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
-        // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
-        // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
-        dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR;
-        dist = max( 0.0f, dist );
-
-        // Always render the big boys in their glorious full detail.
-        if (obj->flags & SOF_BigObject)
-            dist = 0.0f;
-
-        // Mines are a special case with special visibility needs.
-        if (obj->objtype == OBJ_MissileType) {
-            const Missile* missile = (const Missile*) spaceObj;
-            if (missile->missileType == MISSILE_Mine) {
-                dist = vecMagnitudeSquared(vec);
-            }
-        }
-    }
-    
-#if LOD_SCALE_DEBUG
-    if (lodDebugScaleFactor != 0.0f)
-    {
-        lodScaleFactor = lodDebugScaleFactor;
-    }
-#endif
 
     if (dist > info->level[lod].bOff * lodScaleFactor) { //if drop a level of detail
         do {
@@ -379,8 +354,58 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, udword maxDet
         }
     }
 
+    return lod;
+}
+
+
+
+/// Compute LOD for the object.
+/// Does not modify the object.
+ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetail )
+{
+    const SpaceObj* obj     = spaceObj;
+    const bool      isAMine = isObjectAMine( obj );
+    
+    vector vec;
+    vecSub( vec, *camera, obj->posinfo.position );
+    const real32 magSqr = vecMagnitudeSquared( vec );
+    real32 dist = magSqr;
+
+    if (maxDetail) {
+        // Increase detail for we are now in the far off year of 2021.
+        // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
+        // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
+        // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
+        dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR;
+        dist = max( 0.0f, dist );
+
+        // For mines, use existing scaling but scale it out a bit. Empirically chosen for minimal LOD pop.
+        if (isAMine)
+            dist = magSqr * 0.22f;
+
+        // Always render the big boys in their glorious full detail.
+        if (obj->flags & SOF_BigObject)
+            dist = 0.0f;
+    }
+    
+#if LOD_SCALE_DEBUG
+    if (lodDebugScaleFactor != 0.0f)
+        lodScaleFactor = lodDebugScaleFactor;
+#endif
+
+    // Pick the LOD
+    const lodinfo* info = obj->staticinfo->staticheader.LOD;
+    ubyte          lod  = lodSelectFromStaticInfo( info, dist );
+
+    // Mines are a special case with special visibility needs, override LOD for these.
+    if (maxDetail && isAMine)
+    if (lod != info->nLevels - 1) {
+        lod = 0;
+    }
+
+    //verify we are within the available levels of detail
     dbgAssertOrIgnore(lod >= 0);
-    dbgAssertOrIgnore(lod < info->nLevels);             //verify we are within the available levels of detail
+    dbgAssertOrIgnore(lod < info->nLevels);
 
     return lod;
 }

@@ -117,7 +117,7 @@ extern real32 lodDebugScaleFactor;
     Functions:
 =============================================================================*/
 lodinfo* lodTableReadScript(char *directory, char *fileName);
-ubyte    lodLevelCompute       ( const void* spaceObj, const vector* camera, udword maxDetail );
+ubyte    lodLevelCompute       ( const void* spaceObj, const vector* camera, bool maxDetail );
 ubyte    lodLevelComputeDefault( const void* spaceObj, const vector* camera );
 lod*     lodLevelGet           ( void *spaceObj, const vector *camera, const vector *ship );
 void     lodAllMeshesRecolorize (lodinfo *LOD);
