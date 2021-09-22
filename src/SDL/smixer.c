@@ -35,7 +35,8 @@ static sdword dctmode	   = FQ_MNORM;		  // DCT mode
 static sdword dctsize	   = FQ_HSIZE;		  // DCT block size
 static sdword dctpanicmode = SOUND_MODE_NORM; // DCT panic mode, normal by default
 
-// Intermediate buffers
+static udword mixerBufferOutLen = 0;
+
 static real32 timebufferL[FQ_DSIZE];
 static real32 timebufferR[FQ_DSIZE];
 static real32 temptimeL  [FQ_DSIZE];
@@ -45,11 +46,11 @@ static real32 mixbuffer1R[FQ_SIZE];
 static real32 mixbuffer2L[FQ_SIZE];
 static real32 mixbuffer2R[FQ_SIZE];
 
-// Length of audio buffer for SDL out
-static udword		mixerBufferOutLen = 0;
+
+
+extern bool			soundinited;
 extern SDL_sem*		streamerThreadSem;
 extern CHANNEL		channels[];
-extern bool			soundinited;
 extern STREAM		streams[];
 extern CHANNEL		speechchannels[];
 extern sdword		numstreams;
@@ -172,6 +173,33 @@ sdword isoundmixerinit(void)
 void isoundmixerrestore(void)
 {
 	mixer.timeout = 0;
+}
+
+
+
+/*-----------------------------------------------------------------------------
+	Name		:
+	Description	:
+	Inputs		:
+	Outputs		:
+	Return		:
+----------------------------------------------------------------------------*/
+static sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect)
+{
+    char tempblock[FQ_LEN];
+	memset(tempblock, 0,       sizeof(tempblock) );
+	memcpy(tempblock, readptr, bitrate / 8       );
+
+	// Check size
+	if (size > dctsize) 
+		size = dctsize;
+	
+	if (effect != NULL)
+		fqGenQNoiseE(tempblock, bitrate, effect);
+
+	fqDequantBlock(tempblock, writeptr1, writeptr2, exponent, FQ_LEN, bitrate, size);
+
+	return bitrate / 8;
 }
 
 
@@ -472,10 +500,10 @@ static void mixerMixSFX(void)
 static void isoundmixerprocess( void* buffer, udword bufferSize )
 {
 	/* clear the mixbuffers */
-	memset(mixbuffer1L, 0, FQ_SIZE * sizeof(real32));
-	memset(mixbuffer1R, 0, FQ_SIZE * sizeof(real32));
-	memset(mixbuffer2L, 0, FQ_SIZE * sizeof(real32));
-	memset(mixbuffer2R, 0, FQ_SIZE * sizeof(real32));
+	memset(mixbuffer1L, 0, sizeof(mixbuffer1L) );
+	memset(mixbuffer1R, 0, sizeof(mixbuffer1R) );
+	memset(mixbuffer2L, 0, sizeof(mixbuffer2L) );
+	memset(mixbuffer2R, 0, sizeof(mixbuffer2R) );
 	
 	/* mix the speech first */
 	mixerMixStreams();
@@ -500,33 +528,6 @@ static void isoundmixerprocess( void* buffer, udword bufferSize )
 
 	/* update tick count */
 	mixerticks++;
-}
-
-
-
-/*-----------------------------------------------------------------------------
-	Name		:
-	Description	:
-	Inputs		:
-	Outputs		:
-	Return		:
-----------------------------------------------------------------------------*/
-static sdword isoundmixerdecodeEffect(sbyte *readptr, real32 *writeptr1, real32 *writeptr2, ubyte *exponent, sdword size, uword bitrate, EFFECT *effect)
-{
-    char tempblock[FQ_LEN];
-	memset(tempblock, 0,       sizeof(tempblock) );
-	memcpy(tempblock, readptr, bitrate / 8       );
-
-	// Check size
-	if (size > dctsize) 
-		size = dctsize;
-	
-	if (effect != NULL)
-		fqGenQNoiseE(tempblock, bitrate, effect);
-
-	fqDequantBlock(tempblock, writeptr1, writeptr2, exponent, FQ_LEN, bitrate, size);
-
-	return bitrate >> 3;
 }
 
 
@@ -559,7 +560,7 @@ static void soundmixerDeviceCallback(void *userdata, Uint8 *stream, int len)
 		/* check and see if its done yet */
 		if (mixer.timeout <= mixerticks) {
 			mixer.timeout = 0;
-			mixer.status = SOUND_STOPPED;
+			mixer.status  = SOUND_STOPPED;
 			SDL_PauseAudio(TRUE);
 		}
 	}
