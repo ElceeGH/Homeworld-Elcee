@@ -3144,7 +3144,7 @@ void titanJoinGameRequest(tpscenario *gametojoin)
     pInfo.stripeColor = utyStripeColor;
     pInfo.colorsPicked = cpColorsPicked;
     pInfo.race = whichRaceSelected;
-        pInfo.behindFirewall = titanBehindFirewall();
+    pInfo.behindFirewall = titanBehindFirewall();
     strcpy(pInfo.PersonalName, utyName);
 
     if (!LANGame)

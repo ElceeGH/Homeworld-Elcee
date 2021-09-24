@@ -778,8 +778,6 @@ void lgLaunchLAN(char *name, featom *atom)
         return;
     }
 
-// TODO : Uncomment when titanStart will be rewrite
-
     if (!titanStart(LANGame,IPGame))        // first try protocal specified by LanProtocalButton
     {
         IPGame ^= 1;     // didn't work, let's try other protocal

@@ -32,6 +32,10 @@ void *GameWereInterestedInMutex = 0;
  * Functions
  *--------------------------------------------------------------------------*/
 
+void HandleJoinReject(Uint32 address, const void* data, unsigned short len);
+
+
+
 void titanGotNumUsersInRoomCB(const wchar_t *theRoomName, int theNumUsers)
 {
 	dbgMessagef("\ntitanGotNumUsersInRoomCB");

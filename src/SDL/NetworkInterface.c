@@ -4,6 +4,7 @@
 #include "SDL_thread.h"
 #ifdef HW_ENABLE_NETWORK
 #include "SDL_net.h"
+#include "TitanInterfaceC.h"
 #endif
 #include "NetworkInterface.h"
 
@@ -59,7 +60,7 @@ void initNetwork()
 	}
 
 	// Create Thread to listen to Broadcast Packet on UDP
-	listenBroadcast = SDL_CreateThread(broadcastStartThread,broadcastSendSock);
+	listenBroadcast = SDL_CreateThread(broadcastStartThread,"",broadcastSendSock);
 	if(!listenBroadcast)
 	{
 		exit(4);
@@ -80,7 +81,7 @@ void initNetwork()
 
 	// Initialisation of TCP Server Thread
 
-	listenTCP = SDL_CreateThread(TCPServerStartThread,NULL);
+	listenTCP = SDL_CreateThread(TCPServerStartThread,"",NULL);
 	if(!listenBroadcast)
 	{
 		exit(4);
@@ -198,7 +199,7 @@ Uint32 getMyAddress()
                 exit(5);
         }
 
-        SDL_Thread *pingRecv = SDL_CreateThread(pingSendThread,NULL);
+        SDL_Thread *pingRecv = SDL_CreateThread(pingSendThread,"",NULL);
 
         while(SDLNet_UDP_Recv(recvSock,packet)<=0);
 
