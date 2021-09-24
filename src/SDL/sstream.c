@@ -35,7 +35,7 @@ STREAM  streams[SOUND_MAX_STREAM_BUFFERS];
 sdword  numstreams;
 
 #if VCE_BACKWARDS_COMPATIBLE
-bool ssOldFormatVCE = FALSE;
+static bool ssOldFormatVCE = FALSE;
 #endif
 
 
