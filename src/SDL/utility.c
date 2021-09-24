@@ -4655,24 +4655,6 @@ real32 utyCaretBlinkRate(void)
 #endif
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : utyDoubleClick
-    Description : Process a double-click event
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void utyDoubleClick(void)
-{
-    if (!mouseLDoubleClick())
-    {
-        //this is needed because the second button click is
-        //not registered as a WM_LBUTTONDOWN click.  Only call this
-        //function if mouseLDoubleClick didn't do any special processing
-        keyPressDown(LMOUSE_BUTTON);
-    }
-    keyPressUp(LMOUSE_BUTTON);
-}
 
 /*-----------------------------------------------------------------------------
     Name        : utyChangeResolution

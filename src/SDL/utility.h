@@ -188,7 +188,6 @@ void utyOptionsFileWrite(void);
 
 //text entry things
 real32 utyCaretBlinkRate(void);
-void utyDoubleClick(void);
 
 void utyLoadSinglePlayerGameGivenFilename(char *filename);
 void utyLoadMultiPlayerGameGivenFilename(char *filename);
