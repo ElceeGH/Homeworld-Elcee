@@ -619,8 +619,8 @@ void generateDirectoryCustomInfo(DirectoryCustomInfoMax *buildDirectoryCustomInf
 
     tpGameCreated.userBehindFirewall = buildDirectoryCustomInfo->userBehindFirewall;
 
-    buildDirectoryCustomInfo->numPlayers = tpGameCreated.numPlayers;
-    buildDirectoryCustomInfo->flag = tpGameCreated.flag;
+    buildDirectoryCustomInfo->numPlayers = (unsigned char) tpGameCreated.numPlayers;
+    buildDirectoryCustomInfo->flag       = tpGameCreated.flag;
 
     buildDirectoryCustomInfo->captainAddress = myAddress;
     buildDirectoryCustomInfo->pingAddress = titanGetMyPingAddress();
