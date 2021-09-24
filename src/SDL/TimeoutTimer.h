@@ -15,8 +15,8 @@ typedef struct TTimer
 {
     bool enabled;
     bool timedOut;
-    sqword timerLast;
-    udword timeoutTicks;
+    uqword timerLast;
+    uqword timeoutTicks;
 } TTimer;
 
 void TTimerInit(TTimer *timer);
@@ -27,7 +27,7 @@ void TTimerReset(TTimer *timer);
 void TTimerStart(TTimer *timer,real32 timeout);
 bool TTimerIsTimedOut(TTimer *timer);
 
-void GetRawTime(sqword *time);
+void GetRawTime(uqword *time);
 
 #endif
 

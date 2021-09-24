@@ -30,10 +30,6 @@ void TTimerDisable(TTimer *timer)
 
 bool TTimerUpdate(TTimer *timer)
 {
-    Uint32 timerval;
-    Uint32 difference;
-    udword nTicks;
-
     if (!timer->enabled)
     {
         return FALSE;
@@ -44,10 +40,9 @@ bool TTimerUpdate(TTimer *timer)
         return TRUE;
     }
 
-    timerval = SDL_GetTicks();
-
-    difference = timerval - timer->timerLast;
-    nTicks = (udword)(difference / utyTimerDivisor);
+    uqword timerval   = SDL_GetTicks();
+    uqword difference = timerval - timer->timerLast;
+    uqword nTicks     = difference / utyTimerDivisor;
 
     if (nTicks >= timer->timeoutTicks)
     {
@@ -70,32 +65,27 @@ bool TTimerIsTimedOut(TTimer *timer)
 
 void TTimerReset(TTimer *timer)
 {
-    Uint32 timerval;
-
     if (!timer->enabled)
     {
         return;
     }
 
-    timerval = SDL_GetTicks();
-
-    timer->timedOut = FALSE;
+    uqword timerval  = SDL_GetTicks();
+    timer->timedOut  = FALSE;
     timer->timerLast = timerval;
 }
 
 void TTimerStart(TTimer *timer,real32 timeout)
 {
-    Uint32 timerval;
-
-    timerval = SDL_GetTicks();
+    uqword timerval = SDL_GetTicks();
 
     timer->enabled = TRUE;
     timer->timedOut = FALSE;
     timer->timerLast = timerval;
-    timer->timeoutTicks = (udword) (timeout * UTY_TimerResolutionMax);
+    timer->timeoutTicks = (uqword) (timeout * UTY_TimerResolutionMax);
 }
 
-void GetRawTime(sqword *time)
+void GetRawTime(uqword *time)
 {
     *time = SDL_GetTicks();
 }
