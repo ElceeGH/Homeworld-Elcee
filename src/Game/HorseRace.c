@@ -71,9 +71,11 @@ extern Uint32 utyTimerLast;
     #define HR_SCALE_MISSION_LOADING_SCREENS  FALSE
 #endif
 
-#define HR_PlayerNameFont   "Arial_12.hff"
-#define MAX_CHAT_TEXT       64
-#define NUM_CHAT_LINES      10
+#define HR_PacketRateLimitTime 50 // One packet every N milliseconds, max
+#define HR_MinRenderTime       7  // Artificially delay if rendering is very fast (e.g. no vsync or an extremely high refresh rate)
+#define HR_PlayerNameFont      "Arial_12.hff"
+#define MAX_CHAT_TEXT          64
+#define NUM_CHAT_LINES         10
 
 real32 HorseRacePlayerDropoutTime = 10.0f;     // tweakable
 color HorseRaceDropoutColor = colRGB(75,75,75);
@@ -91,9 +93,6 @@ static sdword JustInit;
 static sdword localbar;
 
 // Pixels and info about the background image chosen
-static bool hrBackgroundInitFrame = 0;
-static long hrBackgroundDirty = 0;
-bool hrBackgroundReinit = FALSE;
 static long hrBackXSize, hrBackYSize;
 static GLfloat hrBackXFrac, hrBackYFrac;
 static GLuint hrBackgroundTexture = 0;
@@ -104,6 +103,7 @@ static regionhandle hrDecRegion;
 
 HorseStatus horseracestatus;
 static udword hrProgressCounter = 0;
+static udword hrLastPacketSendTime;
 
 TTimer hrPlayerDropoutTimers[MAX_MULTIPLAYER_PLAYERS];
 
@@ -240,7 +240,7 @@ void hrBarDraw(rectangle *rect, color back, color fore, real32 percent)
 void hrDrawPlayersProgress(featom *atom, regionhandle region)
 {
     sdword     index;
-    rectangle pos;
+    rectangle pos; 
     rectangle outline;
     real32 percent;
     fonthandle currentfont;
@@ -270,26 +270,23 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
             outline.y0 -= 3;
             outline.y1 = outline.y0 + fontHeight(" ")*2 - 2;
 
-            if ((hrBackgroundDirty) || (!PlayersAlreadyDrawnDropped[index]))
+            PlayersAlreadyDrawnDropped[index] = droppedOut;
+
+            primRectSolid2(&outline, colBlack);
+
+            if (droppedOut)
             {
-                PlayersAlreadyDrawnDropped[index] = droppedOut;
+                fontPrintf(pos.x0,pos.y0,colBlack,"%s",tpGameCreated.playerInfo[index].PersonalName);
+                fontPrintf(pos.x0,pos.y0,HorseRaceDropoutColor,"%s",
+                            (playersReadyToGo[index] == PLAYER_QUIT) ? strGetString(strQuit) : strGetString(strDroppedOut));
+            }
+            else
+            {
+                fontPrintf(pos.x0,pos.y0,tpGameCreated.playerInfo[index].baseColor,"%s",tpGameCreated.playerInfo[index].PersonalName);
 
-                primRectSolid2(&outline, colBlack);
-
-                if (droppedOut)
+                if (horseracestatus.hrstatusstr[index][0])
                 {
-                    fontPrintf(pos.x0,pos.y0,colBlack,"%s",tpGameCreated.playerInfo[index].PersonalName);
-                    fontPrintf(pos.x0,pos.y0,HorseRaceDropoutColor,"%s",
-                               (playersReadyToGo[index] == PLAYER_QUIT) ? strGetString(strQuit) : strGetString(strDroppedOut));
-                }
-                else
-                {
-                    fontPrintf(pos.x0,pos.y0,tpGameCreated.playerInfo[index].baseColor,"%s",tpGameCreated.playerInfo[index].PersonalName);
-
-                    if (horseracestatus.hrstatusstr[index][0])
-                    {
-                        fontPrintf(pos.x0+150,pos.y0,tpGameCreated.playerInfo[index].baseColor,"%s",horseracestatus.hrstatusstr[index]);
-                    }
+                    fontPrintf(pos.x0+150,pos.y0,tpGameCreated.playerInfo[index].baseColor,"%s",horseracestatus.hrstatusstr[index]);
                 }
             }
 
@@ -320,12 +317,10 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
         }
 
         // blinking hyperspace destination (render every other call)
-        if (++hrProgressCounter % 2 == 0)
+        const udword wrapAt = 100;
+        hrProgressCounter = (hrProgressCounter + 1) % wrapAt;
+        if (hrProgressCounter > wrapAt / 2) // Blink
         {
-            hrBackgroundDirty = 3;  // 1 - nothing happens as decremented before rendered
-                                    // 2 - background is cleared but not redrawn
-                                    // 3 - 3's the charm
-            
             // hyperspace destination circled in first-person view  
             #define SP_LOADING_HYPERSPACE_DEST_CIRCLE_X  115
             #define SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y  342
@@ -333,9 +328,9 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
             // hyperspace destination arrowed in "as the bird flies" view 
             #define SP_LOADING_HYPERSPACE_DEST_ARROWS_X  195
             #define SP_LOADING_HYPERSPACE_DEST_ARROWS_Y  134
-
+        
             // NB: hrDrawFile deals with coordinate mapping
-
+        
             hrDrawFile("feman/loadscreen/ring.lif",
                 SP_LOADING_HYPERSPACE_DEST_CIRCLE_X, SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y
             );
@@ -346,19 +341,16 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
     }
     else
     {
-        if (hrBackgroundDirty)
-        {
-            outline = pos;
-            outline.x0 -= 5;
-            outline.x1 += 10;
-            outline.y0 -= 3;
-            outline.y1 = outline.y0 + fontHeight(" ")*2 - 2;
+        outline = pos;
+        outline.x0 -= 5;
+        outline.x1 += 10;
+        outline.y0 -= 3;
+        outline.y1 = outline.y0 + fontHeight(" ")*2 - 2;
 
-            primRectTranslucent2(&outline, colRGBA(0,0,0,64));
-            primRectOutline2(&outline, 1, teColorSchemes[0].textureColor.detail);
+        primRectTranslucent2(&outline, colRGBA(0,0,0,64));
+        primRectOutline2(&outline, 1, teColorSchemes[0].textureColor.detail);
 
-            fontPrintf(pos.x0,pos.y0,teColorSchemes[0].textureColor.base,"%s",playerNames[0]);
-        }
+        fontPrintf(pos.x0,pos.y0,teColorSchemes[0].textureColor.base,"%s",playerNames[0]);
 
         pos.y0+=fontHeight(" ");
         pos.y1=pos.y0+4;
@@ -632,65 +624,6 @@ void hrChooseRandomBitmap(char *pFilenameBuffer)
     chdir(CurDir);
 }
 
-typedef struct
-{
-    unsigned char v[2][2];
-} ColorQuad;
-
-
-//
-// Takes X & Y values normalized from 0 to 1
-// returns a bilinear interpolated pixel value
-//
-unsigned char hrBilinear(ColorQuad *pQuad, double X, double Y)
-{
-    float Top, Bot, Final;
-    long FinalLong;
-
-    Top = (float)pQuad->v[0][0] + ((float)pQuad->v[1][0] - (float)pQuad->v[0][0]) * (float) X;
-    Bot = (float)pQuad->v[0][1] + ((float)pQuad->v[1][1] - (float)pQuad->v[0][1]) * (float) X;
-
-    Final = (Top + (Bot - Top) * Y) + 0.5f;
-
-    FinalLong = (long)Final;
-
-    // Clamp it to 0 - 255
-    if(FinalLong > 255) FinalLong = (FinalLong >> 31) & 0xff;
-    return (unsigned char)FinalLong;
-}
-
-unsigned long hrGetInterpPixel(unsigned char *pSrcImg, long XSize, float Xf, float Yf)
-{
-    unsigned long Result, x, y, xx, yy;
-    unsigned char *pCol;
-    double xfrac, yfrac, xint, yint;
-    ColorQuad r, g, b;
-
-    x = (unsigned long)Xf;
-    y = (unsigned long)Yf;
-
-    xfrac = modf(Xf, &xint);
-    yfrac = modf(Yf, &yint);
-
-    for(yy=0; yy<2; yy++)
-    {
-        for(xx=0; xx<2; xx++)
-        {
-            pCol = &pSrcImg[ (((y+yy) * XSize) + x+xx) * 3 ];
-            r.v[xx][yy] = pCol[0];
-            g.v[xx][yy] = pCol[1];
-            b.v[xx][yy] = pCol[2];
-        }
-    }
-
-    Result  = (unsigned long)hrBilinear(&r, xfrac, yfrac);
-    Result |= (unsigned long)hrBilinear(&g, xfrac, yfrac) << 8;
-    Result |= (unsigned long)hrBilinear(&b, xfrac, yfrac) << 16;
-    Result |= 0xff000000;
-
-    return Result;
-}
-
 
 long hrShipsToLoadForRace(ShipRace shiprace)
 {
@@ -916,8 +849,6 @@ void hrShutdownBackground(void)
         glDeleteTextures(1, &hrBackgroundTexture);
         hrBackgroundTexture = 0;
     }
-    hrBackgroundInitFrame = 0;
-    hrBackgroundReinit = FALSE;
 }
 
 void hrAbortLoadingYes(char *name, featom *atom)
@@ -1105,8 +1036,6 @@ void horseRaceInit()
     playernamefont = frFontRegister(HR_PlayerNameFont);
 
     hrRunning=TRUE;
-    hrBackgroundDirty = 3;
-    hrBackgroundReinit = FALSE;
 }
 
 void horseRaceShutdown()
@@ -1146,15 +1075,8 @@ void horseRaceWaitForNetworkGameStartShutdown()
     }
 }
 
-real32 lasttime;
-
 void HorseRaceBeginBar(uword barnum)
 {
-    //udword i;
-    HorsePacket packet;
-    lasttime = 0.0f;
-//    if(utyTeaserHeader) return;
-
     if(JustInit)
     {
         JustInit = FALSE;
@@ -1165,11 +1087,12 @@ void HorseRaceBeginBar(uword barnum)
     }
 
     //send packet
-    packet.packetheader.type = PACKETTYPE_HORSERACE;
-    packet.playerindex = (uword) sigsPlayerIndex;
-    packet.packetheader.numberOfCommands = 0;                    //don't need probably
-    packet.barnum = (uword) localbar;
-    packet.percent = horseRaceGetPacketPercent(0.0f);
+    HorsePacket packet = {
+        .packetheader.type = PACKETTYPE_HORSERACE,
+        .playerindex       = (uword) sigsPlayerIndex,
+        .barnum            = (uword) localbar,
+        .percent           = horseRaceGetPacketPercent(0.0f),
+    };
 
     if (multiPlayerGame)
     {
@@ -1196,18 +1119,9 @@ void hrUncleanDecorative(void)
 
 void horseRaceRender()
 {
-    SDL_Event e;
-
     regRenderEventIndex = 0;
 
-    //special-case code for double-clicks
-
-/*    if (keyIsHit(LMOUSE_DOUBLE))
-    {
-        keyPressUp(LMOUSE_DOUBLE);
-        utyDoubleClick();
-    }
-    if (demDemoRecording)
+/*   if (demDemoRecording)
     {
         memcpy((ubyte *)&keyScanCode[0], (ubyte *)&keySaveScan[0], sizeof(keyScanCode));//freeze a snapshot of the key state
         demStateSave();
@@ -1217,54 +1131,12 @@ void horseRaceRender()
         demStateLoad();
     }*/
 
-    if (hrBackgroundReinit)
-    {
-        if (hrBackgroundTexture != 0)
-        {
-            glDeleteTextures(1, &hrBackgroundTexture);
-            hrBackgroundTexture = 0;
-        }
-        hrBackgroundReinit = FALSE;
-        hrBackgroundDirty = 3;
-        hrBackgroundInitFrame = 0;
-    }
-
     // Make sure the Homeworld text gets drawn on the correct frames
-    if (hrBackgroundDirty)
-    {
-        regRecursiveSetDirty(&horseCrapRegion);
-        hrDecRegion = NULL;
-    }
-    else
-    {
-        regionhandle reg;
-
-        // "Clean" the region with the homeworld logo
-        // in it so it doesn't re-draw all the time
-
-        reg = horseCrapRegion.child;
-        if (reg)
-        {
-            reg = reg->child;
-        }
-
-        while (reg && reg->drawFunction != &ferDrawDecorative)
-        {
-            reg = reg->next;
-        }
-
-        if (reg)
-        {
-            void regNULLRenderFunction(regionhandle region);
-            hrDecRegion = reg;
-            reg->drawFunction = regNULLRenderFunction;
-        }
-    }
+    regRecursiveSetDirty(&horseCrapRegion);
+    hrDecRegion = NULL;
 
     if (TitanActive)
         titanPumpEngine();
-
-    SDL_Delay(0);
 
     if (!SDL_PollEvent(0))
     {
@@ -1282,6 +1154,7 @@ void horseRaceRender()
         regRegionProcess(horseCrapRegion.child, 0xffffffff);
         while (SDL_PollEvent(0))
         {
+            SDL_Event e;
             if (SDL_WaitEvent(&e))
             {
                 HandleEvent(&e);
@@ -1348,44 +1221,19 @@ void horseRaceRender()
     //functions which want it off should set it back on when done
 
 
-    // I know this looks weird, but it's correct
-    if(hrBackgroundInitFrame == 1)
+    // If background isn't loaded yet, do it now
+    if(hrBackgroundTexture == 0)
     {
         hrInitBackground();
     }
 
     // When there's no background loaded yet, it fills the screen with black
-    if (hrBackgroundDirty)
-    {
-        hrDrawBackground();
-    }
-    else
-    {
-        if (hrBackgroundTexture != 0)
-        {
-            glDeleteTextures(1, &hrBackgroundTexture);
-            hrBackgroundTexture = 0;
-        }
-    }
+    hrDrawBackground();
 
     regFunctionsDraw();                                //render all regions
     primErrorMessagePrint();
 
     hrUncleanDecorative();
-
-    // We want the init code to be called on the 2nd pass.  That way, the screen erases,
-    // Then we incur the delay of loading the background.
-    // For two frames -after that- we'll draw the background,
-    // then just draw the progress bars.
-    if(hrBackgroundDirty && hrBackgroundInitFrame)
-    {
-        if (hrBackgroundDirty > 0)
-        {
-            hrBackgroundDirty--;
-        }
-    }
-
-    hrBackgroundInitFrame++;
 
     if (ShouldHaveMousePtr)
     {
@@ -1422,8 +1270,7 @@ void horseRaceRender()
 real32 horseRaceGetPacketPercent(real32 barPercent)
 {
     real32 percent=0.0f;
-    sdword i;
-    for(i=0;i<localbar;i++)
+    for(sdword i=0;i<localbar;i++)
     {
         //add previous bar percentiles...
         percent += horseBarInfo.perc[i];
@@ -1435,134 +1282,75 @@ real32 horseRaceGetPacketPercent(real32 barPercent)
 
 bool HorseRaceNext(real32 percent)
 {
-    Uint32 lp;
-    HorsePacket packet;
-    real32 temptime;
-    udword i;
-    sdword dontrenderhack = FALSE;
-    bool sendhrpackethack = FALSE;
-//    static real32 lastper = 0.0f;
-    static sdword modulusCounter = 0;
-
-    if (percent > 1.0f) percent = 1.0f;
-//    if(utyTeaserHeader)  return TRUE;
-
-    /*glClear(GL_COLOR_BUFFER_BIT);
-    regFunctionsDraw();                                 //render all regions
-    glFlush();                                          //ensure all draws complete*/
+    percent = max( percent, 0.0f );
+    percent = min( percent, 1.0f );
 
     if (TitanActive)
         titanPumpEngine();
+    
+    HorsePacket packet = {
+        .packetheader.type = PACKETTYPE_HORSERACE,
+        .playerindex       = (uword) sigsPlayerIndex,
+        .barnum            = (uword) localbar,
+        .percent           = horseRaceGetPacketPercent(percent)
+    };
 
-    packet.packetheader.type = PACKETTYPE_HORSERACE;
-    packet.playerindex = (uword) sigsPlayerIndex;
-    packet.packetheader.numberOfCommands = 0;                    //don't need probably
-    packet.barnum = (uword) localbar;
-    //packet.current = (uword) localcurrent;
-    //packet.max = (uword) localmax;
-
-    packet.percent = horseRaceGetPacketPercent(percent);
-
-    //render first
-    if (lasttime == 0.0f)
-    {
-        horseRaceRender();
-        dontrenderhack = TRUE;
+    if ( ! multiPlayerGame) {
+        recievedHorsePacketCB((ubyte *)&packet, sizeof(HorsePacket));
     }
 
-    if (multiPlayerGame && (startingGameState == AUTODOWNLOAD_MAP) && (sigsPlayerIndex == 0))
-    {
-        sendhrpackethack = TRUE;
-        SendHorseRacePacket((ubyte *)&packet,sizeof(HorsePacket));      // always send horse race packet when autouploading map
-    }
+    if (multiPlayerGame) {
+        const udword timeNow     = SDL_GetTicks();
+        const udword timeDelta   = timeNow - hrLastPacketSendTime;
+        const bool   timeElapsed = timeDelta >= HR_PacketRateLimitTime;
+        const bool   alwaysSend  = (startingGameState == AUTODOWNLOAD_MAP) && (sigsPlayerIndex == 0); // always when autouploading map
 
-    lp = SDL_GetTicks();
-    temptime = (float)lp;
-    if(temptime - lasttime < horseRaceRenderTime)
-    {
-        if(lasttime > temptime)
-            lasttime = temptime;
-        return FALSE;     //don't return
-    }
-    lasttime = temptime;
-
-//    if(lastper != percent)
-//    {
-
-    if (multiPlayerGame)
-    {
-        if (!sendhrpackethack)
-        {
-            if (modulusCounter <= 0)
-            {
-                modulusCounter = 6;
-            }
-            modulusCounter--;
-            if (modulusCounter == 0)
-            {
-                SendHorseRacePacket((ubyte *)&packet,sizeof(HorsePacket));
-            }
-        }
-    }
-    else
-    {
-        recievedHorsePacketCB((ubyte *)&packet,sizeof(HorsePacket));
-    }
-
-//    }
-//    lastper = percent;
-
-    if (!dontrenderhack)
-    {
-        horseRaceRender();
-    }
-
-    if(multiPlayerGame)
-    {
-        for(i=0;i<sigsNumPlayers;i++)
-        {
-            if (i != sigsPlayerIndex)       // don't check myself
-            {
-                if (!playerHasDroppedOutOrQuit(i))
-                {
-                    if (TTimerUpdate(&hrPlayerDropoutTimers[i]))
-                    {
-                        PlayerDroppedOut(i,TRUE);
-                    }
-                }
-            }
+        if (timeElapsed || alwaysSend) {
+            SendHorseRacePacket((ubyte *)&packet, sizeof(HorsePacket));
+            hrLastPacketSendTime = timeNow;
         }
 
-        if(localbar == (horseBarInfo.numBars - 1))
-        {
-            for(i=0;i<sigsNumPlayers;i++)
-            {
+        if (timeElapsed) {
+            for (sdword i=0;i<sigsNumPlayers;i++) {
+                if (i != sigsPlayerIndex) // don't check myself
                 if (!playerHasDroppedOutOrQuit(i))
-                {
-                    if(horseracestatus.percent[i] < 0.999f)
-                    {
+                if (TTimerUpdate(&hrPlayerDropoutTimers[i]))
+                    PlayerDroppedOut(i,TRUE);
+            }
+
+            if (localbar == (horseBarInfo.numBars - 1)) {
+                for (sdword i=0;i<sigsNumPlayers;i++) {
+                    if (!playerHasDroppedOutOrQuit(i))
+                    if (horseracestatus.percent[i] < 0.999f)
                         return FALSE;
-                    }
                 }
             }
         }
-        return TRUE;
     }
+
+    // Make rendering effectively take a certain minimum amount of time.
+    const udword timeRef   = SDL_GetTicks();
+    horseRaceRender();
+    const udword timeNow   = SDL_GetTicks();
+    const udword timeDelta = timeNow - timeRef;
+
+    if (timeDelta < HR_MinRenderTime)
+        SDL_Delay( HR_MinRenderTime - timeDelta );
 
     return TRUE;
 }
 
 void hrProcessPacket(struct ChatPacket *packet)
 {
-    sdword  i;
-    bool    done=FALSE;
+    ChatPacket* cp   = (ChatPacket *)packet;
+    bool        done = FALSE;
 
-    for (i=0;i<NUM_CHAT_LINES;i++)
+    for (sdword i=0;i<NUM_CHAT_LINES;i++)
     {
         if (chathistory[i].message[0]==0)
         {
-            strcpy(chathistory[i].message,(*((ChatPacket *)packet)).message);
-            chathistory[i].packetheader.frame = (*((ChatPacket *)packet)).packetheader.frame;
+            strcpy(chathistory[i].message,cp->message);
+            chathistory[i].packetheader.frame = cp->packetheader.frame;
             done = TRUE;
             break;
         }
@@ -1570,13 +1358,13 @@ void hrProcessPacket(struct ChatPacket *packet)
 
     if (!done)
     {
-        for (i=0;i<NUM_CHAT_LINES-1;i++)
+        for (sdword i=0;i<NUM_CHAT_LINES-1;i++)
         {
             chathistory[i] = chathistory[i+1];
             strcpy(chathistory[i].message,chathistory[i+1].message);
         }
-        strcpy(chathistory[i].message,(*((ChatPacket *)packet)).message);
-        chathistory[i].packetheader.frame = (*((ChatPacket *)packet)).packetheader.frame;
+        strcpy(chathistory[NUM_CHAT_LINES-1].message,cp->message);
+        chathistory[NUM_CHAT_LINES-1].packetheader.frame = cp->packetheader.frame;
     }
 
     hrDirtyChatBox();
@@ -1586,9 +1374,7 @@ void recievedHorsePacketCB(ubyte *packet,udword sizeofpacket)
 {
     //captain should have recieved a packet here...
     HorsePacket *hp = (HorsePacket *)packet;
-    udword i;
-
-    i = hp->playerindex;
+    udword i = hp->playerindex;
     dbgAssertOrIgnore(i < MAX_MULTIPLAYER_PLAYERS);
 
     if (multiPlayerGame)
@@ -1602,7 +1388,7 @@ void recievedHorsePacketCB(ubyte *packet,udword sizeofpacket)
 
     hrDirtyProgressBar();
 
-    horseracestatus.barnum[i] = hp->barnum;
+    horseracestatus.barnum[i]  = hp->barnum;
     horseracestatus.percent[i] = hp->percent;
 }
 

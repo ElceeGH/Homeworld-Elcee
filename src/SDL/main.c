@@ -1019,7 +1019,6 @@ void ActivateMe()
     keyClearAll();
     keyBufferClear();
 
-    hrBackgroundReinit = TRUE;
     /*
     if (utyTest2(SS2_ToggleKeys))
     {

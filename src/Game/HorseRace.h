@@ -58,7 +58,6 @@ typedef struct HorseRaceBars
 =============================================================================*/
 
 extern bool hrRunning;
-extern bool hrBackgroundReinit;
 
 extern HorseStatus horseracestatus;
 
