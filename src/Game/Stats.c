@@ -484,7 +484,7 @@ void GetPostCombatStats(FightStats *fightStats)
             dbgAssertOrIgnore(numShips > 0);
             playerindex = selection->ShipPtr[0]->playerowner->playerIndex;
             dbgAssertOrIgnore(playerindex < 2);
-            fightStats->numShipsAfter[playerindex] = (uword)numShips;
+            fightStats->numShipsAfter[playerindex] = (ubyte)numShips;
             for (i=0;i<numShips;i++)
             {
                 fightStats->totalHPAfter[playerindex] += selection->ShipPtr[i]->health;
@@ -640,7 +640,7 @@ void GatherFightStatsFor(sdword i,sdword j,bool actuallyDoFight)
         {
             // decision not in cache, so execute fight
             fightStats->numShips[powerfulship] = 1;
-            fightStats->numShips[nonpowerfulship] = (uword)trynum;
+            fightStats->numShips[nonpowerfulship] = (ubyte)trynum;
 
             statLog(" Binsearch %d %d\n",fightStats->numShips[0],fightStats->numShips[1]);
 
@@ -696,8 +696,8 @@ void ReciprocateFightStats(FightStats *fightStats)
 {
     tswap(fightStats->shiptype[0],fightStats->shiptype[1],ShipType)
     tswap(fightStats->shiprace[0],fightStats->shiprace[1],ShipRace)
-    tswap(fightStats->numShips[0],fightStats->numShips[1],sword)
-    tswap(fightStats->numShipsAfter[0],fightStats->numShipsAfter[1],sword)
+    tswap(fightStats->numShips[0],fightStats->numShips[1],ubyte)
+    tswap(fightStats->numShipsAfter[0],fightStats->numShipsAfter[1],ubyte)
     tswap(fightStats->totalHPAfter[0],fightStats->totalHPAfter[1],real32)
 //    tswap(fightStats->numFracShipsAfter[0],fightStats->numFracShipsAfter[1],sword)
     if (fightStats->fracRUratio != 0.0f)
