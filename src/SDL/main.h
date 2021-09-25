@@ -86,8 +86,7 @@ commandoption;
 /*=============================================================================
     Data:
 =============================================================================*/
-extern void *ghMainWindow;
-extern void *ghInstance;
+
 #if MAIN_SENSOR_LEVEL
 udword initialSensorLevel;
 #endif

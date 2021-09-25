@@ -885,13 +885,6 @@ static bool setupWindow( Uint32 flags ) {
         return FALSE;
     }
 
-    // Set the window HWND global
-    SDL_SysWMinfo wmInfo;
-    SDL_VERSION(&wmInfo.version);
-    SDL_GetWindowWMInfo(sdlwindow, &wmInfo);
-    HWND hwnd = wmInfo.info.win.window;
-    ghMainWindow = hwnd;
-
     // Create OpenGL context
     glcontext = SDL_GL_CreateContext( sdlwindow );
     if ( ! glcontext) {

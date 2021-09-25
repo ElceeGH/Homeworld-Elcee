@@ -4516,56 +4516,6 @@ void utyTaskTimerClear(void)
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : utyClientRectGet
-    Description : Gets the rectangle corresponding to the client rectange
-                    _in screen coords_
-    Inputs      : rect - rectangle to fill with new coords
-    Outputs     : Calls GetClientRect() and ClientToScreen() on both corners.
-                    rect gets the new rectangle.
-    Return      :
-----------------------------------------------------------------------------*/
-#if 0
-void utyClientRectGet(rectangle *rect)
-{
-#if 0
-    RECT clientRect;
-    POINT point;
-    GetClientRect(ghMainWindow, &clientRect);               //get location of window
-    point.x = clientRect.left;
-    point.y = clientRect.top;
-    ClientToScreen(ghMainWindow, &point);
-    rect->x0 = point.x;
-    rect->y0 = point.y;
-    /*
-    point.x = clientRect.right;
-    point.y = clientRect.bottom;
-    ClientToScreen(ghMainWindow, &point);
-    rect->x1 = point.x;
-    rect->y1 = point.y;
-    */
-    rect->x1 = rect->x0 + MAIN_WindowWidth - 1;
-    rect->y1 = rect->y0 + MAIN_WindowHeight - 1;
-#endif
-    SDL_Surface* pSurface;
-
-    /* Don't know screen coordinates with SDL... */
-    rect->x0 = 0;
-    rect->y0 = 0;
-    pSurface = SDL_GetVideoSurface();
-    if (pSurface)
-    {
-        rect->x1 = pSurface->w - 1;
-        rect->y1 = pSurface->h - 1;
-    }
-    else
-    {
-        rect->x1 = 0;
-        rect->y1 = 0;
-    }
-}
-#endif
-
-/*-----------------------------------------------------------------------------
     Name        : utyClipMouse
     Description : Sets or frees the mouse clipped to the client area of main window
     Inputs      : clip - boolean for clip state.  TRUE = clip, FALSE = free

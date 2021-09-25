@@ -263,16 +263,6 @@ void mouseCreateGLHandle(lifheader* lif, GLuint* thandle)
 ----------------------------------------------------------------------------*/
 sdword mouseStartup(void)
 {
-    /*
-    RECT clientRect, windowRect;
-    POINT mousePoint;
-
-    GetWindowRect(ghMainWindow, &windowRect);
-    GetClientRect(ghMainWindow, &clientRect);               //get location of window
-    GetCursorPos(&mousePoint);                              //get location of Windows mouse cursor
-    mouseCursorXPosition = mousePoint.x - windowRect.left;  //compute relative coords
-    mouseCursorYPosition = mousePoint.y - windowRect.top;
-    */
     SDL_GetMouseState(&mouseCursorXPosition, &mouseCursorYPosition);
 
     mouseNormalBitmap              = trLIFFileLoad(MC_NORMAL_BM, NonVolatile);
@@ -456,41 +446,8 @@ void mouseCursorDelayShow(uword delay)
 ----------------------------------------------------------------------------*/
 void mousePositionSet(sdword x, sdword y)
 {
-    //rectangle clientRect;
-//    RECT clientRect, windowRect;
-//    POINT mousePoint;
-
-    //utyClientRectGet(&clientRect);                          //get window location
-//  GetWindowRect(ghMainWindow, &windowRect);
-//  GetClientRect(ghMainWindow, &clientRect);               //get location of window
-/*
-#if MOUSE_CURSOR_CLAMP
-    //clamp specified mouse location
-    if (x < 0)
-    {
-        x = 0;
-    }
-    if (y < 0)
-    {
-        y = 0;
-    }
-    if (x >= clientRect.x1 - clientRect.x0)
-    {
-        x = clientRect.x1 - clientRect.x0 - 1;
-    }
-    if (y >= clientRect.y1 - clientRect.y0)
-    {
-        y = clientRect.y1 - clientRect.y0 - 1;
-    }
-#endif
-*/
     mouseCursorXPosition = x;                               //set internal mouse location
     mouseCursorYPosition = y;
-    /*
-    mousePoint.x = clientRect.x0 + x;                       //compute Windows mouse location
-    mousePoint.y = clientRect.y0 + y;
-    SetCursorPos(mousePoint.x, mousePoint.y);               //set Windows mouse location
-    */
 
     if (!mouseClip)
         SDL_WarpMouseInWindow(NULL, x, y);

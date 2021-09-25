@@ -92,10 +92,6 @@ int MAIN_WindowMSAA   = 0;
 int mainWindowWidth;
 int mainWindowHeight;
 int mainWindowDepth;
-#ifdef _WIN32
-void *ghMainWindow = NULL;
-void *ghInstance   = NULL;
-#endif
 
 extern bool CompareBigfiles;
 extern bool IgnoreBigfiles;
@@ -842,7 +838,6 @@ void DebugHelpDefault(char *string)
         }
     }
 
-    /*DialogBox(ghInstance, MAKEINTRESOURCE(IDD_CommandLine), NULL, CommandLineFunction);*/
     printf(gHelpString);
     free(gHelpString);                                       //done with string, free it
 }
@@ -1031,7 +1026,7 @@ void ActivateMe()
 
 /*-----------------------------------------------------------------------------
     Name        : mainRescaleMainWindow
-    Description : rescale the main window (ghMainWindow) and call fn to
+    Description : rescale the main window and call fn to
                   reinit game systems that require it
     Inputs      :
     Outputs     :
@@ -1049,11 +1044,11 @@ void mainRescaleMainWindow(void)
     wasClipped = mouseClipped;
     utyClipMouse(FALSE);
 
-    SetWindowPos(ghMainWindow, HWND_TOP,
-                 0, 0,
-                 mainWindowTotalWidth, mainWindowTotalHeight,
-                 (showBorder) ? SWP_DRAWFRAME : 0);
-
+    //SetWindowPos(ghMainWindow, HWND_TOP,
+    //             0, 0,
+    //             mainWindowTotalWidth, mainWindowTotalHeight,
+    //             (showBorder) ? SWP_DRAWFRAME : 0);
+    
     if (wasClipped)
     {
         utyClipMouse(TRUE);
@@ -1130,9 +1125,6 @@ bool mainStartupParticularRGL(void)
 void mainDestroyWindow(void)
 {
     mainActuallyQuit = FALSE;
-
-//    mainUnregisterClass(ghInstance);
-//    mainRegisterClass(ghInstance);
 }
 
 /*-----------------------------------------------------------------------------
