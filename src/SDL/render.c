@@ -881,7 +881,7 @@ static bool setupWindow( Uint32 flags, Uint32 msaaLevel ) {
     // Create OpenGL context
     glcontext = SDL_GL_CreateContext( sdlwindow );
     if ( ! glcontext) {
-        fprintf( stderr, "Failed to create window: error: %s\n", SDL_GetError() );
+        fprintf( stderr, "Failed to create OpenGL context: error: %s\n", SDL_GetError() );
         return FALSE;
     }
 
