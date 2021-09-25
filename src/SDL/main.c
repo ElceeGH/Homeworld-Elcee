@@ -69,13 +69,12 @@
 static bool mainActuallyQuit = TRUE;
 static bool reinitInProgress = FALSE;
 
-bool   selectedRES    = FALSE;
-bool   selectedDEVICE = FALSE;
-bool   selectedGL     = FALSE;
+bool   selectedRES        = FALSE;
+bool   selectedDEVICE     = FALSE;
+bool   selectedGL         = FALSE;
 sdword mainReinitRenderer = 0;
-bool   bMustFree           = TRUE;
-bool   windowNeedsDeleting = FALSE;
-bool   systemActive        = FALSE; //active flag for the program
+bool   bMustFree          = TRUE;
+bool   systemActive       = FALSE; //active flag for the program
 
 #ifndef _MACOSX
 static char windowTitle[] = "Homeworld";//name of window
@@ -104,7 +103,6 @@ extern bool LogFileLoads;
 //command-line switches and parameters
 bool mainSafeGL         = FALSE;
 bool mainNoPerspective  = FALSE;
-bool mainPlayAVIs       = TRUE;
 bool mainNoDrawPixels = FALSE;
 bool mainNoPalettes = TRUE;
 bool mainSoftwareDirectDraw = FALSE;
@@ -1648,7 +1646,7 @@ sdword HandleEvent (const SDL_Event* pEvent)
     Outputs     :
     Return      : TRUE if successful, FALSE if not
 ----------------------------------------------------------------------------*/
-static bool InitWindow ()
+static bool InitWindow(void)
 {
     if (mainAutoRenderer)
     {
@@ -1798,30 +1796,8 @@ int main (int argc, char* argv[])
         }
     }
 
-    mainPlayAVIs = FALSE;
     if (errorString == NULL)
     {
-#ifndef HW_GAME_DEMO
-        if (enableAVI && fullScreen)
-        {
-            windowNeedsDeleting = TRUE;
-            //set display mode
-            /*
-            if (!hwSetRes(640, 480, 32))
-            {
-                hwSetRes(640, 480, 16);
-            }
-            */
-        }
-        else
-        {
-            windowNeedsDeleting = FALSE;
-            /*(void)hwCreateWindow((int)ghMainWindow, MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth);*/
-        }
-#else
-        windowNeedsDeleting = FALSE;
-        /*(void)hwCreateWindow((int)ghMainWindow, MAIN_WindowWidth, MAIN_WindowHeight, MAIN_WindowDepth);*/
-#endif
         //startup game systems
         if (errorString == NULL)
         {
