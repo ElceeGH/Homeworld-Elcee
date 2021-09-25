@@ -838,25 +838,39 @@ void rndCapScaleCapStatsTaskFunction(void)
 
 
 
-static bool setupWindow( Uint32 flags, Uint32 msaaLevel ) {
+/// Create an invisible window and GL context to query the available MSAA level before actually trying to use it.
+static GLint getMaxMultisamples(void) {
+    // Make a temporary hidden window and GL context to do the query.
+    const int           pos    = SDL_WINDOWPOS_UNDEFINED;
+    const int           flags  = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
+    SDL_Window* const   window  = SDL_CreateWindow( "MSAA", pos, pos, 640, 480, flags );
+    const SDL_GLContext context = SDL_GL_CreateContext( window );
+    SDL_GL_MakeCurrent( window, context );
+
+    // Get the info
+    GLint maxSamples = 0;
+    glGetIntegerv( GL_MAX_FRAMEBUFFER_SAMPLES, &maxSamples );
+
+    // Clean up
+    SDL_GL_DeleteContext( context );
+    SDL_DestroyWindow( window );
+
+    // Clamp the value. Nvidia reports 32, but it can't actually render to a 32-sample buffer.
+    // At least on Nvidia, 16x actually results in 4x supersampling and anything more isn't renderable.
+    return min( 16, maxSamples );
+}
+
+
+
+static bool setupWindow( Uint32 flags ) {
+    const GLint msaaMax   = getMaxMultisamples();
+    const GLint msaaLevel = min( msaaMax, MAIN_WindowMSAA );
+
     if (msaaLevel) {
-	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, TRUE );
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, msaaLevel );
 	}
 
-    /*
-    //Look for additional monitors: https://stackoverflow.com/questions/41745492/sdl2-how-to-position-a-window-on-a-second-monitor
-    //enumerate displays
-    int totalDisplays = SDL_GetNumVideoDisplays();
-    int targetDisplay=0;
-    dbgMessagef("Found %i displays",totalDisplays);
-    if (totalDisplays < displayNum)
-    {
-      dbgMessagef("%i display request but we detect %i displays, defaulting to display 0",displayNum,totalDisplays);
-    } else {
-      targetDisplay = displayNum;
-    }
-    */
     sdlwindow = SDL_CreateWindow(
         "Homeworld", 
         SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayNum),
@@ -897,7 +911,7 @@ static bool setupPixelFormat( void )
 	static Uint32 lastHeight = 0;
 	static Uint32 lastDepth  = 0;
 	static bool   lastFull   = FALSE;
-	int FSAA = 0; //os_config_read_uint( NULL, "FSAA", 1 )
+
 #ifdef HW_ENABLE_GLES
     SDL_SysWMinfo info;
     EGLint num_config = 1;
@@ -1005,7 +1019,7 @@ static bool setupPixelFormat( void )
     egl_context = new_context;
     egl_surface = new_surface;
 #else
-    if ( ! setupWindow( flags, FSAA ) )
+    if ( ! setupWindow( flags ))
         return FALSE;
 #endif
 

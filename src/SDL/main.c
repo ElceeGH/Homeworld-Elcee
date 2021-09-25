@@ -87,6 +87,7 @@ char ersWindowInit[] = "Error creating window";
 int MAIN_WindowWidth  = 1280;
 int MAIN_WindowHeight = 720;
 int MAIN_WindowDepth  = 24;
+int MAIN_WindowMSAA   = 0;
 
 int mainWindowWidth;
 int mainWindowHeight;

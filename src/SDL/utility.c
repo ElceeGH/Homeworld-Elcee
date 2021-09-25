@@ -631,13 +631,11 @@ scriptEntry utyOptionsList[] =
     {"screenWidth",         scriptSetUdwordCB, &MAIN_WindowWidth},
     {"screenHeight",        scriptSetUdwordCB, &MAIN_WindowHeight},
     {"screenDepth",         scriptSetUdwordCB, &MAIN_WindowDepth},
-/* Does this need to be in here? Useful but possibly may cause problems */
+    {"screenMSAA",          scriptSetUdwordCB, &MAIN_WindowMSAA},
     {"fullScreen",          scriptSetUdwordCB, &fullScreen},
     {"displayNum",          scriptSetUdwordCB, &displayNum},
 
   {"\n[graphics options]\n", scriptSetStringCB, &filecfgblankspace},
-
-
     {"effectsLevel",            scriptSetUdwordCB, &opEffectsVal},
     {"noLOD",                   scriptSetUdwordCB, &opNoLODVal},
     {"detailThreshold",         scriptSetUdwordCB, &opDetailThresholdVal},
@@ -659,8 +657,6 @@ scriptEntry utyOptionsList[] =
 
 
   {"\n[sound options]\n", scriptSetStringCB, &filecfgblankspace},
-
-
     {"MusicVolume",             scriptSetUdwordCB, &opMusicVol},
     {"SpeechVolume",            scriptSetUdwordCB, &opSpeechVol},
     {"SFXVolume",               scriptSetUdwordCB, &opSFXVol},
@@ -684,10 +680,7 @@ scriptEntry utyOptionsList[] =
     {"SoundQuality",            scriptSetUdwordCB, &opSoundQuality},
     {"opBattleChatter",         scriptSetUdwordCB, &opBattleChatter},
 
-
   {"\n[input options]\n", scriptSetStringCB, &filecfgblankspace},
-
-
     {"NEXT_FORMATION",          scriptSetUdwordCB, &kbKeySavedKeys[kbNEXT_FORMATION]},
     {"BUILD_MANAGER",           scriptSetUdwordCB, &kbKeySavedKeys[kbBUILD_MANAGER]},
     {"PREVIOUS_FOCUS",          scriptSetUdwordCB, &kbKeySavedKeys[kbPREVIOUS_FOCUS]},
@@ -709,10 +702,7 @@ scriptEntry utyOptionsList[] =
     {"LAUNCH_MANAGER",          scriptSetUdwordCB, &kbKeySavedKeys[kbLAUNCH_MANAGER]},
     {"opMouseSens",             scriptSetUdwordCB, &opMouseSens},
 
-
   {"\n[player preferences]\n", scriptSetStringCB, &filecfgblankspace},
-
-
     {"language",                scriptSetUdwordCB, &strCurLanguage},
     {"PlayerBaseColor",         scriptSetUdwordCB, &utyBaseColor},
     {"PlayerStripeColor",       scriptSetUdwordCB, &utyStripeColor},
@@ -731,16 +721,9 @@ scriptEntry utyOptionsList[] =
 
 
   {"\n[single player]\n", scriptSetStringCB, &filecfgblankspace},
-
-
-    // single player
     {"TutorialNeeded",          scriptSetUdwordCB, &needtutorial},
 
-
   {"\n[multiplayer options]\n", scriptSetStringCB, &filecfgblankspace},
-
-
-   // multiplayer
     {"PlayerName",                     scriptSetStringCB, &utyName},
     {"PlayerPassword",                 scriptSetStringCB, &utyPassword},
     {"MultiPlayerLastMapID",           scriptSetUdwordCB, &spCurrentSelected},
@@ -754,9 +737,7 @@ scriptEntry utyOptionsList[] =
     {"ResourceLumpSumAmount",          scriptSetUdwordCB, &tpGameCreated.resourceLumpSumAmount},
     {"FirewallDetect",                 scriptSetUdwordCB, &firewallButton},
 
-
   {"\n[New HWSDL Options]\n", scriptSetStringCB, &filecfgblankspace},
-
 
     {"CollectResourcesAtEndOfMission", scriptSetBool,     &spCollectResourcesAtEndOfMission},
     {"PauseOrders",                    scriptSetUdwordCB, &opPauseOrders},
