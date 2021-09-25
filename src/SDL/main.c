@@ -66,9 +66,6 @@
     Data:
 =============================================================================*/
 
-udword* devTable       = NULL;
-sdword  devTableLength = 0;
-
 static bool mainActuallyQuit = TRUE;
 static bool reinitInProgress = FALSE;
 
@@ -946,29 +943,6 @@ filehandle mainGetDevStatsHandle(char *filepath) {
         return 0;
     }
     return fileOpen(filepath, FF_IgnorePrepend | FF_TextMode | FF_IgnoreBIG);
-}
-
-/*-----------------------------------------------------------------------------
-devstat init startup removed
-----------------------------------------------------------------------------*/
-
-/*-----------------------------------------------------------------------------
-
-    Name        : mainDevStatsShutdown
-    Description : release memory used by the devstats table
-    Inputs      :
-    Outputs     :
-    Return      :
-
-fixme: This section was called devstats shutdown but seems to be more. Cleanup required...
-----------------------------------------------------------------------------*/
-void mainDevStatsShutdown(void)
-{
-    if (devTable != NULL)
-    {
-        free(devTable);
-        devTable = NULL;
-    }
 }
 
 

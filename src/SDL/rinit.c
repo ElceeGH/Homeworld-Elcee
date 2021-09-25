@@ -25,9 +25,6 @@
 
 extern unsigned long strCurLanguage;
 
-extern unsigned int* devTable;
-extern int           devTableLength;
-
 static rdevice* rDeviceList;
 static int      nDevices;
 
