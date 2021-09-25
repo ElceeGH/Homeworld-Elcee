@@ -45,38 +45,6 @@ extern char *nisLanguageSubpath[];
 
 
 /*-----------------------------------------------------------------------------
-    Name        : animAviEnd
-    Description : cleanup after playing a Avi video file as an animatic
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-static void animCleanup( void )
-{
-    universe.totaltimeelapsed = animTimeElapsed;
-    soundEventStopMusic(0.0f);
-
-    mouseCursorShow();
-    rndClear();
-
-    soundstopall(0.0);
-    speechEventCleanup();
-    subReset();
-
-    soundEventMusicVol ( animPreviousMusicVolume  );
-    soundEventSpeechVol( animPreviousSpeechVolume );
-    soundEventSFXVol   ( animPreviousSFXVolume    );
-
-    animaticJustPlayed = 8;
-
-    rndSetClearColor(colBlack);
-    rndClear();
-    rndFlush();
-}
-
-
-
-/*-----------------------------------------------------------------------------
     Name        : animSubtitlesSetup
     Description : setup / reset the GL for displaying subtitles
     Inputs      : on - TRUE or FALSE, setup or reset
@@ -387,6 +355,39 @@ static bool animSetup( sdword a, sdword b ) {
 
     // Hey, we got this far.
     return TRUE;
+}
+
+
+
+/*-----------------------------------------------------------------------------
+    Name        : animCleanup
+    Description : cleanup after playing a video file as an animatic
+    Inputs      :
+    Outputs     :
+    Return      :
+----------------------------------------------------------------------------*/
+static void animCleanup( void )
+{
+    universe.totaltimeelapsed = animTimeElapsed;
+    //soundEventStopMusic(0.0f);
+
+    mouseCursorShow();
+    rndClear();
+
+    soundstopall(0.0);
+    speechEventUpdate();
+    speechEventCleanup();
+    subReset();
+
+    soundEventMusicVol ( animPreviousMusicVolume  );
+    soundEventSpeechVol( animPreviousSpeechVolume );
+    soundEventSFXVol   ( animPreviousSFXVolume    );
+
+    animaticJustPlayed = 8;
+
+    rndSetClearColor(colBlack);
+    rndClear();
+    rndFlush();
 }
 
 
