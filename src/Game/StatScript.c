@@ -492,23 +492,21 @@ void scriptSetCosAngCB(char *directory,char *field,void *dataToFillIn)
     real32 ang;
 
     sscanf(field,"%f",&ang);
-    *((real32 *)dataToFillIn) = (real32)cos(DEG_TO_RAD(ang));
+    *((real32 *)dataToFillIn) = cosf(DEG_TO_RAD(ang));
 }
 
 void scriptSetCosAngSqrCB(char *directory,char *field,void *dataToFillIn)
 {
     real32 ang;
-    real32 cosine;
-
     sscanf(field,"%f",&ang);
-    cosine = (real32)cos(DEG_TO_RAD(ang));
+    real32 cosine = cosf(DEG_TO_RAD(ang));
     *((real32 *)dataToFillIn) = cosine*cosine;
 }
 
 void scriptSetCosAngCB_ARRAY(char *directory, char *field, void *dataToFillIn)
 {
-    char tactic_buffer[32];
-    char class_buffer[64];
+    char tactic_buffer[32] = { '\0' };
+    char class_buffer[64]  = { '\0' };
     real32 value;
     TacticsType tactic;
     ShipClass shipclass;
@@ -526,7 +524,7 @@ void scriptSetCosAngCB_ARRAY(char *directory, char *field, void *dataToFillIn)
 #endif
 
     dataToFillIn = (tactic * (NUM_CLASSES + 1)) + shipclass + (real32*)dataToFillIn;
-    *(real32*)dataToFillIn = (real32)cos(DEG_TO_RAD(value));
+    *(real32*)dataToFillIn = cosf(DEG_TO_RAD(value));
 }
 
 void scriptSetSinAngCB(char *directory,char *field,void *dataToFillIn)
@@ -534,7 +532,7 @@ void scriptSetSinAngCB(char *directory,char *field,void *dataToFillIn)
     real32 ang;
 
     sscanf(field,"%f",&ang);
-    *((real32 *)dataToFillIn) = (real32)sin(DEG_TO_RAD(ang));
+    *((real32 *)dataToFillIn) = sinf(DEG_TO_RAD(ang));
 }
 
 void scriptSetTanAngCB(char *directory,char *field,void *dataToFillIn)
@@ -542,7 +540,7 @@ void scriptSetTanAngCB(char *directory,char *field,void *dataToFillIn)
     real32 ang;
 
     sscanf(field,"%f",&ang);
-    *((real32 *)dataToFillIn) = (real32)tan(DEG_TO_RAD(ang));
+    *((real32 *)dataToFillIn) = tanf(DEG_TO_RAD(ang));
 }
 
 void scriptSetAngCB(char *directory,char *field,void *dataToFillIn)
@@ -623,12 +621,12 @@ void scriptSetSphereDeclinationCB(char *directory,char *field,void *dataToFillIn
     radang = DEG_TO_RAD(ang);
 
     dec->numAnglePoints = numPoints;
-    dec->cosdeclination = (real32)cos(radang);
-    dec->sindeclination = (real32)sin(radang);
+    dec->cosdeclination = cosf(radang);
+    dec->sindeclination = sinf(radang);
 
     radang = TWOPI / (real32)numPoints;
-    dec->cosrotang = (real32)cos(radang);
-    dec->sinrotang = (real32)sin(radang);
+    dec->cosrotang = cosf(radang);
+    dec->sinrotang = sinf(radang);
 }
 #endif
 
@@ -1173,8 +1171,8 @@ done:
 // Reads in the parameters for the nav light.
 void scriptSetNAVLightCB(char *directory,char *field,void *dataToFillIn)
 {
-    char navlighttypestr[30];
-    char navlighttexturename[50];
+    char navlighttypestr[30]     = { '\0' };
+    char navlighttexturename[50] = { '\0' };
     NAVLightStatic *navlightstatic = (NAVLightStatic *)dataToFillIn;
 
     RemoveCommasFromString(field);

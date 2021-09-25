@@ -257,8 +257,8 @@ void subThemeCentredSet(char *directory, char *field, void *dataToFillIn)
 void subThemePictureSet(char *directory, char *field, void *dataToFillIn)
 {
     sdword nScanned, iTheme, iColorScheme;
-    char pictureString[UBYTE_Max];
-    char fileName[UBYTE_Max];
+    char pictureString[UBYTE_Max] = { '\0' };
+    char fileName[UBYTE_Max]      = { '\0' };
 
     RemoveCommasFromString(field);
     nScanned = sscanf(field, "%d %d %s", &iTheme, &iColorScheme, pictureString);

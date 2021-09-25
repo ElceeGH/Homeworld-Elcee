@@ -89,7 +89,7 @@ extern real32 selBandBoxInsideOut;
 //selection lists
 extern MaxSelection selSelected;
 extern MaxAnySelection selSelecting;
-extern MaxSelection selHotKeyGroup[SEL_NumberHotKeyGroups];
+extern MaxSelection selHotKeyGroup[];
 
 //centre of selection
 extern vector selCentrePoint;
