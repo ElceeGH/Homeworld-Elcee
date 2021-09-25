@@ -107,12 +107,13 @@ static bool videoOpen( Video* vid, const char* file, VideoParams params ) {
             avcodec_open2( cctx, codec, NULL );
 
             // Create the context struct with what we have so far.
-            LavContext lav = { 0 };
-            lav.fctx    = fctx;
-            lav.stream  = stream;
-            lav.cctx    = cctx;
-            lav.cparams = cparams;
-            lav.codec   = codec;
+            LavContext lav = {
+                .fctx    = fctx,
+                .stream  = stream,
+                .cctx    = cctx,
+                .cparams = cparams,
+                .codec   = codec,
+            };
 
             // Construct the remaining parts of the context to produce the final structure.
             videoConstruct( vid, lav, params );
