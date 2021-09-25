@@ -3907,7 +3907,6 @@ DEFINE_TASK(rndRenderTask)
     {
         primErrorMessagePrint();
 
-        speechEventUpdate();
         subTitlesUpdate();
 
 #if RND_GL_STATE_DEBUG

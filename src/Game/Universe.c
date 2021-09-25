@@ -3741,6 +3741,8 @@ DEFINE_TASK(universeUpdateTask)
 
     for(;;)
     {
+        speechEventUpdate();
+
         if ((multiPlayerGame) && (startingGame) && (gameIsRunning) && ((IAmCaptain) && (!multiPlayerGameUnderWay)))
         {
             if (checkPlayersReady())
