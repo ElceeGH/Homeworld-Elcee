@@ -866,7 +866,7 @@ static bool setupWindow( Uint32 flags ) {
     const GLint msaaMax   = getMaxMultisamples();
     const GLint msaaLevel = min( msaaMax, MAIN_WindowMSAA );
 
-    if (msaaLevel) {
+    if (msaaLevel > 1) {
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, TRUE );
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, msaaLevel );
 	}
