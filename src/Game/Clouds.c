@@ -1098,11 +1098,11 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
     switch (lod)
     {
     case 0:
-        //ellipsoid_render(&ellipseLOD[0], radius);
-        //break;
+        ellipsoid_render(&ellipseLOD[0], radius);
+        break;
     case 1:
-        //ellipsoid_render(&ellipseLOD[1], radius);
-        //break;
+        ellipsoid_render(&ellipseLOD[1], radius);
+        break;
     case 2:
         ellipsoid_render(&ellipseLOD[2], radius);
         break;
