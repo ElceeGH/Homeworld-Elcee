@@ -16,14 +16,15 @@
 #version 120
 
 uniform sampler2D uTex;       // Texture unit
+uniform bool      uTexMode;   // 0=replace, 1=modulate
+uniform bool      uTexEnable; // Whether to use the texure, or just a flat colour.
 uniform vec4      uViewport;  // glViewport params
 uniform mat4      uProjInv;   // Projection matrix inverse
 uniform vec4      uClipPlane; // Clip plane equation params
 uniform float     uGlowDist;  // Radius of hyperspace glow
 uniform vec4      uGlowCol;   // Colour of hyperspace glow
 uniform vec4      uCrossCol;  // Colour of hyperspace intersect
-uniform bool      uTexMode;   // 0=replace, 1=modulate
-uniform bool      uTexEnable; // Whether to use the texure, or just a flat colour.
+
 
 
 
@@ -93,9 +94,7 @@ void main() {
     vec4 col = fixedFunctionColour();
     
     // Add glow near the plane.
-    // The glow is modulated with the texture so it doesn't appear too flat.
-    float glow = nearPlaneGlow( dist );
-    col += (col*glow*0.25*uGlowCol) + (0.25*glow*glow*uGlowCol);
+    col += uGlowCol * nearPlaneGlow(dist);
     
     // Back faces become the cross section colour.
     if ( ! gl_FrontFacing)

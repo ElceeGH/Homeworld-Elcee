@@ -23,48 +23,171 @@ Copyright Relic Entertainment, Inc.  All rights reserved.
 #include "prim3d.h"
 #include "render.h"
 #include "SaveGame.h"
+#include "Shader.h"
 #include "SinglePlayer.h"
 #include "UnivUpdate.h"
+#include "rShaderProgram.h"
+#include "rResScaling.h"
 
 //scalar that determines distance out of bbox the window will travel from / to
 #define HS_DIST   1.08f
 #define HS_DIST_2 (HS_DIST / 2.0f)
-
-#define SECOND_RECT 1
-
 #define hsDefaultColor colRGB(70,90,255)
 
 
+
+extern udword rndTextureEnviron;
+extern bool   rndTextureEnabled;
+
 //guaranteed to be at least 1 gate when the singleplayer game is running
-static sdword hsStaticNumGates = 0;
-static hsStaticGate* hsStaticData = NULL;
-static bool hsGateState = TRUE;
+static sdword        hsStaticNumGates = 0;
+static hsStaticGate* hsStaticData     = NULL;
+static bool          hsGateState      = TRUE;
 
-void hsRectangle(vector* origin, real32 rightlength, real32 uplength, ubyte alpha, bool outline, color c);
 
-/*-----------------------------------------------------------------------------
-    Name        : hsStartup
-    Description :
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void hsStartup()
-{
-    //nothing here
+
+typedef struct HsProgramState {
+    GLuint* program;            ///< Shader program pointer
+    bool    programActive;      ///< Whether program is bound and active for drawing
+    bool    programEnable;      ///< Whether program will be bound when hsProgramUpdate() is called
+    GLfloat clipPlane[4];       ///< Hyperspace clip plane
+    GLfloat glowColour[4];      ///< Hyperspace glow colour
+    GLfloat crossColour[4];     ///< Hyperspace cross section colour
+    GLint   locTex;
+    GLint   locTexMode;
+    GLint   locTexEnable;
+    GLint   locClipPlane;
+    GLint   locProjInv;
+    GLint   locViewport;
+    GLint   locGlowDist;
+    GLint   locGlowCol;
+    GLint   locCrossCol;
+} HsProgramState;
+
+static HsProgramState hsp = { 0 };
+
+
+
+static void hsProgramMeshMatCallback( void ) {
+    // Get the texturing mode. Homeworld does fullbright by using texture replace mode.
+    glUniform1i( hsp.locTexMode,   rndTextureEnviron == RTE_Modulate );
+    glUniform1i( hsp.locTexEnable, rndTextureEnabled );
+
+    // Override backface culling. Must be off for hyperspace shader. It gets restored automatically.
+    rndBackFaceCullEnable( FALSE );
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : hsShutdown
-    Description :
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void hsShutdown()
-{
-    //nothing here
+
+
+void hsProgramUpdate( void ) {
+    // Only use the shader when the clipping plane is active.
+    if ( ! hsp.programEnable)
+        return;
+
+    // Initialise if needed
+    if ( ! hsp.program) {
+        hsp.program      = loadShaderProgram( "hyperspace.frag" );
+        hsp.locTex       = glGetUniformLocation( *hsp.program, "uTex"       );
+        hsp.locTexMode   = glGetUniformLocation( *hsp.program, "uTexMode"   );
+        hsp.locTexEnable = glGetUniformLocation( *hsp.program, "uTexEnable" );
+        hsp.locClipPlane = glGetUniformLocation( *hsp.program, "uClipPlane" );
+        hsp.locProjInv   = glGetUniformLocation( *hsp.program, "uProjInv"   );
+        hsp.locViewport  = glGetUniformLocation( *hsp.program, "uViewport"  );
+        hsp.locGlowDist  = glGetUniformLocation( *hsp.program, "uGlowDist"  );
+        hsp.locGlowCol   = glGetUniformLocation( *hsp.program, "uGlowCol"   );
+        hsp.locCrossCol  = glGetUniformLocation( *hsp.program, "uCrossCol"  );
+    }
+
+    // Add callback to update the shader texture environment and such.
+    meshAddMatCallback( hsProgramMeshMatCallback );
+
+    // Remember to clean up after.
+    hsp.programActive = TRUE;
+
+    // Make viewport vector
+    const hvector viewport = { 0.0f, 0.0f, (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight };
+
+    // Inverst projection matrix for vertex position reconstruction.
+    hmatrix per,inv;
+    glGetFloatv( GL_PROJECTION_MATRIX, &per.m11 );
+    shInvertMatrix( &inv.m11, &per.m11 );
+
+    // Use shader program and update uniforms
+    glUseProgram( *hsp.program );
+    glUniform1i       ( hsp.locTex,          0                  ); // HW only uses texture unit 0
+    glUniform4fv      ( hsp.locClipPlane, 1, hsp.clipPlane      );
+    glUniform4fv      ( hsp.locViewport,  1, &viewport.x        );
+    glUniformMatrix4fv( hsp.locProjInv,   1, GL_FALSE, &inv.m11 );
+    glUniform1f       ( hsp.locGlowDist,     32.0f              );
+    glUniform4fv      ( hsp.locGlowCol,   1, hsp.crossColour    );
+    glUniform4fv      ( hsp.locCrossCol,  1, hsp.crossColour    );
 }
+
+
+
+void hsProgramCleanup() {
+    if (hsp.programActive) {
+        hsp.programActive = FALSE;
+        glUseProgram( 0 );
+        meshRemoveMatCallback( hsProgramMeshMatCallback );
+    }
+}
+
+
+
+/// @todo Do the clipping entirely in the shader and do not use the clipping planes at all.
+/// @todo Matrix state affects the clip plane. Do the transform directly instead of getting it from GL.
+static void hsProgramEnable( real32 plane[] ) {
+    GLdouble dplane[4] = { plane[0], plane[1], plane[2], plane[3] };
+
+#ifdef HW_ENABLE_GLES
+    glClipPlanef(GL_CLIP_PLANE0, plane);
+    glEnable(GL_CLIP_PLANE0);
+#else
+    glClipPlane(GL_CLIP_PLANE0, dplane);
+    glEnable(GL_CLIP_PLANE0);
+#endif
+
+    // Update program state to match.
+    glGetClipPlane( GL_CLIP_PLANE0, dplane );
+    hsp.clipPlane[0] = (real32) dplane[0];
+    hsp.clipPlane[1] = (real32) dplane[1];
+    hsp.clipPlane[2] = (real32) dplane[2];
+    hsp.clipPlane[3] = (real32) dplane[3];
+    hsp.programEnable = TRUE;
+}
+
+
+
+static void hsProgramDisable(void) {
+    // Set GL clip plane (todo: remove the need for this)
+    glDisable(GL_CLIP_PLANE0);
+
+    // Update program state to match
+    hsp.programEnable = FALSE;
+}
+
+
+
+static void hsProgramSetCrossColour( color col ) {
+    hsp.crossColour[0] = colRed  (col) / 255.0f;
+    hsp.crossColour[1] = colGreen(col) / 255.0f;
+    hsp.crossColour[2] = colBlue (col) / 255.0f;
+    hsp.crossColour[3] = 1.0f;
+
+    hsp.glowColour[0] = hsp.crossColour[0] * 0.5f;
+    hsp.glowColour[1] = hsp.crossColour[1] * 0.5f;
+    hsp.glowColour[2] = hsp.crossColour[2] * 0.5f;
+    hsp.glowColour[3] = 1.0f;
+}
+
+
+
+
+
+
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : hsOrientEffect
@@ -160,11 +283,11 @@ bool hsShouldDisplayEffect(Ship* ship)
 void hsStart(Ship* ship, real32 cliptDelta, bool into, bool displayEffect)
 {
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
-    StaticCollInfo* sinfo = &ship->staticinfo->staticheader.staticCollInfo;
+    StaticCollInfo*           sinfo  = &ship->staticinfo->staticheader.staticCollInfo;
 
-    ssinfo->clipt = 1.0f;
-    ssinfo->cliptDelta = cliptDelta;
-    ssinfo->hsState = into ? HS_POPUP_INTO : HS_POPUP_OUTOF;
+    ssinfo->clipt            = 1.0f;
+    ssinfo->cliptDelta       = cliptDelta;
+    ssinfo->hsState          = into ? HS_POPUP_INTO : HS_POPUP_OUTOF;
     ssinfo->hyperspaceEffect = NULL;
 
     dmgStopEffect(ship, DMG_All);
@@ -179,13 +302,7 @@ void hsStart(Ship* ship, real32 cliptDelta, bool into, bool displayEffect)
     if (etgEffectsEnabled)
 #endif
     {
-        etgeffectstatic* stat;
-        Effect* effect;
-        vector  location;
-        real32  floatUpScale, floatRightScale, floatDepthScale;
-        sdword  intUpScale, intRightScale, intDepthScale;
-
-        stat = etgHyperspaceEffect->level[0];
+        etgeffectstatic* stat = etgHyperspaceEffect->level[0];
         if (stat != NULL)
         {
             vector vecToRotate, vecRotated;
@@ -198,19 +315,18 @@ void hsStart(Ship* ship, real32 cliptDelta, bool into, bool displayEffect)
 
             matMultiplyMatByVec(&vecRotated, &ship->rotinfo.coordsys, &vecToRotate);
 
-            location = ship->collInfo.collPosition;
+            vector  location = ship->collInfo.collPosition;
             vecAddTo(location, vecRotated);
 
-            floatUpScale = 0.0f;//HS_DIST * sinfo->uplength;
-            intUpScale = Real32ToSdword(floatUpScale);
+            real32 floatUpScale    = 0.0f;//HS_DIST * sinfo->uplength;
+            real32 floatRightScale = HS_DIST * sinfo->rightlength;
+            real32 floatDepthScale = 0.25f   * sinfo->forwardlength;
 
-            floatRightScale = HS_DIST * sinfo->rightlength;
-            intRightScale = Real32ToSdword(floatRightScale);
+            sdword intUpScale    = Real32ToSdword(floatUpScale);
+            sdword intRightScale = Real32ToSdword(floatRightScale);
+            sdword intDepthScale = Real32ToSdword(floatDepthScale);
 
-            floatDepthScale = 0.25f * sinfo->forwardlength;
-            intDepthScale = Real32ToSdword(floatDepthScale);
-
-            effect = etgEffectCreate(stat, ship,
+            Effect* effect = etgEffectCreate(stat, ship,
                                      &location,
                                      &ship->posinfo.velocity,
                                      &ship->rotinfo.coordsys, 1.0f,
@@ -223,13 +339,9 @@ void hsStart(Ship* ship, real32 cliptDelta, bool into, bool displayEffect)
     }
 }
 
-#ifdef HW_ENABLE_GLES
 void hsGetEquation(Ship* ship, GLfloat equation[])
-#else
-void hsGetEquation(Ship* ship, GLdouble equation[])
-#endif
 {
-    StaticCollInfo* sinfo = &ship->staticinfo->staticheader.staticCollInfo;
+    StaticCollInfo*           sinfo  = &ship->staticinfo->staticheader.staticCollInfo;
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
 
     equation[0] = 0.0f;
@@ -270,13 +382,9 @@ void hsGetEquation(Ship* ship, GLdouble equation[])
 ----------------------------------------------------------------------------*/
 void hsContinue(Ship* ship, bool displayEffect)
 {
-#ifdef HW_ENABLE_GLES
-    GLfloat equation[4] = {0.0, 0.0, 1.0, 0.0};
-#else
-    GLdouble equation[4] = {0.0, 0.0, 1.0, 0.0};
-#endif
-    StaticCollInfo* sinfo = &ship->staticinfo->staticheader.staticCollInfo;
-    ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
+    real32                    equation[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
+    StaticCollInfo*           sinfo       = &ship->staticinfo->staticheader.staticCollInfo;
+    ShipSinglePlayerGameInfo* ssinfo      = ship->shipSinglePlayerGameInfo;
 
     if (!displayEffect)
     {
@@ -286,29 +394,21 @@ void hsContinue(Ship* ship, bool displayEffect)
             if (host != NULL)// && host->shiptype == AdvanceSupportFrigate)
             {
                 //we're in NLIP'ed shipspace;
-
                 hmatrix coordMatrixForGL, prevModelview;
-                real32 nliphak;
-                hsGetEquation(host, equation);
-                        
-                glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat*)&prevModelview);
+                glGetFloatv(GL_MODELVIEW_MATRIX, &prevModelview.m11);
                 glPopMatrix();
                 glPushMatrix();
                 
                 //put glstack info similar state as before
                 hmatMakeHMatFromMat(&coordMatrixForGL,&host->rotinfo.coordsys);
                 hmatPutVectIntoHMatrixCol4(host->posinfo.position,coordMatrixForGL);
-                glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+                glMultMatrixf(&coordMatrixForGL.m11);//ship's rotation matrix
 
-                nliphak = host->magnitudeSquared;
+                real32 nliphak = host->magnitudeSquared;
                 glScalef(nliphak,nliphak,nliphak);
 
-#ifdef HW_ENABLE_GLES
-                glClipPlanef(GL_CLIP_PLANE0, equation);
-#else
-                glClipPlane(GL_CLIP_PLANE0, equation);
-#endif
-                glEnable(GL_CLIP_PLANE0);
+                hsGetEquation(host, equation);
+                hsProgramEnable( equation );
 
                 glLoadMatrixf((GLfloat*)&prevModelview);
             }
@@ -324,79 +424,60 @@ void hsContinue(Ship* ship, bool displayEffect)
 
     switch (ssinfo->hsState)
     {
-    case HS_POPUP_INTO:
-        return;
-    case HS_SLICING_INTO:
-        equation[2] = -1.0f;
-        equation[3] = ssinfo->clipt * (sinfo->forwardlength);
-        break;
-    case HS_COLLAPSE_INTO:
-        if (!singlePlayerGameInfo.hyperspaceFails)
-        {
+        case HS_POPUP_INTO:
+            return;
+        case HS_SLICING_INTO:
             equation[2] = -1.0f;
-            equation[3] = -(sinfo->forwardlength);
-        }
-        break;
-    case HS_POPUP_OUTOF:
-        equation[2] = 1.0f;
-        equation[3] = -(sinfo->forwardlength);//0.0f;
-        break;
-    case HS_SLICING_OUTOF:
-        equation[2] = 1.0f;
-        equation[3] = -ssinfo->clipt * (sinfo->forwardlength);
-        break;
-    case HS_COLLAPSE_OUTOF:
-        equation[2] = 1.0f;
-        equation[3] = (sinfo->forwardlength);
-        break;
-    default:
-        dbgFatalf(DBG_Loc, "unknown hyperspace state %d", ssinfo->hsState);
+            equation[3] = ssinfo->clipt * (sinfo->forwardlength);
+            break;
+        case HS_COLLAPSE_INTO:
+            if (!singlePlayerGameInfo.hyperspaceFails)
+            {
+                equation[2] = -1.0f;
+                equation[3] = -(sinfo->forwardlength);
+            }
+            break;
+        case HS_POPUP_OUTOF:
+            equation[2] = 1.0f;
+            equation[3] = -(sinfo->forwardlength);//0.0f;
+            break;
+        case HS_SLICING_OUTOF:
+            equation[2] = 1.0f;
+            equation[3] = -ssinfo->clipt * (sinfo->forwardlength);
+            break;
+        case HS_COLLAPSE_OUTOF:
+            equation[2] = 1.0f;
+            equation[3] = (sinfo->forwardlength);
+            break;
+        default:
+            dbgFatalf(DBG_Loc, "unknown hyperspace state %d", ssinfo->hsState);
     }
 
     if (ssinfo->hyperspaceEffect != NULL)
     {
-        Effect*   effect;
-        psysPtr   system;
-        particle* part;
-        sdword    index;
-        vector    vecToRotate, vecRotated;
-
-        vecToRotate.x = 0.0f;
-        vecToRotate.y = 0.0f;
-        vecToRotate.z = (real32) (-equation[2] * equation[3]);
-        
-        {
-            vecToRotate.z *= ship->magnitudeSquared;
-        }
-        
-        vecToRotate.z -= sinfo->collsphereoffset.z;
-
+        vector vecToRotate = { 0.0f, 0.0f, -equation[2] * equation[3] * ship->magnitudeSquared - sinfo->collsphereoffset.z};
+        vector vecRotated;
         matMultiplyMatByVec(&vecRotated, &ship->rotinfo.coordsys, &vecToRotate);
 
-        effect = ssinfo->hyperspaceEffect;
+        Effect* effect = ssinfo->hyperspaceEffect;
         effect->posinfo.position = ship->collInfo.collPosition;
         vecAddTo(effect->posinfo.position, vecRotated);
 
         //manhandle the effect into position
-        for (index = 0; index < effect->iParticleBlock; index++)
+        for (sdword index = 0; index < effect->iParticleBlock; index++)
         {
             if (effect->particleBlock[index] != NULL)
             {
-                system = (psysPtr) effect->particleBlock[index];
-                part = (particle*)((ubyte*)system + partHeaderSize(system));
-                part->position = effect->posinfo.position;
+                psysPtr   system = (psysPtr) effect->particleBlock[index];
+                particle* part   = (particle*) ((ubyte*)system + partHeaderSize(system));
+                part->position   = effect->posinfo.position;
             }
         }
     }
 
     if (!singlePlayerGameInfo.hyperspaceFails)
     {
-#ifdef HW_ENABLE_GLES
-        glClipPlanef(GL_CLIP_PLANE0, equation);
-#else
-        glClipPlane(GL_CLIP_PLANE0, equation);
-#endif
-        glEnable(GL_CLIP_PLANE0);
+        hsProgramEnable( equation );
     }
 }
 
@@ -415,9 +496,9 @@ void hsRectangle(vector* origin, real32 rightlength, real32 uplength, ubyte alph
                      origin->x + rlen, origin->y + ulen, origin->z,
                      origin->x - rlen, origin->y - ulen, origin->z,
                      origin->x + rlen, origin->y - ulen, origin->z };
-    ubyte red = colRed(c);
+    ubyte red   = colRed(c);
     ubyte green = colGreen(c);
-    ubyte blue = colBlue(c);
+    ubyte blue  = colBlue(c);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, v);
@@ -427,7 +508,7 @@ void hsRectangle(vector* origin, real32 rightlength, real32 uplength, ubyte alph
 
     if (outline) {
         ubyte l[4] = { 0, 1, 3, 2 };
-        glLineWidth(2.0f);
+        glLineWidth(2.0f * sqrtf(getResDensityRelative()));
         glColor4ub((ubyte)(red + 40), (ubyte)(green + 40), blue, alpha);
         glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_BYTE, l);
         glLineWidth(1.0f);
@@ -479,7 +560,7 @@ void hsLine(vector* origin, real32 rightlength, real32 uplength, ubyte alpha, co
     hsDesat(&red, &green, &blue, c, 0.70f);
     glColor4ub(red, green, blue, alpha);
 
-    glLineWidth(uplength);
+    glLineWidth(uplength * sqrtf(getResDensityRelative()));
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, v);
     glDrawArrays(GL_LINES, 0, 2);
@@ -610,15 +691,10 @@ noupdateHSMPOUT:
 ----------------------------------------------------------------------------*/
 void hsEnd(Ship* ship, bool displayEffect)
 {
-    vector origin = {0.0f, 0.0f, 0.0f};
-    StaticCollInfo* sinfo = &ship->staticinfo->staticheader.staticCollInfo;
-    real32 t;
+    StaticCollInfo*           sinfo  = &ship->staticinfo->staticheader.staticCollInfo;
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
-    bool lightEnabled, hasEffect;
-    hmatrix hcoordsys;
-    color c;
-
-    glDisable(GL_CLIP_PLANE0);
+    
+    hsProgramDisable();
 
     if (!hsGateState)
     {
@@ -646,50 +722,69 @@ void hsEnd(Ship* ship, bool displayEffect)
 
     //setup our coordinate system so the rectangles agree w/ the ETG effect
     glPushMatrix();
+    hmatrix hcoordsys;
     hmatMakeHMatFromMat(&hcoordsys, &ship->rotinfo.coordsys);
-    if (ssinfo->hyperspaceEffect != NULL)
-    {
-        hasEffect = TRUE;
-    //    hmatPutVectIntoHMatrixCol4(ssinfo->hyperspaceEffect->posinfo.position, hcoordsys);
-        hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, hcoordsys);
-    }
-    else
-    {
-        hasEffect = FALSE;
-        hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, hcoordsys);
-    }
+    hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, hcoordsys);
     glMultMatrixf((GLfloat*)&hcoordsys);
 
     rndAdditiveBlends(TRUE);
-    glDisable(GL_CLIP_PLANE0);
-
     rndBackFaceCullEnable(FALSE);
     rndTextureEnable(FALSE);
-    lightEnabled = rndLightingEnable(FALSE);
+    bool lightEnabled = rndLightingEnable(FALSE);
 
     glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
 
+    color c = hsDefaultColor;
     if (ship->staticinfo->hyperspaceColor != colBlack)
-    {
-        c = ship->staticinfo->hyperspaceColor;
-    }
-    else
-    {
-        c = hsDefaultColor;
-    }
+         c = ship->staticinfo->hyperspaceColor;
+    hsProgramSetCrossColour( c );
 
+    //monkey with the effect origin so it scales properly and starts in proper spot
+    //vector origin = {0.0f, 0.0f, sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z};
+    //
+    //switch (ssinfo->hsState)
+    //{
+    //    case HS_POPUP_INTO:
+    //    case HS_POPUP_OUTOF: {
+    //        real32 t = 1.0f - ssinfo->clipt;
+    //        hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
+    //        if (ssinfo->hyperspaceEffect != NULL)
+    //        {
+    //            //monkey effect position
+    //            vector vecTemp;
+    //            matMultiplyMatByVec(&vecTemp, &ship->rotinfo.coordsys, &origin);
+    //            ssinfo->hyperspaceEffect->posinfo.position = ship->collInfo.collPosition;
+    //            vecAddTo(ssinfo->hyperspaceEffect->posinfo.position, vecTemp);
+    //        }
+    //        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * ssinfo->clipt), c);
+    //    } break;
+    //
+    //    case HS_COLLAPSE_INTO:
+    //    case HS_COLLAPSE_OUTOF: {
+    //        //monkey with the effect origin so it scales properly and starts in proper spot
+    //        if ( ! singlePlayerGameInfo.hyperspaceFails)
+    //            origin.z = -sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z;
+    //
+    //        real32 t = ssinfo->clipt;
+    //        hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
+    //        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * (1.0f - t)), c);
+    //    } break;
+    //
+    //    case HS_SLICING_INTO:
+    //    case HS_SLICING_OUTOF: {
+    //        hsRectangle(&origin, sinfo->rightlength, sinfo->uplength, 90, TRUE, c);
+    //    } break;
+    //}
+
+    vector origin = { 0,0,0 };
     switch (ssinfo->hsState)
     {
     case HS_POPUP_INTO:
-    case HS_POPUP_OUTOF:
-        //origin.z = hasEffect ? 0.0f : (sinfo->forwardlength);
-        //test
-        origin.z = (sinfo->forwardlength);
-        t = 1.0f - ssinfo->clipt;
+    case HS_POPUP_OUTOF: {
         //monkey with the effect origin so it scales properly and starts in proper spot
-        origin.z *= ship->magnitudeSquared;
-        origin.z -= sinfo->collsphereoffset.z;
+        origin.z = sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z;
+        real32 t = 1.0f - ssinfo->clipt;
         hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
         if (ssinfo->hyperspaceEffect != NULL)
         {
@@ -700,42 +795,24 @@ void hsEnd(Ship* ship, bool displayEffect)
             vecAddTo(ssinfo->hyperspaceEffect->posinfo.position, vecTemp);
         }
 
-#if SECOND_RECT
-        hsLine(&origin, sinfo->rightlength, 1.5f,
-               (ubyte)(255.0f * ssinfo->clipt), c);
-#endif
-        break;
+        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * ssinfo->clipt), c);
+    } break;
 
     case HS_COLLAPSE_INTO:
     case HS_COLLAPSE_OUTOF:
-        if (singlePlayerGameInfo.hyperspaceFails)
-        {
-            //origin.z = hasEffect ? 0.0f : (sinfo->forwardlength);
-            origin.z = (sinfo->forwardlength);
-        }
-        else
-        {
-            //origin.z = hasEffect ? 0.0f : -(sinfo->forwardlength);
-            origin.z = -(sinfo->forwardlength);
-        }
-        t = ssinfo->clipt;
+        origin.z = (singlePlayerGameInfo.hyperspaceFails) ? sinfo->forwardlength : -sinfo->forwardlength;
+        real32 t = ssinfo->clipt;
         //monkey with the effect origin so it scales properly and starts in proper spot
         origin.z *= ship->magnitudeSquared;
         origin.z -= sinfo->collsphereoffset.z;
         hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
-#if SECOND_RECT
-        hsLine(&origin, sinfo->rightlength, 1.5f,
-               (ubyte)(255.0f * (1.0f - t)), c);
-#endif
+        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * (1.0f - t)), c);
         break;
 
     case HS_SLICING_INTO:
     case HS_SLICING_OUTOF:
-        //origin.z = hasEffect ? 0.0f : ssinfo->clipt * (sinfo->forwardlength);
-        origin.z = ssinfo->clipt * (sinfo->forwardlength);
+        origin.z = ssinfo->clipt * (sinfo->forwardlength) * ship->magnitudeSquared - sinfo->collsphereoffset.z;
         //monkey with the effect origin so it scales properly and starts in proper spot
-        origin.z *= ship->magnitudeSquared;
-        origin.z -= sinfo->collsphereoffset.z;
         hsRectangle(&origin, sinfo->rightlength, sinfo->uplength, 90, TRUE, c);
         break;
     }
@@ -760,9 +837,9 @@ void hsEnd(Ship* ship, bool displayEffect)
 void hsFinish(Ship* ship)
 {
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
-    ssinfo->clipt = -2.0f;
+    ssinfo->clipt      = -2.0f;
     ssinfo->cliptDelta = 0.0f;
-    ssinfo->hsState = (ssinfo->hsState == HS_COLLAPSE_INTO) ? HS_FINISHED : HS_INACTIVE;
+    ssinfo->hsState    = (ssinfo->hsState == HS_COLLAPSE_INTO) ? HS_FINISHED : HS_INACTIVE;
 
     if (ssinfo->hyperspaceEffect != NULL)
     {
@@ -792,10 +869,10 @@ void hsStaticReset(void)
 //whether a label denotes a gate
 bool hsIsStaticGate(char* label)
 {
-    return ((tolower(label[0]) == 'g') &&
-            (tolower(label[1]) == 'a') &&
-            (tolower(label[2]) == 't') &&
-            (tolower(label[3]) == 'e')) ? TRUE : FALSE;
+    return (tolower(label[0]) == 'g')
+        && (tolower(label[1]) == 'a')
+        && (tolower(label[2]) == 't')
+        && (tolower(label[3]) == 'e');
 }
 
 /*-----------------------------------------------------------------------------
@@ -807,31 +884,27 @@ bool hsIsStaticGate(char* label)
 ----------------------------------------------------------------------------*/
 void hsStaticInit(sdword nVectors)
 {
-    sdword i;
     hsStaticGate* pGate;
     extern LabelledVector** LabelledVectors;
 
     hsStaticReset();
 
     //iterate thru KAS labelled vectors
-    i = 0;
     hsStaticNumGates = 0;
-    while (i < nVectors)
+    for (sdword i=0; i<nVectors;i++)
     {
         if (hsIsStaticGate(LabelledVectors[i]->label))
         {
             hsStaticNumGates++;
         }
-        i++;
     }
 
     if (hsStaticNumGates > 0)
     {
-        hsStaticData = (hsStaticGate*)memAlloc(hsStaticNumGates * sizeof(hsStaticGate), "hs statics", NonVolatile);
+        hsStaticData = memAlloc(hsStaticNumGates * sizeof(hsStaticGate), "hs statics", NonVolatile);
         pGate = hsStaticData;
 
-        i = 0;
-        while (i < nVectors)
+        for (sdword i=0; i<nVectors; i++)
         {
             if (hsIsStaticGate(LabelledVectors[i]->label))
             {
@@ -847,7 +920,6 @@ void hsStaticInit(sdword nVectors)
                 aivarValueSet(aivarCreate(pGate->label),(sdword)pGate->derelict->health);
                 pGate++;
             }
-            i++;
         }
     }
 }
@@ -885,46 +957,44 @@ void hsStaticDestroy(hvector* point)
 ----------------------------------------------------------------------------*/
 void hsStaticGateRender(hsStaticGate* gate)
 {
-    bool lightEnabled;
-    Derelict* derelict;
-    hmatrix hmat;
-    vector origin = { 0.0f, 0.0f, 0.0f };
-    color c = colRGB(70, 90, 255);
-
-
     if (singlePlayerHyperspacingInto)
     {
         return;
     }
 
-    derelict = gate->derelict;
+    Derelict* derelict = gate->derelict;
     if (derelict == NULL)
     {
         return;
     }
+
     if (!univSpaceObjInRenderList((SpaceObj*)derelict))
     {
         return;
     }
+
     if (derelict != NULL)
     {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
+        hmatrix hmat;
         hmatMakeHMatFromMat(&hmat, &derelict->rotinfo.coordsys);
         hmatPutVectIntoHMatrixCol4(derelict->collInfo.collPosition, hmat);
         glMultMatrixf((GLfloat*)&hmat);
     }
 
+    hsProgramDisable();
     rndAdditiveBlends(TRUE);
-    glDisable(GL_CLIP_PLANE0);
-
     rndBackFaceCullEnable(FALSE);
     rndTextureEnable(FALSE);
-    lightEnabled = rndLightingEnable(FALSE);
+    bool lightEnabled = rndLightingEnable(FALSE);
 
     glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
-    hsRectangle(&origin, HYPERSPACEGATE_WIDTH, HYPERSPACEGATE_HEIGHT, 90, TRUE, c);
+
+    vector origin = { 0.0f, 0.0f, 0.0f };
+    color  col    =  colRGB( 70, 90, 255 );
+    hsRectangle(&origin, HYPERSPACEGATE_WIDTH, HYPERSPACEGATE_HEIGHT, 90, TRUE, col);
 
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
@@ -1065,19 +1135,16 @@ void hsSetStaticData(sdword size, ubyte* data)
 
 void SaveHyperspaceGates()
 {
-    sdword size;
-    ubyte* data;
-
     SaveInfoNumber(hsGateState);
 
-    size = hsStaticNumGates * sizeof(hsStaticGate);
+    sdword size = hsStaticNumGates * sizeof(hsStaticGate);
     if (size == 0)
     {
         SaveInfoNumber(0);
         return;
     }
 
-    data = memAlloc(size, "temp hs static", Pyrophoric);
+    ubyte* data = memAlloc(size, "temp hs static", Pyrophoric);
     memcpy(data, hsStaticData, size);
 
     hsPreFixStaticData(data);
@@ -1089,12 +1156,8 @@ void SaveHyperspaceGates()
 
 void LoadHyperspaceGates()
 {
-    ubyte* data;
-    sdword size;
-
     hsGateState = LoadInfoNumber();
-
-    size = LoadInfoNumber();
+    sdword size = LoadInfoNumber();
 
     if (size == 0)
     {
@@ -1102,7 +1165,7 @@ void LoadHyperspaceGates()
         return;
     }
 
-    data = LoadStructureOfSize(size);
+    ubyte* data = LoadStructureOfSize(size);
     hsSetStaticData(size, data);
     hsFixStaticData(hsStaticData);
     memFree(data);

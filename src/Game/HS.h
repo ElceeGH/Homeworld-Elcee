@@ -18,6 +18,9 @@ void hsUpdate(Ship* ship);
 void hsFinish(Ship* ship);
 bool hsShouldDisplayEffect(Ship* ship);
 
+void hsProgramUpdate( void );
+void hsProgramCleanup();
+
 #define HS_STATIC_ACTIVE        1
 #define HS_STATIC_COLLAPSING    2
 #define HS_STATIC_EXPANDING     3
