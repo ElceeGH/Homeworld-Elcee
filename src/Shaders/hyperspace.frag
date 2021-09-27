@@ -68,13 +68,12 @@ float nearPlaneGlow( float dist ) {
 
 vec4 fixedFunctionColour() {
     vec4 col = gl_Color;
+    vec4 tex = texture2D( uTex, gl_TexCoord[0].xy );
     
-    if (uTexEnable) {
-        vec4 tex = texture2D( uTex, gl_TexCoord[0].xy );
-        if (uTexMode)
-             col *= tex; // Modulate
-        else col  = tex; // Replace
-    }
+    if (uTexEnable)
+    if (uTexMode)
+         col *= tex; // Modulate
+    else col  = tex; // Replace
     
     return col;
 }
