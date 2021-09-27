@@ -77,6 +77,7 @@
 #include "SDL_syswm.h"
 #include "rResScaling.h"
 #include "rShaderProgram.h"
+#include "rInterpolate.h"
 
 
 #define DEBUG_COLLISIONS            0
@@ -1043,6 +1044,8 @@ static bool setupPixelFormat( void )
 #endif
 
     useVBO = glCheckExtension("GL_ARB_vertex_buffer_object");
+
+    rintInit();
 
 	return TRUE;
 }
@@ -3829,6 +3832,8 @@ DEFINE_TASK(rndRenderTask)
 
     while (1)
     {
+        rintUpdateValue();
+
         primErrorMessagePrint();
 
         subTitlesUpdate();

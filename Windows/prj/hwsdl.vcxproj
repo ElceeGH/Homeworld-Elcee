@@ -433,6 +433,7 @@
     <ClCompile Include="..\..\src\SDL\prim3d.c" />
     <ClCompile Include="..\..\src\SDL\Queue.c" />
     <ClCompile Include="..\..\src\SDL\render.c" />
+    <ClCompile Include="..\..\src\SDL\rInterpolate.c" />
     <ClCompile Include="..\..\src\SDL\rMatrixStack.c" />
     <ClCompile Include="..\..\src\SDL\rResScaling.c" />
     <ClCompile Include="..\..\src\SDL\rglu.c" />
@@ -795,7 +796,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Game\precompiled.h" />
-    <ClInclude Include="..\..\src\SDL\miscUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -54,6 +54,7 @@
 #include "Tweak.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "rInterpolate.h"
 
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
@@ -3742,6 +3743,7 @@ DEFINE_TASK(universeUpdateTask)
     for(;;)
     {
         speechEventUpdate();
+        rintUpdateReference();
 
         if ((multiPlayerGame) && (startingGame) && (gameIsRunning) && ((IAmCaptain) && (!multiPlayerGameUnderWay)))
         {

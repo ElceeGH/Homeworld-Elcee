@@ -952,13 +952,13 @@
     <ClCompile Include="..\..\src\SDL\rMatrixStack.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rInterpolate.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Game\precompiled.h">
       <Filter>Source Files\precompiled</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SDL\miscUtil.h">
-      <Filter>Source Files\SDL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
