@@ -5041,7 +5041,7 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
 
                 bns.tacticstype = ship->tacticstype;
                 bns.isDodging   = ship->isDodging;
-                bns.DodgeDir    = ship->DodgeDir;
+                bns.DodgeDir    = (ubyte) ship->DodgeDir;
 
                 bns.health = ship->health;
                 bns.x      = ship->posinfo.position.x;  bns.y  = ship->posinfo.position.y;    bns.z  = ship->posinfo.position.z;
