@@ -123,8 +123,8 @@ real32 univGetChecksum(sdword *numShipsInChecksum);
 udword univCalcShipChecksum();
 
 
-void univUpdateRenderList();
-void univUpdateMinorRenderList();
+void univUpdateRenderList(void);
+void univUpdateMinorRenderList(void);
 
 Ship *univFindShipIAmInside(Ship *me);
 bool univAmIInsideThisShip(Ship *me,Ship *ship);

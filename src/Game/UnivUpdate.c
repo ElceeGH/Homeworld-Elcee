@@ -6948,7 +6948,7 @@ doneRegular:
     }
 }
 
-void univUpdateMinorRenderList()
+void univUpdateMinorRenderList(void)
 {
     Node *objnode = universe.MinorSpaceObjList.head;
     SpaceObj *obj;
@@ -6998,7 +6998,7 @@ void univUpdateMinorRenderList()
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void univUpdateRenderList()
+void univUpdateRenderList(void)
 {
     Node *objnode = universe.SpaceObjList.head;
     Node *nextnode;

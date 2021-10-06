@@ -1290,11 +1290,6 @@ void rndFilter(bool on)
 {
 }
 
-static real32 rndNear(real64 in)
-{
-    return (real32) in;
-}
-
 /*-----------------------------------------------------------------------------
     Name        : rndBackgroundRender
     Description : Render the background of a mission sphere
@@ -1315,8 +1310,7 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluPerspective(btgFieldOfView, rndAspectRatio,     //set projection matrix
-                    rndNear(camera->clipPlaneNear), camera->clipPlaneFar);
+    rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
     glMatrixMode(GL_MODELVIEW);
 
     if (showBackgrounds && gameIsRunning)
@@ -1339,8 +1333,7 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
         //need to reset the projection matrix
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        rgluPerspective(btgFieldOfView, rndAspectRatio,
-                        rndNear(camera->clipPlaneNear), camera->clipPlaneFar);
+        rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
         //draw small stars
         const real32 resDensity    = getResDensity();
@@ -1497,8 +1490,7 @@ bool rndShipVisibleUsingCoordSys(SpaceObj* spaceobj, Camera* camera)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluPerspective(camera->fieldofview, rndAspectRatio,
-                    rndNear(camera->clipPlaneNear), camera->clipPlaneFar);
+    rgluPerspective(camera->fieldofview, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -1684,7 +1676,7 @@ void rndRenderAHomeworld(void* voidCamera, void *voidWorld)
     worldMesh = (meshdata *)world->staticinfo->staticheader.LOD->level[0].pData;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluPerspective(btgFieldOfView, rndAspectRatio, rndNear(camera->clipPlaneNear), CAMERA_CLIP_FAR_PLANET);
+    rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, CAMERA_CLIP_FAR_PLANET);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -1720,7 +1712,7 @@ void rndRenderAWorldEffect(Camera *camera, Effect *effect)
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluPerspective(btgFieldOfView, rndAspectRatio, rndNear(camera->clipPlaneNear), CAMERA_CLIP_FAR_PLANET);
+    rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, CAMERA_CLIP_FAR_PLANET);
 
     glMatrixMode(GL_MODELVIEW);
 
@@ -2333,8 +2325,7 @@ void rndMainViewRenderFunction(Camera *camera)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    rgluPerspective(camera->fieldofview, rndAspectRatio,    //set projection matrix
-                    rndNear(camera->clipPlaneNear), camera->clipPlaneFar);
+    rgluPerspective(camera->fieldofview, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
