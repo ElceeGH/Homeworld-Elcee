@@ -1,3 +1,11 @@
+/*=============================================================================
+    Name    : rInterpolate.c
+    Purpose : Rendering interpolation timing and utility functions.
+    
+    The basis of an interpolating render system with a fixed update rate.
+
+    Created 27/09/2021 by Elcee
+=============================================================================*/
 
 
 
@@ -10,7 +18,6 @@
 
 
 #define HistoryLen 4
-
 
 typedef struct TimingData {
     uqword last;                  ///< Last absolute time
