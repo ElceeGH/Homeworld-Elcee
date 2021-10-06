@@ -376,7 +376,7 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetai
         // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
         // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
         // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
-        dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR;
+        dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR * 1.2f;
         dist = max( 0.0f, dist );
 
         // For mines, use existing scaling but scale it out a bit. Empirically chosen for minimal LOD pop.
