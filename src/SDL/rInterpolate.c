@@ -14,6 +14,7 @@
 #include "Vector.h"
 #include "SDL.h"
 #include "rResScaling.h"
+#include "Universe.h"
 
 
 
@@ -36,6 +37,8 @@ static real32     fraction;
 
 
 
+/// Update the timing information.
+/// A lot of it is just for debug insight.
 static void updateTimingData( TimingData* td ) {
     // Use the performance counter, need high precision
     const uqword now  = SDL_GetPerformanceCounter();
@@ -64,12 +67,15 @@ static void updateTimingData( TimingData* td ) {
 
 
 
+/// Init the interpolation timing system
 void rintInit(void) {
     memset( &updateTiming, 0x00, sizeof(updateTiming) );
     memset( &frameTiming,  0x00, sizeof(frameTiming)  );
 
-    dbgMessagef( "Refresh frequency: %f Hz\n",   getResFrequency() );
-    dbgMessagef( "Timer   frequency: %llu Hz\n", SDL_GetPerformanceFrequency() );
+    dbgMessagef( "\nRender interpolator init:" );
+    dbgMessagef( "    Display refresh: %2.f Hz" , getResFrequency()             );
+    dbgMessagef( "    Timer frequency: %llu Hz" , SDL_GetPerformanceFrequency() );
+    dbgMessagef( "    Universe update: %d Hz"   , UNIVERSE_UPDATE_RATE          );
 }
 
 
@@ -98,7 +104,54 @@ void rintUpdateValue(void) {
 
 
 
-/// Get the current interpolation value for rendering.
+/// Current interpolation value for rendering.
 real32 rintGetValue(void) {
     return fraction;
 }
+
+
+
+/// Signed saturated dot product of normalised vectors.
+static real32 unitDotProductClamped( vector a, vector b ) {
+    vecNormalize( &a );
+    vecNormalize( &b );
+    real32 dot = vecDotProduct( a, b );
+    dot = min( dot, +1.0f );
+    dot = max( dot, -1.0f );
+    return dot;
+}
+
+
+/// Interpolate a position.
+vector lerp( vector from, vector to, real32 f ) {
+    return (vector) {
+        from.x + (to.x - from.x) * f,
+        from.y + (to.y - from.y) * f,
+        from.z + (to.z - from.z) * f
+    };
+}
+
+
+
+/// Interpolation an orientation.
+vector slerp( vector from, vector to, real32 f ) {
+    const real32 dot = unitDotProductClamped( from, to );
+
+    vector rel = {
+        to.x - from.x * dot,
+        to.y - from.y * dot,
+        to.z - from.z * dot 
+    };
+    
+    vecNormalize( &rel );
+    const real32 rads = acosf( dot ) * f;
+    const real32 cos  = cosf( rads );
+    const real32 sin  = sinf( rads );
+
+    return (vector) {
+        from.x * cos + rel.x * sin,
+        from.y * cos + rel.y * sin,
+        from.z * cos + rel.z * sin
+    };
+}
+
