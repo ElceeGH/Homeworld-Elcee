@@ -44,6 +44,7 @@
 #include "Ping.h"
 #include "ProfileTimers.h"
 #include "Randy.h"
+#include "rInterpolate.h"
 #include "SaveGame.h"
 #include "Select.h"
 #include "Sensors.h"
@@ -7514,6 +7515,9 @@ bool univUpdate(real32 phystimeelapsed)
 
     PTSLAB(6,"updateobjpos");
 
+    // Interpolation
+    rintUnivUpdatePreMove();
+
     //old school function replaced with new functions below
     //univUpdateAllPosVel();       // also does a univCheckShipStates
     univUpdateAllPosVelMinorObjs();
@@ -7539,6 +7543,9 @@ bool univUpdate(real32 phystimeelapsed)
     univDeleteDeadResources();
     univDeleteDeadDerelicts();
     univDeleteDeadMissiles();
+
+    // Interpolation
+    rintUnivUpdatePostDestroy();
 
     if ((universe.univUpdateCounter & REGROW_RESOURCES_CHECK_RATE) == REGROW_RESOURCES_CHECK_FRAME)
     {

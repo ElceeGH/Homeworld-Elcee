@@ -3743,7 +3743,6 @@ DEFINE_TASK(universeUpdateTask)
     for(;;)
     {
         speechEventUpdate();
-        rintUpdateReference();
 
         if ((multiPlayerGame) && (startingGame) && (gameIsRunning) && ((IAmCaptain) && (!multiPlayerGameUnderWay)))
         {
