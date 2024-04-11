@@ -15,6 +15,7 @@
 #include "SDL.h"
 #include "rResScaling.h"
 #include "Universe.h"
+#include <stdio.h>
 
 
 
@@ -82,7 +83,7 @@ void rintInit(void) {
 
 /// Update the reference time.
 /// Call once per universe update.
-void rintUpdateReference(void) {
+static void updateTimeReference(void) {
     updateTimingData( &updateTiming );
 }
 
@@ -90,7 +91,7 @@ void rintUpdateReference(void) {
 
 /// Update the interpolation value.
 /// Call once per frame, in-between each frame.
-void rintUpdateValue(void) {
+static void updateTimeFraction(void) {
     updateTimingData( &frameTiming );
 
     const uqword now   = SDL_GetPerformanceCounter();
@@ -105,7 +106,7 @@ void rintUpdateValue(void) {
 
 
 /// Current interpolation value for rendering.
-real32 rintGetValue(void) {
+static real32 getFraction(void) {
     return fraction;
 }
 
@@ -154,4 +155,196 @@ vector slerp( vector from, vector to, real32 f ) {
         from.z * cos + rel.z * sin
     };
 }
+
+
+
+typedef struct Interp {
+    SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
+    vector    last;   ///< Last uninterpolated position.
+    vector    cur;    ///< Current uninterpolated position.
+    bool      exists; ///< Keepalive flag. Cleared before each update. If not set, gets removed from the list.
+} Interp;
+
+#define InterpLimit   4096            ///< Maximum interpolated object count
+static udword interpCount;            ///< Current count
+static udword interpPeak;             ///< Highest count so far
+static Interp interps[ InterpLimit ]; ///< Interpolation state
+
+
+
+/// Get the limit for searching/iterating over the interps.
+static udword getLimit(void) {
+    return min( InterpLimit, interpPeak + 2 ); // +2 because it needs to find empty spaces as well.
+}
+
+
+
+/// Find interp with matching pointer.
+/// Returns NULL on failure
+static Interp* find( SpaceObj* obj ) {
+    for (udword i=0; i<InterpLimit; i++)
+        if (interps[i].obj == obj)
+            return &interps[i];
+
+    return NULL;
+}
+
+
+
+/// Create a new interp object mapped to the given spaceobj
+static void interpCreate( Interp* interp, SpaceObj* obj ) {
+    interp->obj = obj;
+    interpCount++;
+    interpPeak = max( interpPeak, interpCount );
+    printf( "interpCreate: count=%i, peak=%i\n", interpCount, interpPeak );
+}
+
+
+
+/// Destroy an interp object
+static void interpDestroy( Interp* interp ) {
+    if (interpCount == 0) {
+        printf( "interpDestroy: trying to destroy when counter is zero!\n" );
+    }
+
+    interpCount--;
+    printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
+    memset( interp, 0x00, sizeof(*interp) );
+}
+
+
+
+/// Map object to interp slot. If no existing mapping exists, one will be created.
+static Interp* interpMap( SpaceObj* obj ) {
+    Interp* interp = find( obj );
+
+    if (interp == NULL) {
+        interp = find( NULL );
+        interpCreate( interp, obj );
+    }
+     
+    return interp;
+}
+
+
+
+/// Space object callback
+typedef void(SpaceObjFunc)(SpaceObj*);
+
+/// Iterate over all space objects in the universe list
+static void iterateSpaceObjects( SpaceObjFunc* callback ) {
+    Node* node = universe.SpaceObjList.head;
+    
+    while (node != NULL) {
+        SpaceObj* obj = (SpaceObj*) listGetStructOfNode(node);
+        callback( obj );
+        node = node->next;
+    }
+}
+
+
+
+/// Clear all the exist flags.
+static void clearExistFlags(void) {
+    for (udword i=0; i<getLimit(); i++)
+        interps[i].exists = FALSE;
+}
+
+
+
+/// Remove interps which no longer exist.
+static void cleanInterps(void) {
+    for (udword i=0; i<getLimit(); i++)
+        if (interps[i].obj    != NULL)
+        if (interps[i].exists == FALSE)
+            interpDestroy( &interps[i] );
+}
+
+
+
+
+
+/// Set the previous position
+static void setPrevPos( SpaceObj* obj ) {
+    Interp* interp = interpMap( obj );
+    interp->last   = obj->posinfo.position;
+}
+
+
+
+/// Set the current position and mark it as alive
+static void setCurPosAndMarkExists( SpaceObj* obj ) {
+    Interp* interp = interpMap( obj );
+    interp->cur    = obj->posinfo.position;
+    interp->exists = TRUE;
+}
+
+
+
+/// Interpolate the position of the associated spaceobj
+static void interpolatePosition( const Interp* interp ) {
+    SpaceObj*    obj = interp->obj;
+    const vector a   = interp->last;
+    const vector b   = interp->cur;
+    const real32 f   = getFraction();
+    obj->posinfo.position = lerp( a, b, f );
+}
+
+
+
+/// Restore the original position of the associated spaceobj
+static void restorePosition( const Interp* interp ) {
+    SpaceObj* obj = interp->obj;
+    obj->posinfo.position = interp->cur;
+}
+
+
+
+
+
+/// Update interpolation state
+/// Pre-move phase where the previous position and keepalive flag are set
+void rintUnivUpdatePreMove( void ) {
+    updateTimeReference();
+    clearExistFlags();
+    iterateSpaceObjects( setPrevPos );
+}
+
+
+
+/// Update interpolation state
+/// Post-destroy phase where nonexistent objects have been destroyed
+void rintUnivUpdatePostDestroy( void ) {
+    iterateSpaceObjects( setCurPosAndMarkExists );
+    cleanInterps();
+}
+
+
+
+/// Replace all positions with the interpolated ones
+void rintRenderBegin( void ) {
+    // Set the render fraction
+    updateTimeFraction();
+
+    // Interpolate all the positions
+    for (udword i=0; i<getLimit(); i++)
+        if (interps[i].obj)
+            interpolatePosition( &interps[i] );
+}
+
+
+
+/// Restore all the positions to the uninterpolated current ones
+void rintRenderEnd( void ) {
+    for (udword i=0; i<getLimit(); i++)
+        if (interps[i].obj)
+            restorePosition( &interps[i] );
+}
+
+
+
+
+
+
+
 
