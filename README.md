@@ -1,93 +1,66 @@
-# Homeworld SDL
+# Homeworld-Elcee
 
-[SDL] port of the [Homeworld] source code that was [released in 2003] by [Relic Entertainment].
+This is a source port of the original Homeworld based on the great work done in Homeworld SDL.
 
-[SDL]: https://en.wikipedia.org/wiki/Simple_DirectMedia_Layer
-[Homeworld]: https://en.wikipedia.org/wiki/Homeworld
-[released in 2003]: http://www.insidemacgames.com/news/story.php?ArticleID=8516
-[Relic Entertainment]: https://www.relic.com/
+The objectives here are:
+- Be faithful to the original game
+- Make it buildable in modern Visual Studio
+- Fix bugs
+- Improve stability
+- Support modern systems
+- Improved graphics scalability for modern systems
+- Restore animatic playback functionality
 
-## Installing
 
-### Requirements
 
-This repository contains only the source code for Homeworld's engine (metaphorically, the skeleton). In order to have a playable game, you will need the original assets (artwork, textures, sounds, meshes, ... Metaphorically again, the flesh).
+Changelog (experimental, 2021-Nov-08)
+- Fix camera moving instantly on right mouse button press. It should have remained still until the mouse actually moved.
+- Fix objects incorrectly appearing partially transparent depending on what else is onscreen.
+- Fix animated hit effects using the wrong texture in their last couple of frames.
+- Fix animated hit effects sometimes being opaque instead of additively blended.
+- Fix anti-aliasing causing ugly lines on the UI when using multisampling.
+- Fix anti-aliasing causing blurry graphics on UI when using supersampling.
+- Fix research UI lab button scanning effect speed being dependent on refresh rate.
+- Fix tutorial pulsing effect being dependent on refresh rate.
+- Fix sensor view ping sound crackling and clipping, matching its volume with the original game.
+- Fix buffer overflows in UI, sound, scripting, and logging systems. These may have caused unexplained crashes.
+- Fix trails using an undefined alpha value and appearing far too dim as a result.
+- Fix navigation lights moving to incorrect positions at high detail levels.
+- Fix wildly inaccurate in-engine cutscene audio timing. Now plays as in the original game.
+- Fix audio streamer using 100% of an entire CPU core at all times. It is now nearly zero.
+- Fix animatic cutscenes not playing. They now play normally between missions, with audio.
+- Fix intro videos not playing and not having sound. They now play with the correct music tracks.
+- Fix the space key being typed as "s" typing in textboxes. It was trying to type the word "space" :)
+- Fix sounds stopping after changing resolution in video options, then suddenly playing all at once again when in-game.
+- Fix aspect ratio not updating after changing resolution in video options, distorting the game view.
+- Fix crash on game exit when a multiplayer game was played during the session.
+- Fix crash during multiplayer when a player unexpectedly leaves mid-game.
+- Fix audio glitches caused by loading faster than the fadeout time. Loading time has been extended to take a few seconds.
+- Fix audio glitches in speech when running at very high framerates.
+- Fix healthbar width changing when cloud lightning effects were onscreen.
 
-So make sure you have:
-
-- The Homeworld CD
-- [The 1.05 Patch](http://www.homeworldaccess.net/downloads/hw1patch/si_homeworld_update_105.exe)
-
-### Asset checklist
-
-To sum it up, here are the files required for the game to run:
-
-- [ ] `Homeworld.big`  
-    > sha256: af9dcc06e3f99404334a0a8ec17e399876080e85feb5b47858382dc715136040
-- [ ] `Update.big` (This comes from the official 1.05 Patch)  
-    > sha256: c71b07758ee7696b3a19c1d75c946cbd68830e03b30cd3c2888f2f6d22b7c976
-- [ ] `HW_Comp.vce`  
-    > sha256: 15c4b988adb09b0969b0dc288b21ddc10ca9d42a2064d15b46b53dcf02fc2e44
-
-- [ ] `HW_Music.wxd`  
-    > sha256: b909c2cdbc8c8db67be168f6005bf8e8facaa9857263b16d186c824a0c4eed4f
-- [x] `HomeworldSDL.big` (This file should be included in the [releases])
-
-Usually you will find these files in your installation folder. For more detailed instructions, read on.
-
-### Linux
-
-#### Extracting game assets with wine
-
-Install the game and patch with [wine] (tested with wine 4.1)
-
-``` sh
-wine HWSetup.EXE
-wine si_homeworld_update_105.exe
-```
-
-Open the game installation folder (usually `~/.wine/drive_c/Sierra/Homeworld`). This is where you'll find the [required files](#asset-checklist). We'll be getting back at them later on.
-
-[wine]: https://www.winehq.org/
-
-#### Installing the binary distribution
-
-1. Download [__the latest release__][releases]. (Extract it if necessary)
-2. Copy [the files you gathered earlier](#extracting-game-assets-with-wine) in the folder you just downloaded
-3. Run the game
-4. Jump to [Configuring the OpenGL renderer](#configuring-the-opengl-renderer)
-
-#### Compiling from source
-
-Please refer to [`Linux/BUILD.md`](Linux/BUILD.md).
-
-## Configuring the OpenGL renderer
-
-The first time you run the game, you'll have to configure the renderer to use OpenGL. This will be saved in your `~/.homeworld`, so you won't have to do it every time you run the game.
-
-Once the game has launched, you need to:
-
-- Select "Options" from the main game menu.
-- Select "Video" from the available option sub-menus listed on
-    the right side of the screen.
-- Select "(GL) Default OpenGL" from the "Rendering System" box.
-- Choose a resolution from the "Resolution" box (any resolution
-    you choose will do fine).
-- Click on the "Accept!" button in the bottom-right corner of the screen.
-
- The game will now attempt to switch to the OpenGL renderer.  
- If everything goes okay, you should be presented with a confirmation that the settings you requested were changed.  Select "Yes", and you should be ready to go!
-
-### Mac
-
-- Copy assets listed above into the Root repo directory.
-- Open Xcode project in Mac directory.
-- Run from Xcode or build.
-- Assets are copied into App bundle
-- config file is at ~Library/Application Support/Homeworld/Homeworld.cfg
-
-## [About][wiki]
-
-If you want to know more about this project (and see some screenshots!), please head over to the [wiki].
-
-[wiki]: https://github.com/HomeworldSDL/HomeworldSDL/wiki
+- Backgrounds now render with temporal dithering to remove banding artifacts.
+- Hyperspace gates now render the intersected hull cross section, rather than just clipping the graphics in an ugly way.
+- Ship trails are now always rendered in detail in 3D, instead of turning into 2D lines a short distance from the camera.
+- Animatics now scale with resolution on widescreen monitors, instead of rendering in a little box.
+- Level of detail for objects is now much higher in the main view.
+- Level of detail for objects is now maximised in the sensor view for large ships.
+- Level of detail for healthbar/fuel/team overlay is now independent from ship detail level.
+- Effect density has been increased. Hit effects now trigger more often for example.
+- Background stars now scale further with resolution, extrapolating the original design.
+- Sensor view dots now scale with resolution.
+- Tiny asteroid dots now scale with resolution.
+- Ship navigation lights now scale with resolution at a distance.
+- Explosion and impact line effect thickness now scales with resolution.
+- Sensor view and movement line thickness now scales with resolution.
+- Missile trail thickness now scales with resolution.
+- Missile trails now interpolate colour per-pixel rather than per-vertex, appearing smoother.
+- Mines now scale with resolution at a distance, instead of being drawn as a single pixel.
+- Circles are now rendered in much greater detail, so they actually look like circles.
+- Savegames, configuration, logs and such are now all stored in appdata instead of the game's directory.
+- The appdata directory is now called "Homeworld" on Windows as opposed to the Linux-style ".homeworld".
+- Take screenshots with PrintScreen. Used to be Scroll Lock.
+- Loading time between levels has been artificially extended, allowing the path through the galaxy to be seen when playing.
+- Loading screens now redraw much more often, making the loading bar much smoother.
+- Loading screens now update the loading bars for each player much more frequently in multiplayer.
+- Antialiasing can now be controlled in the options file (screenMSAA).

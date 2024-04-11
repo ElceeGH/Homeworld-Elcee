@@ -277,9 +277,11 @@ static void animUpdateCallback( VideoStatus status ) {
     if (animScriptHeader == NULL)
         return;
 
+    // Get current elapsed time for the animatic
     const real32 timeElapsed = (real32)status.frameIndex / status.frameRate;
     universe.totaltimeelapsed = timeElapsed;
 
+    // Search for events to trigger based on their index and time
     nisevent* event = &animScriptHeader->events[ animCurrentEvent ];
     while (animCurrentEvent < animScriptHeader->nEvents &&
            event->time <= timeElapsed)
@@ -290,6 +292,7 @@ static void animUpdateCallback( VideoStatus status ) {
         event++;
     }
 
+    // Update systems
     musicEventUpdateVolume();
     speechEventUpdate();
     subTitlesUpdate();
@@ -411,6 +414,12 @@ void animPlay(sdword a, sdword b)
 
     // Play the video and run callbacks as we go.
     videoPlay( videoFile, animUpdateCallback, animRenderCallback, TRUE );
+
+    // Wait a couple of seconds for any lingering audio playback to finish.
+    // @todo It would be nice to not hack it up here and actually read the audio playback status.
+    const real64 now = SDL_GetTicks();
+    const real64 end = now + 3000.0;
+    while (SDL_GetTicks() < end) {}
 
     // Clean up now that the video is finished.
     animCleanup();
