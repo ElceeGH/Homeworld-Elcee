@@ -133,7 +133,7 @@ vector lerp( vector from, vector to, real32 f ) {
 
 
 
-/// Interpolation an orientation.
+/// Interpolate an orientation.
 vector slerp( vector from, vector to, real32 f ) {
     const real32 dot = unitDotProductClamped( from, to );
 
