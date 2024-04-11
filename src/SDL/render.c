@@ -3823,8 +3823,6 @@ DEFINE_TASK(rndRenderTask)
 
     while (1)
     {
-        rintUpdateValue();
-
         primErrorMessagePrint();
 
         subTitlesUpdate();
@@ -3868,6 +3866,9 @@ DEFINE_TASK(rndRenderTask)
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear the buffers
         }
+
+        // Interp
+        rintRenderBegin();
 
         rndScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);   //can we do scissoring?
         primErrorMessagePrint();
@@ -3993,7 +3994,10 @@ DEFINE_TASK(rndRenderTask)
             feDontFlush = FALSE;
         }
         primErrorMessagePrint();
-afterTheSwap:
+    afterTheSwap:
+
+    // Interp
+    rintRenderEnd();
 
 #if RND_GL_STATE_DEBUG
         rndGLStateSaving = FALSE;                           //done saving the file for now
