@@ -479,6 +479,11 @@ void hsContinue(Ship* ship, bool displayEffect)
     {
         hsProgramEnable( equation );
     }
+
+    color c = hsDefaultColor;
+    if (ship->staticinfo->hyperspaceColor != colBlack)
+         c = ship->staticinfo->hyperspaceColor;
+    hsProgramSetCrossColour( c );
 }
 
 /*-----------------------------------------------------------------------------
