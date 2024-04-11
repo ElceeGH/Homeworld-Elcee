@@ -160,9 +160,11 @@ vector slerp( vector from, vector to, real32 f ) {
 
 typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
-    vector    last;   ///< Last uninterpolated position.
-    vector    cur;    ///< Current uninterpolated position.
-    bool      exists; ///< Keepalive flag. Cleared before each update. If not set, gets removed from the list.
+    vector    pprev;  ///< Previous uninterpolated position
+    vector    pcurr;  ///< Current  uninterpolated position
+    vector    cprev;  ///< Previous uninterpolated collision position (ships only)
+    vector    ccurr;  ///< Current  uninterpolated collision position (ships only)
+    bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
 } Interp;
 
 #define InterpLimit   4096            ///< Maximum interpolated object count
@@ -267,7 +269,11 @@ static void cleanInterps(void) {
 /// Set the previous position
 static void setPrevPos( SpaceObj* obj ) {
     Interp* interp = interpMap( obj );
-    interp->last   = obj->posinfo.position;
+    interp->pprev  = obj->posinfo.position;
+
+    if (obj->objtype == OBJ_ShipType) {
+        interp->cprev = ((SpaceObjRotImp *)obj)->collInfo.collPosition;
+    }
 }
 
 
@@ -275,8 +281,12 @@ static void setPrevPos( SpaceObj* obj ) {
 /// Set the current position and mark it as alive
 static void setCurPosAndMarkExists( SpaceObj* obj ) {
     Interp* interp = interpMap( obj );
-    interp->cur    = obj->posinfo.position;
+    interp->pcurr  = obj->posinfo.position;
     interp->exists = TRUE;
+
+    if (obj->objtype == OBJ_ShipType) {
+        interp->ccurr = ((SpaceObjRotImp *)obj)->collInfo.collPosition;
+    }
 }
 
 
@@ -284,10 +294,16 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
 /// Interpolate the position of the associated spaceobj
 static void interpolatePosition( const Interp* interp ) {
     SpaceObj*    obj = interp->obj;
-    const vector a   = interp->last;
-    const vector b   = interp->cur;
+    const vector pa  = interp->pprev;
+    const vector pb  = interp->pcurr;
     const real32 f   = getFraction();
-    obj->posinfo.position = lerp( a, b, f );
+    obj->posinfo.position = lerp( pa, pb, f );
+
+    if (obj->objtype == OBJ_ShipType) {
+        const vector ca = interp->cprev;
+        const vector cb = interp->ccurr;
+        ((SpaceObjRotImp *)obj)->collInfo.collPosition = lerp( ca, cb, f );
+    }
 }
 
 
@@ -295,7 +311,11 @@ static void interpolatePosition( const Interp* interp ) {
 /// Restore the original position of the associated spaceobj
 static void restorePosition( const Interp* interp ) {
     SpaceObj* obj = interp->obj;
-    obj->posinfo.position = interp->cur;
+    obj->posinfo.position = interp->pcurr;
+
+    if (obj->objtype == OBJ_ShipType) {
+        ((SpaceObjRotImp *)obj)->collInfo.collPosition = interp->ccurr;
+    }
 }
 
 
