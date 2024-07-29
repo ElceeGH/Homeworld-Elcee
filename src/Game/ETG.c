@@ -2304,7 +2304,7 @@ bool etgEffectUpdate(Effect *effect, real32 timeElapsed)
     {
         //build a rotation matrix
         spin = effect->spin * etgTimeElapsed;
-        matMakeRotAboutZ(&rotMatrix, (real32)sin((double)spin), (real32)cos((double)spin));
+        matMakeRotAboutZ(&rotMatrix, sinf(spin), cosf(spin));
         tempMatrix = effect->rotinfo.coordsys;
         //rotate the effect
         matMultiplyMatByMat(&effect->rotinfo.coordsys, &rotMatrix, &tempMatrix);

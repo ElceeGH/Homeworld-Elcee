@@ -9,13 +9,20 @@
 
 
 
+#include "rInterpolate.h"
 #include "Types.h"
 #include "Debug.h"
 #include "Vector.h"
 #include "SDL.h"
 #include "rResScaling.h"
+#include "NIS.h"
 #include "Universe.h"
 #include <stdio.h>
+
+
+
+
+static void clearRenderMap( void );
 
 
 
@@ -44,7 +51,7 @@ static void updateTimingData( TimingData* td ) {
     // Use the performance counter, need high precision
     const uqword now  = SDL_GetPerformanceCounter();
     const uqword freq = SDL_GetPerformanceFrequency();
-
+    
     // Update the basics
     td->delta = now - td->last;
     td->last  = now;
@@ -68,19 +75,6 @@ static void updateTimingData( TimingData* td ) {
 
 
 
-/// Init the interpolation timing system
-void rintInit(void) {
-    memset( &updateTiming, 0x00, sizeof(updateTiming) );
-    memset( &frameTiming,  0x00, sizeof(frameTiming)  );
-
-    dbgMessagef( "\nRender interpolator init:" );
-    dbgMessagef( "    Display refresh: %2.f Hz" , getResFrequency()             );
-    dbgMessagef( "    Timer frequency: %llu Hz" , SDL_GetPerformanceFrequency() );
-    dbgMessagef( "    Universe update: %d Hz"   , UNIVERSE_UPDATE_RATE          );
-}
-
-
-
 /// Update the reference time.
 /// Call once per universe update.
 static void updateTimeReference(void) {
@@ -90,7 +84,7 @@ static void updateTimeReference(void) {
 
 
 /// Update the interpolation value.
-/// Call once per frame, in-between each frame.
+/// Call once per frame.
 static void updateTimeFraction(void) {
     updateTimingData( &frameTiming );
 
@@ -124,7 +118,7 @@ static real32 unitDotProductClamped( vector a, vector b ) {
 
 
 /// Interpolate a position.
-vector lerp( vector from, vector to, real32 f ) {
+static vector lerp( vector from, vector to, real32 f ) {
     return (vector) {
         from.x + (to.x - from.x) * f,
         from.y + (to.y - from.y) * f,
@@ -135,7 +129,7 @@ vector lerp( vector from, vector to, real32 f ) {
 
 
 /// Interpolate an orientation.
-vector slerp( vector from, vector to, real32 f ) {
+static vector slerp( vector from, vector to, real32 f ) {
     const real32 dot = unitDotProductClamped( from, to );
 
     vector rel = {
@@ -164,26 +158,29 @@ typedef struct Interp {
     vector    pcurr;  ///< Current  uninterpolated position
     vector    cprev;  ///< Previous uninterpolated collision position (ships only)
     vector    ccurr;  ///< Current  uninterpolated collision position (ships only)
+    vector    eprev;  ///< Previous uninterpolated engine position (ships only)
+    vector    ecurr;  ///< Current  uninterpolated engine position (ships only)
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
+    bool      enable; ///< Disable interpolation if not set. For effect filtering.
 } Interp;
 
-#define InterpLimit   4096            ///< Maximum interpolated object count
+#define InterpLimit 8192              ///< Number of interps allocated at a time
 static udword interpCount;            ///< Current count
 static udword interpPeak;             ///< Highest count so far
-static Interp interps[ InterpLimit ]; ///< Interpolation state
+static Interp interps[ InterpLimit ]; ///< Interpolation items
 
 
 
 /// Get the limit for searching/iterating over the interps.
 static udword getLimit(void) {
-    return min( InterpLimit, interpPeak + 2 ); // +2 because it needs to find empty spaces as well.
+    return min( InterpLimit, interpPeak + 2 ); // +2 instead of +1; it needs to find empty spaces not just the last occupied space.
 }
 
 
 
-/// Find interp with matching pointer.
+/// Find interp with matching obj pointer.
 /// Returns NULL on failure
-static Interp* find( SpaceObj* obj ) {
+static Interp* interpFind( SpaceObj* obj ) {
     for (udword i=0; i<InterpLimit; i++)
         if (interps[i].obj == obj)
             return &interps[i];
@@ -198,19 +195,15 @@ static void interpCreate( Interp* interp, SpaceObj* obj ) {
     interp->obj = obj;
     interpCount++;
     interpPeak = max( interpPeak, interpCount );
-    printf( "interpCreate: count=%i, peak=%i\n", interpCount, interpPeak );
+    //printf( "interpCreate: count=%i, peak=%i\n", interpCount, interpPeak );
 }
 
 
 
 /// Destroy an interp object
 static void interpDestroy( Interp* interp ) {
-    if (interpCount == 0) {
-        printf( "interpDestroy: trying to destroy when counter is zero!\n" );
-    }
-
     interpCount--;
-    printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
+    //printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
     memset( interp, 0x00, sizeof(*interp) );
 }
 
@@ -218,10 +211,10 @@ static void interpDestroy( Interp* interp ) {
 
 /// Map object to interp slot. If no existing mapping exists, one will be created.
 static Interp* interpMap( SpaceObj* obj ) {
-    Interp* interp = find( obj );
+    Interp* interp = interpFind( obj );
 
     if (interp == NULL) {
-        interp = find( NULL );
+        interp = interpFind( NULL );
         interpCreate( interp, obj );
     }
      
@@ -234,14 +227,66 @@ static Interp* interpMap( SpaceObj* obj ) {
 typedef void(SpaceObjFunc)(SpaceObj*);
 
 /// Iterate over all space objects in the universe list
-static void iterateSpaceObjects( SpaceObjFunc* callback ) {
+static void iterateSpaceObjectsUniverse( SpaceObjFunc* callback ) {
     Node* node = universe.SpaceObjList.head;
     
     while (node != NULL) {
         SpaceObj* obj = (SpaceObj*) listGetStructOfNode(node);
-        callback( obj );
         node = node->next;
+        callback( obj );
     }
+}
+
+/// Iterate over all space objects in the universe list
+static void iterateSpaceObjectsRender( SpaceObjFunc* callback ) {
+    Node* node = universe.RenderList.head;
+    
+    while (node != NULL) {
+        SpaceObj* obj = (SpaceObj*) listGetStructOfNode(node);
+        node = node->next;
+        callback( obj );
+    }
+}
+
+
+
+/// Exclude objects which can't be interpolated without causing problems (hopping around visually).
+/// This boils down to excluding all effects other than bullets.
+/// @todo It would be nice not to exclude effects attached to ships, to avoid jerky attachments in rare cases
+static void filterObjects() {
+    Effect*  allowList = malloc( InterpLimit * sizeof(Effect*) );
+    Effect** allowEnd  = allowList;
+
+    // First pass, disable all effects and mark bullet effects
+    for (udword i=0; i<interpCount; i++) {
+        Interp* interp = &interps[i];
+        
+        if (interp->exists && interp->obj) {
+            // Enable by default
+            interp->enable = TRUE;
+            
+            // For effects, disable by default
+            if (interp->obj->objtype == OBJ_EffectType)
+                interp->enable = FALSE;
+
+            // For bullets, remember the linked effect
+            if (interp->obj->objtype == OBJ_BulletType) {
+                const Bullet* bullet = (Bullet*) interp->obj;
+                if (bullet->effect)
+                    *allowEnd++ = bullet->effect;
+            }
+        }
+    }
+
+    // Second pass, enable effects linked with bullets
+    for (Effect** allow=allowList; allow!=allowEnd; allow++) {
+        Interp* interp = interpFind( (SpaceObj*) *allow );
+        if (interp)
+            interp->enable = TRUE;
+    }
+
+    // Cleanup
+    free( allowList );
 }
 
 
@@ -257,12 +302,10 @@ static void clearExistFlags(void) {
 /// Remove interps which no longer exist.
 static void cleanInterps(void) {
     for (udword i=0; i<getLimit(); i++)
-        if (interps[i].obj    != NULL)
         if (interps[i].exists == FALSE)
+        if (interps[i].obj    != NULL)
             interpDestroy( &interps[i] );
 }
-
-
 
 
 
@@ -272,7 +315,8 @@ static void setPrevPos( SpaceObj* obj ) {
     interp->pprev  = obj->posinfo.position;
 
     if (obj->objtype == OBJ_ShipType) {
-        interp->cprev = ((SpaceObjRotImp *)obj)->collInfo.collPosition;
+        interp->cprev = ((Ship *)obj)->collInfo.collPosition;
+        interp->eprev = ((Ship *)obj)->enginePosition;
     }
 }
 
@@ -285,7 +329,8 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
     interp->exists = TRUE;
 
     if (obj->objtype == OBJ_ShipType) {
-        interp->ccurr = ((SpaceObjRotImp *)obj)->collInfo.collPosition;
+        interp->ccurr = ((Ship *)obj)->collInfo.collPosition;
+        interp->ecurr = ((Ship *)obj)->enginePosition;
     }
 }
 
@@ -302,7 +347,10 @@ static void interpolatePosition( const Interp* interp ) {
     if (obj->objtype == OBJ_ShipType) {
         const vector ca = interp->cprev;
         const vector cb = interp->ccurr;
-        ((SpaceObjRotImp *)obj)->collInfo.collPosition = lerp( ca, cb, f );
+        const vector ea = interp->eprev;
+        const vector eb = interp->ecurr;
+        ((Ship *)obj)->collInfo.collPosition = lerp( ca, cb, f );
+        ((Ship *)obj)->enginePosition        = lerp( ea, eb, f );
     }
 }
 
@@ -314,11 +362,42 @@ static void restorePosition( const Interp* interp ) {
     obj->posinfo.position = interp->pcurr;
 
     if (obj->objtype == OBJ_ShipType) {
-        ((SpaceObjRotImp *)obj)->collInfo.collPosition = interp->ccurr;
+        ((Ship *)obj)->collInfo.collPosition = interp->ccurr;
+        ((Ship *)obj)->enginePosition        = interp->ecurr;
     }
 }
 
 
+
+/// Check whether it's safe to do interpolation on the render side.
+/// It's always safe on the universe update end.
+static udword interpRenderAllowed() {
+    return !nisIsRunning && gameIsRunning;
+}
+
+
+
+/// Init the interpolation timing system
+void rintInit( void ) {
+    dbgMessagef( "\nRender interpolator init:" );
+    dbgMessagef( "    Display refresh: %2.f Hz" , getResFrequency()             );
+    dbgMessagef( "    Universe update: %d Hz"   , UNIVERSE_UPDATE_RATE          );
+    dbgMessagef( "    Timer frequency: %llu Hz" , SDL_GetPerformanceFrequency() );
+
+    rintClear();
+    memset( &updateTiming, 0x00, sizeof(updateTiming) );
+    memset( &frameTiming,  0x00, sizeof(frameTiming)  );
+}
+
+
+
+/// Clear all interpolation objects to empty
+void rintClear( void ) {
+    printf( "interpClear()\n" );
+    memset( interps, 0x00, sizeof(interps) );
+    interpCount = 0;
+    interpPeak  = 0;
+}
 
 
 
@@ -327,44 +406,94 @@ static void restorePosition( const Interp* interp ) {
 void rintUnivUpdatePreMove( void ) {
     updateTimeReference();
     clearExistFlags();
-    iterateSpaceObjects( setPrevPos );
+    iterateSpaceObjectsUniverse( setPrevPos );
 }
 
 
 
 /// Update interpolation state
 /// Post-destroy phase where nonexistent objects have been destroyed
+/// Last event before rendering begins
 void rintUnivUpdatePostDestroy( void ) {
-    iterateSpaceObjects( setCurPosAndMarkExists );
+    iterateSpaceObjectsUniverse( setCurPosAndMarkExists );
     cleanInterps();
+    filterObjects();
+    clearRenderMap(); // Must be last event, just before rendering!
 }
 
 
 
-/// Replace all positions with the interpolated ones
+///////////////////////////////////////////////////////////////////////////////
+/// Render side
+///////////////////////////////////////////////////////////////////////////////
+
+// Interps to apply, in the same order as the render list
+static Interp*  renderList[InterpLimit];
+static Interp** renderListEnd   = renderList;
+static bool     renderListReady = FALSE;
+
+
+
+/// Add mapping to the list
+static void generateInterpMapElement( SpaceObj* obj ) {
+    Interp* interp = interpFind( obj );
+
+    if (interp)
+    if (interp->obj)
+    if (interp->enable)
+        *renderListEnd++ = interp;
+}
+
+
+
+/// The mapping of objects to interps only needs to be done once per frame.
+/// So generate the list just once on the first frame.
+static void generateRenderList( void ) {
+    if (renderListReady)
+        return;
+
+    clearRenderMap();
+    iterateSpaceObjectsRender( generateInterpMapElement );
+    renderListReady = TRUE;
+}
+
+
+
+/// Reset the render interp map. Do this once per universe update.
+static void clearRenderMap( void ) {
+    renderListEnd   = renderList;
+    renderListReady = FALSE;
+}
+
+
+
 void rintRenderBegin( void ) {
     // Set the render fraction
     updateTimeFraction();
 
-    // Interpolate all the positions
-    for (udword i=0; i<getLimit(); i++)
-        if (interps[i].obj)
-            interpolatePosition( &interps[i] );
+    // Don't do anything when NIS cutscenes are running, or the game isn't running
+    if ( ! interpRenderAllowed())
+        return;
+
+    // Generate the interpolation render list, if needed
+    generateRenderList();
+
+    // Interpolate everything
+    for (Interp** interp=renderList; interp!=renderListEnd; interp++)
+        interpolatePosition( *interp );
 }
 
 
 
-/// Restore all the positions to the uninterpolated current ones
 void rintRenderEnd( void ) {
-    for (udword i=0; i<getLimit(); i++)
-        if (interps[i].obj)
-            restorePosition( &interps[i] );
+    // May not be allowed
+    if ( ! interpRenderAllowed())
+        return;
+
+    // Restore everything
+    for (Interp** interp=renderList; interp!=renderListEnd; interp++)
+        restorePosition( *interp );
 }
-
-
-
-
-
 
 
 

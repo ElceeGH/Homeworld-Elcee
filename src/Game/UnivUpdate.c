@@ -6247,6 +6247,7 @@ void univupdateReset()
     growSelectClose(&ClampedShipList);
     growSelectInit(&ClampedShipList);
 
+    rintClear();
 }
 
 /*-----------------------------------------------------------------------------
@@ -7145,7 +7146,7 @@ void univUpdateRenderList(void)
     listVerify(&universe.RenderList);
     if (sortFrontList.num > 0)
     {                                                       //if there are force-front-sort objects
-        listMergeSort2(&sortFrontList);                     //sort them like regular rederlist objects
+        listMergeSort2(&sortFrontList);                     //sort them like regular renderlist objects
         objnode = sortFrontList.head;
         while (objnode != NULL)
         {
@@ -7525,11 +7526,9 @@ bool univUpdate(real32 phystimeelapsed)
     univUpdateAllPosVelMissiles();
     if (!nisUniversePause)
     {
-
         univUpdateAllPosVelDerelicts();
         univUpdateAllPosVelResources();
         univUpdateAllPosVelShips();     // also does a univCheckShipStates
-
     }
     else
     {
