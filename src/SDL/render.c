@@ -3868,6 +3868,7 @@ DEFINE_TASK(rndRenderTask)
         }
 
         // Interp
+        rintRenderEnable();
         rintRenderBegin();
 
         rndScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);   //can we do scissoring?

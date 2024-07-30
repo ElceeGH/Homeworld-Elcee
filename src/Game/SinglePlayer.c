@@ -56,6 +56,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "utility.h"
+#include "rInterpolate.h"
 
 #include "../Missions/Generated/Mission01.h"
 #include "../Missions/Generated/Mission02.h"
@@ -1922,8 +1923,9 @@ void singlePlayerInit(void)
     singlePlayerGameLoadNewLevelFlag = FALSE;
 
     singlePlayerGameInfo.playerCanHyperspace = FALSE;
+    rintRenderDisable();
     smUpdateHyperspaceStatus(FALSE);
-
+    
     listInit(&singlePlayerGameInfo.ShipsInHyperspace);
     growSelectInit(&singlePlayerGameInfo.ShipsToHyperspace);
 

@@ -4,6 +4,8 @@
     
     The basis of an interpolating render system with a fixed update rate.
 
+    TODO: Trails, fix stability across saves, add config option.
+
     Created 27/09/2021 by Elcee
 =============================================================================*/
 
@@ -27,6 +29,7 @@ static void clearRenderMap( void );
 
 
 #define HistoryLen 4
+#define RenderEnableDelayFrames 10
 
 typedef struct TimingData {
     uqword last;                  ///< Last absolute time
@@ -42,6 +45,9 @@ typedef struct TimingData {
 static TimingData updateTiming;
 static TimingData frameTiming;
 static real32     fraction;
+static udword     updateEnabled = TRUE;  ///< Managed by config
+static udword     renderTimer   = 0;
+static udword     renderEnabled = FALSE; ///< Managed automatically
 
 
 
@@ -371,8 +377,12 @@ static void restorePosition( const Interp* interp ) {
 
 /// Check whether it's safe to do interpolation on the render side.
 /// It's always safe on the universe update end.
+/// @todo This doesn't cover everything yet. Load the Great Wastes fight and then the Gardens fight and the game will crash with an access violation.
 static udword interpRenderAllowed() {
-    return !nisIsRunning && gameIsRunning;
+    return updateEnabled
+        && renderEnabled
+        && ! nisIsRunning
+        && gameIsRunning;
 }
 
 
@@ -387,6 +397,25 @@ void rintInit( void ) {
     rintClear();
     memset( &updateTiming, 0x00, sizeof(updateTiming) );
     memset( &frameTiming,  0x00, sizeof(frameTiming)  );
+}
+
+
+
+/// Disable interpolation (call when starting a new game)
+void rintRenderDisable( void ) {
+    renderEnabled = FALSE;
+    renderTimer   = RenderEnableDelayFrames;
+    dbgMessagef( "\nRender interpolation disabled." );
+}
+
+
+
+/// Enable interpolation (call in renderer before render begin/end functions)
+/// The enable doesn't take effect instantly, as doing the render trickery on the very first frame will crash the game.
+void rintRenderEnable( void ) {
+    if (renderTimer != 0)
+         renderTimer--;
+    else renderEnabled = TRUE;
 }
 
 
@@ -435,7 +464,7 @@ static bool     renderListReady = FALSE;
 
 
 /// Add mapping to the list
-static void generateInterpMapElement( SpaceObj* obj ) {
+static void generateRenderListElement( SpaceObj* obj ) {
     Interp* interp = interpFind( obj );
 
     if (interp)
@@ -446,14 +475,14 @@ static void generateInterpMapElement( SpaceObj* obj ) {
 
 
 
-/// The mapping of objects to interps only needs to be done once per frame.
+/// The mapping of objects to interps only needs to be done once per universe update.
 /// So generate the list just once on the first frame.
 static void generateRenderList( void ) {
     if (renderListReady)
         return;
 
     clearRenderMap();
-    iterateSpaceObjectsRender( generateInterpMapElement );
+    iterateSpaceObjectsRender( generateRenderListElement );
     renderListReady = TRUE;
 }
 
