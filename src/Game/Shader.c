@@ -364,8 +364,8 @@ void shDockLightColor(color c)
 void shTransformNormal(vector* out, vector* in, real32* m)
 {
     real32 ux, uy, uz;
-    real64 tx, ty, tz;
-    real64 len, scale;
+    real32 tx, ty, tz;
+    real32 len, scale;
 
     if (shNormalize)
     {
@@ -375,11 +375,11 @@ void shTransformNormal(vector* out, vector* in, real32* m)
         tx = ux*m[0] + uy*m[1] + uz*m[2];
         ty = ux*m[4] + uy*m[5] + uz*m[6];
         tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = sqrt(tx*tx + ty*ty + tz*tz);
-        scale = (len > 1E-30) ? (1.0 / len) : 1.0;
-        out->x = (real32)(tx*scale);
-        out->y = (real32)(ty*scale);
-        out->z = (real32)(tz*scale);
+        len = sqrtf(tx*tx + ty*ty + tz*tz);
+        scale = (len > 1E-30f) ? (1.0f / len) : 1.0f;
+        out->x = (tx*scale);
+        out->y = (ty*scale);
+        out->z = (tz*scale);
     }
     else
     {
@@ -406,8 +406,8 @@ void _shTransformNormal(vector* out, vector* in, real32* m, sdword normalize)
 
     if (normalize)
     {
-        real64 tx, ty, tz;
-        real64 len, scale;
+        real32 tx, ty, tz;
+        real32 len, scale;
 
         ux = in->x;
         uy = in->y;
@@ -415,11 +415,11 @@ void _shTransformNormal(vector* out, vector* in, real32* m, sdword normalize)
         tx = ux*m[0] + uy*m[1] + uz*m[2];
         ty = ux*m[4] + uy*m[5] + uz*m[6];
         tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = sqrt(tx*tx + ty*ty + tz*tz);
-        scale = (len > 1E-30) ? (1.0 / len) : 1.0;
-        out->x = (real32)(tx*scale);
-        out->y = (real32)(ty*scale);
-        out->z = (real32)(tz*scale);
+        len = sqrtf(tx*tx + ty*ty + tz*tz);
+        scale = (len > 1E-30f) ? (1.0f / len) : 1.0f;
+        out->x = (tx*scale);
+        out->y = (ty*scale);
+        out->z = (tz*scale);
     }
     else
     {
