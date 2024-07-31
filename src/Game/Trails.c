@@ -1884,16 +1884,11 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
 
     // Override the end of the trail so it matches the interpolated position. Temporarily.
     // Save previous values to avoid messing up the (universe update controlled) trail.
-    udword curIndex  = trail->iHead <= 0 ? trail->staticInfo->nSegments - 1 : trail->iHead - 1;
-    udword nextIndex = curIndex     <= 1 ? trail->staticInfo->nSegments - 1 : curIndex     - 1;
+    udword curIndex = trail->iHead <= 0 ? trail->staticInfo->nSegments - 1 : trail->iHead - 1;
     vector  saveCur;
-    vector  saveNext;
-    vector* cur  = &trail->segments[curIndex ].position;
-    vector* next = &trail->segments[nextIndex].position;
-    VECCOPY(&saveCur,  cur  );
-    VECCOPY(&saveNext, next );
-    VECCOPY(cur,  current);
-    VECCOPY(next, current);
+    vector* cur = &trail->segments[curIndex ].position;
+    VECCOPY(&saveCur, cur    );
+    VECCOPY(cur,      current);
 
     trailGetNozzleOffset(lastSegment.position, trail);
     trailGetCoordsys(lastSegment.rotation, trail);
@@ -1923,8 +1918,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
     mag = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
     if (mag < 0.001f)   //decision
     {
-        VECCOPY(cur,  &saveCur  );
-        VECCOPY(next, &saveNext );
+        VECCOPY(cur, &saveCur );
         return;
     }
 
@@ -2030,8 +2024,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         }
     }
 
-    VECCOPY(cur,  &saveCur  );
-    VECCOPY(next, &saveNext );
+    VECCOPY( cur, &saveCur );
 }
 
 /*-----------------------------------------------------------------------------
