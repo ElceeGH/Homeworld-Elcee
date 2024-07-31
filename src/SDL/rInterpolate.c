@@ -167,7 +167,6 @@ typedef struct Interp {
     vector    eprev;  ///< Previous uninterpolated engine position (ships only)
     vector    ecurr;  ///< Current  uninterpolated engine position (ships only)
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
-    bool      enable; ///< Disable interpolation if not set. For effect filtering.
 } Interp;
 
 #define InterpLimit 8192              ///< Number of interps allocated at a time
@@ -229,49 +228,44 @@ static Interp* interpMap( SpaceObj* obj ) {
 
 
 
-/// Space object callback
-typedef void(SpaceObjFunc)(SpaceObj*);
+/// Space object callbacks
+typedef void(SpaceObjIter  )(SpaceObj*);
+typedef bool(SpaceObjFilter)(SpaceObj*);
 
 /// Iterate over all space objects in the universe list
-static void iterateSpaceObjectsUniverse( SpaceObjFunc* callback ) {
+static void iterateSpaceObjectsUniverse( SpaceObjIter* iter, SpaceObjFilter filter ) {
     Node* node = universe.SpaceObjList.head;
     
     while (node != NULL) {
         SpaceObj* obj = (SpaceObj*) listGetStructOfNode(node);
         node = node->next;
-        callback( obj );
+
+        if (filter( obj ))
+            iter( obj );
     }
 }
 
-/// Iterate over all space objects in the universe list
-static void iterateSpaceObjectsRender( SpaceObjFunc* callback ) {
+/// Iterate over all space objects in the render list
+static void iterateSpaceObjectsRender( SpaceObjIter* iter, SpaceObjFilter filter ) {
     Node* node = universe.RenderList.head;
     
     while (node != NULL) {
         SpaceObj* obj = (SpaceObj*) listGetStructOfNode(node);
         node = node->next;
-        callback( obj );
+
+        if (filter( obj ))
+            iter( obj );
     }
 }
 
 
 
-/// Exclude objects which can't be interpolated without causing problems (hopping around visually).
-static void filterObjects() {
-    for (udword i=0; i<getLimit(); i++) {
-        Interp* interp = &interps[i];
-        
-        if (interp->exists && interp->obj) {
-            // Enable by default
-            interp->enable = TRUE;
-            
-            // For effects, only enable for effects which track other objects
-            if (interp->obj->objtype == OBJ_EffectType) {
-                Effect* effect = (Effect*) interp->obj;
-                interp->enable = 0 != (effect->flags & (SOF_AttachPosition | SOF_AttachVelocity));
-            }
-        }
-    }
+/// Decide whether the object should be interpolated.
+static bool filterInterpAllowed( SpaceObj* obj ) {
+    // Some effects shouldn't be interpolated.
+    if (obj->objtype == OBJ_EffectType)
+         return 0 != (((Effect*) obj)->flags & (SOF_AttachPosition | SOF_AttachVelocity));
+    else return TRUE;
 }
 
 
@@ -414,7 +408,7 @@ void rintClear( void ) {
 void rintUnivUpdatePreMove( void ) {
     updateTimeReference();
     clearExistFlags();
-    iterateSpaceObjectsUniverse( setPrevPos );
+    iterateSpaceObjectsUniverse( setPrevPos, filterInterpAllowed );
 }
 
 
@@ -423,9 +417,8 @@ void rintUnivUpdatePreMove( void ) {
 /// Post-destroy phase where nonexistent objects have been destroyed
 /// Last event before rendering begins
 void rintUnivUpdatePostDestroy( void ) {
-    iterateSpaceObjectsUniverse( setCurPosAndMarkExists );
+    iterateSpaceObjectsUniverse( setCurPosAndMarkExists, filterInterpAllowed );
     cleanInterps();
-    filterObjects();
     clearRenderMap(); // Must be last event, just before rendering!
 }
 
@@ -448,7 +441,6 @@ static void generateRenderListElement( SpaceObj* obj ) {
 
     if (interp)
     if (interp->obj)
-    if (interp->enable)
         *renderListEnd++ = interp;
 }
 
@@ -461,7 +453,7 @@ static void generateRenderList( void ) {
         return;
 
     clearRenderMap();
-    iterateSpaceObjectsRender( generateRenderListElement );
+    iterateSpaceObjectsRender( generateRenderListElement, filterInterpAllowed );
     renderListReady = TRUE;
 }
 
