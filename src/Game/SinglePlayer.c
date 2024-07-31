@@ -2668,7 +2668,7 @@ hyperspacefailed:
 
 static void SetOnMissionCompleteInfo(char *directory,char *field,void *dataToFillIn)
 {
-    char str[30];
+    char str[30] = {0};
     SinglePlayerGameInfo *info = (SinglePlayerGameInfo *)dataToFillIn;
 
     RemoveCommasFromString(field);
@@ -3490,7 +3490,7 @@ sdword WarpToLevelEnabled()
 {
     filehandle fh;
     char line[MAXLINENEED];
-    char tempbuf[30];
+    char tempbuf[30] = {0};
     sdword status;
     sdword warpLevel;
 
