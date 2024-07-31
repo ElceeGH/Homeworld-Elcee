@@ -257,42 +257,21 @@ static void iterateSpaceObjectsRender( SpaceObjFunc* callback ) {
 
 
 /// Exclude objects which can't be interpolated without causing problems (hopping around visually).
-/// This boils down to excluding all effects other than bullets.
-/// @todo It would be nice not to exclude effects attached to ships, to avoid jerky attachments in rare cases
 static void filterObjects() {
-    Effect*  allowList = malloc( InterpLimit * sizeof(Effect*) );
-    Effect** allowEnd  = allowList;
-
-    // First pass, disable all effects and mark bullet effects
-    for (udword i=0; i<interpCount; i++) {
+    for (udword i=0; i<getLimit(); i++) {
         Interp* interp = &interps[i];
         
         if (interp->exists && interp->obj) {
             // Enable by default
             interp->enable = TRUE;
             
-            // For effects, disable by default
-            if (interp->obj->objtype == OBJ_EffectType)
-                interp->enable = FALSE;
-
-            // For bullets, remember the linked effect
-            if (interp->obj->objtype == OBJ_BulletType) {
-                const Bullet* bullet = (Bullet*) interp->obj;
-                if (bullet->effect)
-                    *allowEnd++ = bullet->effect;
+            // For effects, only enable for effects which track other objects
+            if (interp->obj->objtype == OBJ_EffectType) {
+                Effect* effect = (Effect*) interp->obj;
+                interp->enable = 0 != (effect->flags & (SOF_AttachPosition | SOF_AttachVelocity));
             }
         }
     }
-
-    // Second pass, enable effects linked with bullets
-    for (Effect** allow=allowList; allow!=allowEnd; allow++) {
-        Interp* interp = interpFind( (SpaceObj*) *allow );
-        if (interp)
-            interp->enable = TRUE;
-    }
-
-    // Cleanup
-    free( allowList );
 }
 
 
