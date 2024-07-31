@@ -1739,7 +1739,7 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
     glShadeModel(GL_SMOOTH);
     rndAdditiveBlends(TRUE);
     glEnable(GL_BLEND);
-    glLineWidth( sqrtf(getResDensityRelative()) );
+    glLineWidth( 1.5f * sqrtf(getResDensityRelative()) );
     glBegin( GL_LINE_STRIP );
 
     color* const segmentArray = trail->staticInfo->segmentColor[teamIndex];
@@ -1789,7 +1789,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
     trailsegment lastSegment, currentSegment;
     trailstatic *trailStatic = trail->staticInfo;
     color *segmentArray;
-    real32 velratio, mag, maxvel;
+    real32 mag;
     bool dontdrawtrail = FALSE;
 
     Ship* ship = (Ship*)trail->vship;
@@ -1882,6 +1882,19 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         return;
     }
 
+    // Override the end of the trail so it matches the interpolated position. Temporarily.
+    // Save previous values to avoid messing up the (universe update controlled) trail.
+    udword curIndex  = trail->iHead <= 0 ? trail->staticInfo->nSegments - 1 : trail->iHead - 1;
+    udword nextIndex = curIndex     <= 1 ? trail->staticInfo->nSegments - 1 : curIndex     - 1;
+    vector  saveCur;
+    vector  saveNext;
+    vector* cur  = &trail->segments[curIndex ].position;
+    vector* next = &trail->segments[nextIndex].position;
+    VECCOPY(&saveCur,  cur  );
+    VECCOPY(&saveNext, next );
+    VECCOPY(cur,  current);
+    VECCOPY(next, current);
+
     trailGetNozzleOffset(lastSegment.position, trail);
     trailGetCoordsys(lastSegment.rotation, trail);
     trailGetTranslation(lastSegment.translation, trail);
@@ -1910,11 +1923,10 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
     mag = sqrtf(vecMagnitudeSquared(ship->posinfo.velocity));
     if (mag < 0.001f)   //decision
     {
+        VECCOPY(cur,  &saveCur  );
+        VECCOPY(next, &saveNext );
         return;
     }
-    maxvel = tacticsGetShipsMaxVelocity(ship);
-
-    velratio = mag / maxvel;
 
     dbgAssertOrIgnore(teamIndex >= 0 && teamIndex < MAX_MULTIPLAYER_PLAYERS);
 
@@ -1927,11 +1939,6 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
 
     segmentArray = trail->staticInfo->segmentColor[teamIndex];
 
-    if (velratio > VELRATIO_CUTOFF)
-    {
-        velratio = 1.0f;
-    }
-
     //actually display the trail now
     if (trail->nLength > 3)
     {
@@ -1940,12 +1947,6 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         vector verticals[40];
         bool   wides[40];
         sdword i, n;
-/*
-        real32 size = SIZE_MAJOR * velratio * NLipsScaleFactor;
-        real32 sizeinc = SIZE_INC * velratio * NLipsScaleFactor;
-        real32 sizeinc_inc = SIZEINC_INC * velratio * NLipsScaleFactor;
-        real32 sizemax = SIZE_MAXIMUM * NLipsScaleFactor;
-*/
 
         n = MIN2(38, trail->nLength);
 
@@ -1953,7 +1954,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         {
             trailPositions(n, segments, horizontals, verticals, trail);
             VECCOPY(&horizontals[0], &horizontals[1]);
-            VECCOPY(&verticals[0], &verticals[1]);
+            VECCOPY(&verticals[0],   &verticals[1]);
         }
         else
         {
@@ -2028,6 +2029,9 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
             trail->lastvelsquared = vecMagnitudeSquared(ship->posinfo.velocity);
         }
     }
+
+    VECCOPY(cur,  &saveCur  );
+    VECCOPY(next, &saveNext );
 }
 
 /*-----------------------------------------------------------------------------

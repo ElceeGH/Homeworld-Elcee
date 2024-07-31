@@ -46,8 +46,8 @@ static TimingData updateTiming;
 static TimingData frameTiming;
 static real32     fraction;
 static udword     updateEnabled = TRUE;  ///< Managed by config
-static udword     renderTimer   = 0;
 static udword     renderEnabled = FALSE; ///< Managed automatically
+static udword     renderTimer   = 0;     ///< Render enable delay timer
 
 
 
