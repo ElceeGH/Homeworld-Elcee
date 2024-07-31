@@ -1753,8 +1753,11 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
         const ubyte  alpha    = (ubyte)(255.0f * fraction);
         const color  col      = segmentArray[ count ];
 
-        glColor4ub(colRed(col), colGreen(col), colBlue(col), alpha );
-        glVertex3fv( &trail->segments[index].position.x );
+        glColor4ub( colRed(col), colGreen(col), colBlue(col), alpha );
+
+        if (count == 0)
+             glVertex3fv( &current->x );
+        else glVertex3fv( &trail->segments[index].position.x );
 
         index = (index <= 0 ? limit : index) - 1;
         if (index == trail->iHead)

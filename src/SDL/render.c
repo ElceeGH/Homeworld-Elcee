@@ -3098,7 +3098,7 @@ renderDefault:
                         if (mis->trail != NULL)
                         {
                             playerIndex = (sdword)mis->playerowner->playerIndex;
-                            mistrailDraw(&mis->enginePosition, mis->trail, spaceobj->currentLOD, mis->colorScheme);
+                            mistrailDraw(&mis->posinfo.position, mis->trail, spaceobj->currentLOD, mis->colorScheme);
                         }
                     }
                 }
