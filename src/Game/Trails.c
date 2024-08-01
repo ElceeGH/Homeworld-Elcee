@@ -1734,41 +1734,41 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
     if (trail->nLength < 1)
         return;
 
+    glLineWidth( 1.5f * sqrtf(getResDensityRelative()) );
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
     glShadeModel(GL_SMOOTH);
     rndAdditiveBlends(TRUE);
     glEnable(GL_BLEND);
-    glLineWidth( 1.5f * sqrtf(getResDensityRelative()) );
     glBegin( GL_LINE_STRIP );
 
     color* const segmentArray = trail->staticInfo->segmentColor[teamIndex];
     const sdword segmentCount = trail->staticInfo->nSegments;
     const sdword limit        = min( trail->nLength, segmentCount );
     sdword       index        = (trail->iHead <= 0 ? limit : trail->iHead) - 1;
-
-    for (sdword count=0; count<limit; count++)
+    
+    for (sdword i=0; i<limit; i++)
     {
-        const real32 fraction = 1.0f - (real32)count / (real32)limit;
+        const real32 fraction = 1.0f - (real32)i / (real32)limit;
         const ubyte  alpha    = (ubyte)(255.0f * fraction);
-        const color  col      = segmentArray[ count ];
-
+        const color  col      = segmentArray[ i ];
+    
         glColor4ub( colRed(col), colGreen(col), colBlue(col), alpha );
-
-        if (count == 0)
+    
+        if (i == 0)
              glVertex3fv( &current->x );
         else glVertex3fv( &trail->segments[index].position.x );
-
+    
         index = (index <= 0 ? limit : index) - 1;
         if (index == trail->iHead)
             break;
     }
 
     glEnd();
-    glLineWidth(1.0f);
     rndLightingEnable(TRUE);
     glDisable(GL_BLEND);
     rndAdditiveBlends(FALSE);
+    glLineWidth(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
