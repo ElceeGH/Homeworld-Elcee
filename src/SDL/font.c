@@ -579,7 +579,6 @@ bool glfontDisplayString(fontheader* font, char* string, sdword x, sdword y, col
     if (!blendOn) glEnable(GL_BLEND);
     if (alphatestOn) glDisable(GL_ALPHA_TEST);
     rndAdditiveBlends(FALSE);
-    rndPerspectiveCorrection(FALSE);
     glShadeModel(GL_FLAT);
     rndTextureEnvironment(RTE_Modulate);
 

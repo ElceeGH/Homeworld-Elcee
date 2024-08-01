@@ -1313,7 +1313,6 @@ void btgRender()
     glUseProgram( 0 );
 
     //stars
-    rndPerspectiveCorrection(FALSE);
     rndAdditiveBlends(TRUE);
 
     trClearCurrent();

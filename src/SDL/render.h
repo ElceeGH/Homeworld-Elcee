@@ -127,17 +127,15 @@ void rndBackgroundRender(real32 radius, Camera *camera, bool bDrawStars);
 DECLARE_TASK(rndRenderTask);
 
 //enable certain renderer options
-void rndHintInc(void);
-void rndBackFaceCullEnable(sdword bEnable);
+void   rndBackFaceCullEnable(sdword bEnable);
 sdword rndLightingEnable(sdword bEnable);
 sdword rndTextureEnable(sdword bEnable);
-void rndBillboardEnable(vector *centre);
-void rndBillboardDisable(void);
+void   rndBillboardEnable(vector *centre);
+void   rndBillboardDisable(void);
 udword rndTextureEnvironment(udword mode);
-sdword rndPerspectiveCorrection(sdword bEnable);
 sdword rndNormalizeEnable(sdword bEnable);
 sdword rndAdditiveBlends(sdword bAdditive);
-void rndSetClearColor(color c);
+void   rndSetClearColor(color c);
 
 real32 rndComputeOverlap(Ship* ship, real32 scalar);
 

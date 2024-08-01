@@ -1130,7 +1130,6 @@ void spScenarioBitmap(featom *atom, regionhandle region)
     if (scenarioTexture != TR_InvalidInternalHandle)
     {
         trRGBTextureMakeCurrent(scenarioTexture);
-        rndPerspectiveCorrection(FALSE);
         primRectSolidTextured2(&textureRect);               //draw the bitmap
         feStaticRectangleDraw(region);                      //draw a border
     }

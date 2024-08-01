@@ -89,7 +89,6 @@
 
 #define SHOW_TRAIL_STATS      0
 #define RND_WILL_PANIC        0
-#define USE_RND_HINT          0
 #define WILL_TWO_PASS         0
 #define DISABLE_RANDOM_STARS  0     // turn off drawing of random stars over background
 
@@ -175,7 +174,6 @@ udword rndTextureEnviron = RTE_Modulate;
 bool rndAdditiveBlending   = FALSE;
 bool rndLightingEnabled    = TRUE;
 bool rndNormalization      = FALSE;
-bool rndPerspectiveCorrect = FALSE;
 bool rndScissorEnabled     = FALSE;
 bool rndTextureEnabled     = FALSE;
 
@@ -2487,7 +2485,6 @@ void rndMainViewRenderFunction(Camera *camera)
         spaceobj = (SpaceObj *)listGetStructOfNode(objnode);
 
         g_WireframeHack = FALSE;
-        rndPerspectiveCorrection(FALSE);
 
         switch (spaceobj->objtype)
         {
@@ -2690,11 +2687,6 @@ dontdraw2:;
 
                                     if (!result)
                                     {
-                                        if (spaceobj->currentLOD == 0)
-                                        {
-                                            rndPerspectiveCorrection(TRUE);
-                                        }
-
                                         meshRenders++;
 
                                         if (rndInsideShip(spaceobj, camera))
@@ -2795,8 +2787,6 @@ dontdraw2:;
                                             }
                                             spaceobj->renderedLODs |= (1 << spaceobj->currentLOD);
 
-                                            rndPerspectiveCorrection(FALSE);
-
                                             //navlights
                                             if (!bitTest(spaceobj->flags, SOF_Cloaked))
                                             {
@@ -2894,8 +2884,6 @@ dontdraw2:;
                                 }
                             }
                         }
-
-                        rndPerspectiveCorrection(FALSE);
 
                         rndFade(spaceobj, camera);
                         if (!bitTest(spaceobj->flags, SOF_Cloaked) || (((Ship*)spaceobj)->playerowner == universe.curPlayerPtr) || proximityCanPlayerSeeShip(universe.curPlayerPtr,(Ship*)spaceobj))
@@ -3028,11 +3016,6 @@ renderDefault:
                                 if (rndShipVisible(spaceobj, camera))
                                 {
                                     rndFade(spaceobj, camera);
-
-                                    if (spaceobj->currentLOD == 0)
-                                    {
-                                        rndPerspectiveCorrection(TRUE);
-                                    }
                                     rndGLStateLog("Before Derelict");
                                     meshRenders++;
                                     meshRender((meshdata *)level->pData,colorScheme);
@@ -3043,8 +3026,6 @@ renderDefault:
                                     {
                                         RenderNAVLights((Ship*)spaceobj);
                                     }
-
-                                    rndPerspectiveCorrection(FALSE);
 #if DEBUG_VERBOSE_SHIP_STATS
                                     if (rndDisplayFrameRate)
                                     {
@@ -3154,11 +3135,7 @@ renderDefault:
 
     //hyperspace
     hsStaticRender();
-
     alodAdjustScaleFactor();
-
-    rndPerspectiveCorrection(FALSE);
-
     nebRender();
 
     if (rndPostObjectCallback != NULL)
@@ -4011,7 +3988,7 @@ DEFINE_TASK(rndRenderTask)
 
 /*-----------------------------------------------------------------------------
     Name        : rndLightingEnable
-    Description : Enable or disable back-face culling
+    Description : Enable or disable lighting
     Inputs      : bEnable - TRUE enables, FALSE disables
     Outputs     : just calls glEnable/glDisable
     Return      : void
@@ -4109,55 +4086,6 @@ udword rndTextureEnvironment(udword textureMode)
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : rndPerspectiveCorrection
-    Description : provides a hint to the GL as to whether to perspectively correct textures
-    Inputs      : bEnable - TRUE enables (NICEST), FALSE disables (FASTEST)
-    Outputs     : may toggle rndPerspectiveCorrect
-    Return      : previous status
-----------------------------------------------------------------------------*/
-sdword rndPerspectiveCorrection(sdword bEnable)
-{
-    sdword oldStatus = rndPerspectiveCorrect;
-#if USE_RND_HINT
-    if (rndHint > 0)
-    {
-        if (rndHint == 1)
-        {
-            glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-            rndPerspectiveCorrect = TRUE;
-        }
-        else
-        {
-            glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-            rndPerspectiveCorrect = FALSE;
-        }
-        return(oldStatus);
-    }
-#endif
-    if (mainNoPerspective)
-    {
-        return(oldStatus);
-    }
-    if (bEnable)
-    {
-        if (!rndPerspectiveCorrect)
-        {
-            glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-            rndPerspectiveCorrect = TRUE;
-        }
-    }
-    else
-    {
-        if (rndPerspectiveCorrect)
-        {
-            glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-            rndPerspectiveCorrect = FALSE;
-        }
-    }
-    return(oldStatus);
-}
-
-/*-----------------------------------------------------------------------------
     Name        : rndNormalizeEnable
     Description : enables or disables normalization
     Inputs      : bEnable - TRUE enables, FALSE disables
@@ -4178,21 +4106,6 @@ sdword rndNormalizeEnable(sdword bEnable)
         rndNormalization = FALSE;
     }
     return(oldStatus);
-}
-
-/*-----------------------------------------------------------------------------
-    Name        : rndHintInc
-    Description : changes the glHint mode of operation
-    Inputs      :
-    Outputs     : alters rndHint
-    Return      :
-----------------------------------------------------------------------------*/
-void rndHintInc()
-{
-#if USE_RND_HINT
-    rndHint++;
-    if (rndHint >= 3) rndHint = 0;
-#endif
 }
 
 /*-----------------------------------------------------------------------------
@@ -4374,21 +4287,6 @@ void rndEnvironmentMapConvex(vector* camera, vector* A, vector* B, vector* C,
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : rndSetScreenFill
-    Description : set a flag to fill the screen entirely with a rectangle of
-                  specified colour immediately before the next Flush
-    Inputs      : count - number of frames for fill to occur
-                  c - color to fill screen with
-    Outputs     : globals are set
-    Return      :
------------------------------------------------------------------------------*/
-void rndSetScreenFill(sdword count, color c)
-{
-    rndFillCounter = count;
-    rndFillColour = c;
-}
-
-/*-----------------------------------------------------------------------------
     Name        : rndSetClearColor
     Description : set the background clear color, if such a thing is supported by
                   underlying GL
@@ -4408,17 +4306,6 @@ void rndSetClearColor(color c)
 }
 
 
-
-static real32 lineWidthLast = -1.0f;
-void rndSetLineWidth( real32 width ) {
-    if (lineWidthLast == -1.0f)
-        glGetFloatv( GL_LINE_WIDTH, &lineWidthLast );
-
-    float ret = lineWidthLast;
-    glLineWidth( width );
-    lineWidthLast = width;
-}
-
 /*-----------------------------------------------------------------------------
     Name        : rndResetGLState
     Description : reset the GL's state after switching renderers
@@ -4431,59 +4318,30 @@ void rndResetGLState(void)
     trClearCurrent();
 
     if (rndAdditiveBlending)
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    }
-    else
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    else glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     rndAdditiveBlends(rndAdditiveBlending);
 
     if (rndNormalization)
-    {
-        glEnable(GL_NORMALIZE);
-    }
-    else
-    {
-        glDisable(GL_NORMALIZE);
-    }
+         glEnable (GL_NORMALIZE);
+    else glDisable(GL_NORMALIZE);
+    
     rndNormalizeEnable(rndNormalization);
-
-    if (rndPerspectiveCorrect)
-    {
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-    }
-    else
-    {
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-    }
-    rndPerspectiveCorrection(rndPerspectiveCorrect);
-
     rndTextureEnvironment(RTE_Modulate);
 
     if (rndTextureEnabled)
-    {
-        glEnable(GL_TEXTURE_2D);
-    }
-    else
-    {
-        glDisable(GL_TEXTURE_2D);
-    }
+         glEnable (GL_TEXTURE_2D);
+    else glDisable(GL_TEXTURE_2D);
+    
     rndTextureEnable(rndTextureEnabled);
-
     rndBackFaceCullEnable(TRUE);
 
     if (rndLightingEnabled)
-    {
-        glEnable(GL_LIGHTING);
-    }
-    else
-    {
-        glDisable(GL_LIGHTING);
-    }
-    rndLightingEnable(rndLightingEnabled);
+         glEnable (GL_LIGHTING);
+    else glDisable(GL_LIGHTING);
 
+    rndLightingEnable(rndLightingEnabled);
     rndSetClearColor(colBlack);
 }
 
