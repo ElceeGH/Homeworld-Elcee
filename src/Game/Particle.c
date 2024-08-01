@@ -1458,16 +1458,18 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
         handleIllum(p);
         rndAdditiveBlends( bitTest(p->flags,PART_ADDITIVE) );
 
-        glLineWidth(p->scale * resScaling);
+        // Give lines resolution scaling, but also thin them out based on length.
+        // Note: this is worldspace length.
+        real32 lineWidth  = p->scale * resScaling;
+        real32 lineThresh = lineWidth * 64.0f;
+        real32 lineShrink = p->length<lineWidth ?  p->length/lineWidth  :  1.0f;
+        glLineWidth(lineWidth * lineShrink);
+
         glBegin(GL_LINES);
         if (alpha)
-        {
-            glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
-        }
-        else
-        {
-            glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
-        }
+             glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
+        else glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
+        
         vector pos = p->position;
         if (bitTest(flags, PART_WORLDSPACE))
         {
