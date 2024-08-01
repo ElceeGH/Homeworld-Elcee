@@ -41,6 +41,7 @@
 #include "UnivUpdate.h"
 #include "utility.h"
 #include "miscUtil.h"
+#include "rInterpolate.h"
 
 #ifdef GENERIC_ETGCALLFUNCTION
 #ifdef _MACOSX_FIX_MISC
@@ -2370,11 +2371,12 @@ void etgEffectDraw(Effect *effect)
         if (effect->particleBlock[index] != NULL)
         {
             part = (pointSystem *)effect->particleBlock[index];
-            timeElapsed = universe.totaltimeelapsed - part->lastUpdated;
+            real32 timeRef = universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
+            timeElapsed = timeRef - part->lastUpdated;
             if (timeElapsed >= 0)
             {
 				partUpdateSystem((psysPtr)effect->particleBlock[index], timeElapsed, &velInverse); //update the particle
-                part->lastUpdated = universe.totaltimeelapsed;
+                part->lastUpdated = timeRef;
             }
 
             if (bitTest(part->flags, PART_WORLDSPACE))
