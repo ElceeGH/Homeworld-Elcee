@@ -69,6 +69,7 @@
 #include "Teams.h"
 #include "texreg.h"
 #include "Tracking.h"
+#include "Trails.h"
 #include "Tutor.h"
 #include "Tweak.h"
 #include "Universe.h"
@@ -78,6 +79,7 @@
 #include "rResScaling.h"
 #include "rShaderProgram.h"
 #include "rInterpolate.h"
+
 
 
 #define DEBUG_COLLISIONS            0
@@ -2887,17 +2889,14 @@ dontdraw2:;
 
                         rndFade(spaceobj, camera);
                         if (!bitTest(spaceobj->flags, SOF_Cloaked) || (((Ship*)spaceobj)->playerowner == universe.curPlayerPtr) || proximityCanPlayerSeeShip(universe.curPlayerPtr,(Ship*)spaceobj))
-
                         {
-                            udword idx;
-                            for (idx = 0; idx < MAX_NUM_TRAILS; idx++)
-                            {
-                                if (((Ship*)spaceobj)->trail[idx] != NULL)
-                                {
-                                    trailDraw(&((Ship*)spaceobj)->enginePosition,
-                                              ((Ship*)spaceobj)->trail[idx],
-                                              spaceobj->currentLOD,
-                                              ((Ship *)spaceobj)->colorScheme);
+                            for (udword idx = 0; idx < MAX_NUM_TRAILS; idx++) {
+                                Ship*      ship  = (Ship*)spaceobj;
+                                shiptrail* trail = ship->trail[idx];
+                                if (trail != NULL) {
+                                    vector nozzleOffset = ((ShipStaticInfo*)ship->staticinfo)->engineNozzleOffset[trail->trailNum];
+                                    trailInplaceShipToWorld( &nozzleOffset.x, &ship->rotinfo.coordsys.m11, &ship->posinfo.position.x);
+                                    trailDraw(&nozzleOffset, trail, ship->currentLOD, ship->colorScheme);
                                 }
                             }
                         }

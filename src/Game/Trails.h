@@ -164,4 +164,7 @@ void trailRecolorize(trailstatic *trailStatic);
 void trailsRecolorize(void);
 void mistrailsRecolorize(void);
 
+// Trail transform helper
+void trailInplaceShipToWorld(real32* vec, real32* coordsys, real32* position);
+
 #endif
