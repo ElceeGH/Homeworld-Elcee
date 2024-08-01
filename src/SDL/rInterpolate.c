@@ -45,7 +45,7 @@ typedef struct TimingData {
 static TimingData updateTiming;
 static TimingData frameTiming;
 static real32     fraction;
-static udword     updateEnabled = TRUE;  ///< Managed by config
+static udword     updateEnabled = TRUE;  ///< Managed by config, master enable
 static udword     renderEnabled = FALSE; ///< Managed automatically
 static udword     renderTimer   = 0;     ///< Render enable delay timer
 
@@ -105,13 +105,6 @@ static void updateTimeFraction(void) {
 
 
 
-/// Current interpolation value for rendering.
-static real32 getFraction(void) {
-    return fraction;
-}
-
-
-
 /// Signed saturated dot product of normalised vectors.
 static real32 unitDotProductClamped( vector a, vector b ) {
     vecNormalize( &a );
@@ -121,6 +114,7 @@ static real32 unitDotProductClamped( vector a, vector b ) {
     dot = max( dot, -1.0f );
     return dot;
 }
+
 
 
 /// Interpolate a position.
@@ -169,7 +163,7 @@ typedef struct Interp {
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
 } Interp;
 
-#define InterpLimit 8192              ///< Number of interps allocated at a time
+#define InterpLimit 4096              ///< Number of interps allocated at a time
 static udword interpCount;            ///< Current count
 static udword interpPeak;             ///< Highest count so far
 static Interp interps[ InterpLimit ]; ///< Interpolation items
@@ -208,8 +202,8 @@ static void interpCreate( Interp* interp, SpaceObj* obj ) {
 /// Destroy an interp object
 static void interpDestroy( Interp* interp ) {
     interpCount--;
-    //printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
     memset( interp, 0x00, sizeof(*interp) );
+    //printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
 }
 
 
@@ -262,10 +256,23 @@ static void iterateSpaceObjectsRender( SpaceObjIter* iter, SpaceObjFilter filter
 
 /// Decide whether the object should be interpolated.
 static bool filterInterpAllowed( SpaceObj* obj ) {
-    // Some effects shouldn't be interpolated.
-    if (obj->objtype == OBJ_EffectType)
-         return 0 != (((Effect*) obj)->flags & (SOF_AttachPosition | SOF_AttachVelocity));
-    else return TRUE;
+    switch (obj->objtype) {
+        // Some effects shouldn't be interpolated, since they don't move.
+        case OBJ_EffectType:
+            return 0 != (((Effect*) obj)->flags & (SOF_AttachPosition | SOF_AttachVelocity));
+
+        // Some types of objects just never move.
+        case OBJ_AsteroidType:
+        case OBJ_DerelictType:
+        case OBJ_NebulaType:
+        case OBJ_GasType:
+        case OBJ_DustType:
+            return FALSE;
+
+        // That leaves bullets, ships and missiles.
+        default:
+            return TRUE;
+    }
 }
 
 
@@ -289,7 +296,8 @@ static void cleanInterps(void) {
 
 
 /// Set the previous position
-static void setPrevPos( SpaceObj* obj ) {
+/// Adds objects to the interp list.
+static void setPrevPosAndAdd( SpaceObj* obj ) {
     Interp* interp = interpMap( obj );
     interp->pprev  = obj->posinfo.position;
 
@@ -302,8 +310,13 @@ static void setPrevPos( SpaceObj* obj ) {
 
 
 /// Set the current position and mark it as alive
+/// DOES NOT add objects to the interp list, since it can create visual artifacts if they don't have the previous values to lerp from.
 static void setCurPosAndMarkExists( SpaceObj* obj ) {
-    Interp* interp = interpMap( obj );
+    Interp* interp = interpFind( obj );
+
+    if (interp == NULL)
+        return;
+
     interp->pcurr  = obj->posinfo.position;
     interp->exists = TRUE;
 
@@ -320,7 +333,7 @@ static void interpolatePosition( const Interp* interp ) {
     SpaceObj*    obj = interp->obj;
     const vector pa  = interp->pprev;
     const vector pb  = interp->pcurr;
-    const real32 f   = getFraction();
+    const real32 f   = rintFraction();
     obj->posinfo.position = lerp( pa, pb, f );
 
     if (obj->objtype == OBJ_ShipType) {
@@ -374,18 +387,29 @@ void rintInit( void ) {
 
 
 
-/// Disable interpolation (call when starting a new game)
+/// Get the interpolation factor (0:1 inclusive)
+/// If interpolation is disabled, returns the fixed value 1.
+real32 rintFraction( void ) {
+    if (updateEnabled)
+         return fraction;
+    else return 1.0f;
+}
+
+
+
+/// Disable interpolation temporarily during rendering. Call when starting/loading a new game.
+/// If it's enabled on the very first frame, things will go to hell.
 void rintRenderDisable( void ) {
+    rintClear();
     renderEnabled = FALSE;
     renderTimer   = RenderEnableDelayFrames;
-    dbgMessagef( "\nRender interpolation disabled." );
 }
 
 
 
 /// Enable interpolation (call in renderer before render begin/end functions)
-/// The enable doesn't take effect instantly, as doing the render trickery on the very first frame will crash the game.
-void rintRenderEnable( void ) {
+/// The enable doesn't take effect instantly, as doing the interpolation trickery on the very first frame will crash the game.
+void rintRenderEnableDeferred( void ) {
     if (renderTimer != 0)
          renderTimer--;
     else renderEnabled = TRUE;
@@ -395,7 +419,6 @@ void rintRenderEnable( void ) {
 
 /// Clear all interpolation objects to empty
 void rintClear( void ) {
-    printf( "interpClear()\n" );
     memset( interps, 0x00, sizeof(interps) );
     interpCount = 0;
     interpPeak  = 0;
@@ -408,7 +431,7 @@ void rintClear( void ) {
 void rintUnivUpdatePreMove( void ) {
     updateTimeReference();
     clearExistFlags();
-    iterateSpaceObjectsUniverse( setPrevPos, filterInterpAllowed );
+    iterateSpaceObjectsUniverse( setPrevPosAndAdd, filterInterpAllowed );
 }
 
 
