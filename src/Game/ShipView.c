@@ -34,6 +34,7 @@
 #include "Types.h"
 #include "Tweak.h"
 #include "Universe.h"
+#include "rInterpolate.h"
 
 
 /*=============================================================================
@@ -379,6 +380,9 @@ void svShipViewRender(featom* atom, regionhandle region)
 
     if(svShipType != DefaultShip)
     {
+        // Use interpolated time to make the movement smooth at all framerates
+        real32 timeRef = universe.totaltimeelapsed + rintFraction() * UNIVERSE_UPDATE_PERIOD;
+
         svCamera.closestZoom = info->minimumZoomDistance*svZoomInScalar;
         svCamera.farthestZoom = (svCamera.closestZoom+info->staticheader.staticCollInfo.approxcollspheresize)*svZoomOutScalar;
         if(ReZoom)
@@ -405,12 +409,12 @@ void svShipViewRender(featom* atom, regionhandle region)
             // keep track of where the user left the camera so we can sync auto-rotation with it
             angle_user_rotated_to       = svCamera.angle;
             declination_user_rotated_to = svCamera.declination;
-            time_user_rotated_view      = universe.totaltimeelapsed;
+            time_user_rotated_view      = timeRef;
         }
         else // auto rotate ship model
         {
             // continual 360 degree yaw rotation
-            real_time_angle = DEG_TO_RAD(remainderf(universe.totaltimeelapsed, SV_360_ROTATION_SECS) / SV_360_ROTATION_SECS * 360.0f);
+            real_time_angle = DEG_TO_RAD(remainderf(timeRef, SV_360_ROTATION_SECS) / SV_360_ROTATION_SECS * 360.0f);
 
             if (angle_user_rotated_to >= 0.0) {
                 user_real_angle_offset = angle_user_rotated_to - real_time_angle;
@@ -421,20 +425,21 @@ void svShipViewRender(featom* atom, regionhandle region)
             
             // collapse pitch to default declination
             if (time_user_rotated_view > 0.0) {
-                if (universe.totaltimeelapsed > time_user_rotated_view + SV_PITCH_FLATTEN_SECS) {
+                if (timeRef > time_user_rotated_view + SV_PITCH_FLATTEN_SECS) {
                     svCamera.declination = DEG_TO_RAD(svDeclination);
                     time_user_rotated_view = 0.0;
                 }
                 else {
-                    svCamera.declination = declination_user_rotated_to + (DEG_TO_RAD(svDeclination) - declination_user_rotated_to) * ((universe.totaltimeelapsed - time_user_rotated_view) / SV_PITCH_FLATTEN_SECS);
+                    svCamera.declination = declination_user_rotated_to + (DEG_TO_RAD(svDeclination) - declination_user_rotated_to) * ((timeRef - time_user_rotated_view) / SV_PITCH_FLATTEN_SECS);
                 }
             }
             
-            if (svMouseInside) mouseCursorShow();
+            if (svMouseInside)
+                mouseCursorShow();
         }
     }
-    //rotation
 
+    //rotation
     drawRect.x0 = rect->x0 + SV_ViewMargin;
     drawRect.y0 = rect->y0 + SV_ViewMargin;
     drawRect.x1 = rect->x1 - SV_ViewMargin;
@@ -488,22 +493,16 @@ void svShipViewRender(featom* atom, regionhandle region)
         svCamera.clipPlaneFar);
 
     glMatrixMode(GL_MODELVIEW);
-
     glLoadIdentity();
-
     rgluLookAt( svCamera.eyeposition, svCamera.lookatpoint, svCamera.upvector );
-
     glPushMatrix();
-
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
 
     glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
     glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     glEnable(GL_NORMALIZE);
-
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);      //position light(s) within world
-
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);      //position light(s) within 
     glScalef(scale, scale, scale);
 
     if (svShipType != DefaultShip)
@@ -534,14 +533,11 @@ void svShipViewRender(featom* atom, regionhandle region)
     }
 
     glDisable(GL_NORMALIZE);
-
     glPopMatrix();
-
     primModeSet2();
 
     glScissor(box[0], box[1], box[2], box[3]);
     glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
-
     rndLightingEnable(FALSE);
 
     x = rect->x0 + 2 + SV_ViewMargin;
