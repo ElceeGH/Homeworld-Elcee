@@ -213,7 +213,7 @@ char networkVersion[MAX_NETWORKVERSION_STRING_LEN] =   "HomeworldV1C";
 #if defined(HW_GAME_RAIDER_RETREAT)
 char minorBuildVersion[] = "051";
 #else
-char minorBuildVersion[] = "06.1";
+char minorBuildVersion[] = "06.1 SDL-Elcee";
 #endif
 char languageVersion[50] = "";    // constructed at beginning of program
 
