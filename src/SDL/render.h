@@ -25,11 +25,11 @@
     #define RND_CAMERA_OFFSET       1    // offset camera by a certain amount to avoid lighting problems
     #define RND_DOCKLIGHT_TWEAK     0    // allow adjusting (and printing) of dock lights
     #define RND_ERROR_CHECKING      1    // basic error checking
-    #define RND_FRAME_RATE          1    // display frame rate
-    #define RND_GL_STATE_DEBUG      1    // dump the GL state to a file
-    #define RND_GL_STATE_WINDOW     1    // dump the GL state to debug window
-    #define RND_PLUG_DISABLEABLE    1    // can disable the shameless plug
-    #define RND_POLY_STATS          1    // display polygon stats
+    #define RND_FRAME_RATE          0    // display frame rate
+    #define RND_GL_STATE_DEBUG      0    // dump the GL state to a file
+    #define RND_GL_STATE_WINDOW     0    // dump the GL state to debug window
+    #define RND_PLUG_DISABLEABLE    0    // can disable the shameless plug
+    #define RND_POLY_STATS          0    // display polygon stats
     #define RND_SCALECAP_TWEAK      0    // allow adjusting (and printing) of the scaling cap crap
     #define RND_VERBOSE_LEVEL       1    // control verbose printing
     #define RND_VISUALIZATION       1    // enable special visualization options
