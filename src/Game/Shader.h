@@ -33,7 +33,6 @@ void shStartup(void);
 void shShutdown(void);
 void shTransformNormal(vector* out, vector* in, real32* m);
 void shTransformVertex(vector* out, vector* in, real32* m);
-real32 shPow(real32 a, real32 b);
 void shSpecularColour(sdword specInd, sdword side, vector* vobj, vector* norm,
                       ubyte* color, real32* m, real32* minv);
 void shColour(sdword side, vector* norm, ubyte* color, real32* minv);

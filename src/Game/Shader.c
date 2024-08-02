@@ -352,44 +352,18 @@ void shDockLightColor(color c)
     shDockScalarBlue  = colReal32(colBlue (c));
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : shTransformNormal
-    Description : transforms and normalizes a normal by provided matrix
-    Inputs      : out - output normal
-                  in - input normal
-                  m - the matrix with which to transform the normal by
-    Outputs     : out contains the resultant normal
-    Return      :
-----------------------------------------------------------------------------*/
-void shTransformNormal(vector* out, vector* in, real32* m)
-{
-    real32 ux, uy, uz;
-    real32 tx, ty, tz;
-    real32 len, scale;
 
-    if (shNormalize)
-    {
-        ux = in->x;
-        uy = in->y;
-        uz = in->z;
-        tx = ux*m[0] + uy*m[1] + uz*m[2];
-        ty = ux*m[4] + uy*m[5] + uz*m[6];
-        tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = sqrtf(tx*tx + ty*ty + tz*tz);
-        scale = (len > 1E-30f) ? (1.0f / len) : 1.0f;
-        out->x = (tx*scale);
-        out->y = (ty*scale);
-        out->z = (tz*scale);
-    }
-    else
-    {
-        ux = in->x;
-        uy = in->y;
-        uz = in->z;
-        out->x = ux*m[0] + uy*m[1] + uz*m[2];
-        out->y = ux*m[4] + uy*m[5] + uz*m[6];
-        out->z = ux*m[8] + uy*m[9] + uz*m[10];
-    }
+// Fast reciprocal square root.
+// This gets called a huge amount.
+static real32 rsqrtSSE2( real32 value ) {
+    if (value <= 1E-30f)
+        return 1.0f;
+
+    __m128 v128  = _mm_set_ss( value );
+    __m128 rsqrt = _mm_rsqrt_ss( v128 );
+    real32 result;
+    _mm_store_ss(&result, rsqrt);
+    return result;
 }
 
 /*-----------------------------------------------------------------------------
@@ -402,34 +376,43 @@ void shTransformNormal(vector* out, vector* in, real32* m)
 ----------------------------------------------------------------------------*/
 void _shTransformNormal(vector* out, vector* in, real32* m, sdword normalize)
 {
-    real32 ux, uy, uz;
-
     if (normalize)
     {
-        real32 tx, ty, tz;
-        real32 len, scale;
-
-        ux = in->x;
-        uy = in->y;
-        uz = in->z;
-        tx = ux*m[0] + uy*m[1] + uz*m[2];
-        ty = ux*m[4] + uy*m[5] + uz*m[6];
-        tz = ux*m[8] + uy*m[9] + uz*m[10];
-        len = sqrtf(tx*tx + ty*ty + tz*tz);
-        scale = (len > 1E-30f) ? (1.0f / len) : 1.0f;
+        real32 ux    = in->x;
+        real32 uy    = in->y;
+        real32 uz    = in->z;
+        real32 tx    = ux*m[0] + uy*m[1] + uz*m[2];
+        real32 ty    = ux*m[4] + uy*m[5] + uz*m[6];
+        real32 tz    = ux*m[8] + uy*m[9] + uz*m[10];
+        real32 dot   = tx*tx + ty*ty + tz*tz;
+        real32 scale = rsqrtSSE2( dot );
         out->x = (tx*scale);
         out->y = (ty*scale);
         out->z = (tz*scale);
     }
     else
     {
-        ux = in->x;
-        uy = in->y;
-        uz = in->z;
+        real32 ux = in->x;
+        real32 uy = in->y;
+        real32 uz = in->z;
         out->x = ux*m[0] + uy*m[1] + uz*m[2];
         out->y = ux*m[4] + uy*m[5] + uz*m[6];
         out->z = ux*m[8] + uy*m[9] + uz*m[10];
     }
+}
+
+/*-----------------------------------------------------------------------------
+    Name        : shTransformNormal
+    Description : transforms and normalizes a normal by provided matrix
+    Inputs      : out - output normal
+                  in - input normal
+                  m - the matrix with which to transform the normal by
+    Outputs     : out contains the resultant normal
+    Return      :
+----------------------------------------------------------------------------*/
+void shTransformNormal(vector* out, vector* in, real32* m)
+{
+    _shTransformNormal( out, in, m, shNormalize );
 }
 
 /*-----------------------------------------------------------------------------
@@ -739,11 +722,6 @@ void shColourSet0(vector* norm)
               shBaseAlpha);
 }
 
-real32 gl_pow(real32 a, real32 b)
-{
-    return (real32)pow((double)a, (double)b);
-}
-
 /*-----------------------------------------------------------------------------
     Name        : shSpecularColour
     Description : shades a vertex according to the specular model in use
@@ -833,10 +811,8 @@ void shSpecularColour(
         vecNormalize(&veye);
 
         nDotVP = nx * veye.x + ny * veye.y + nz * veye.z;
-        if (nDotVP < 0.0f)
-        {
-            nDotVP = -nDotVP;
-        }
+        nDotVP = fabsf( nDotVP );
+        
         if (nDotVP > 0.0f)
         {
             alpha = powf(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[2]);
