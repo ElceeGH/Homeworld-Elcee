@@ -744,6 +744,8 @@ scriptEntry utyOptionsList[] =
     {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
     {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
+    {"RenderInterpolation",            scriptSetBool,     &opRenderInterpolation},
+    {"EffectFrequencytMultiplier",     scriptSetUdwordCB, &opEffectFreqMult},
 
     END_SCRIPT_ENTRY
 };

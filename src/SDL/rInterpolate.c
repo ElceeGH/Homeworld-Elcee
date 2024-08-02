@@ -16,6 +16,7 @@
 #include "Debug.h"
 #include "Vector.h"
 #include "SDL.h"
+#include "Options.h"
 #include "rResScaling.h"
 #include "NIS.h"
 #include "Universe.h"
@@ -421,6 +422,12 @@ void rintClear( void ) {
 /// Update interpolation state
 /// Pre-move phase where the previous position and keepalive flag are set
 void rintUnivUpdatePreMove( void ) {
+    // Use the option to decide whether interpolation is enabled
+    updateEnabled = opRenderInterpolation;
+
+    if ( ! updateEnabled)
+        return;
+
     updateTimeReference();
     clearExistFlags();
     iterateSpaceObjectsUniverse( setPrevPosAndAdd, filterInterpAllowed );
@@ -432,6 +439,9 @@ void rintUnivUpdatePreMove( void ) {
 /// Post-destroy phase where nonexistent objects have been destroyed
 /// Last event before rendering begins
 void rintUnivUpdatePostDestroy( void ) {
+    if ( ! updateEnabled)
+        return;
+
     iterateSpaceObjectsUniverse( setCurPosAndMarkExists, filterInterpAllowed );
     cleanInterps();
     clearRenderList(); // Must be last event, just before rendering!

@@ -452,6 +452,10 @@ sdword opSaveInfoOverlay = 1;
 sdword opNumEffects;
 sdword opSaveNumEffects;
 
+udword opEffectFreqMult      = 100 * 2; ///< It's a percentage, 200% by default
+bool   opRenderInterpolation = TRUE;
+
+
 // Game Options - Default Values
 udword opShipRecoil = 0;
 udword opPauseOrders = 0;

@@ -78,6 +78,8 @@ extern sdword opCPUAttack;
 
 extern udword opPauseOrders;
 extern udword opShipRecoil;
+extern udword opEffectFreqMult;
+extern bool   opRenderInterpolation;
 
 void opOptionsSaveCustomEffectsSettings(void);
 
