@@ -7965,8 +7965,8 @@ memsize etgSpawnNewEffect(Effect *effect, etgeffectstatic *stat, sdword nParams,
     position.x = etgEffOffset.offsetR; position.y = 0.0f; position.z = etgEffOffset.offsetLOF;
     if (etgEffOffset.offsetR != 0.0f)
     {
-        sinTheta = (real32)sin((double)etgEffOffset.offsetTheta);
-        cosTheta = (real32)cos((double)etgEffOffset.offsetTheta);
+        sinTheta = sinf(etgEffOffset.offsetTheta);
+        cosTheta = cosf(etgEffOffset.offsetTheta);
         matMakeRotAboutZ(&rotTheta, cosTheta, sinTheta);
 //        matMultiplyMatByMat(&rotMu, &rotTheta, &effect->rotinfo.coordsys);
         matMultiplyVecByMat(&newPos, &position, &rotTheta);    //new radial offset
@@ -7984,10 +7984,10 @@ memsize etgSpawnNewEffect(Effect *effect, etgeffectstatic *stat, sdword nParams,
     {                                                       //if there is even any offsets
         position.x = 0.0f; position.y = 0.0f; position.z = 1.0f;
 
-        sinTheta = (real32)sin((double)etgEffOffset.changeLOFTheta);
-        cosTheta = (real32)cos((double)etgEffOffset.changeLOFTheta);
-        sinMu = (real32)sin((double)etgEffOffset.changeLOFMu);
-        cosMu = (real32)cos((double)etgEffOffset.changeLOFMu);
+        sinTheta = sinf(etgEffOffset.changeLOFTheta);
+        cosTheta = cosf(etgEffOffset.changeLOFTheta);
+        sinMu = sinf(etgEffOffset.changeLOFMu);
+        cosMu = cosf(etgEffOffset.changeLOFMu);
         matMakeRotAboutY(&rotMu, cosMu, sinMu);
         matMakeRotAboutZ(&rotTheta, cosTheta, sinTheta);
         matMultiplyMatByMat(&tempMatrix, &rotTheta, &rotMu);//concat the two rotations
