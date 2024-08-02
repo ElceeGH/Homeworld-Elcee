@@ -24,7 +24,7 @@
 
 
 
-static void clearRenderMap( void );
+static void clearRenderList( void );
 
 
 
@@ -158,8 +158,6 @@ typedef struct Interp {
     vector    pcurr;  ///< Current  uninterpolated position
     vector    cprev;  ///< Previous uninterpolated collision position (ships only)
     vector    ccurr;  ///< Current  uninterpolated collision position (ships only)
-    vector    eprev;  ///< Previous uninterpolated engine position (ships only)
-    vector    ecurr;  ///< Current  uninterpolated engine position (ships only)
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
 } Interp;
 
@@ -304,7 +302,6 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
 
     if (obj->objtype == OBJ_ShipType) {
         interp->cprev = ((Ship *)obj)->collInfo.collPosition;
-        interp->eprev = ((Ship *)obj)->enginePosition;
     }
 }
 
@@ -323,7 +320,6 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
 
     if (obj->objtype == OBJ_ShipType) {
         interp->ccurr = ((Ship *)obj)->collInfo.collPosition;
-        interp->ecurr = ((Ship *)obj)->enginePosition;
     }
 }
 
@@ -340,10 +336,7 @@ static void interpolatePosition( const Interp* interp ) {
     if (obj->objtype == OBJ_ShipType) {
         const vector ca = interp->cprev;
         const vector cb = interp->ccurr;
-        const vector ea = interp->eprev;
-        const vector eb = interp->ecurr;
         ((Ship *)obj)->collInfo.collPosition = lerp( ca, cb, f );
-        ((Ship *)obj)->enginePosition        = lerp( ea, eb, f );
     }
 }
 
@@ -356,7 +349,6 @@ static void restorePosition( const Interp* interp ) {
 
     if (obj->objtype == OBJ_ShipType) {
         ((Ship *)obj)->collInfo.collPosition = interp->ccurr;
-        ((Ship *)obj)->enginePosition        = interp->ecurr;
     }
 }
 
@@ -364,7 +356,6 @@ static void restorePosition( const Interp* interp ) {
 
 /// Check whether it's safe to do interpolation on the render side.
 /// It's always safe on the universe update end.
-/// @todo This doesn't cover everything yet. Load the Great Wastes fight and then the Gardens fight and the game will crash with an access violation.
 static udword interpRenderAllowed() {
     return updateEnabled
         && renderEnabled
@@ -443,7 +434,7 @@ void rintUnivUpdatePreMove( void ) {
 void rintUnivUpdatePostDestroy( void ) {
     iterateSpaceObjectsUniverse( setCurPosAndMarkExists, filterInterpAllowed );
     cleanInterps();
-    clearRenderMap(); // Must be last event, just before rendering!
+    clearRenderList(); // Must be last event, just before rendering!
 }
 
 
@@ -476,7 +467,7 @@ static void generateRenderList( void ) {
     if (renderListReady)
         return;
 
-    clearRenderMap();
+    clearRenderList();
     iterateSpaceObjectsRender( generateRenderListElement, filterInterpAllowed );
     renderListReady = TRUE;
 }
@@ -484,7 +475,7 @@ static void generateRenderList( void ) {
 
 
 /// Reset the render interp map. Do this once per universe update.
-static void clearRenderMap( void ) {
+static void clearRenderList( void ) {
     renderListEnd   = renderList;
     renderListReady = FALSE;
 }
