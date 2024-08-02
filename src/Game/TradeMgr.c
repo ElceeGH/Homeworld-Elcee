@@ -1333,9 +1333,6 @@ void wkTradeControl(void);
 void wkTradeFocusedShip(void);
 void wkTradeUpdate(void);
 
-extern real32 fcos(real32 r);
-extern real32 fsin(real32 r);
-
 void mrTradeStuffTest(sdword *a, sdword *b)
 {
     sdword i;
@@ -1557,21 +1554,21 @@ void wkTradeUpdate(void)
         {
             if (trader->controlthrust > 0)
             {
-                trader->vx += fcos(trader->ang)*trader->acc;
-                trader->vy += fsin(trader->ang)*trader->acc;
+                trader->vx += cosf(trader->ang)*trader->acc;
+                trader->vy += sinf(trader->ang)*trader->acc;
             }
             else
             {
-                trader->vx -= fcos(trader->ang)*trader->revacc;
-                trader->vy -= fsin(trader->ang)*trader->revacc;
+                trader->vx -= cosf(trader->ang)*trader->revacc;
+                trader->vy -= sinf(trader->ang)*trader->revacc;
             }
         }
 
         if (trader->controlstrafe)
         {
-            trader->vx += fsin(trader->ang)
+            trader->vx += sinf(trader->ang)
                 *trader->acc*trader->controlstrafe;
-            trader->vy += fcos(trader->ang)
+            trader->vy += cosf(trader->ang)
                 *trader->acc*trader->controlstrafe;
 
         }
@@ -1634,8 +1631,8 @@ void wkTradeUpdate(void)
         ship->posinfo.velocity.x = trader->vx*WK_VEL_SCALE;
         ship->posinfo.velocity.y = trader->vy*WK_VEL_SCALE;
 
-        vect.x = fcos(trader->ang);
-        vect.y = fsin(trader->ang);
+        vect.x = cosf(trader->ang);
+        vect.y = sinf(trader->ang);
         vect.z = 0;
         matCreateCoordSysFromHeading(&ship->rotinfo.coordsys,&vect);
     }

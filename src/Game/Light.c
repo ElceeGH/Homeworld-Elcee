@@ -245,16 +245,6 @@ void lightPlayerColorLightSet(sdword playerIndex)
 }
 #endif
 
-real32 fcos(real32 r)
-{
-    return (real32)cos((real64)r);
-}
-
-real32 fsin(real32 r)
-{
-    return (real32)sin((real64)r);
-}
-
 void _inplace_glify(GLfloat* v)
 {
     hmatrix xmat;
@@ -262,7 +252,7 @@ void _inplace_glify(GLfloat* v)
     real32 deg = -90.0f;
     real32 deg2 = -90.0f;
 
-    hmatMakeRotAboutZ(&xmat, fcos(DEG_TO_RAD(deg)), fsin(DEG_TO_RAD(deg)));
+    hmatMakeRotAboutZ(&xmat, cosf(DEG_TO_RAD(deg)), sinf(DEG_TO_RAD(deg)));
     hmatMultiplyHVecByHMat(&rvec, (hvector*)v, &xmat);
     if (v[3] != 0.0f)
     {
@@ -272,7 +262,7 @@ void _inplace_glify(GLfloat* v)
     }
     memcpy(v, &rvec, 3*sizeof(real32));
 
-    hmatMakeRotAboutX(&xmat, fcos(DEG_TO_RAD(deg2)), fsin(DEG_TO_RAD(deg2)));
+    hmatMakeRotAboutX(&xmat, cosf(DEG_TO_RAD(deg2)), sinf(DEG_TO_RAD(deg2)));
     hmatMultiplyHVecByHMat(&rvec, (hvector*)v, &xmat);
     if (v[3] != 0.0f)
     {
