@@ -35,6 +35,7 @@
 #include "Tweak.h"
 #include "Universe.h"
 #include "rResScaling.h"
+#include "rInterpolate.h"
 
 /*=============================================================================
     Data:
@@ -426,8 +427,8 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
         thisPing = listGetStructOfNode(thisNode);
 
         pingCycle = thisPing->pingDuration + thisPing->interPingPause;
-        pingAge = universe.totaltimeelapsed - thisPing->creationTime;
-        pingMod = (real32)fmod((double)pingAge, (double)pingCycle);
+        pingAge = (universe.totaltimeelapsed + rintFraction() * UNIVERSE_UPDATE_PERIOD) - thisPing->creationTime;
+        pingMod = fmodf(pingAge, pingCycle);
         if (pingMod <= thisPing->pingDuration)
         {
             pingSize = (thisPing->size - thisPing->minSize) * pingMod / thisPing->pingDuration + thisPing->minSize;
