@@ -20,7 +20,7 @@
 
 #define SHADER_DIR_DEV     "../src/Shaders" ///< Checked first
 #define SHADER_DIR_RELEASE "Shaders"        ///< Checked second
-#define SHADER_MAX_COUNT   256              ///< Max number of simultaneously loaded shader programs
+#define SHADER_MAX_COUNT   32               ///< Max number of simultaneously loaded shader programs
 
 
 
