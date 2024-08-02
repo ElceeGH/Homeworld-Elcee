@@ -719,7 +719,6 @@ scriptEntry utyOptionsList[] =
     {"PrevColor4.base",         scriptSetUdwordCB, &colPreviousColors[4].base},
     {"PrevColor4.stripe",       scriptSetUdwordCB, &colPreviousColors[4].detail},
 
-
   {"\n[single player]\n", scriptSetStringCB, &filecfgblankspace},
     {"TutorialNeeded",          scriptSetUdwordCB, &needtutorial},
 
@@ -738,7 +737,6 @@ scriptEntry utyOptionsList[] =
     {"FirewallDetect",                 scriptSetUdwordCB, &firewallButton},
 
   {"\n[New HWSDL Options]\n", scriptSetStringCB, &filecfgblankspace},
-
     {"CollectResourcesAtEndOfMission", scriptSetBool,     &spCollectResourcesAtEndOfMission},
     {"PauseOrders",                    scriptSetUdwordCB, &opPauseOrders},
     {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
@@ -876,11 +874,11 @@ void utyOptionsFileWrite(void)
         setVarCback cb   = utyOptionsList[i].setVarCB;
         char*       name = utyOptionsList[i].name;
 
-             if (cb == scriptSetUbyteCB)  { fprintf(f, "%s    %u\n", name, *((ubyte *) data)                   ); }
-        else if (cb == scriptSetUwordCB)  { fprintf(f, "%s    %u\n", name, *((uword *) data)                   ); }
-        else if (cb == scriptSetUdwordCB) { fprintf(f, "%s    %u\n", name, *((udword*) data)                   ); }
-        else if (cb == scriptSetStringCB) { fprintf(f, "%s    %s\n", name,   (char  *) data                    ); }
-        else if (cb == scriptSetBool)     { fprintf(f, "%s    %s\n", name, *((bool  *) data) ? "TRUE" : "FALSE"); }
+             if (cb == scriptSetUbyteCB)  { fprintf(f, "%-32s    %-10u\n", name, *((ubyte *) data)                   ); }
+        else if (cb == scriptSetUwordCB)  { fprintf(f, "%-32s    %-10u\n", name, *((uword *) data)                   ); }
+        else if (cb == scriptSetUdwordCB) { fprintf(f, "%-32s    %-10u\n", name, *((udword*) data)                   ); }
+        else if (cb == scriptSetStringCB) { fprintf(f, "%-32s    %-10s\n", name,   (char  *) data                    ); }
+        else if (cb == scriptSetBool)     { fprintf(f, "%-32s    %-10s\n", name, *((bool  *) data) ? "TRUE" : "FALSE"); }
     }
     
     fclose(f);
