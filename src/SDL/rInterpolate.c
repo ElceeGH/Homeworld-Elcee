@@ -2,9 +2,9 @@
     Name    : rInterpolate.c
     Purpose : Rendering interpolation timing and utility functions.
     
-    The basis of an interpolating render system with a fixed update rate.
-
-    TODO: Trails, fix stability across saves, add config option.
+    Helps generate in-between position updates for game objects. It also exposes
+    the interpolated time fraction so other systems can take advantage of it.
+    When disabled, the interpolation fraction is simply fixed at 1.
 
     Created 27/09/2021 by Elcee
 =============================================================================*/
@@ -106,48 +106,12 @@ static void updateTimeFraction(void) {
 
 
 
-/// Signed saturated dot product of normalised vectors.
-static real32 unitDotProductClamped( vector a, vector b ) {
-    vecNormalize( &a );
-    vecNormalize( &b );
-    real32 dot = vecDotProduct( a, b );
-    dot = min( dot, +1.0f );
-    dot = max( dot, -1.0f );
-    return dot;
-}
-
-
-
 /// Interpolate a position.
 static vector lerp( vector from, vector to, real32 f ) {
     return (vector) {
         from.x + (to.x - from.x) * f,
         from.y + (to.y - from.y) * f,
         from.z + (to.z - from.z) * f
-    };
-}
-
-
-
-/// Interpolate an orientation.
-static vector slerp( vector from, vector to, real32 f ) {
-    const real32 dot = unitDotProductClamped( from, to );
-
-    vector rel = {
-        to.x - from.x * dot,
-        to.y - from.y * dot,
-        to.z - from.z * dot 
-    };
-    
-    vecNormalize( &rel );
-    const real32 rads = acosf( dot ) * f;
-    const real32 cos  = cosf( rads );
-    const real32 sin  = sinf( rads );
-
-    return (vector) {
-        from.x * cos + rel.x * sin,
-        from.y * cos + rel.y * sin,
-        from.z * cos + rel.z * sin
     };
 }
 
