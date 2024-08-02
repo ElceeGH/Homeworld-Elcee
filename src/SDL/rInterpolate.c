@@ -259,7 +259,8 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
     switch (obj->objtype) {
         // Some effects shouldn't be interpolated, since they don't move.
         case OBJ_EffectType:
-            return 0 != (((Effect*) obj)->flags & (SOF_AttachPosition | SOF_AttachVelocity));
+            return 0 != (((Effect*) obj)->flags       & (SOF_AttachPosition | SOF_AttachVelocity | SOF_AttachCoordsys))
+                || 0 != (((Effect*) obj)->effectFlags & (EAF_Position       | EAF_Velocity       | EAF_Coordsys));
 
         // Some types of objects just never move.
         case OBJ_AsteroidType:
