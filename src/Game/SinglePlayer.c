@@ -687,6 +687,10 @@ void spGoNowHyperspaceCB(char *string, featom *atom)
 {
     if (singlePlayerGameInfo.hyperspaceState == HYPERSPACE_WAITINGROLLCALL)
     {
+        // Prevent interpolation from interfering with the instant ship movement.
+        rintRenderEnd();     // Move back to actual position from universe update 
+        rintRenderDisable(); // Disable for a few frames
+
         SelectCommand *selectAll;
         CommandToDo *militaryGroup;
         sdword i;
