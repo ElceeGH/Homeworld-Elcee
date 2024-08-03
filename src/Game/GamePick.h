@@ -30,7 +30,7 @@
 #define GP_ListMarginY          2
 #define GP_DisplayListLength    11      //number of games displayed on the screen at one time
 #define GP_VertSpacing          (fontHeight(" ") >> 1)
-#define GP_GAMENAME_LENGTH      32
+#define GP_GAMENAME_LENGTH      52
 
 /*=============================================================================
     Type definitions:
