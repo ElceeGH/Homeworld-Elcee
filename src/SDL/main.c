@@ -1797,6 +1797,7 @@ int main (int argc, char* argv[])
         }
     }
 
+    glccInit();
     glccTestEquivalence();
 
     if (errorString == NULL)
