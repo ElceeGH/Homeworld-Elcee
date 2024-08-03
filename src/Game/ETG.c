@@ -21,7 +21,6 @@
 #include "Eval.h"
 #include "FastMath.h"
 #include "File.h"
-#include "glinc.h"
 #include "HorseRace.h"
 #include "mainrgn.h"
 #include "Memory.h"
@@ -43,6 +42,7 @@
 #include "utility.h"
 #include "miscUtil.h"
 #include "rInterpolate.h"
+#include "rStateCache.h"
 
 #ifdef GENERIC_ETGCALLFUNCTION
 #ifdef _MACOSX_FIX_MISC
@@ -2344,7 +2344,7 @@ void etgEffectDraw(Effect *effect)
     real32 timeElapsed;
     vector velInverse;
 
-    //!!!ASSERT: glMatrixMode == GL_MODELVIEW
+    //!!!ASSERT: glccMatrixMode == GL_MODELVIEW
 
     if (effect->timeElapsed < 0.0f)
     {                                                       //if effect hasn't started yet
@@ -2403,13 +2403,13 @@ void etgEffectDraw(Effect *effect)
                 hmatMakeHMatFromMat(&ownerCoordMatrix, &tempMatrix);
                 hmatPutVectIntoHMatrixCol4(effect->owner->posinfo.position, ownerCoordMatrix);
 
-                glPushMatrix();
-                glMultMatrixf((GLfloat*)&ownerCoordMatrix);
-                glMultMatrixf((GLfloat*)&coordMatrixX);
+                glccPushMatrix();
+                glccMultMatrixf((GLfloat*)&ownerCoordMatrix);
+                glccMultMatrixf((GLfloat*)&coordMatrixX);
 
                 partRenderSystem((psysPtr)effect->particleBlock[index]);  //render the particle
 
-                glPopMatrix();
+                glccPopMatrix();
             }
             else
             {
@@ -2418,10 +2418,10 @@ void etgEffectDraw(Effect *effect)
                     partModifyBillPosition((psysPtr)effect->particleBlock[index],
                                        &effect->posinfo.position);
                 }
-                glPushMatrix();
-                glMultMatrixf((float *)&coordMatrixX);      //effect's rotation matrix
+                glccPushMatrix();
+                glccMultMatrixf((float *)&coordMatrixX);      //effect's rotation matrix
                 partRenderSystem((psysPtr)effect->particleBlock[index]);
-                glPopMatrix();
+                glccPopMatrix();
             }
         }
     }
@@ -2429,12 +2429,12 @@ void etgEffectDraw(Effect *effect)
 /*
     if (worldRendered)
     {
-        glEnable(GL_DEPTH_TEST);
+        glccEnable(GL_DEPTH_TEST);
         rndNormalizeEnable(FALSE);
-//        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-        glMatrixMode(GL_MODELVIEW);
+//        glccPopMatrix();
+        glccMatrixMode(GL_PROJECTION);
+        glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+        glccMatrixMode(GL_MODELVIEW);
     }
 */
 }

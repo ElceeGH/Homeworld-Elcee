@@ -6,10 +6,11 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#include "glinc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+
 #include "Debug.h"
 #include "Memory.h"
 #include "Twiddle.h"
@@ -27,6 +28,7 @@
 #include "HorseRace.h"
 
 #include "Universe.h"
+#include "rStateCache.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -3174,18 +3176,18 @@ void trMakeCurrent(trhandle handle)
         }
         trNoPalMakeCurrent(newPalette, reg->handle);
         primErrorMessagePrint();
-        glDisable(GL_ALPHA_TEST);                           //ditto
+        glccDisable(GL_ALPHA_TEST);                           //ditto
     }
     else
     {                                                       //else it's an non-paletted texture
         if (bitTest(reg->flags, TRF_Alpha))
         {                                                   //and has alpha
-            glEnable(GL_ALPHA_TEST);
+            glccEnable(GL_ALPHA_TEST);
             glAlphaFunc(GL_GREATER, 0.0f);
         }
         else
         {                                                   //else turning alpha off
-            glDisable(GL_ALPHA_TEST);
+            glccDisable(GL_ALPHA_TEST);
         }
         //bind the proper version of this texture
         if (reg->nPalettes > 1)

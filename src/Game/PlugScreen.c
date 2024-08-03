@@ -17,7 +17,6 @@
 #include "Debug.h"
 #include "FEFlow.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "interfce.h"
 #include "Memory.h"
 #include "mouse.h"
@@ -28,6 +27,7 @@
 #include "StringSupport.h"
 #include "Task.h"
 #include "utility.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Data:
@@ -140,7 +140,7 @@ void psLinkDraw(regionhandle region)
         {                                                   //if we're fading out to black
             //psFadeLevel += PLF_FadeRate;
             psFadeLevel = (sdword)((taskTimeElapsed - psFadeStartTime) / psFadeTime * 255.0f);
-            glEnable(GL_BLEND);
+            glccEnable(GL_BLEND);
             if (psFadeState == PFS_CrossFade)
             {
                 psImageDraw(&psFadeImage, colRGBA(UBYTE_Max, UBYTE_Max, UBYTE_Max,  min(psFadeLevel, UBYTE_Max)));
@@ -149,7 +149,7 @@ void psLinkDraw(regionhandle region)
             {
                 primRectSolid2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
             }
-            glDisable(GL_BLEND);
+            glccDisable(GL_BLEND);
             regRecursiveSetDirty(psBaseRegion);
             if (psLastFadeLevel >= UBYTE_Max)
             {                                               //if we've reached black
@@ -174,10 +174,10 @@ void psLinkDraw(regionhandle region)
                         psFadeState = PFS_None;
                         psModeEnd();
                         regRecursiveSetDirty(ghMainRegion);
-                        glEnable(GL_BLEND);
+                        glccEnable(GL_BLEND);
                         psFadeState = PFS_FromBlack;
                         primRectSolid2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
-                        glDisable(GL_BLEND);
+                        glccDisable(GL_BLEND);
                         keyClearAll();
                         // Why is this here?  This is not a task.
                         //taskExit();
@@ -196,9 +196,9 @@ void psLinkDraw(regionhandle region)
             }
             else
             {
-                glEnable(GL_BLEND);
+                glccEnable(GL_BLEND);
                 primRectSolid2(&screenRect, colRGBA(0, 0, 0, max(0, psFadeLevel)));
-                glDisable(GL_BLEND);
+                glccDisable(GL_BLEND);
             }
             if (psFadeState == PFS_FromBlack)
             {
@@ -272,7 +272,7 @@ udword psLinkProcess(regionhandle region, sdword ID, udword event, udword data)
 ----------------------------------------------------------------------------*/
 void psBaseRegionDraw(regionhandle region)
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glccClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     psImageDraw(&psScreenImage, colWhite);

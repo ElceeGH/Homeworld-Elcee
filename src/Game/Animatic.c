@@ -9,7 +9,6 @@
 #include "Animatic.h"
 
 #include "File.h"
-#include "glinc.h"
 #include "mouse.h"
 #include "NIS.h"
 #include "SinglePlayer.h"
@@ -20,6 +19,7 @@
 #include "Subtitle.h"
 #include "Universe.h"
 #include "video.h"
+#include "rStateCache.h"
 
 
 
@@ -58,25 +58,25 @@ static void animSubtitlesSetup(bool on)
 
     if (on)
     {
-        glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
-        glGetFloatv(GL_PROJECTION_MATRIX, projection);
+        glccGetIntegerv(GL_MATRIX_MODE, &matrixMode);
+        glccGetFloatv(GL_PROJECTION_MATRIX, projection);
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+        glccMatrixMode(GL_PROJECTION);
+        glccLoadIdentity();
 
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
+        glccMatrixMode(GL_MODELVIEW);
+        glccPushMatrix();
+        glccLoadIdentity();
     }
     else
     {
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
+        glccMatrixMode(GL_MODELVIEW);
+        glccPopMatrix();
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(projection);
+        glccMatrixMode(GL_PROJECTION);
+        glccLoadMatrixf(projection);
 
-        glMatrixMode(matrixMode);
+        glccMatrixMode(matrixMode);
     }
 }
 

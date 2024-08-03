@@ -16,7 +16,6 @@
 #include "FastMath.h"
 #include "font.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "LOD.h"
 #include "main.h"
 #include "mainrgn.h"
@@ -36,6 +35,7 @@
 #include "Undo.h"
 #include "Universe.h"
 #include "rResScaling.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Data:
@@ -427,22 +427,22 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
     }
 
     //find the screen coordinates of the moveto pointer
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&modelview));
-    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&projection));
+    glccGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&modelview));
+    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&projection));
     selCircleComputeGeneral(&modelview, &projection, movepoint, 0, &screen_x, &screen_y, &dummy_r);
 
     fhSave = fontCurrentGet();
     fontMakeCurrent(pieDistReadFont);
 
     //and here I set up my own 2D space
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    depthOn = (bool)glIsEnabled(GL_DEPTH_TEST);
-    if (depthOn) glDisable(GL_DEPTH_TEST);
+    glccMatrixMode(GL_PROJECTION);
+    glccPushMatrix();
+    glccLoadIdentity();
+    glccMatrixMode(GL_MODELVIEW);
+    glccPushMatrix();
+    glccLoadIdentity();
+    depthOn = (bool)glccIsEnabled(GL_DEPTH_TEST);
+    if (depthOn) glccDisable(GL_DEPTH_TEST);
 
     //using the mousecursor position to position the distance readout is more
     //stable, but can't be used when the camera is being moved, so the moveto
@@ -474,13 +474,13 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
         }
     }
 
-    if (depthOn) glEnable(GL_DEPTH_TEST);
+    if (depthOn) glccEnable(GL_DEPTH_TEST);
 
     //back to previous space
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
+    glccPopMatrix();
+    glccMatrixMode(GL_PROJECTION);
+    glccPopMatrix();
+    glccMatrixMode(GL_MODELVIEW);
 
     fontMakeCurrent(fhSave);
 }
@@ -822,7 +822,7 @@ void piePlaneDraw(real32 distance)
         headingColor = TW_MOVE_HEADING_COLOR;
     }
 
-    glLineWidth( sqrtf(getResDensityRelative()) );
+    glccLineWidth( sqrtf(getResDensityRelative()) );
     primCircleOutlineZ(&selCentrePoint, piePizzaDishRadius * distance,
                        piePizzaSlices, pieColor);//TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
     //get the heading of the mothership for drawing the 'spokes' of the pie plate
@@ -851,7 +851,7 @@ void piePlaneDraw(real32 distance)
     pieScreenSizeOfCircleCompute(&piePlanePoint, selAverageSize, &scaledSize, &nSegments);
     primCircleOutlineZ(&piePlanePoint, scaledSize, nSegments, moveLineColor);
 
-    glLineWidth(1.0f);
+    glccLineWidth(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
@@ -998,9 +998,9 @@ void piePointSpecDraw(void)
 
     if (piePointSpecMouseReset)
     {                                                       //if we should reset location of mouse
-        glGetFloatv(GL_PROJECTION_MATRIX,                   //get the matrices in hmatrix format
+        glccGetFloatv(GL_PROJECTION_MATRIX,                   //get the matrices in hmatrix format
                     (float *)(&projectionF));
-        glGetFloatv(GL_MODELVIEW_MATRIX,
+        glccGetFloatv(GL_MODELVIEW_MATRIX,
                     (float *)(&modelViewF));
         if (piePointSpecMode == PSM_XY)
         {
@@ -1025,8 +1025,8 @@ void piePointSpecDraw(void)
 
     windowHeightMinusOne = (real32)(MAIN_WindowHeight - 1);
 
-    glGetFloatv(GL_PROJECTION_MATRIX, projection);
-    glGetFloatv(GL_MODELVIEW_MATRIX, modelView);           //get the matrices
+    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glccGetFloatv(GL_MODELVIEW_MATRIX, modelView);           //get the matrices
 
     world0.x = mrCamera->eyeposition.x - selCentrePoint.x;
     world0.y = mrCamera->eyeposition.y - selCentrePoint.y;

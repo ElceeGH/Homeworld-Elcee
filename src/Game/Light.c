@@ -6,7 +6,6 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#include "glinc.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,6 +22,7 @@
 #include "MEX.h"
 #include "FastMath.h"
 #include "Shader.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Data:
@@ -169,7 +169,7 @@ void lightPositionSet(void)
 {
     real32 m[16];
 
-    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
 
 //    glLightfv(GL_LIGHT0, GL_POSITION, (GLfloat*)(&lightPosition));//position light(s) within world
 //    glLightfv(GL_LIGHT1, GL_POSITION, (GLfloat*)(&lightPosition));
@@ -407,7 +407,7 @@ void lightSetLighting()
         lightParseHSF("hsf\\default.hsf");
     }
 
-    glEnable(GL_LIGHT0);
+    glccEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_AMBIENT, currentLight->ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, currentLight->diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, currentLight->specular);
@@ -415,7 +415,7 @@ void lightSetLighting()
 
     if (lightNumLights == 2)
     {
-        glEnable(GL_LIGHT1);
+        glccEnable(GL_LIGHT1);
         glLightfv(GL_LIGHT1, GL_AMBIENT, currentLight1.ambient);
         glLightfv(GL_LIGHT1, GL_DIFFUSE, currentLight1.diffuse);
         glLightfv(GL_LIGHT1, GL_SPECULAR, currentLight1.specular);
@@ -423,7 +423,7 @@ void lightSetLighting()
     }
     else
     {
-        glDisable(GL_LIGHT1);
+        glccDisable(GL_LIGHT1);
     }
 }
 

@@ -23,6 +23,7 @@
 #include "Universe.h"
 #include "Vector.h"
 #include "rShaderProgram.h"
+#include "rStateCache.h"
 
 #ifdef HW_BUILD_FOR_DEBUGGING
     #define BTG_VERBOSE_LEVEL  3    // print extra info
@@ -1241,7 +1242,7 @@ void btgRender()
 #else
     glShadeModel(GL_SMOOTH);
 #endif
-    glGetFloatv(GL_COLOR_CLEAR_VALUE, _bgColor);
+    glccGetFloatv(GL_COLOR_CLEAR_VALUE, _bgColor);
     for (index = 0; index < 4; index++)
     {
         _bgByte[index] = (GLubyte)(_bgColor[index] * 255.0f);
@@ -1250,14 +1251,14 @@ void btgRender()
     dnext = (udword*)_bgByte;
     dlast = (udword*)lastbg;
 
-    depthOn = glIsEnabled(GL_DEPTH_TEST);
+    depthOn = glccIsEnabled(GL_DEPTH_TEST);
     lightOn = rndLightingEnable(FALSE);
-    texOn = glIsEnabled(GL_TEXTURE_2D);
-    blendOn = glIsEnabled(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
+    texOn = glccIsEnabled(GL_TEXTURE_2D);
+    blendOn = glccIsEnabled(GL_BLEND);
+    glccDisable(GL_DEPTH_TEST);
+    glccDisable(GL_CULL_FACE);
+    glccDisable(GL_TEXTURE_2D);
+    glccEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
 
     if (useVBO) glBindBuffer(GL_ARRAY_BUFFER, vboTransVerts);
@@ -1316,7 +1317,7 @@ void btgRender()
     rndAdditiveBlends(TRUE);
 
     trClearCurrent();
-    glEnable(GL_TEXTURE_2D);
+    glccEnable(GL_TEXTURE_2D);
     rndTextureEnvironment(RTE_Modulate);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     if (useVBO) {
@@ -1340,27 +1341,27 @@ void btgRender()
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
     rndAdditiveBlends(FALSE);
 
     rndLightingEnable(lightOn);
-    if (texOn) glEnable(GL_TEXTURE_2D);
+    if (texOn) glccEnable(GL_TEXTURE_2D);
     if (blendOn)
     {
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
     }
     else
     {
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
-    glEnable(GL_CULL_FACE);
+    glccEnable(GL_CULL_FACE);
     if (depthOn)
     {
-        glEnable(GL_DEPTH_TEST);
+        glccEnable(GL_DEPTH_TEST);
     }
     else
     {
-        glDisable(GL_DEPTH_TEST);
+        glccDisable(GL_DEPTH_TEST);
     }
 }

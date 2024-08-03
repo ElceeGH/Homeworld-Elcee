@@ -13,12 +13,12 @@
 
 #include "Color.h"
 #include "Debug.h"
-#include "glinc.h"
 #include "HorseRace.h"
 #include "main.h"
 #include "Memory.h"
 #include "prim2d.h"
 #include "render.h"
+#include "rStateCache.h"
 
 
 #define DRAW_CUTOUTS 1
@@ -1760,7 +1760,7 @@ void ferDrawBox(rectangle dimensions, tex_holder outerCornerName, tex_holder inn
         primModeSetFunction2();
     }
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     while (node != NULL)
@@ -1782,7 +1782,7 @@ void ferDrawBox(rectangle dimensions, tex_holder outerCornerName, tex_holder inn
 
     ferDrawBoxSides(dimensions, sideName, width, cutout_corners, kludgyflag);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 
     if (!primModeOn)
     {
@@ -1906,10 +1906,10 @@ void ferDrawBoxRegion(rectangle dimensions, drawtype textures,
 
     if (bUseAlpha)
     {
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
     }
     ferDrawBox(dimensions, outerCorner, innerCorner, side, lineup);
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 
 
@@ -2077,7 +2077,7 @@ void ferDrawButton(rectangle dimensions, ferbuttonstate state)
     udword end_width;
     tex_holder left, right, mid;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     //choose textures
@@ -2216,7 +2216,7 @@ void ferDrawButton(rectangle dimensions, ferbuttonstate state)
     texture = ferTextureRegister(mid, none, none);
     ferDrawLine(dimensions.x0, dimensions.y1, dimensions.x1, dimensions.y1, end_width, texture, 0);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2232,7 +2232,7 @@ void ferDrawCheckbox(rectangle dimensions, ferbuttonstate state)
     lifheader *texture = NULL;
     uword x,y;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     //Rockin'!  This is a simple on - load the texture, then draw!
@@ -2275,7 +2275,7 @@ void ferDrawCheckbox(rectangle dimensions, ferbuttonstate state)
     y = texture->height;
     ferDraw(dimensions.x0, dimensions.y1, texture);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2290,7 +2290,7 @@ void ferDrawRadioButton(rectangle dimensions, ferbuttonstate state)
 {
     lifheader *texture = NULL;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     //Rockin'!  This is a simple one - load the texture, then draw!
@@ -2331,7 +2331,7 @@ void ferDrawRadioButton(rectangle dimensions, ferbuttonstate state)
     }
     ferDraw(dimensions.x0, dimensions.y1, texture);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2352,7 +2352,7 @@ void ferDrawHorizSlider(sliderhandle shandle, uword state)
     //rectangle rect;
     real32 spos;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     switch (state)
@@ -2412,7 +2412,7 @@ void ferDrawHorizSlider(sliderhandle shandle, uword state)
     texmarker = ferTextureRegister(VOLUME_BUTTON, none, none);
     ferDraw(x, y, texmarker);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 #undef FER_HSLIDER_X
 }
 
@@ -2435,7 +2435,7 @@ void ferDrawVertSlider(sliderhandle shandle, uword state)
               *texmarker = NULL;
     real32 spos;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     switch (state)
@@ -2493,7 +2493,7 @@ void ferDrawVertSlider(sliderhandle shandle, uword state)
     texmarker = ferTextureRegister(EQ_BAR_BUTTON, none, none);
     ferDraw(x, y, texmarker);
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 #undef FER_VSLIDER_Y
 #undef FER_VSLIDER_MARKER
 }
@@ -2518,7 +2518,7 @@ void ferDrawScrollbar(scrollbarhandle shandle, ferscrollbarstate state)
     sdword end_width;
     sdword height, textureHeight;
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
 
     top      = VERTSB_TOP;
     mid      = VERTSB_MID;
@@ -2593,7 +2593,7 @@ void ferDrawScrollbar(scrollbarhandle shandle, ferscrollbarstate state)
         }
     }
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 
 
@@ -2614,7 +2614,7 @@ void ferDrawScrollbarButton(regionhandle region, ferscrollbarbuttonstate state)
     lifheader *texture;
     scrollbarbuttonhandle sbutton = (scrollbarbuttonhandle)region;
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
 
     if (sbutton->scrollbar->isVertical)
     {
@@ -2647,7 +2647,7 @@ void ferDrawScrollbarButton(regionhandle region, ferscrollbarbuttonstate state)
         }
     }
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 
 
@@ -2674,7 +2674,7 @@ void ferDrawFocusWindow(regionhandle region, ferfocuswindowstate state)
     sdword corner_width, corner_height;
     lifheader *texture;
 
-    glEnable(GL_ALPHA_TEST);
+    glccEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
 
     switch (state)
@@ -2737,7 +2737,7 @@ void ferDrawFocusWindow(regionhandle region, ferfocuswindowstate state)
         ferDrawLine(rect->x0+corner_width, y, rect->x1-corner_width, y, 0, texture, 1);
     }*/
 
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2756,23 +2756,23 @@ void ferDrawDecorative(regionhandle region)
     {
         if (hrRunning && bitTest(texture->flags, TRF_Alpha))
         {
-            glEnable(GL_BLEND);
-            glDisable(GL_ALPHA_TEST);
+            glccEnable(GL_BLEND);
+            glccDisable(GL_ALPHA_TEST);
             rndAdditiveBlends(FALSE);
         }
     }
     else
     {
-        glEnable(GL_ALPHA_TEST);
+        glccEnable(GL_ALPHA_TEST);
         glAlphaFunc(GL_GREATER, 4e-3f);
     }
 
     ferDraw(region->rect.x0, region->rect.y1, texture);
-    glDisable(GL_ALPHA_TEST);
+    glccDisable(GL_ALPHA_TEST);
 
     if (hrRunning && bitTest(texture->flags, TRF_Alpha))
     {
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
 }
 

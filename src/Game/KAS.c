@@ -16,7 +16,6 @@
 #include "Debug.h"
 #include "File.h"
 #include "font.h"
-#include "glinc.h"
 #include "HS.h"
 #include "main.h"
 #include "mainrgn.h"
@@ -29,6 +28,7 @@
 #include "Select.h"
 #include "SinglePlayer.h"
 #include "Timer.h"
+#include "rStateCache.h"
 
 #ifdef _WIN32
     #define strcasecmp  _stricmp
@@ -1037,12 +1037,12 @@ void kasDebugDraw(void)
         primModeClear2();
         rndLightingEnable(FALSE);
         rndTextureEnable(FALSE);
-        glDisable(GL_DEPTH_TEST);
+        glccDisable(GL_DEPTH_TEST);
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+        glccMatrixMode(GL_PROJECTION);
+        glccLoadIdentity();
         rgluPerspective(mrCamera->fieldofview, rndAspectRatio, mrCamera->clipPlaneNear, mrCamera->clipPlaneFar * 15.0f);
-        glMatrixMode(GL_MODELVIEW);
+        glccMatrixMode(GL_MODELVIEW);
 
         #if KAS_DEBUG
         {
@@ -1140,9 +1140,9 @@ void kasDebugDraw(void)
             }
         }
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-        glMatrixMode(GL_MODELVIEW);
+        glccMatrixMode(GL_PROJECTION);
+        glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+        glccMatrixMode(GL_MODELVIEW);
         primModeSet2();
     }
 #endif //SP_DEBUGLEVEL2

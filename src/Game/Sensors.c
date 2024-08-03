@@ -26,7 +26,6 @@
 #include "devstats.h"
 #include "FastMath.h"
 #include "font.h"
-#include "glinc.h"
 #include "GravWellGenerator.h"
 #include "InfoOverlay.h"
 #include "Light.h"
@@ -66,6 +65,7 @@
 #include "UnivUpdate.h"
 #include "utility.h"
 #include "Vector.h"
+#include "rStateCache.h"
 
 //located in mainrg.c
 //falko's fault...not mine..long story
@@ -696,10 +696,10 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
 
     fontMakeCurrent(mouseCursorFont);
 
-    if (glIsEnabled(GL_DEPTH_TEST))
+    if (glccIsEnabled(GL_DEPTH_TEST))
     {
         isEnabled = TRUE;
-        glDisable(GL_DEPTH_TEST);
+        glccDisable(GL_DEPTH_TEST);
     }
     for (smTickTextIndex = 0; angle < endAngle; angle += smHorizTickAngle)
     {
@@ -765,7 +765,7 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
     }
     if (isEnabled)
     {
-        glEnable(GL_DEPTH_TEST);
+        glccEnable(GL_DEPTH_TEST);
     }
     fontMakeCurrent(oldFont);
 }
@@ -904,11 +904,11 @@ void smBlobDrawClear(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix
                         {
                             if(!bitTest(obj->flags,SOF_Cloaked) || ((Ship *)obj)->playerowner == universe.curPlayerPtr)
                             {       //if ship isn't cloaked, draw, or if ship is players, draw
-                                glPushMatrix();
+                                glccPushMatrix();
                                 shipStaticInfo = (ShipStaticInfo *)obj->staticinfo;
                                 hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)obj)->rotinfo.coordsys);
                                 hmatPutVectIntoHMatrixCol4(obj->posinfo.position,coordMatrixForGL);
-                                glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+                                glccMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
                                 rndLightingEnable(TRUE);
                                 shPushLightMatrix(&coordMatrixForGL);
                                 i = ((Ship *)obj)->colorScheme;
@@ -933,11 +933,11 @@ void smBlobDrawClear(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix
                                     g_WireframeHack = (ubyte)wireOn;
                                 }
                                 shPopLightMatrix();
-                                glDisable(GL_BLEND);
-                                glDisable(GL_ALPHA_TEST);
+                                glccDisable(GL_BLEND);
+                                glccDisable(GL_ALPHA_TEST);
                                 rndLightingEnable(FALSE);
                                 rndTextureEnable(FALSE);
-                                glPopMatrix();
+                                glccPopMatrix();
                             }
                         }
                     }
@@ -1016,9 +1016,9 @@ justRenderAsDot:
                     }
                     else
                     {
-                        glPointSize(pointSize);
+                        glccPointSize(pointSize);
                         primPoint3(&obj->posinfo.position, c);  //everything is rendered as a point
-                        glPointSize(1.0f);
+                        glccPointSize(1.0f);
                     }
                 }
                 break;
@@ -1032,7 +1032,7 @@ justRenderAsDot:
                 if (radius > SM_LargeResourceSize)
                 {
                     pointSize = 2.0f;
-                    //glPointSize(2.0f);
+                    //glccPointSize(2.0f);
                 }
                 rndTextureEnable(FALSE);
 #if TO_STANDARD_COLORS
@@ -1050,9 +1050,9 @@ justRenderAsDot:
                 }
                 else
                 {
-                    glPointSize(pointSize);
+                    glccPointSize(pointSize);
                     primPoint3(&obj->posinfo.position, c);     //everything is rendered as a point
-                    glPointSize(1.0f);
+                    glccPointSize(1.0f);
                 }
                 pointSize = 1.0f;
                 break;
@@ -1094,11 +1094,11 @@ justRenderAsDot:
                     if ( (!bitTest(obj->flags,SOF_Cloaked)) &&
                          ((obj->attributes & ATTRIBUTES_SMColorField) != ATTRIBUTES_SMColorInvisible) )
                     {       //if it isn't cloaked, draw
-                        glPushMatrix();
+                        glccPushMatrix();
                         shipStaticInfo = (ShipStaticInfo *)obj->staticinfo;
                         hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)obj)->rotinfo.coordsys);
                         hmatPutVectIntoHMatrixCol4(obj->posinfo.position,coordMatrixForGL);
-                        glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+                        glccMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
                         rndLightingEnable(TRUE);
                         shPushLightMatrix(&coordMatrixForGL);
                         i = ((Derelict *)obj)->colorScheme;
@@ -1114,11 +1114,11 @@ justRenderAsDot:
                             g_WireframeHack = (ubyte)wireOn;
                         }
                         shPopLightMatrix();
-                        glDisable(GL_BLEND);
-                        glDisable(GL_ALPHA_TEST);
+                        glccDisable(GL_BLEND);
+                        glccDisable(GL_ALPHA_TEST);
                         rndLightingEnable(FALSE);
                         rndTextureEnable(FALSE);
-                        glPopMatrix();
+                        glccPopMatrix();
                     }
                 }
                 else
@@ -1148,7 +1148,7 @@ renderDerelictAsDot:
     rndTextureEnable(FALSE);
     rndLightingEnable(FALSE);
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
     glShadeModel(GL_FLAT);
     for (index = 0; index < numNebulae; index++)
@@ -1166,7 +1166,7 @@ renderDerelictAsDot:
         }
         glEnd();
     }
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
     if (smBlurryIndex > 0 || nShipTOs > 0 || nBigDots > 0)
     {
@@ -1461,7 +1461,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
     real32 pointSize;
     real32 screenX, screenY;
 
-    glPointSize(2.0f);
+    glccPointSize(2.0f);
     //compute a list of sub-blobs for the enemies.  It will be deleted with the parent blob.
     if (thisBlob->subBlobs.num == BIT31)
     {                                                       //if list not yet created
@@ -1540,7 +1540,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
             primPoint3(&subBlob->centre, c);
         }
     }
-    glPointSize(1.0f);
+    glccPointSize(1.0f);
     //draw all objects in the sphere
     for (index = 0, objPtr = blobObjects->SpaceObjPtr; index < blobObjects->numSpaceObjs; index++, objPtr++)
     {
@@ -1610,9 +1610,9 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
                 }
                 else
                 {
-                    glPointSize(pointSize);
+                    glccPointSize(pointSize);
                     primPoint3(&obj->posinfo.position, c);
-                    glPointSize(1.0f);
+                    glccPointSize(1.0f);
                 }
                 break;
             case OBJ_DerelictType:
@@ -1756,8 +1756,8 @@ real32 smBlobDropLineDistance(blob *thisBlob)
 ----------------------------------------------------------------------------*/
 blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix *projection, sdword sensorLevel)
 {
-    glEnable( GL_MULTISAMPLE );
-    glLineWidth( sqrtf(getResDensityRelative()) );
+    glccEnable( GL_MULTISAMPLE );
+    glccLineWidth( sqrtf(getResDensityRelative()) );
 
     oval o;
     blob *thisBlob;
@@ -2099,8 +2099,8 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     pingListDraw(&smCamera, modelView, projection, &smViewRectangle);
     primModeClear2();
 
-    glDisable( GL_MULTISAMPLE );
-    glLineWidth(1.0f);
+    glccDisable( GL_MULTISAMPLE );
+    glccLineWidth(1.0f);
 
     return(closestBlob);
 }
@@ -2282,7 +2282,7 @@ void smSensorsCloseForGood(void)
     mrRenderMainScreen = TRUE;
     feScreenDelete(smBaseRegion);
 //    bobListDelete(&smBlobList);
-//    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+//    glccClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
     rndSetClearColor(colRGBA(colRed(universe.backgroundColor),
                              colGreen(universe.backgroundColor),
                              colBlue(universe.backgroundColor),
@@ -2332,12 +2332,12 @@ void smBlobSphereDraw(blob *closestBlob)
         hmatMakeRotAboutZ(&rotmat,cosf(DEG_TO_RAD(angle)),sinf(DEG_TO_RAD(angle)));
          hmatPutVectIntoHMatrixCol4(closestBlob->centre, rotmat);
 
-        glPushMatrix();
-        glMultMatrixf((GLfloat *)&rotmat);
+        glccPushMatrix();
+        glccMultMatrixf((GLfloat *)&rotmat);
 
         primCircleOutline3(&origin, closestBlob->radius, 8, 0, colWhite, X_AXIS);
 
-        glPopMatrix();
+        glccPopMatrix();
         angle+=40;
     }
 
@@ -2347,12 +2347,12 @@ void smBlobSphereDraw(blob *closestBlob)
          hmatMakeRotAboutX(&rotmat,cosf(DEG_TO_RAD(angle)),sinf(DEG_TO_RAD(angle)));
          hmatPutVectIntoHMatrixCol4(closestBlob->centre, rotmat);
 
-         glPushMatrix();
-         glMultMatrixf((GLfloat *)&rotmat);
+         glccPushMatrix();
+         glccMultMatrixf((GLfloat *)&rotmat);
 
          primCircleOutline3(&origin, closestBlob->radius, 8, 0, colWhite, Z_AXIS);
 
-         glPopMatrix();
+         glccPopMatrix();
          angle+=40;
      }
 
@@ -2437,7 +2437,7 @@ void smAllBlobsPiePlateDraw(real32 distance)
             length = smBlobDropLineDraw(thisBlob, TW_SHIP_LINE_COLOR);
         }
     }
-    glDisable(GL_DEPTH_TEST);
+    glccDisable(GL_DEPTH_TEST);
     if(!dohackloop)
     {
         if (closestBlob != NULL && closestDistance < closestBlob->radius / SM_BlobClosenessFactor)
@@ -2462,7 +2462,7 @@ void smAllBlobsPiePlateDraw(real32 distance)
             }
         }
     }
-    glEnable(GL_DEPTH_TEST);
+    glccEnable(GL_DEPTH_TEST);
 }
 */
 
@@ -3075,14 +3075,14 @@ void smViewportRender(featom *atom, regionhandle region)
 
     primModeClear2();
     rndLightingEnable(FALSE);
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
+    glccMatrixMode( GL_PROJECTION );
+    glccLoadIdentity();
     rgluPerspective(smCamera.fieldofview, rndAspectRatio,    //set projection matrix
                    smCamera.clipPlaneNear, smCamera.clipPlaneFar);
-    glScalef(smProjectionScale, smProjectionScale, smProjectionScale);
-    glMatrixMode( GL_MODELVIEW );
+    glccScalef(smProjectionScale, smProjectionScale, smProjectionScale);
+    glccMatrixMode( GL_MODELVIEW );
 
-    glLoadIdentity();
+    glccLoadIdentity();
 #if RND_CAMERA_OFFSET
     vector lookEye = smCamera.eyeposition;
     vector lookAt  = smCamera.lookatpoint;
@@ -3092,14 +3092,14 @@ void smViewportRender(featom *atom, regionhandle region)
 #else
     rgluLookAt(smCamera.eyeposition, smCamera.lookatpoint, smCamera.upvector);
 #endif
-    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
-    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
+    glccGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
+    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     //Draw the BTG background
-    glPushMatrix();
-    glTranslatef(smCamera.eyeposition.x, smCamera.eyeposition.y, smCamera.eyeposition.z);
+    glccPushMatrix();
+    glccTranslatef(smCamera.eyeposition.x, smCamera.eyeposition.y, smCamera.eyeposition.z);
     rndBackgroundRender(BG_RADIUS, &smCamera, FALSE);  //render the background
-    glPopMatrix();
+    glccPopMatrix();
 
     lightSetLighting();
     rndLightingEnable(TRUE);
@@ -3134,8 +3134,8 @@ void smViewportRender(featom *atom, regionhandle region)
     {
         sensorLevel = universe.curPlayerPtr->sensorLevel;
     }
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&rndCameraMatrix));
-    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
+    glccGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&rndCameraMatrix));
+    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     selectedBlob = smBlobsDraw(&smCamera, &universe.collBlobList, &rndCameraMatrix, &rndProjectionMatrix, universe.curPlayerPtr->sensorLevel);
 
@@ -4042,7 +4042,7 @@ void smSensorsBegin(char *name, featom *atom)
         if (((featom *)reg->userID)->pData == (ubyte *)smViewportRender) //if this is a user region
         {
             smBackgroundColor = ((featom *)reg->userID)->contentColor;
-//            glClearColor(colUbyteToReal(colRed(smBackgroundColor)),
+//            glccClearColor(colUbyteToReal(colRed(smBackgroundColor)),
 //                         colUbyteToReal(colGreen(smBackgroundColor)),
 //                         colUbyteToReal(colBlue(smBackgroundColor)), 1.0f);
 

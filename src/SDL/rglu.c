@@ -11,6 +11,7 @@
 #include <math.h>
 #include "Shader.h"
 #include "FastMath.h"
+#include "rStateCache.h"
 
 
 
@@ -33,7 +34,7 @@ void rgluPerspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
     GLfloat xmax = ymax * aspect;
     GLfloat xmin = -xmax;
 
-    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+    glccFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 
 
@@ -65,5 +66,5 @@ void rgluLookAt(vector eye, vector centre, vector up)
         [3]=0,   [7]=0,   [11]=0,   [15]=1
     };
 
-    glMultMatrixf(m);
+    glccMultMatrixf(m);
 }

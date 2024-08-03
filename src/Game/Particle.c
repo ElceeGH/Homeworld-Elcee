@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#include "glinc.h"
+
 #include "Types.h"
 #include "Vector.h"
 #include "Randy.h"
@@ -28,6 +28,7 @@
 #include "Shader.h"
 #include "devstats.h"
 #include "rResScaling.h"
+#include "rStateCache.h"
 
 
 
@@ -457,7 +458,7 @@ void partBillboardDisable()
 void storeIllum()
 {
     shGetGlobalAmbient( illumSave );
-    //glGetFloatv(GL_LIGHT_MODEL_AMBIENT, illumSave);
+    //glccGetFloatv(GL_LIGHT_MODEL_AMBIENT, illumSave);
 }
 
 /*-----------------------------------------------------------------------------
@@ -516,12 +517,12 @@ void partPerformHacking(matrix* partMat, vector particleTranslation)
     matGetMatFromHMat(&shiprotmatrix, &particleHMatrix);
 
     //obtain current modelview
-    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat*)&mat);
-    glPushMatrix();
+    glccGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat*)&mat);
+    glccPushMatrix();
     //zero translation elements
     hmatPutHVectIntoHMatrixCol4(hvec, mat);
     //load rotation but not translation into modelview
-    glLoadMatrixf((GLfloat*)&mat);
+    glccLoadMatrixf((GLfloat*)&mat);
 }
 
 /*-----------------------------------------------------------------------------
@@ -675,7 +676,7 @@ udword partRenderBillSystem(udword n, particle* p, udword flags,
 
 //    rndAdditiveBlends(FALSE);
 
-    glDisable(GL_CULL_FACE);
+    glccDisable(GL_CULL_FACE);
     glDepthMask(GL_FALSE);
     glShadeModel(GL_SMOOTH);
 
@@ -691,8 +692,8 @@ udword partRenderBillSystem(udword n, particle* p, udword flags,
         trMakeCurrent(tex);
         if (bitTest(reg->flags, TRF_Alpha))
         {
-            glEnable(GL_BLEND);
-            glDisable(GL_ALPHA_TEST);
+            glccEnable(GL_BLEND);
+            glccDisable(GL_ALPHA_TEST);
             rndAdditiveBlends(FALSE);
         }
 */
@@ -733,12 +734,12 @@ udword partRenderBillSystem(udword n, particle* p, udword flags,
         if (p->icolor[3] == 1.0f)
         {
             glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
-            glDisable(GL_BLEND);
+            glccDisable(GL_BLEND);
         }
         else
         {
             glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
-            glEnable(GL_BLEND);
+            glccEnable(GL_BLEND);
         }
 
         if (currentTex == TR_Invalid)
@@ -757,8 +758,8 @@ udword partRenderBillSystem(udword n, particle* p, udword flags,
             reg = trStructureGet(tex);
             if (bitTest(reg->flags, TRF_Alpha))
             {
-                glEnable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
+                glccEnable(GL_BLEND);
+                glccDisable(GL_ALPHA_TEST);
                 if (bitTest(p->flags, PART_ADDITIVE))
                 {
                     rndAdditiveBlends(TRUE);
@@ -836,9 +837,9 @@ AGAIN1:
         partBillboardDisable();
     }
     rndTextureEnable(FALSE);
-    glEnable(GL_CULL_FACE);
+    glccEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
     partFilter(FALSE);
     rndAdditiveBlends(FALSE);
@@ -871,8 +872,8 @@ void partMeshMaterialPrepare(particle *p, trhandle currentTex, materialentry *ma
     reg = trStructureGet(currentTex);
     if (bitTest(reg->flags, TRF_Alpha) || alpha)
     {
-        glEnable(GL_BLEND);
-        glDisable(GL_ALPHA_TEST);
+        glccEnable(GL_BLEND);
+        glccDisable(GL_ALPHA_TEST);
         if (bitTest(p->flags, PART_ADDITIVE))
         {
             rndAdditiveBlends(TRUE);
@@ -945,8 +946,8 @@ void calcPseudoBillboardMatrixWorld(matrix* mat, vector* pos, particle* p, meshS
     matrix matResult;
     hmatrix hmatResult;
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    glccMatrixMode(GL_MODELVIEW);
+    glccPushMatrix();
 
     velocity = p->wVel;
     if (!bitTest(meshPart->flags, PART_WORLDSPACEVELOCITY))
@@ -976,7 +977,7 @@ void calcPseudoBillboardMatrixWorld(matrix* mat, vector* pos, particle* p, meshS
 
     hmatMakeHMatFromMat(&hmatResult, &matResult);
 
-    glMultMatrixf((GLfloat*)&hmatResult);
+    glccMultMatrixf((GLfloat*)&hmatResult);
 }
 
 void partInverselyTransform(vector* out, vector* in, matrix* mat, vector* localPos)
@@ -1002,8 +1003,8 @@ void calcPseudoBillboardMatrixNotWorld(matrix* mat, vector* pos, particle* p, me
     matrix  matResult;
     hmatrix hmatResult;
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    glccMatrixMode(GL_MODELVIEW);
+    glccPushMatrix();
 
     //obtain velocity vector in effectspace
     vecScalarMultiply(velocity, p->rvec, p->velR);
@@ -1044,13 +1045,13 @@ void calcPseudoBillboardMatrixNotWorld(matrix* mat, vector* pos, particle* p, me
 
     hmatMakeHMatFromMat(&hmatResult, &matResult);
 
-    glMultMatrixf((GLfloat*)&hmatResult);
+    glccMultMatrixf((GLfloat*)&hmatResult);
 }
 
 void undoPseudoBillboardMatrix()
 {
     //ASSERT: MatrixMode == MODELVIEW
-    glPopMatrix();
+    glccPopMatrix();
 }
 
 /*-----------------------------------------------------------------------------
@@ -1073,7 +1074,7 @@ void partMeshOrient(particle* p, bool bRescaleNormal, meshSystem* meshPart)
     {
         hmatMakeHMatFromMat(&velHMatrix, &partEffectOwnerSystem/*meshPart->partMat*/);
         hmatPutVectIntoHMatrixCol4(partEffectOwnerPosition/*p->position*/, velHMatrix);
-        glMultMatrixf((GLfloat*)&velHMatrix);
+        glccMultMatrixf((GLfloat*)&velHMatrix);
 /*
         velocity.x = 0.0f;
         velocity.y = 0.0f;
@@ -1081,19 +1082,19 @@ void partMeshOrient(particle* p, bool bRescaleNormal, meshSystem* meshPart)
 
         matCreateCoordSysFromHeading(&velMatrix, &velocity);
         hmatMakeHMatFromMat(&velHMatrix, &velMatrix);
-        glMultMatrixf((GLfloat*)&velHMatrix);
+        glccMultMatrixf((GLfloat*)&velHMatrix);
 */
         hmatMakeRotAboutX(&velHMatrix, (real32)cos(DEG_TO_RAD(180.0)), (real32)sin(DEG_TO_RAD(180.0)));
-        glMultMatrixf((GLfloat*)&velHMatrix);
+        glccMultMatrixf((GLfloat*)&velHMatrix);
 
-        glScalef(p->tumble[0], p->tumble[1], p->tumble[2]);
-        glEnable(GL_NORMALIZE);
+        glccScalef(p->tumble[0], p->tumble[1], p->tumble[2]);
+        glccEnable(GL_NORMALIZE);
 
         return;
     }
 
     //translate the mesh
-    glTranslatef(p->position.x, p->position.y, p->position.z);
+    glccTranslatef(p->position.x, p->position.y, p->position.z);
 
     //align mesh along particle's velocity vector
     if (!(p->flags & (PART_PSEUDOBILLBOARD | PART_TRUEBILLBOARD)))
@@ -1128,21 +1129,21 @@ void partMeshOrient(particle* p, bool bRescaleNormal, meshSystem* meshPart)
         }
         matCreateCoordSysFromHeading(&velMatrix, &velocity);
         hmatMakeHMatFromMat(&velHMatrix, &velMatrix);
-        glMultMatrixf((GLfloat*)&velHMatrix);
+        glccMultMatrixf((GLfloat*)&velHMatrix);
     }
 
     //tumble the mesh
     if (p->tumble[0] != 0.0f)
     {
-        glRotatef(RAD_TO_DEG(p->tumble[0]), 1.0f, 0.0f, 0.0f);
+        glccRotatef(RAD_TO_DEG(p->tumble[0]), 1.0f, 0.0f, 0.0f);
     }
     if (p->tumble[1] != 0.0f)
     {
-        glRotatef(RAD_TO_DEG(p->tumble[1]), 0.0f, 1.0f, 0.0f);
+        glccRotatef(RAD_TO_DEG(p->tumble[1]), 0.0f, 1.0f, 0.0f);
     }
     if (p->tumble[2] != 0.0f)
     {
-        glRotatef(RAD_TO_DEG(p->tumble[2]), 0.0f, 0.0f, 1.0f);
+        glccRotatef(RAD_TO_DEG(p->tumble[2]), 0.0f, 0.0f, 1.0f);
     }
 
     //scale the mesh, if applicable
@@ -1154,14 +1155,14 @@ void partMeshOrient(particle* p, bool bRescaleNormal, meshSystem* meshPart)
     }
     if (p->scale != 1.0f)
     {
-        glScalef(scale, scale, length);
+        glccScalef(scale, scale, length);
         if (bRescaleNormal && (scale == length))
         {
-            glEnable(GL_RESCALE_NORMAL);
+            glccEnable(GL_RESCALE_NORMAL);
         }
         else
         {
-            glEnable(GL_NORMALIZE);
+            glccEnable(GL_NORMALIZE);
         }
     }
 }
@@ -1192,7 +1193,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
     if (bitTest(p->flags, PART_ADDITIVE))
     {
         rndAdditiveBlends(TRUE);
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
     }
 
     rndTextureEnvironment(RTE_Modulate);
@@ -1246,7 +1247,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
             glDepthMask(GL_TRUE);
         }
 
-        glPushMatrix();
+        glccPushMatrix();
 
         mesh = p->mesh;
 // MeshMorphedObjectRender crash fixme part 1
@@ -1271,7 +1272,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
             if (bitTest(flags, PART_ALPHA))
             {
                 glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
-                glEnable(GL_BLEND);
+                glccEnable(GL_BLEND);
                 if (g_SpecHack)
                 {
                     meshSetSpecular(0, RUB(p->icolor[0]), RUB(p->icolor[1]), RUB(p->icolor[2]), RUB(p->icolor[3]));
@@ -1374,8 +1375,8 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
               }
                 frac = p->meshFrame - (real32)((sdword)p->meshFrame);
 
-                glDisable(GL_RESCALE_NORMAL);
-                glEnable(GL_NORMALIZE);
+                glccDisable(GL_RESCALE_NORMAL);
+                glccEnable(GL_NORMALIZE);
                 polyList = ((meshAnim*)p->mstruct)->mesh->object[0].pPolygonList;
                 materialList = ((meshAnim*)p->mstruct)->mesh->localMaterial;
                 if (currentTex != TR_Invalid)
@@ -1387,7 +1388,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
                 {                                           //morphed mesh, mo texture
                     meshMorphedObjectRender(&mesh->object[0], &mesh2->object[0], polyList, materialList, frac, p->colorScheme);
                 }
-                glDisable(GL_NORMALIZE);
+                glccDisable(GL_NORMALIZE);
             }
 
             if (bitTest(p->flags, PART_PSEUDOBILLBOARD))
@@ -1401,11 +1402,11 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 
             if (p->scale != 1.0f)
             {
-                glDisable(GL_RESCALE_NORMAL);
+                glccDisable(GL_RESCALE_NORMAL);
             }
         }
 
-        glPopMatrix();
+        glccPopMatrix();
     }
 
     shSetExponent(0, -1.0f);
@@ -1414,7 +1415,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
     g_SpecHack = FALSE;
     glDepthMask(GL_TRUE);
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
     return hits;
 }
@@ -1431,14 +1432,14 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 udword partRenderLineSystem(udword n, particle *p, udword flags)
 {
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     bool alpha = FALSE;
     if (bitTest(flags, PART_ALPHA))
     {
         alpha = TRUE;
         rndAdditiveBlends(FALSE);
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
     }
 
     bool   texEnabled   = rndTextureEnable(FALSE);
@@ -1463,7 +1464,7 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
         real32 lineWidth  = p->scale * resScaling;
         real32 lineThresh = lineWidth * 64.0f;
         real32 lineShrink = p->length<lineWidth ?  p->length/lineWidth  :  1.0f;
-        glLineWidth(lineWidth * lineShrink);
+        glccLineWidth(lineWidth * lineShrink);
 
         glBegin(GL_LINES);
         if (alpha)
@@ -1506,14 +1507,14 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
 
     if (alpha)
     {
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
     rndAdditiveBlends(FALSE);
 
     rndTextureEnable(texEnabled);
     rndLightingEnable(lightEnabled);
 
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
     return hits;
 }
 
@@ -1535,7 +1536,7 @@ udword partRenderCubeSystem(udword n, particle *p, udword flags)
     {
         alpha = TRUE;
         rndAdditiveBlends(FALSE);
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
     }
 
     for (i = hits = 0; i < n; i++, p++)
@@ -1546,19 +1547,19 @@ udword partRenderCubeSystem(udword n, particle *p, udword flags)
             hits++;
         if (p->waitspan > 0.0f)
             continue;
-        glPushMatrix();
-        glTranslatef(p->position.x, p->position.y, p->position.z);
+        glccPushMatrix();
+        glccTranslatef(p->position.x, p->position.y, p->position.z);
         if (alpha)
             glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
         else
             glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
         handleIllum(p);
         drawBox(p->scale * 0.5f, GL_QUADS);
-        glPopMatrix();
+        glccPopMatrix();
     }
 
     if (alpha)
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
 
     return hits;
 }
@@ -1583,11 +1584,11 @@ udword partRenderPointSystem(udword n, particle *p, udword flags)
     texEnabled = rndTextureEnable(FALSE);
     lightEnabled = rndLightingEnable(FALSE);
 
-    glGetFloatv(GL_POINT_SIZE, &pointsize);
+    glccGetFloatv(GL_POINT_SIZE, &pointsize);
     if (bitTest(flags, PART_ALPHA))
     {
         alpha = TRUE;
-        glEnable(GL_BLEND);
+        glccEnable(GL_BLEND);
         if (bitTest(p->flags, PART_ADDITIVE))
         {
             rndAdditiveBlends(TRUE);
@@ -1609,7 +1610,7 @@ udword partRenderPointSystem(udword n, particle *p, udword flags)
 
         handleIllum(p);
 
-        glPointSize((p->scale <= 3.0f) ? p->scale : 3.0f);
+        glccPointSize((p->scale <= 3.0f) ? p->scale : 3.0f);
         glBegin(GL_POINTS);
         if (alpha)
             glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
@@ -1621,13 +1622,13 @@ udword partRenderPointSystem(udword n, particle *p, udword flags)
 
     if (alpha)
     {
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
 
     rndTextureEnable(texEnabled);
     rndLightingEnable(lightEnabled);
 
-    glPointSize(pointsize);
+    glccPointSize(pointsize);
     rndAdditiveBlends(FALSE);
     return hits;
 }
@@ -1678,7 +1679,7 @@ void partRenderSystem(psysPtr psys)
         if (!isWorldspace)
         {
             //pop the matrix
-            glPopMatrix();
+            glccPopMatrix();
         }
         break;
 

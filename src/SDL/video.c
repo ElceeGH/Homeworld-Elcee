@@ -10,9 +10,9 @@
 #include "video.h"
 #include "Debug.h"
 #include "File.h"
-#include "glinc.h"
 #include "SDL.h"
 #include "render.h"
+#include "rStateCache.h"
 
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
@@ -330,21 +330,21 @@ static void videoRender( const Video* vid ) {
     const real32 winHalfH = winH / 2.0f;
 
     // Save matrices
-    glMatrixMode( GL_MODELVIEW  ); glPushMatrix();
-    glMatrixMode( GL_PROJECTION ); glPushMatrix();
+    glccMatrixMode( GL_MODELVIEW  ); glccPushMatrix();
+    glccMatrixMode( GL_PROJECTION ); glccPushMatrix();
 
     // Set transform.
-    glLoadIdentity();
-    glOrtho     ( 0.0f, winW, winH, 0.0f, -1.0f, +1.0f );
-    glTranslatef(  winHalfW,  winHalfH, 0.0f );
-    glScalef    (  scale,     scale,    1.0f );
-    glTranslatef( -winHalfW, -winHalfH, 0.0f );
-    glTranslatef(  transX,    transY,   0.0f );
+    glccLoadIdentity();
+    glccOrtho     ( 0.0f, winW, winH, 0.0f, -1.0f, +1.0f );
+    glccTranslatef(  winHalfW,  winHalfH, 0.0f );
+    glccScalef    (  scale,     scale,    1.0f );
+    glccTranslatef( -winHalfW, -winHalfH, 0.0f );
+    glccTranslatef(  transX,    transY,   0.0f );
     
     // Configure GL state
-    glEnable ( GL_TEXTURE_2D );
-    glDisable( GL_BLEND      );
-    glDisable( GL_DEPTH_TEST );
+    glccEnable ( GL_TEXTURE_2D );
+    glccDisable( GL_BLEND      );
+    glccDisable( GL_DEPTH_TEST );
     glBindTexture( GL_TEXTURE_2D, vid->texture );
     
     // Draw the textured video rectangle.
@@ -357,8 +357,8 @@ static void videoRender( const Video* vid ) {
     glEnd();
 
     // Restore matrices
-    glMatrixMode( GL_PROJECTION ); glPopMatrix();
-    glMatrixMode( GL_MODELVIEW  ); glPopMatrix();
+    glccMatrixMode( GL_PROJECTION ); glccPopMatrix();
+    glccMatrixMode( GL_MODELVIEW  ); glccPopMatrix();
 
     // Invoke callback if set
     if (vid->params.cbRender)

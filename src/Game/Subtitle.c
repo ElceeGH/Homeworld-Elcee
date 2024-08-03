@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "glinc.h"
 #include "Debug.h"
 #include "Memory.h"
 #include "StatScript.h"
@@ -24,6 +23,7 @@
 #include "FEReg.h"
 #include "StringSupport.h"
 #include "Subtitle.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Data:
@@ -1384,10 +1384,10 @@ void subTitlesDraw(subregion *region)
         rect.x1 = rect.x0 + SUB_PictureWidth;
         rect.y1 = rect.y0 + SUB_PictureHeight;
         trMakeCurrent(region->picture);
-        glDisable(GL_ALPHA_TEST);
-        glEnable(GL_BLEND);
+        glccDisable(GL_ALPHA_TEST);
+        glccEnable(GL_BLEND);
         primRectSolidTextured2(&rect);
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
 
     if (region->cardIndex == 0 && region == &subRegion[STR_LetterboxBar] && (!region->bAborted) && !region->bContinuousEvent)

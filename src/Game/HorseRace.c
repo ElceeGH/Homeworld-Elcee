@@ -26,7 +26,6 @@
 #include "File.h"
 #include "font.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "interfce.h"
 #include "LinkedList.h"
 #include "main.h"
@@ -48,6 +47,7 @@
 #include "UIControls.h"
 #include "Universe.h"
 #include "utility.h"
+#include "rStateCache.h"
 
 #ifdef _WIN32
     #define strcasecmp _stricmp
@@ -755,7 +755,7 @@ void hrDrawFile(char* filename, sdword x, sdword y)
 
     rndTextureEnable(TRUE);
     rndAdditiveBlends(FALSE);
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
 
     glGenTextures(1, &handle);
     trClearCurrent();
@@ -787,7 +787,7 @@ void hrDrawFile(char* filename, sdword x, sdword y)
     glDeleteTextures(1, &handle);
     memFree(lif);
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 
 void hrDrawBackground(void)
@@ -802,10 +802,10 @@ void hrDrawBackground(void)
 
         sdword oldTex = rndTextureEnable(TRUE);
         udword oldMode = rndTextureEnvironment(RTE_Replace);
-        bool cull = glIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
-        bool blend = glIsEnabled(GL_BLEND) ? TRUE : FALSE;
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
+        bool cull = glccIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
+        bool blend = glccIsEnabled(GL_BLEND) ? TRUE : FALSE;
+        glccDisable(GL_CULL_FACE);
+        glccEnable(GL_BLEND);
 
         trClearCurrent();
         glBindTexture(GL_TEXTURE_2D, hrBackgroundTexture);
@@ -834,8 +834,8 @@ void hrDrawBackground(void)
 
         rndTextureEnvironment(oldMode);
         rndTextureEnable(oldTex);
-        if (cull) glEnable(GL_CULL_FACE);
-        if (!blend) glDisable(GL_BLEND);
+        if (cull) glccEnable(GL_CULL_FACE);
+        if (!blend) glccDisable(GL_BLEND);
     }
 }
 

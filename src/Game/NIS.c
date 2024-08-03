@@ -24,7 +24,6 @@
 #include "FEFlow.h"
 #include "File.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "KAS.h"
 #include "Light.h"
 #include "mainrgn.h"
@@ -43,6 +42,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "miscUtil.h"
+#include "rStateCache.h"
 
 #ifdef _MSC_VER
 	#define strcasecmp _stricmp
@@ -5144,7 +5144,7 @@ void nisStaticDraw(nisstatic *snow)
         trRGBTextureMakeCurrent(snow->texture);
         if (snow->bAlpha)
         {                                                   //if it uses an alpha texture
-            glEnable(GL_BLEND);
+            glccEnable(GL_BLEND);
         }
         rndGLStateLog("Textured Static");
         glBegin(GL_QUADS);
@@ -5183,7 +5183,7 @@ void nisStaticDraw(nisstatic *snow)
         maxAlpha = min(snow->alpha + snow->alphaVariation, 1.0f);
         if (snow->bAlpha)
         {                                                   //if it uses an alpha texture
-            glEnable(GL_BLEND);
+            glccEnable(GL_BLEND);
         }
         glBegin(GL_LINES);
         while (nLines)
@@ -5205,7 +5205,7 @@ void nisStaticDraw(nisstatic *snow)
         }
     }
     glEnd();
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
     rndTextureEnable(FALSE);
 }
 

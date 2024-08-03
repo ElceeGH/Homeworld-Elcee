@@ -15,7 +15,6 @@
 #include "AutoLOD.h"
 #include "Debug.h"
 #include "FastMath.h"
-#include "glinc.h"
 #include "Globals.h"
 #include "mainrgn.h"
 #include "Matrix.h"
@@ -27,6 +26,7 @@
 #include "StatScript.h"
 #include "Universe.h"
 #include "UnivUpdate.h"
+#include "rStateCache.h"
 
 ubyte nebColor[4];
 
@@ -1237,7 +1237,7 @@ void nebDrawChunk2(nebChunk* chunk, sdword lod)
 
     real32 m[16], minv[16];
 
-    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
     shInvertMatrix(minv, m);
 
     dbgAssertOrIgnore(chunk != NULL);
@@ -1389,7 +1389,7 @@ void nebDrawTendril(nebTendril* tendril, sdword lod)
 
     real32 m[16], minv[16];
 
-    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
     shInvertMatrix(minv, m);
 
     dPosA = tendril->a->dPos;
@@ -2006,20 +2006,20 @@ void nebRenderNebula(nebulae_t* neb)
 
     _bright = TRUE;
 
-    fogOn = glIsEnabled(GL_FOG);
-    atOn = glIsEnabled(GL_ALPHA_TEST);
-    cullOff = !glIsEnabled(GL_CULL_FACE);
+    fogOn = glccIsEnabled(GL_FOG);
+    atOn = glccIsEnabled(GL_ALPHA_TEST);
+    cullOff = !glccIsEnabled(GL_CULL_FACE);
 
     glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
-    if (fogOn) glDisable(GL_FOG);
+    if (fogOn) glccDisable(GL_FOG);
 
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
     glDepthMask(GL_FALSE);
-    if (atOn) glDisable(GL_ALPHA_TEST);
-    if (cullOff) glEnable(GL_CULL_FACE);
+    if (atOn) glccDisable(GL_ALPHA_TEST);
+    if (cullOff) glccEnable(GL_CULL_FACE);
 
     TENDRILCOLOR0(TENDRILALPHA);
 
@@ -2080,11 +2080,11 @@ void nebRenderNebula(nebulae_t* neb)
     }
 
     glDepthMask(GL_TRUE);
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
-    if (fogOn) glEnable(GL_FOG);
-    if (atOn) glEnable(GL_ALPHA_TEST);
-    if (cullOff) glDisable(GL_CULL_FACE);
+    if (fogOn) glccEnable(GL_FOG);
+    if (atOn) glccEnable(GL_ALPHA_TEST);
+    if (cullOff) glccDisable(GL_CULL_FACE);
 
     rndLightingEnable(TRUE);
 }

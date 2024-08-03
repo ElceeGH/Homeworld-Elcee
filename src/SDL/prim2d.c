@@ -14,9 +14,9 @@
 
 #include "Debug.h"
 #include "FastMath.h"
-#include "glinc.h"
 #include "render.h"
 #include "rglu.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Data:
@@ -37,18 +37,18 @@ sdword primModeEnabled = FALSE;
 void primModeSetFunction2(void)
 {
     glShadeModel(GL_FLAT);
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
+    glccDisable(GL_ALPHA_TEST);
+    glccDisable(GL_BLEND);
 
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();                                         //perform no transformations on the 2D primitives
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
+    glccPushMatrix();
+    glccLoadIdentity();
+    glccMatrixMode(GL_PROJECTION);
+    glccPushMatrix();                                         //perform no transformations on the 2D primitives
+    glccLoadIdentity();
+    glccMatrixMode(GL_MODELVIEW);
     rndLightingEnable(FALSE);                               //mouse is self-illuminated
     rndTextureEnable(FALSE);
-    glDisable(GL_DEPTH_TEST);
+    glccDisable(GL_DEPTH_TEST);
 
     primModeEnabled = TRUE;
 }
@@ -63,13 +63,13 @@ void primModeSetFunction2(void)
 void primModeClearFunction2(void)
 {
     glShadeModel(GL_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
+    glccEnable(GL_DEPTH_TEST);
     rndLightingEnable(TRUE);                                //and lighting
     rndTextureEnable(TRUE);
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+    glccMatrixMode(GL_PROJECTION);
+    glccPopMatrix();
+    glccMatrixMode(GL_MODELVIEW);
+    glccPopMatrix();
 
     primModeEnabled = FALSE;
 }
@@ -104,15 +104,15 @@ void primTriSolid2(triangle *tri, color c)
 void primTriOutline2(triangle *tri, real32 thickness, color c)
 {
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINE_LOOP);
     glVertex2f(primScreenToGLX(tri->x0), primScreenToGLY(tri->y0));
     glVertex2f(primScreenToGLX(tri->x1), primScreenToGLY(tri->y1));
     glVertex2f(primScreenToGLX(tri->x2), primScreenToGLY(tri->y2));
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 }
 
 /*-----------------------------------------------------------------------------
@@ -207,8 +207,8 @@ void primRectTranslucent2(rectangle* rect, color c)
 {
     GLboolean blendOn;
 
-    blendOn = glIsEnabled(GL_BLEND);
-    if (!blendOn) glEnable(GL_BLEND);
+    blendOn = glccIsEnabled(GL_BLEND);
+    if (!blendOn) glccEnable(GL_BLEND);
     glColor4ub(colRed(c), colGreen(c), colBlue(c), colAlpha(c));
     glBegin(GL_QUADS);
     glVertex2f(primScreenToGLX(rect->x0), primScreenToGLY(rect->y0));
@@ -217,7 +217,7 @@ void primRectTranslucent2(rectangle* rect, color c)
     glVertex2f(primScreenToGLX(rect->x1), primScreenToGLY(rect->y0));
     glEnd();
     
-    if (!blendOn) glDisable(GL_BLEND);
+    if (!blendOn) glccDisable(GL_BLEND);
 }
 
 /*-----------------------------------------------------------------------------
@@ -233,10 +233,10 @@ void primRectOutline2(rectangle *rect, real32 thickness, color c)
 {
     sdword bottom = rect->y1 - 1;
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth(thickness);
+    glccLineWidth(thickness);
 
     glBegin(GL_LINE_LOOP);
     glVertex2f(primScreenToGLX(rect->x0), primScreenToGLY(rect->y0));
@@ -245,7 +245,7 @@ void primRectOutline2(rectangle *rect, real32 thickness, color c)
     glVertex2f(primScreenToGLX(rect->x0), primScreenToGLY(bottom));
     glEnd();
 
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 }
 
 /*-----------------------------------------------------------------------------
@@ -340,7 +340,7 @@ void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickne
     real32 centreX, centreY, width, height;
     real32 x, y;
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     centreX = primScreenToGLX(o->centreX);                  //get floating-point version of oval attributes
     centreY = primScreenToGLY(o->centreY);
@@ -351,7 +351,7 @@ void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickne
     endSegment = (sdword)(radEnd   * (real32)segments / (2.0f * PI) - 0.01f);//get ending segment
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINE_STRIP);
 
     x = centreX + sinf(radStart) * width;    //first vertex
@@ -378,7 +378,7 @@ void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickne
     glVertex2f(x, y);                                       //draw last vertex
     
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 }
 
 /*-----------------------------------------------------------------------------
@@ -440,16 +440,16 @@ void primLine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
 {
     bool blendon;
 
-    blendon = glIsEnabled(GL_BLEND);
-    if (!blendon) glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
+    blendon = glccIsEnabled(GL_BLEND);
+    if (!blendon) glccEnable(GL_BLEND);
+    glccEnable(GL_LINE_SMOOTH);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_LINES);
     glVertex2f(primScreenToGLX(x0), primScreenToGLY(y0));
     glVertex2f(primScreenToGLX(x1), primScreenToGLY(y1));
     glEnd();
-    glDisable(GL_LINE_SMOOTH);
-    if (!blendon) glDisable(GL_BLEND);
+    glccDisable(GL_LINE_SMOOTH);
+    if (!blendon) glccDisable(GL_BLEND);
 }
 
 /*-----------------------------------------------------------------------------
@@ -481,14 +481,14 @@ void primNonAALine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
 void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, real32 thickness, color c)
 {
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
-    glLineWidth((GLfloat)thickness);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccLineWidth((GLfloat)thickness);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_LINES);
     glVertex2f(primScreenToGLX(x0), primScreenToGLY(y0));
     glVertex2f(primScreenToGLX(x1), primScreenToGLY(y1));
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 }
 
 /*-----------------------------------------------------------------------------
@@ -504,12 +504,12 @@ static bool LLblendon;
 static GLfloat LLlinewidth;
 void primLineLoopStart2(real32 thickness, color c)
 {
-    glGetFloatv(GL_LINE_WIDTH, &LLlinewidth);
-    LLblendon = glIsEnabled(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-    if (!LLblendon) glEnable(GL_BLEND);
+    glccGetFloatv(GL_LINE_WIDTH, &LLlinewidth);
+    LLblendon = glccIsEnabled(GL_BLEND);
+    glccEnable(GL_LINE_SMOOTH);
+    if (!LLblendon) glccEnable(GL_BLEND);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINE_LOOP);
 }
 
@@ -535,9 +535,9 @@ void primLineLoopPoint3F(real32 x, real32 y)
 void primLineLoopEnd2(void)
 {
     glEnd();
-    glLineWidth(LLlinewidth);
-    if (!LLblendon) glDisable(GL_BLEND);
-    glDisable(GL_LINE_SMOOTH);
+    glccLineWidth(LLlinewidth);
+    if (!LLblendon) glccDisable(GL_BLEND);
+    glccDisable(GL_LINE_SMOOTH);
 }
 
 /*-----------------------------------------------------------------------------
@@ -623,8 +623,8 @@ void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb)
 {
     bool cull;
 
-    cull = glIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
-    glDisable(GL_CULL_FACE);
+    cull = glccIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
+    glccDisable(GL_CULL_FACE);
     glBegin(GL_POLYGON);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glVertex2f(SX(X0+xb), SY(Y0));
@@ -638,7 +638,7 @@ void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb)
     glEnd();
     if (cull)
     {
-        glEnable(GL_CULL_FACE);
+        glccEnable(GL_CULL_FACE);
     }
 }
 
@@ -655,9 +655,9 @@ void primBeveledRectOutline(rectangle *rect, real32 thickness, color c,
                             uword xb, uword yb)
 {
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINE_LOOP);
     glVertex2f(SX(X0+xb), SY(Y0));
     glVertex2f(SX(X1-xb), SY(Y0));
@@ -668,7 +668,7 @@ void primBeveledRectOutline(rectangle *rect, real32 thickness, color c,
     glVertex2f(SX(X0), SY(Y1-yb));
     glVertex2f(SX(X0), SY(Y0+yb));
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 }
 
 /*-----------------------------------------------------------------------------
@@ -685,10 +685,10 @@ void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, 
     oval o;
     sdword segs = SEGS;
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINES);
     glVertex2f(SX(X0+xb), SY(Y0));
     glVertex2f(SX(X1-xb), SY(Y0));
@@ -699,7 +699,7 @@ void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, 
     glVertex2f(SX(X0), SY(Y1-yb));
     glVertex2f(SX(X0), SY(Y0+yb));
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 
 //    if (xb > 4 || yb > 4)
 //        segs *= 2;
@@ -739,10 +739,10 @@ void primMaskedRoundRectOutline(rectangle *rect, real32 thickness, color c,
     oval o;
     sdword segs = SEGS;
     GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glccGetFloatv(GL_LINE_WIDTH, &linewidth);
 
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
+    glccLineWidth((GLfloat)thickness);
     glBegin(GL_LINES);
     glVertex2f(SX(X0+xb), SY(Y0));
     glVertex2f(SX(X1-xb), SY(Y0));
@@ -783,7 +783,7 @@ void primMaskedRoundRectOutline(rectangle *rect, real32 thickness, color c,
     }
 
     glEnd();
-    glLineWidth(linewidth);
+    glccLineWidth(linewidth);
 
     if (xb > 4 || yb > 4)
         segs *= 2;
@@ -899,7 +899,7 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
     real32 radiusX, radiusY;
     bool cull;
 
-    cull = glIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
+    cull = glccIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
 
     centre.x = primScreenToGLX(x);
     centre.y = primScreenToGLY(y);
@@ -910,7 +910,7 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
                colBlue(c), colAlpha(c));
     v[0] = centre.x;
     v[1] = centre.y;
-    glDisable(GL_CULL_FACE);
+    glccDisable(GL_CULL_FACE);
     glBegin(GL_TRIANGLE_FAN);
     glVertex2f(v[0], v[1]);
     for (index = 0, theta = 0.0; index < nSlices; index++)
@@ -926,7 +926,7 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
     glEnd();
     if (cull)
     {
-        glEnable(GL_CULL_FACE);
+        glccEnable(GL_CULL_FACE);
     }
 }
 
@@ -971,7 +971,7 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
     y2 = centreY - radYOuter;
 
     glShadeModel(GL_SMOOTH);
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     for (index = 0; index < nSlices; index++)
     {
         glBegin(GL_TRIANGLE_FAN);
@@ -999,7 +999,7 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
         glEnd();
         theta += addAmount;
     }
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
     glShadeModel(GL_FLAT);
 }
 
@@ -1065,7 +1065,7 @@ void primBlurryPoint2(sdword x, sdword y, color c)
     sdword iX, iY;
     ubyte *alpha, red = colRed(c), green = colGreen(c), blue = colBlue(c);
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     glBegin(GL_POINTS);
     alpha = &p2dAlphaArray1[0][0];
     for (iY = PD1_FuzzyPointYStart; iY <= PD1_FuzzyPointYEnd; iY++)
@@ -1078,14 +1078,14 @@ void primBlurryPoint2(sdword x, sdword y, color c)
     }
     glEnd();
     glColor4ub(0, 0, 0, 0xff);
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 void primBlurryPoint22(sdword x, sdword y, color c)
 {
     sdword iX, iY;
     ubyte *alpha, red = colRed(c), green = colGreen(c), blue = colBlue(c);
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     glBegin(GL_POINTS);
     alpha = &p2dAlphaArray2[0][0];
     for (iY = PD2_FuzzyPointYStart; iY <= PD2_FuzzyPointYEnd; iY++)
@@ -1098,7 +1098,7 @@ void primBlurryPoint22(sdword x, sdword y, color c)
     }
     glEnd();
     glColor4ub(0, 0, 0, 0xff);
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 }
 
 /*-----------------------------------------------------------------------------

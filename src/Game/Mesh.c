@@ -6,7 +6,6 @@
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
 
-#include "glinc.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,6 +34,7 @@
 #include "prim3d.h"
 #include "miscUtil.h"
 #include "rResScaling.h"
+#include "rStateCache.h"
 
 #ifdef _MSC_VER
 #define strcasecmp _stricmp
@@ -1517,7 +1517,7 @@ void meshObjectPoints(polygonobject* object, materialentry* materials, sdword iC
     lightOn = rndLightingEnable(FALSE);
     texOn = rndTextureEnable(FALSE);
 
-    glPointSize(4.0f);
+    glccPointSize(4.0f);
 
     for (iPoly = 0; iPoly < object->nPolygons; iPoly++, polygon++)
     {
@@ -1534,7 +1534,7 @@ void meshObjectPoints(polygonobject* object, materialentry* materials, sdword iC
         }
     }
 
-    glPointSize(1.0f);
+    glccPointSize(1.0f);
 
     rndLightingEnable(lightOn);
     rndTextureEnable(texOn);
@@ -1558,17 +1558,17 @@ void meshObjectRender(polygonobject *object, materialentry *materials, sdword iC
     {
         lightOn = rndLightingEnable(FALSE);
         glColor3ub(200,200,200);
-        glLineWidth( sqrtf(getResDensityRelative()) );
+        glccLineWidth( sqrtf(getResDensityRelative()) );
         enableBlend = TRUE;
         if (enableBlend)
         {
-            glEnable(GL_LINE_SMOOTH);
-            glEnable(GL_BLEND);
+            glccEnable(GL_LINE_SMOOTH);
+            glccEnable(GL_BLEND);
             rndAdditiveBlends(FALSE);
         }
         if (!g_HiddenRemoval)
         {
-            glDisable(GL_CULL_FACE);
+            glccDisable(GL_CULL_FACE);
         }
     }
 
@@ -1594,7 +1594,7 @@ void meshObjectRender(polygonobject *object, materialentry *materials, sdword iC
             meshCurrentMaterial(&materials[currentMaterial], iColorScheme);//set new material
             if (enableBlend)
             {
-                glEnable(GL_BLEND);
+                glccEnable(GL_BLEND);
             }
             glBegin(g_WireframeHack ? GL_LINE_LOOP : GL_TRIANGLES);                          //start new run
 #if MESH_MATERIAL_STATS
@@ -1768,16 +1768,16 @@ void meshObjectRender(polygonobject *object, materialentry *materials, sdword iC
 
     if (enableBlend)
     {
-        glDisable(GL_BLEND);
+        glccDisable(GL_BLEND);
     }
 
     if (g_WireframeHack)
     {
-        glLineWidth( 1.0f );
+        glccLineWidth( 1.0f );
         rndLightingEnable(lightOn);
         if (enableBlend)
         {
-            glDisable(GL_LINE_SMOOTH);
+            glccDisable(GL_LINE_SMOOTH);
         }
     }
 }
@@ -1804,7 +1804,7 @@ void meshSpecObjectRender(polygonobject *object, materialentry *materials, sdwor
 
     lightOn = rndLightingEnable(FALSE);
 
-    glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+    glccGetFloatv(GL_MODELVIEW_MATRIX, modelview);
     shInvertMatrix(modelviewInv, modelview);
 
     glShadeModel(mode);
@@ -2015,7 +2015,7 @@ void meshMorphedObjectRender(
     if (g_SpecHack)
     {
         lightOn = rndLightingEnable(FALSE);
-        glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+        glccGetFloatv(GL_MODELVIEW_MATRIX, modelview);
         shInvertMatrix(modelviewInv, modelview);
     }
 
@@ -2055,12 +2055,12 @@ void meshMorphedObjectRender(
         {
             //disable a bunch of stuff
             glEnd();
-            texEnabled   = glIsEnabled(GL_TEXTURE_2D);
-            lightEnabled = glIsEnabled(GL_LIGHTING);
-            blendEnabled = glIsEnabled(GL_BLEND);
-            glDisable(GL_TEXTURE_2D);
-            glDisable(GL_LIGHTING);
-            glDisable(GL_BLEND);
+            texEnabled   = glccIsEnabled(GL_TEXTURE_2D);
+            lightEnabled = glccIsEnabled(GL_LIGHTING);
+            blendEnabled = glccIsEnabled(GL_BLEND);
+            glccDisable(GL_TEXTURE_2D);
+            glccDisable(GL_LIGHTING);
+            glccDisable(GL_BLEND);
 
             //draw outlines of endpoint meshes
             morphLineColor1 = meshMorphLineColors[colorIndex].from;
@@ -2109,7 +2109,7 @@ void meshMorphedObjectRender(
                 primLine3((vector *)&vertexList2[polygon->iV2], (vector *)&vertexList2[polygon->iV0], morphLineColor1);
             }
             //draw the connecting lines
-            glEnable(GL_LINE_STIPPLE);
+            glccEnable(GL_LINE_STIPPLE);
             glLineStipple(1, 0x5a5a);
             if (!keyIsHit(THREEKEY))
             {
@@ -2117,7 +2117,7 @@ void meshMorphedObjectRender(
                 primLine3((vector *)&vertexList1[polygon->iV1], (vector *)&vertexList2[polygon->iV1], colWhite);
                 primLine3((vector *)&vertexList1[polygon->iV2], (vector *)&vertexList2[polygon->iV2], colWhite);
             }
-            glDisable(GL_LINE_STIPPLE);
+            glccDisable(GL_LINE_STIPPLE);
             if (!keyIsHit(FOURKEY))
             {
                 primLine3(&vert0, &vert1, colRGB(128, 128, 128));
@@ -2127,15 +2127,15 @@ void meshMorphedObjectRender(
 
             if (texEnabled)
             {
-                glEnable(GL_TEXTURE_2D);
+                glccEnable(GL_TEXTURE_2D);
             }
             if (texEnabled)
             {
-                glEnable(GL_LIGHTING);
+                glccEnable(GL_LIGHTING);
             }
             if (blendEnabled)
             {
-                glEnable(GL_BLEND);
+                glccEnable(GL_BLEND);
             }
             glBegin(GL_TRIANGLES);
         }
@@ -2324,8 +2324,8 @@ void meshObjectRenderR(polygonobject *object, materialentry *materials, sdword i
 {
     polygonobject *daughter;
 
-    glPushMatrix();
-    glMultMatrixf((float *)&object->localMatrix);            //set matrix for this object
+    glccPushMatrix();
+    glccMultMatrixf((float *)&object->localMatrix);            //set matrix for this object
 	shPushLightMatrix(&object->localMatrix);
 
     for (daughter = object->pDaughter; daughter != NULL; daughter = daughter->pSister)
@@ -2336,7 +2336,7 @@ void meshObjectRenderR(polygonobject *object, materialentry *materials, sdword i
     MESH_OBJECT_RENDER(object, materials, iColorScheme)
 
     shPopLightMatrix();
-    glPopMatrix();
+    glccPopMatrix();
 }
 
 /*-----------------------------------------------------------------------------
@@ -2391,17 +2391,17 @@ mhlocalbinding *meshObjectRenderHierarchy(mhlocalbinding *binding, polygonobject
 {
     polygonobject *daughter;
 
-    glPushMatrix();
+    glccPushMatrix();
     if (binding->function != NULL)
     {
         binding->function(binding->flags, &object->localMatrix,//call matrix update function !!! called every frame
                           &binding->matrix, binding->userData, binding->userID);
-        glMultMatrixf((float *)&binding->matrix);           //set matrix for this object
+        glccMultMatrixf((float *)&binding->matrix);           //set matrix for this object
 		shPushLightMatrix(&binding->matrix);
     }
     else
     {
-        glMultMatrixf((float *)&object->localMatrix);       //set matrix for this object
+        glccMultMatrixf((float *)&object->localMatrix);       //set matrix for this object
 		shPushLightMatrix(&object->localMatrix);
     }
     binding++;
@@ -2411,7 +2411,7 @@ mhlocalbinding *meshObjectRenderHierarchy(mhlocalbinding *binding, polygonobject
     }
     MESH_OBJECT_RENDER(object, materials, iColorScheme)
     shPopLightMatrix();
-    glPopMatrix();
+    glccPopMatrix();
     return(binding);
 }
 

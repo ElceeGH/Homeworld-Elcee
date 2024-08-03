@@ -8,13 +8,13 @@
 
 #include "NavLights.h"
 
-#include "glinc.h"
 #include "Matrix.h"
 #include "Memory.h"
 #include "prim3d.h"
 #include "render.h"
 #include "Universe.h"
 #include "rResScaling.h"
+#include "rStateCache.h"
 
 /*-----------------------------------------------------------------------------
     Name        : navLightBillboardEnable
@@ -34,9 +34,9 @@ void navLightBillboardEnable(Ship *s, NAVLightStatic *nls)
     vecAddTo(dst, s->posinfo.position);
 
     //setup billboarding
-    glPushMatrix();
+    glccPushMatrix();
     rndBillboardEnable(&dst);
-    glDisable(GL_CULL_FACE);
+    glccDisable(GL_CULL_FACE);
 }
 
 /*-----------------------------------------------------------------------------
@@ -50,8 +50,8 @@ void navLightBillboardDisable(void)
 {
     //undo billboarding
     rndBillboardDisable();
-    glPopMatrix();
-    glEnable(GL_CULL_FACE);
+    glccPopMatrix();
+    glccEnable(GL_CULL_FACE);
 }
 
 /*-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ void RenderNAVLights(Ship* ship)
         // Render each light
         bool lightOn = rndLightingEnable(FALSE);
         glDepthMask(GL_FALSE);
-        glEnable(GL_POINT_SMOOTH);
+        glccEnable(GL_POINT_SMOOTH);
         rndAdditiveBlends(TRUE);
         rndTextureEnable(FALSE);
         
@@ -167,7 +167,7 @@ void RenderNAVLights(Ship* ship)
 
         rndLightingEnable(lightOn);
         rndAdditiveBlends(FALSE);
-        glDisable(GL_POINT_SMOOTH);
+        glccDisable(GL_POINT_SMOOTH);
         glDepthMask(GL_TRUE);
     }
 }

@@ -15,7 +15,6 @@
 #include "FEReg.h"
 #include "font.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "InfoOverlay.h"
 #include "mainrgn.h"
 #include "mouse.h"
@@ -35,6 +34,7 @@
 #include "Tutor.h"
 #include "Tweak.h"
 #include "Universe.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Definitions:
@@ -3057,10 +3057,10 @@ void cmNumberRUsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glccEnable(GL_SCISSOR_TEST);
+    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    glccDisable(GL_SCISSOR_TEST);
 
     width = fontWidthf("%d", universe.curPlayerPtr->resourceUnits);//width of number
     feStaticRectangleDraw(region);                          //draw regular rectangle as backdrop
@@ -3097,10 +3097,10 @@ void cmTotalRUsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glccEnable(GL_SCISSOR_TEST);
+    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    glccDisable(GL_SCISSOR_TEST);
 
     for (index = RUs = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {
@@ -3169,10 +3169,10 @@ void cmTotalShipsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glccEnable(GL_SCISSOR_TEST);
+    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    glccDisable(GL_SCISSOR_TEST);
 
     for (index = nShips = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {

@@ -19,7 +19,6 @@
 #include "FEFlow.h"
 #include "font.h"
 #include "FontReg.h"
-#include "glinc.h"
 #include "Globals.h"
 #include "GravWellGenerator.h"
 #include "InfoOverlay.h"
@@ -41,6 +40,7 @@
 #include "Tweak.h"
 #include "Universe.h"
 #include "utility.h"
+#include "rStateCache.h"
 
 /*=============================================================================
     Local Type Definitions:
@@ -895,7 +895,7 @@ void mouseDraw(void)
         primModeSetFunction2();
     }
 
-    glEnable(GL_BLEND);
+    glccEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
     rndTextureEnvironment(RTE_Modulate);
 
@@ -1051,7 +1051,7 @@ void mouseDraw(void)
 
   finish:
 
-    glDisable(GL_BLEND);
+    glccDisable(GL_BLEND);
 
     if (!primModeOn)
     {
