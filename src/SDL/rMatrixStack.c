@@ -121,7 +121,7 @@ void msPopMatrix( void ) {
 /// Push the current matrix, copying it
 void msPushMatrix( void ) {
     Matrix* cur = msGetMatrix();
-    memcpy( cur, cur+1, sizeof(*cur) );
+    memcpy( cur+1, cur, sizeof(*cur) );
     msCurrentStack()->index++;
 }
 
