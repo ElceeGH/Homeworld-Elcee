@@ -249,13 +249,13 @@ void msSetOrtho( Matrix* m, float l, float r, float b, float t, float n, float f
 
 
 void msSetFrustum( Matrix* m, float l, float r, float b, float t, float n, float f ) {
-    const float ma = (r + l) / (r - l);
-    const float mb = (t + b) / (t - b);
-    const float mc = (f + n) / (f - n);
-    const float md = (2*f*n) / (f - n);
-    const float mp = (2*n)   / (r - l);
-    const float mq = (2*n)   / (t - b);
-
+    const float ma =  (r + l) / (r - l);
+    const float mb =  (t + b) / (t - b);
+    const float mc = -(f + n) / (f - n);
+    const float md = -(2*f*n) / (f - n);
+    const float mp =  (2 * n) / (r - l);
+    const float mq =  (2 * n) / (t - b);
+    
     msSet4x4( m,
         mp, 0,  ma, 0,
         0,  mq, mb, 0,
