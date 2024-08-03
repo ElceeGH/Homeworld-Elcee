@@ -368,7 +368,7 @@ static void videoRender( const Video* vid ) {
 
 
 /// Handle events during video playback.
-/// It only allows skipping the video using ESC or SPACE.
+/// It only allows skipping the video using ESC / RETURN / SPACE.
 /// Note: Allowing any key to skip isn't a good idea. Don't skip a video just because I adjust the volume.
 static void videoHandleEvents( bool* more ) {
     SDL_Event ev;
