@@ -26,7 +26,6 @@
 #include "File.h"
 #include "FontReg.h"
 #include "Formation.h"
-#include "glinc.h"
 #include "Globals.h"
 #include "HorseRace.h"
 #include "Key.h"
@@ -56,6 +55,7 @@
 #include "Task.h"
 #include "TitanNet.h"
 #include "utility.h"
+#include "rStateCache.h"
 
 #ifdef _WIN32
     #define strcasecmp _stricmp
@@ -1797,8 +1797,8 @@ int main (int argc, char* argv[])
         }
     }
 
+    // GL state cache system
     glccInit();
-    glccTestEquivalence();
 
     if (errorString == NULL)
     {
