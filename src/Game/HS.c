@@ -28,6 +28,7 @@ Copyright Relic Entertainment, Inc.  All rights reserved.
 #include "rShaderProgram.h"
 #include "rResScaling.h"
 #include "rStateCache.h"
+#include "rInterpolate.h"
 
 //scalar that determines distance out of bbox the window will travel from / to
 #define HS_DIST   1.08f
@@ -107,7 +108,7 @@ void hsProgramUpdate( void ) {
     // Make viewport vector
     const hvector viewport = { 0.0f, 0.0f, (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight };
 
-    // Inverst projection matrix for vertex position reconstruction.
+    // Invert projection matrix for vertex position reconstruction.
     hmatrix per,inv;
     glccGetFloatv( GL_PROJECTION_MATRIX, &per.m11 );
     shInvertMatrix( &inv.m11, &per.m11 );
