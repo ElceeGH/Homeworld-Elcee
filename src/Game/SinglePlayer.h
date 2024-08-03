@@ -162,6 +162,8 @@ typedef struct ShipSinglePlayerGameInfo
     real32 cliptDelta;              //clipt incrementer
     udword hsState;                 //hyperspace effect state
     udword hsFlags;
+
+    real32 cliptPrev;               /* TODO this unfortunately goes into save files, see if this can be put somewhere else, or mapped */
 } ShipSinglePlayerGameInfo;
 
 extern SinglePlayerGameInfo singlePlayerGameInfo;
