@@ -117,6 +117,7 @@ static vector lerp( vector from, vector to, real32 f ) {
 
 
 
+/// Interpolation metadata
 typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
     vector    pprev;  ///< Previous uninterpolated position
@@ -126,16 +127,54 @@ typedef struct Interp {
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
 } Interp;
 
-#define InterpLimit 4096              ///< Number of interps allocated at a time
-static udword interpCount;            ///< Current count
-static udword interpPeak;             ///< Highest count so far
-static Interp interps[ InterpLimit ]; ///< Interpolation items
+
+// Interp memory
+static udword  interpCount = 0;    ///< Current count
+static udword  interpPeak  = 0;    ///< Highest count so far
+static udword  interpAlloc = 0;    ///< Allocated count
+static Interp* interpData  = NULL; ///< Interpolation items
+
+// Interps to apply, in the same order as the render list.
+static Interp** renderList      = NULL;  ///< List of interps, in the same order as the universe render list. The same number of items allocated as with interps.
+static Interp** renderListEnd   = NULL;  ///< List exclusive end
+static bool     renderListReady = FALSE; ///< Whether list is built already. Only needs to be done once after a universe update.
 
 
 
 /// Get the limit for searching/iterating over the interps.
-static udword getLimit(void) {
-    return min( InterpLimit, interpPeak + 2 ); // +2 instead of +1; it needs to find empty spaces not just the last occupied space.
+static udword interpRangeLimit(void) {
+    return min( interpAlloc, interpPeak + 2 ); // +2 instead of +1; it needs to find empty spaces not just the last occupied space.
+}
+
+
+
+/// Allocte memory and update pointers
+static void rintAllocMemory( udword count ) {
+    udword interpBytes = count * sizeof(Interp);
+    udword renderBytes = count * sizeof(Interp*);
+
+    // Allocate
+    interpAlloc   = count;
+    interpData    = malloc( interpBytes );
+    renderList    = malloc( renderBytes );
+    renderListEnd = renderList;
+
+    // Zero
+    memset( interpData, 0x00, interpBytes );
+    memset( renderList, 0x00, renderBytes );
+}
+
+
+/// Grows allocated memory.
+static void rintGrowMemory( void ) {
+    // Save old pointers, grow to 150% of original size
+    void*   oldMem   = interpData;
+    udword  oldAlloc = interpAlloc;
+    udword  newAlloc = (udword) (interpAlloc * 1.5);
+    rintAllocMemory( newAlloc );
+
+    // Copy previous data.  Not needed for the render list because it's created fresh every update.
+    memcpy( interpData, oldMem, oldAlloc*sizeof(Interp) );
 }
 
 
@@ -143,11 +182,27 @@ static udword getLimit(void) {
 /// Find interp with matching obj pointer.
 /// Returns NULL on failure
 static Interp* interpFind( SpaceObj* obj ) {
-    for (udword i=0; i<InterpLimit; i++)
-        if (interps[i].obj == obj)
-            return &interps[i];
+    for (udword i=0; i<interpRangeLimit(); i++)
+        if (interpData[i].obj == obj)
+            return &interpData[i];
 
     return NULL;
+}
+
+
+
+/// Find a free slot. If none exists, more memory will be allocated automatically.
+static Interp* interpFindFreeSlot( void ) {
+    // Try to find free slot
+    Interp* interp = interpFind( NULL );
+
+    // No free slots. Well shit, better make some more.
+    if (interp == NULL) {
+        rintGrowMemory();
+        return interpFind( NULL );
+    }
+
+    return interp;
 }
 
 
@@ -175,6 +230,8 @@ static void interpDestroy( Interp* interp ) {
 typedef void(SpaceObjIter  )(SpaceObj*);
 typedef bool(SpaceObjFilter)(SpaceObj*);
 
+
+
 /// Iterate over all space objects in the universe list
 static void iterateSpaceObjectsUniverse( SpaceObjIter* iter, SpaceObjFilter filter ) {
     Node* node = universe.SpaceObjList.head;
@@ -187,6 +244,8 @@ static void iterateSpaceObjectsUniverse( SpaceObjIter* iter, SpaceObjFilter filt
             iter( obj );
     }
 }
+
+
 
 /// Iterate over all space objects in the render list
 static void iterateSpaceObjectsRender( SpaceObjIter* iter, SpaceObjFilter filter ) {
@@ -206,13 +265,13 @@ static void iterateSpaceObjectsRender( SpaceObjIter* iter, SpaceObjFilter filter
 /// Decide whether the object should be interpolated.
 static bool filterInterpAllowed( SpaceObj* obj ) {
     switch (obj->objtype) {
-        // Some effects shouldn't be interpolated, since they don't move.
+        // Some effects shouldn't be interpolated, since they don't move, and it creates weird visual artifacts.
         case OBJ_EffectType:
             return 0 != (((Effect*) obj)->flags       & (SOF_AttachPosition | SOF_AttachVelocity | SOF_AttachCoordsys))
                 || 0 != (((Effect*) obj)->effectFlags & (EAF_Position       | EAF_Velocity       | EAF_Coordsys      ));
 
         // Some types of objects just never move.
-        case OBJ_AsteroidType:
+        case OBJ_AsteroidType: // or do they...? Diamond shoals?
         case OBJ_DerelictType:
         case OBJ_NebulaType:
         case OBJ_GasType:
@@ -229,18 +288,18 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
 
 /// Clear all the exist flags.
 static void clearExistFlags(void) {
-    for (udword i=0; i<getLimit(); i++)
-        interps[i].exists = FALSE;
+    for (udword i=0; i<interpRangeLimit(); i++)
+        interpData[i].exists = FALSE;
 }
 
 
 
 /// Remove interps which no longer exist.
 static void cleanInterps(void) {
-    for (udword i=0; i<getLimit(); i++)
-        if (interps[i].exists == FALSE)
-        if (interps[i].obj    != NULL)
-            interpDestroy( &interps[i] );
+    for (udword i=0; i<interpRangeLimit(); i++)
+        if (interpData[i].exists == FALSE)
+        if (interpData[i].obj    != NULL)
+            interpDestroy( &interpData[i] );
 }
 
 
@@ -253,7 +312,7 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
 
     // Doesn't exist? Create one
     if (interp == NULL) {
-        interp = interpFind( NULL );
+        interp = interpFindFreeSlot();
         interpCreate( interp, obj );
     }
 
@@ -332,6 +391,10 @@ void rintInit( void ) {
     dbgMessagef( "    Universe update: %d Hz"   , UNIVERSE_UPDATE_RATE          );
     dbgMessagef( "    Timer frequency: %llu Hz" , SDL_GetPerformanceFrequency() );
 
+    // Alloc initial memory.
+    if (interpData == NULL)
+        rintAllocMemory( 1024 );
+
     rintClear();
     memset( &updateTiming, 0x00, sizeof(updateTiming) );
     memset( &frameTiming,  0x00, sizeof(frameTiming)  );
@@ -371,7 +434,7 @@ void rintRenderEnableDeferred( void ) {
 
 /// Clear all interpolation objects to empty
 void rintClear( void ) {
-    memset( interps, 0x00, sizeof(interps) );
+    memset( interpData, 0x00, sizeof(Interp) * interpAlloc );
     interpCount = 0;
     interpPeak  = 0;
 }
@@ -411,13 +474,6 @@ void rintUnivUpdatePostDestroy( void ) {
 ///////////////////////////////////////////////////////////////////////////////
 /// Render side
 ///////////////////////////////////////////////////////////////////////////////
-
-// Interps to apply, in the same order as the render list
-static Interp*  renderList[InterpLimit];
-static Interp** renderListEnd   = renderList;
-static bool     renderListReady = FALSE;
-
-
 
 /// Add mapping to the list
 static void generateRenderListElement( SpaceObj* obj ) {
