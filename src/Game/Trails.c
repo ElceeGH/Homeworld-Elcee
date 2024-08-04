@@ -1068,7 +1068,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real32 rad, Ship* ship, color c)
+void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real32 rad, Ship* ship, color c, real32 alpha)
 {
     vector pos, vel;
     real32 mag, maxvel, velratio;
@@ -1120,13 +1120,13 @@ void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real3
         partFilter(TRUE);
 
         rndBillboardEnable(&pos);
-        primSolidTexture3((vector*)&origin, rad, c, g_glowHandle);
+        primSolidTexture3Fade((vector*)&origin, rad, c, g_glowHandle, alpha);
         rndBillboardDisable();
     }
     else
     {
         rndBillboardEnable(&pos);
-        primCircleSolid3((vector*)&origin, rad, 16, c);
+        primCircleSolid3Fade((vector*)&origin, rad, 16, c, alpha);
         rndBillboardDisable();
     }
 
@@ -1255,18 +1255,14 @@ static sdword activeSegments;
 ----------------------------------------------------------------------------*/
 void trailLineInit(shiptrail* trail, sdword n)
 {
-    activeTrail = trail;
+    activeTrail    = trail;
     activeSegments = n;
-    _HALFWIDTH  = trailHalfWidth(trail) - HALFWIDTH_FALLOFF;
-    _HALFHEIGHT = trailHalfHeight(trail) - HALFWIDTH_FALLOFF;
+    _HALFWIDTH     = trailHalfWidth(trail)  - HALFWIDTH_FALLOFF;
+    _HALFHEIGHT    = trailHalfHeight(trail) - HALFWIDTH_FALLOFF;
 }
 
-#define VERT(V) glVertex3fv((GLfloat*)&V)
+#define VERT(V)   glVertex3fv((GLfloat*)&V)
 #define COLx(C,A) glColor4ub(colRed(C), colGreen(C), colBlue(C), (A))
-
-#define PYRAMID_ALPHA_LO  15
-#define PYRAMID_ALPHA_MID 79
-#define PYRAMID_ALPHA_HI  143
 
 /*-----------------------------------------------------------------------------
     Name        : trailLinePyramid
@@ -1283,7 +1279,7 @@ void trailLineInit(shiptrail* trail, sdword n)
     Return      :
 ----------------------------------------------------------------------------*/
 void trailLinePyramid(
-    sdword LOD, sdword i, vector* vectora, vector* vectorb, color c,
+    sdword LOD, sdword i, vector* vectora, vector* vectorb, color c, real32 alpha,
     vector horiz[], vector vert[], bool wide)
 {
     vector from, to;
@@ -1348,16 +1344,11 @@ void trailLinePyramid(
 
     if (wide)
     {
-        width = _HALFWIDTH * BURN_SIZESCALE;
+        width  = _HALFWIDTH * BURN_SIZESCALE;
         height = VS*_HALFWIDTH * BURN_SIZESCALE;
         if (BURN_COLORADJUST < 0)
-        {
-            cb = trailColorDesaturate(cb, -BURN_COLORADJUST);
-        }
-        else
-        {
-            cb = trailColorSaturate(cb, BURN_COLORADJUST);
-        }
+             cb = trailColorDesaturate(cb, -BURN_COLORADJUST);
+        else cb = trailColorSaturate(cb, BURN_COLORADJUST);
     }
     else
     {
@@ -1383,44 +1374,47 @@ void trailLinePyramid(
     b0hi.y = b0.y + vert[i+1].y * temp;
     b0hi.z = b0.z + vert[i+1].z * temp;
 
-    //render
+    // Alpha fade
+    ubyte pyrAlphaLow  = (ubyte)( 15.0f * alpha);
+    ubyte pyrAlphaHigh = (ubyte)(143.0f * alpha);
 
+    //render
     glccEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
 
     glBegin(GL_QUADS);
     //a
-    COLx(c,PYRAMID_ALPHA_LO);
+    COLx(c,pyrAlphaLow);
     VERT(a1);
-    COLx(cb,PYRAMID_ALPHA_LO);
+    COLx(cb,pyrAlphaLow);
     VERT(b1);
-    COLx(cb,PYRAMID_ALPHA_HI);
+    COLx(cb,pyrAlphaHigh);
     VERT(b0hi);
-    COLx(c,PYRAMID_ALPHA_HI);
+    COLx(c,pyrAlphaHigh);
     VERT(a0hi);
     //b
     VERT(a0hi);
-    COLx(cb,PYRAMID_ALPHA_HI);
+    COLx(cb,pyrAlphaHigh);
     VERT(b0hi);
-    COLx(cb,PYRAMID_ALPHA_LO);
+    COLx(cb,pyrAlphaLow);
     VERT(b2);
-    COLx(c,PYRAMID_ALPHA_LO);
+    COLx(c,pyrAlphaLow);
     VERT(a2);
     //c
     VERT(a2);
-    COLx(cb,PYRAMID_ALPHA_LO);
+    COLx(cb,pyrAlphaLow);
     VERT(b2);
-    COLx(cb,PYRAMID_ALPHA_HI);
+    COLx(cb,pyrAlphaHigh);
     VERT(b0lo);
-    COLx(c,PYRAMID_ALPHA_HI);
+    COLx(c,pyrAlphaHigh);
     VERT(a0lo);
     //d
     VERT(a0lo);
-    COLx(cb,PYRAMID_ALPHA_HI);
+    COLx(cb,pyrAlphaHigh);
     VERT(b0lo);
-    COLx(cb,PYRAMID_ALPHA_LO);
+    COLx(cb,pyrAlphaLow);
     VERT(b1);
-    COLx(c,PYRAMID_ALPHA_LO);
+    COLx(c,pyrAlphaLow);
     VERT(a1);
     glEnd();
 
@@ -1439,7 +1433,7 @@ void trailLinePyramid(
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void trailLineFuzzySheath(sdword LOD, sdword i, vector* vectora, vector* vectorb, color c, vector horiz[])
+void trailLineFuzzySheath(sdword LOD, sdword i, vector* vectora, vector* vectorb, color c, real32 alpha, vector horiz[])
 {
     vector from, to;
     real32 halfWidth, width, scalar = 0.9f;
@@ -1499,19 +1493,21 @@ void trailLineFuzzySheath(sdword LOD, sdword i, vector* vectora, vector* vectorb
     b2.y = b0.y + horiz[i+1].y * temp;
     b2.z = b0.z + horiz[i+1].z * temp;
 
-    //render
+    // Alpha fade
+    ubyte pyrAlphaMid = (ubyte)(79.0f * alpha);
 
+    //render
     glccEnable(GL_BLEND);
     glccDisable(GL_CULL_FACE);
     glDepthMask(GL_FALSE);
 
     glBegin(GL_QUADS);
-    COLx(c, PYRAMID_ALPHA_MID);
+    COLx(c, pyrAlphaMid);
     VERT(a1);
-    COLx(cb, PYRAMID_ALPHA_MID);
+    COLx(cb, pyrAlphaMid);
     VERT(b1);
     VERT(b2);
-    COLx(c, PYRAMID_ALPHA_MID);
+    COLx(c, pyrAlphaMid);
     VERT(a2);
     glEnd();
 
@@ -1530,23 +1526,18 @@ void trailLineFuzzySheath(sdword LOD, sdword i, vector* vectora, vector* vectorb
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void trailLineBillboard(sdword LOD, sdword i, vector* vectora, vector* vectorb, color c)
+void trailLineBillboard(sdword LOD, sdword i, vector* vectora, vector* vectorb, color c, real32 fade)
 {
-    vector veye, vseg, vcross;
-    vector from, fromHi;
-    vector to, toHi;
-    vector subAmount;
-    ubyte  alpha;
     static color  cb;
     static vector lastTo, lastToHi;
-
+    
     //setup
-
+    vector from, to;
     VECCOPY(&from, vectora);
     VECCOPY(&to, vectorb);
 
     //calc
-
+    vector veye, vseg, vcross;
     vecSub(veye, from, mrCamera->eyeposition);
     vecSub(vseg, to, from);
     vecNormalize(&veye);
@@ -1554,41 +1545,39 @@ void trailLineBillboard(sdword LOD, sdword i, vector* vectora, vector* vectorb, 
     vecCrossProduct(vcross, vseg, veye);
     vecNormalize(&vcross);
 
+    vector fromHi, toHi;
     vecScalarMultiply(fromHi, vcross, trailRibbonAdjust(activeTrail)*(_HALFHEIGHT+HALFWIDTH_FALLOFF));
     vecAddTo(fromHi, from);
-
     vecScalarMultiply(toHi, vcross, trailRibbonAdjust(activeTrail)*_HALFHEIGHT);
     vecAddTo(toHi, to);
 
+    vector subAmount;
     vecScalarMultiply(subAmount, vcross, trailRibbonAdjust(activeTrail)*(_HALFHEIGHT+HALFWIDTH_FALLOFF));
     vecSubFrom(from, subAmount);
     vecScalarMultiply(subAmount, vcross, trailRibbonAdjust(activeTrail)*_HALFHEIGHT);
     vecSubFrom(to, subAmount);
 
-    //render
+    // render
+    ubyte alpha = (ubyte)(127.0f * fade);
 
     glccEnable(GL_BLEND);
     glccDisable(GL_CULL_FACE);
     glDepthMask(GL_FALSE);
 
-    alpha = (ubyte)(127.0f * meshFadeAlpha);
-
     glBegin(GL_QUADS);
-    if (i == 0)
-    {
-        cb = c;
-    }
-    else
-    {
-        VECCOPY(&from, &lastTo);
-        VECCOPY(&fromHi, &lastToHi);
-    }
-    COLx(cb,alpha);
-    VERT(from);
-    VERT(fromHi);
-    COLx(c,alpha);
-    VERT(toHi);
-    VERT(to);
+        if (i == 0) {
+            cb = c;
+        } else {
+            VECCOPY(&from, &lastTo);
+            VECCOPY(&fromHi, &lastToHi);
+        }
+
+        COLx(cb,alpha);
+        VERT(from);
+        VERT(fromHi);
+        COLx(c,alpha);
+        VERT(toHi);
+        VERT(to);
     glEnd();
 
     glccEnable(GL_CULL_FACE);
@@ -1659,29 +1648,23 @@ color trailSurpriseColorAdjust(sdword index, sdword max, color c)
 ----------------------------------------------------------------------------*/
 void trailLineSequence(sdword LOD, sdword n, vector vectors[], color* segmentArray)
 {
-    sdword i;
-    color c;
-    ubyte alpha = 1;
-
-    alpha = (ubyte)((real32)alpha * meshFadeAlpha);
+    ubyte alpha = (ubyte)(meshFadeAlpha * 255.0f);
     glccEnable(GL_BLEND);
 
     if (LOD == 3)
-    {
-        glccLineWidth(2.0f);
-    }
+        glccLineWidth(2.0f * getResDensityRelative());
+    
+
     glBegin(GL_LINE_STRIP);
-    for (i = 0; i < n; i++)
-    {
-        c = trailSurpriseColorAdjust(i, n, segmentArray[i+(i==0)]);
+    for (sdword i = 0; i < n; i++) {
+        color c = trailSurpriseColorAdjust(i, n, segmentArray[max(i,1)]);
         glColor4ub(colRed(c), colGreen(c), colBlue(c), alpha);
         glVertex3fv((GLfloat*)(vectors + i));
     }
     glEnd();
+
     if (LOD == 3)
-    {
         glccLineWidth(1.0f);
-    }
 
     glccDisable(GL_BLEND);
 }
@@ -1693,22 +1676,21 @@ void trailLineSequence(sdword LOD, sdword n, vector vectors[], color* segmentArr
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void trailLine(sdword LOD, sdword i, vector vectors[], color c,
-               vector horiz[], vector vert[], bool wides[])
+void trailLine(sdword LOD, sdword i, vector vectors[], color c, real32 alpha,
+               vector horiz[], vector vert[], bool wides[]) 
 {
-    switch (LOD)
-    {
+    switch (LOD) {
     case 0:
     case 1:
-        trailLineBillboard(LOD, i, vectors + i, vectors + i + 1, c);
+        trailLineBillboard(LOD, i, vectors + i, vectors + i + 1, c, alpha);
         if (activeTrail->style == 1)
         {
-            trailLinePyramid(LOD, i, vectors + i, vectors + i + 1, c, horiz, vert, wides[i]);
+            trailLinePyramid(LOD, i, vectors + i, vectors + i + 1, c, alpha, horiz, vert, wides[i]);
         }
         break;
     case 2:
-        trailLineBillboard  (LOD, i, vectors + i, vectors + i + 1, c);
-        trailLineFuzzySheath(LOD, i, vectors + i, vectors + i + 1, c, horiz);
+        trailLineBillboard  (LOD, i, vectors + i, vectors + i + 1, c, alpha);
+        trailLineFuzzySheath(LOD, i, vectors + i, vectors + i + 1, c, alpha, horiz);
         break;
     }
 }
@@ -1749,8 +1731,8 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
     
     for (sdword i=0; i<limit; i++)
     {
-        const real32 fraction = 1.0f - (real32)i / (real32)limit;
-        const ubyte  alpha    = (ubyte)(255.0f * fraction);
+        const real32 fraction = 1.0f - (real32)i / (real32)(limit - 1);
+        const ubyte  alpha    = (ubyte)(255.0f * fraction * meshFadeAlpha);
         const color  col      = segmentArray[ i ];
     
         glColor4ub( colRed(col), colGreen(col), colBlue(col), alpha );
@@ -1832,6 +1814,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         }
     }
 
+    // Capital ship engine glow
     if (trail->style > 2)
     {
         if (dontdrawtrail)
@@ -1900,7 +1883,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         real32 rad = ship->staticinfo->staticheader.staticCollInfo.collspheresize;
         segmentArray = trail->staticInfo->segmentColor[teamIndex];
         _afterburning = FALSE;
-        trailDrawBillboardedSquareThingz(trail, &lastSegment, rad, ship, segmentArray[2]);
+        trailDrawBillboardedSquareThingz(trail, &lastSegment, rad, ship, segmentArray[2], meshFadeAlpha);
 
         if (lastSegment.wide)
         {
@@ -1921,6 +1904,13 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         VECCOPY(cur, &saveCur );
         return;
     }
+
+    // Fade out the trail when the ship is fading out.
+    // The high-detail LODs don't have fading accounted for.
+    // Also fade out when the ship is coming to a halt (instead of just disappearing instantly).
+    real32 velThresh  = 250.0f;
+    real32 velAlpha   = mag<velThresh ? mag/velThresh : 1.0f;
+    real32 trailAlpha = meshFadeAlpha * velAlpha;
 
     dbgAssertOrIgnore(teamIndex >= 0 && teamIndex < MAX_MULTIPLAYER_PLAYERS);
 
@@ -1997,10 +1987,8 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
                 //complex trail
                 for (i = 0; i < (n-1); i++)
                 {
-                    trailLine(LOD, i, segments,
-                              trailSurpriseColorAdjust(i, n, segmentArray[i+(i==0)])
-//                              segmentArray[i+(i==0)]
-                              , horizontals, verticals, wides);
+                    color c = segmentArray[ max(i,1) ];
+                    trailLine(LOD, i, segments, trailSurpriseColorAdjust(i, n, c), trailAlpha, horizontals, verticals, wides);
 
                     if (_HALFWIDTH > HALFWIDTH_MIN)
                     {
