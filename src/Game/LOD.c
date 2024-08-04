@@ -359,6 +359,37 @@ static ubyte lodSelectFromStaticInfo( const lodinfo* info, const real32 dist ) {
 
 
 
+/// Check if an object is huge, a mothership, a carrier, or a cruiser.
+static bool isBiggerBadderBoy( const SpaceObj* obj ) {
+    if (obj->flags & SOF_BigObject)
+        return TRUE;
+
+    if (obj->objtype == OBJ_ShipType) {
+        Ship* ship = (Ship*) obj;
+        switch (ship->shiptype) {
+            case Carrier:
+            case HeavyCruiser:
+            case Mothership:
+            case HeadShotAsteroid:
+            case P1Mothership:
+            case P2Mothership:
+            case P3Megaship:
+            case FloatingCity:
+            case MiningBase:
+            case ResearchStation:
+            case JunkYardHQ:
+            case Ghostship:
+            case ResearchStationBridge:
+            case ResearchStationTower:
+                return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+
 /// Compute LOD for the object.
 /// Does not modify the object.
 ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetail )
@@ -384,7 +415,7 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetai
             dist = magSqr * 0.22f;
 
         // Always render the big boys in their glorious full detail.
-        if (obj->flags & SOF_BigObject)
+        if (isBiggerBadderBoy( obj ))
             dist = 0.0f;
     }
     
