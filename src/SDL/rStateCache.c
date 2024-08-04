@@ -97,26 +97,53 @@ static Cache cache;
 /// Map ID to cache data. Not all IDs are mapped, just the ones Homeworld actually uses.
 static struct CacheMap cacheMap( GLenum id ) {
     switch (id) {
-        case GL_MATRIX_MODE       : return (CacheMap) { &cache.matrixMode        , sizeof(cache.matrixMode       ) , 1<<CacheMatrixMode        };
-        case GL_PROJECTION_MATRIX : return (CacheMap) { &cache.projectionMatrix  , sizeof(cache.projectionMatrix ) , 1<<CacheProjMatrix        };
-        case GL_MODELVIEW_MATRIX  : return (CacheMap) { &cache.modelViewMatrix   , sizeof(cache.modelViewMatrix  ) , 1<<CacheMvMatrix          };
-        case GL_COLOR_CLEAR_VALUE : return (CacheMap) { &cache.colorClearValue   , sizeof(cache.colorClearValue  ) , 1<<CacheClearColor        };
-        case GL_LINE_WIDTH        : return (CacheMap) { &cache.lineWidth         , sizeof(cache.lineWidth        ) , 1<<CacheLineWidth         };
-        case GL_POINT_SIZE        : return (CacheMap) { &cache.pointSize         , sizeof(cache.pointSize        ) , 1<<CachePointSize         };
-        case GL_VIEWPORT          : return (CacheMap) { &cache.viewport          , sizeof(cache.viewport         ) , 1<<CacheViewport          };
-        case GL_SCISSOR_BOX       : return (CacheMap) { &cache.scissorBox        , sizeof(cache.scissorBox       ) , 1<<CacheScissorBox        };
-        case GL_DEPTH_TEST        : return (CacheMap) { &cache.depthTest         , sizeof(cache.depthTest        ) , 1<<CacheDepthTest         };
-        case GL_ALPHA_TEST        : return (CacheMap) { &cache.alphaTest         , sizeof(cache.alphaTest        ) , 1<<CacheAlphaTest         };
-        case GL_STENCIL_TEST      : return (CacheMap) { &cache.stencilTest       , sizeof(cache.stencilTest      ) , 1<<CacheStencilTest       };
-        case GL_SCISSOR_TEST      : return (CacheMap) { &cache.scissorTest       , sizeof(cache.scissorTest      ) , 1<<CacheScissorTest       };
-        case GL_TEXTURE_2D        : return (CacheMap) { &cache.texture2D         , sizeof(cache.texture2D        ) , 1<<CacheTexture2D         };
-        case GL_BLEND             : return (CacheMap) { &cache.blend             , sizeof(cache.blend            ) , 1<<CacheBlend             };
-        case GL_LIGHTING          : return (CacheMap) { &cache.lighting          , sizeof(cache.lighting         ) , 1<<CacheLighting          };
-        case GL_CULL_FACE         : return (CacheMap) { &cache.cullFace          , sizeof(cache.cullFace         ) , 1<<CacheCullFace          };
-        case GL_FOG               : return (CacheMap) { &cache.fog               , sizeof(cache.fog              ) , 1<<CacheFog               };
-        case GL_NORMALIZE         : return (CacheMap) { &cache.normalizeNormals  , sizeof(cache.normalizeNormals ) , 1<<CacheNormalize         };
-        case GL_CLIP_PLANE0       : return (CacheMap) { &cache.clipPlane0        , sizeof(cache.clipPlane0       ) , 1<<CacheClipPlane0        };
+        case GL_MATRIX_MODE       : return (CacheMap) { &cache.matrixMode        , sizeof(cache.matrixMode      ) , 1<<CacheMatrixMode        };
+        case GL_PROJECTION_MATRIX : return (CacheMap) { &cache.projectionMatrix  , sizeof(cache.projectionMatrix) , 1<<CacheProjMatrix        };
+        case GL_MODELVIEW_MATRIX  : return (CacheMap) { &cache.modelViewMatrix   , sizeof(cache.modelViewMatrix ) , 1<<CacheMvMatrix          };
+        case GL_COLOR_CLEAR_VALUE : return (CacheMap) { &cache.colorClearValue   , sizeof(cache.colorClearValue ) , 1<<CacheClearColor        };
+        case GL_LINE_WIDTH        : return (CacheMap) { &cache.lineWidth         , sizeof(cache.lineWidth       ) , 1<<CacheLineWidth         };
+        case GL_POINT_SIZE        : return (CacheMap) { &cache.pointSize         , sizeof(cache.pointSize       ) , 1<<CachePointSize         };
+        case GL_VIEWPORT          : return (CacheMap) { &cache.viewport          , sizeof(cache.viewport        ) , 1<<CacheViewport          };
+        case GL_SCISSOR_BOX       : return (CacheMap) { &cache.scissorBox        , sizeof(cache.scissorBox      ) , 1<<CacheScissorBox        };
+        case GL_DEPTH_TEST        : return (CacheMap) { &cache.depthTest         , sizeof(cache.depthTest       ) , 1<<CacheDepthTest         };
+        case GL_ALPHA_TEST        : return (CacheMap) { &cache.alphaTest         , sizeof(cache.alphaTest       ) , 1<<CacheAlphaTest         };
+        case GL_STENCIL_TEST      : return (CacheMap) { &cache.stencilTest       , sizeof(cache.stencilTest     ) , 1<<CacheStencilTest       };
+        case GL_SCISSOR_TEST      : return (CacheMap) { &cache.scissorTest       , sizeof(cache.scissorTest     ) , 1<<CacheScissorTest       };
+        case GL_TEXTURE_2D        : return (CacheMap) { &cache.texture2D         , sizeof(cache.texture2D       ) , 1<<CacheTexture2D         };
+        case GL_BLEND             : return (CacheMap) { &cache.blend             , sizeof(cache.blend           ) , 1<<CacheBlend             };
+        case GL_LIGHTING          : return (CacheMap) { &cache.lighting          , sizeof(cache.lighting        ) , 1<<CacheLighting          };
+        case GL_CULL_FACE         : return (CacheMap) { &cache.cullFace          , sizeof(cache.cullFace        ) , 1<<CacheCullFace          };
+        case GL_FOG               : return (CacheMap) { &cache.fog               , sizeof(cache.fog             ) , 1<<CacheFog               };
+        case GL_NORMALIZE         : return (CacheMap) { &cache.normalizeNormals  , sizeof(cache.normalizeNormals) , 1<<CacheNormalize         };
+        case GL_CLIP_PLANE0       : return (CacheMap) { &cache.clipPlane0        , sizeof(cache.clipPlane0      ) , 1<<CacheClipPlane0        };
         default                   : return (CacheMap) { NULL, 0, 0 };
+    }
+}
+
+
+
+static char* idToName( GLenum id ) {
+    switch (id) {
+        case GL_MATRIX_MODE       : return "GL_MATRIX_MODE"      ;
+        case GL_PROJECTION_MATRIX : return "GL_PROJECTION_MATRIX";
+        case GL_MODELVIEW_MATRIX  : return "GL_MODELVIEW_MATRIX" ;
+        case GL_COLOR_CLEAR_VALUE : return "GL_COLOR_CLEAR_VALUE";
+        case GL_LINE_WIDTH        : return "GL_LINE_WIDTH"       ;
+        case GL_POINT_SIZE        : return "GL_POINT_SIZE"       ;
+        case GL_VIEWPORT          : return "GL_VIEWPORT"         ;
+        case GL_SCISSOR_BOX       : return "GL_SCISSOR_BOX"      ;
+        case GL_DEPTH_TEST        : return "GL_DEPTH_TEST"       ;
+        case GL_ALPHA_TEST        : return "GL_ALPHA_TEST"       ;
+        case GL_STENCIL_TEST      : return "GL_STENCIL_TEST"     ;
+        case GL_SCISSOR_TEST      : return "GL_SCISSOR_TEST"     ;
+        case GL_TEXTURE_2D        : return "GL_TEXTURE_2D"       ;
+        case GL_BLEND             : return "GL_BLEND"            ;
+        case GL_LIGHTING          : return "GL_LIGHTING"         ;
+        case GL_CULL_FACE         : return "GL_CULL_FACE"        ;
+        case GL_FOG               : return "GL_FOG"              ;
+        case GL_NORMALIZE         : return "GL_NORMALIZE"        ;
+        case GL_CLIP_PLANE0       : return "GL_CLIP_PLANE0"      ;
+        default                   : return "<UNKNOWN!>"          ;
     }
 }
 
@@ -128,11 +155,11 @@ static udword cacheRead( GLenum id, void* out ) {
 
     if (cache.flags & map.mask) {
         memcpy( out, map.address, map.size );
-        printf( "GLCC cache read: HIT, id=0x%04x size=%i\n", id, map.size );
+        //printf( "GLCC cache read: HIT, %s, id=0x%04x, size=%i\n", idToName(id), id, map.size );
         return TRUE;
     }
 
-    printf( "GLCC cache read: MISS, id=%i", id );
+    //printf( "GLCC cache read: MISS, %s, id=0x%04x\n", idToName(id), id );
     return FALSE;
 }
 
@@ -317,63 +344,3 @@ void glccOrtho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GL
     glccMultMatrixf( ortho.m );
 }
 
-
-
-
-
-void glccTestEquivalence() {
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    glOrtho( 0,1280, 0,720, -1, +1 );
-
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
-    glScalef( 3, 3, 3 );
-    glRotatef( 90, 0, 0, 1 );
-    glTranslatef( 1, 2, 3 );
-
-    glccPushMatrix();
-    glccScalef( 3, 2, 1 );
-    glccPopMatrix();
-
-    GLint glmode;
-    float glp[16];
-    float glm[16];
-    glGetIntegerv( GL_MATRIX_MODE, &glmode );
-    glGetFloatv( GL_PROJECTION_MATRIX, glp );
-    glGetFloatv( GL_MODELVIEW_MATRIX,  glm );
-
-
-
-    glccInit();
-    glccMatrixMode( GL_PROJECTION );
-    glccLoadIdentity();
-    glccOrtho( 0,1280, 0,720, -1, +1 );
-
-    glccMatrixMode( GL_MODELVIEW );
-    glccLoadIdentity();
-    glccScalef( 3, 3, 3 );
-    glccRotatef( 90, 0, 0, 1 );
-    glccTranslatef( 1, 2, 3 );
-
-    glccPushMatrix();
-    glccScalef( 3, 2, 1 );
-    glccPopMatrix();
-
-    GLint ccmode;
-    float ccp[16];
-    float ccm[16];
-    glccGetIntegerv( GL_MATRIX_MODE, &ccmode );
-    glccGetFloatv( GL_PROJECTION_MATRIX, ccp );
-    glccGetFloatv( GL_MODELVIEW_MATRIX,  ccm );
-
-
-    printf( "\n" );
-    for (int i=0; i<16; i++)
-        printf( "p[%i] \t= %f\n", i, glp[i]-ccp[i] );
-
-    printf( "\n" );
-    for (int i=0; i<16; i++)
-        printf( "m[%i] \t= %f\n", i, glm[i]-ccm[i] );
-
-}
