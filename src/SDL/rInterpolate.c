@@ -171,20 +171,6 @@ static void interpDestroy( Interp* interp ) {
 
 
 
-/// Map object to interp slot. If no existing mapping exists, one will be created.
-static Interp* interpMap( SpaceObj* obj ) {
-    Interp* interp = interpFind( obj );
-
-    if (interp == NULL) {
-        interp = interpFind( NULL );
-        interpCreate( interp, obj );
-    }
-     
-    return interp;
-}
-
-
-
 /// Space object callbacks
 typedef void(SpaceObjIter  )(SpaceObj*);
 typedef bool(SpaceObjFilter)(SpaceObj*);
@@ -223,7 +209,7 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
         // Some effects shouldn't be interpolated, since they don't move.
         case OBJ_EffectType:
             return 0 != (((Effect*) obj)->flags       & (SOF_AttachPosition | SOF_AttachVelocity | SOF_AttachCoordsys))
-                || 0 != (((Effect*) obj)->effectFlags & (EAF_Position       | EAF_Velocity       | EAF_Coordsys));
+                || 0 != (((Effect*) obj)->effectFlags & (EAF_Position       | EAF_Velocity       | EAF_Coordsys      ));
 
         // Some types of objects just never move.
         case OBJ_AsteroidType:
@@ -262,8 +248,17 @@ static void cleanInterps(void) {
 /// Set the previous position
 /// Adds objects to the interp list.
 static void setPrevPosAndAdd( SpaceObj* obj ) {
-    Interp* interp = interpMap( obj );
-    interp->pprev  = obj->posinfo.position;
+    // Find the object in the list
+    Interp* interp = interpFind( obj );
+
+    // Doesn't exist? Create one
+    if (interp == NULL) {
+        interp = interpFind( NULL );
+        interpCreate( interp, obj );
+    }
+
+    // Populate initial info
+    interp->pprev = obj->posinfo.position;
 
     if (obj->objtype == OBJ_ShipType) {
         interp->cprev = ((Ship *)obj)->collInfo.collPosition;
@@ -456,6 +451,7 @@ static void clearRenderList( void ) {
 
 
 
+/// Move everything to the interpolated positions.
 void rintRenderBegin( void ) {
     // Set the render fraction
     updateTimeFraction();
@@ -474,6 +470,7 @@ void rintRenderBegin( void ) {
 
 
 
+/// Move everything back to its original position.
 void rintRenderEnd( void ) {
     // May not be allowed
     if ( ! interpRenderAllowed())
