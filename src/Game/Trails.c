@@ -1905,13 +1905,6 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
         return;
     }
 
-    // Fade out the trail when the ship is fading out.
-    // The high-detail LODs don't have fading accounted for.
-    // Also fade out when the ship is coming to a halt (instead of just disappearing instantly).
-    real32 velThresh  = 250.0f;
-    real32 velAlpha   = mag<velThresh ? mag/velThresh : 1.0f;
-    real32 trailAlpha = meshFadeAlpha * velAlpha;
-
     dbgAssertOrIgnore(teamIndex >= 0 && teamIndex < MAX_MULTIPLAYER_PLAYERS);
 
 #if TRAIL_GATHER_STATS
@@ -1988,7 +1981,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
                 for (i = 0; i < (n-1); i++)
                 {
                     color c = segmentArray[ max(i,1) ];
-                    trailLine(LOD, i, segments, trailSurpriseColorAdjust(i, n, c), trailAlpha, horizontals, verticals, wides);
+                    trailLine(LOD, i, segments, trailSurpriseColorAdjust(i, n, c), meshFadeAlpha, horizontals, verticals, wides);
 
                     if (_HALFWIDTH > HALFWIDTH_MIN)
                     {
