@@ -289,7 +289,16 @@ static void videoUpload( Video* vid ) {
 /// For animatics we'll crop out the black bars, for anything else we make no assumptions.
 static real32 videoScale( const Video* vid, float aspectW ) {
     if (vid->params.animatic)
-         return min( aspectW, 1.6f );
+         return min( aspectW, 16/10.0f );
+    else return 1.0f;
+}
+
+
+
+/// For animatics, scale down the video slightly so the subtitles still appear inside the black bars.
+static real32 videoScaleFactor( const Video* vid ) {
+    if (vid->params.animatic)
+         return 0.92f;
     else return 1.0f;
 }
 
@@ -321,7 +330,7 @@ static void videoRender( const Video* vid ) {
     const real32 aspect = winW / winH;
     const real32 scaleX = winW / vidW;
     const real32 scaleY = winH / videoScale(vid,aspect);
-    const real32 scale  = min(scaleX, scaleY);
+    const real32 scale  = min(scaleX, scaleY) * videoScaleFactor(vid);
 
     // Translation to centre projection in window
     const real32 transX   = (winW - vidW) / 2.0f;
