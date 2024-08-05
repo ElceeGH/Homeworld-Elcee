@@ -370,7 +370,7 @@ static void videoRender( const Video* vid ) {
 /// Handle events during video playback.
 /// It only allows skipping the video using ESC / RETURN / SPACE.
 /// Note: Allowing any key to skip isn't a good idea. Don't skip a video just because I adjust the volume.
-static void videoHandleEvents( bool* more ) {
+static void videoHandleEvents( bool* more, bool* skipped ) {
     SDL_Event ev;
     while (SDL_PollEvent( &ev )) {
         if (ev.type != SDL_KEYDOWN)
@@ -379,9 +379,28 @@ static void videoHandleEvents( bool* more ) {
         switch (ev.key.keysym.sym) {
             case SDLK_ESCAPE:
             case SDLK_RETURN:
-            case SDLK_SPACE:
+            case SDLK_SPACE: {
                 *more = FALSE;
+
+                if (skipped)
+                    *skipped = TRUE;
+            }
         }
+    }
+}
+
+
+
+/// Handle end-of-video delay time.
+static void videoHandleEndDelay( udword durationMs ) {
+    udword end  = SDL_GetTicks() + durationMs;
+    bool   more = TRUE;
+
+    while (more) {
+        videoHandleEvents( &more, NULL );
+
+        if (SDL_GetTicks() > end)
+            more = FALSE;
     }
 }
 
@@ -389,10 +408,11 @@ static void videoHandleEvents( bool* more ) {
 
 /// Play a video. Blocks until complete/skipped.
 /// Callbacks allow external code to take action after each update and render.
-void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, bool isAnimatic ) {
+void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, udword endDelayMs, bool isAnimatic ) {
     // Create the full file path
     char path[ MAX_PATH ];
     snprintf( path, sizeof(path), "%s%s", fileHomeworldDataPath, filename );
+    printf( "Animatic video: %s\n", filename );
 
     // Video param struct
     VideoParams params = { 0 };
@@ -401,8 +421,9 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
     params.animatic = isAnimatic;
 
     // Video working data
-    Video video = { 0 }; // Video state
-    bool  more  = TRUE;  // Whether to continue playing
+    Video video   = { 0 }; // Video state
+    bool  more    = TRUE;  // Whether to continue playing
+    bool  skipped = FALSE; // Whether player skipped the video
 
     // Open the video
     if ( ! videoOpen( &video, path, params )) {
@@ -418,8 +439,12 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
         videoRender( &video );
         rndFlush();
 
-        videoHandleEvents( &more );
+        videoHandleEvents( &more, &skipped );
     }
+
+    // Wait for specified time at the end, unless the player skipped already.
+    if ( ! skipped)
+        videoHandleEndDelay( endDelayMs );
 
     // Clean up.
     videoClose( &video );

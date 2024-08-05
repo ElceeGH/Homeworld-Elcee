@@ -27,7 +27,8 @@
 sdword animaticJustPlayed = 0;  
 
 typedef struct animlst {
-    char filename[32];
+    char   filename[32];
+    udword endDelayMs;
 } animlst;
 
 static animlst    animlisting[NUMBER_SINGLEPLAYER_MISSIONS];
@@ -215,6 +216,15 @@ static nisheader* animLoadNISScript(char* scriptname)
 
 
 
+/// Some mild hackery. Some of the animatics have video runtime shorter than the speech runtime, and the video player has no idea.
+/// So I just add some hard offsets here.
+static void setEndDelay( animlst* anim ) {
+    if (NULL != strstr( anim->filename, "12_13" )) // Captain Elston speaks before Karos
+        anim->endDelayMs = 1500;
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : animStartup
     Description : reads animatics.lst from the Movies directory
@@ -246,6 +256,8 @@ void animStartup(void)
         sscanf(line, "%d %s", &level, temp);
         dbgAssertOrIgnore(level >= 0 && level < NUMBER_SINGLEPLAYER_MISSIONS);
         memStrncpy(animlisting[level].filename, temp, 31);
+
+        setEndDelay( &animlisting[level] );
     }
     fileClose(lst);
 }
@@ -338,10 +350,6 @@ static bool animSetup( sdword a, sdword b ) {
     snprintf( scriptFile, sizeof(scriptFile), "Movies/%s.script", animlisting[a].filename );
     animScriptHeader = animLoadNISScript( scriptFile );
 
-    // Stop sounds
-    //soundEventStopMusic(0.0f);
-    //soundstopall(0.0f);
-
     // Clear the screen (todo: remove this, it's pointless? Then again I don't actually clear the screen, do I...)
     rndSetClearColor(colBlack);
     rndClear();
@@ -372,10 +380,11 @@ static bool animSetup( sdword a, sdword b ) {
 static void animCleanup( void )
 {
     universe.totaltimeelapsed = animTimeElapsed;
-    //soundEventStopMusic(0.0f);
 
     mouseCursorShow();
+    rndSetClearColor(colBlack);
     rndClear();
+    rndFlush();
 
     soundstopall(0.0);
     speechEventUpdate();
@@ -387,10 +396,6 @@ static void animCleanup( void )
     soundEventSFXVol   ( animPreviousSFXVolume    );
 
     animaticJustPlayed = 8;
-
-    rndSetClearColor(colBlack);
-    rndClear();
-    rndFlush();
 }
 
 
@@ -399,8 +404,6 @@ static void animCleanup( void )
     Name        : animPlay
     Description : plays an animatic
     Inputs      : a, b - levels this video is playing between
-    Outputs     :
-    Return      :
 ----------------------------------------------------------------------------*/
 void animPlay(sdword a, sdword b)
 {
@@ -413,13 +416,7 @@ void animPlay(sdword a, sdword b)
     snprintf( videoFile, sizeof(videoFile), "Movies/%s.bik", animlisting[a].filename );
 
     // Play the video and run callbacks as we go.
-    videoPlay( videoFile, animUpdateCallback, animRenderCallback, TRUE );
-
-    // Wait a couple of seconds for any lingering audio playback to finish.
-    // @todo It would be nice to not hack it up here and actually read the audio playback status.
-    const real64 now = SDL_GetTicks();
-    const real64 end = now + 3000.0;
-    while (SDL_GetTicks() < end) {}
+    videoPlay( videoFile, animUpdateCallback, animRenderCallback, animlisting[a].endDelayMs, TRUE );
 
     // Clean up now that the video is finished.
     animCleanup();

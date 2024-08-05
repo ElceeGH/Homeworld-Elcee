@@ -17,5 +17,5 @@ typedef void VideoCallback( VideoStatus status );
 
 
 
-void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, bool isAnimatic );
+void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, udword endDelayMs, bool isAnimatic );
 
