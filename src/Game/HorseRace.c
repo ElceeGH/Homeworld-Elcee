@@ -33,6 +33,7 @@
 #include "mouse.h"
 #include "MultiplayerGame.h"
 #include "NIS.h"
+#include "Options.h"
 #include "prim2d.h"
 #include "Region.h"
 #include "render.h"
@@ -73,6 +74,7 @@ extern Uint32 utyTimerLast;
 
 #define HR_PacketRateLimitTime 50 // One packet every N milliseconds, max
 #define HR_MinRenderTime       7  // Artificially delay if rendering is very fast (e.g. no vsync or an extremely high refresh rate)
+#define HR_MinOverallTime      1600 // Must be at least 1.6 seconds total to work properly with the audio system.
 #define HR_PlayerNameFont      "Arial_12.hff"
 #define MAX_CHAT_TEXT          64
 #define NUM_CHAT_LINES         10
@@ -84,12 +86,12 @@ color HorseRaceDropoutColor = colRGB(75,75,75);
     data:
 =============================================================================*/
 
-/*extern HDC hGLDeviceContext;*/
-
 static rectangle hrSinglePlayerPos;
 static color hrSinglePlayerLoadingBarColor = colRGB(255,63,63);  // pastel red
 
 static sdword JustInit;
+static udword startTimeRef;
+static udword lastRenderTime;
 static sdword localbar;
 
 // Pixels and info about the background image chosen
@@ -380,7 +382,7 @@ void hrDrawChatBox(featom *atom, regionhandle region)
 
     for (i=0;i<NUM_CHAT_LINES;i++)
     {
-        if (chathistory[i].message[0]!=0)
+        if (chathistory[i].message[0]!=0) 
         {
             x = region->rect.x0;
             sprintf(name,"%s >",tpGameCreated.playerInfo[chathistory[i].packetheader.frame].PersonalName);
@@ -1013,6 +1015,8 @@ void horseRaceInit()
     listInit(&horseCrapRegion.cutouts);
 
     JustInit = TRUE;
+    startTimeRef   = SDL_GetTicks();
+    lastRenderTime = 0;
 
     if (!hrScreensHandle)
     {
@@ -1037,13 +1041,22 @@ void horseRaceInit()
     hrRunning=TRUE;
 }
 
+// Enforce the minimum load time so sound doesn't break on your 10Ghz 100-core supercomputer with 1000Hz display
+void horseRaceEnforceMinLoadTime( void ) {
+    const udword startTimeDeltaMin = max( HR_MinOverallTime, opLoadTimeMinMs );
+
+    udword timeDelta;
+    do {
+        timeDelta = SDL_GetTicks() - startTimeRef;
+        SDL_Delay(1);
+    } while (timeDelta < startTimeDeltaMin);
+}
+
 void horseRaceShutdown()
 {
-    sdword i;
-
     if (!ShouldHaveMousePtr) mouseCursorShow();
 
-    for(i=0;i<MAX_MULTIPLAYER_PLAYERS;i++)
+    for(sdword i=0;i<MAX_MULTIPLAYER_PLAYERS;i++)
     {
         TTimerClose(&hrPlayerDropoutTimers[i]);
     }
@@ -1064,6 +1077,7 @@ void horseRaceShutdown()
     hrProgressRegion = NULL;
     hrChatBoxRegion = NULL;
     ChatTextEntryBox = NULL;
+    
 }
 
 void horseRaceWaitForNetworkGameStartShutdown()
@@ -1327,14 +1341,26 @@ bool HorseRaceNext(real32 percent)
         }
     }
 
-    // Make rendering effectively take a certain minimum amount of time.
-    const udword timeRef   = SDL_GetTicks();
-    horseRaceRender();
-    const udword timeNow   = SDL_GetTicks();
-    const udword timeDelta = timeNow - timeRef;
+    // Don't try to render too fast, don't want to be TOO slow.
+    const udword lastTimeRef   = SDL_GetTicks();
+    const udword lastTimeDelta = lastRenderTime - lastTimeRef;
+    if (lastTimeDelta <= 1 && lastRenderTime != 0)
+        return TRUE;
 
-    if (timeDelta < HR_MinRenderTime)
-        SDL_Delay( HR_MinRenderTime - timeDelta );
+    // Make rendering effectively take a certain minimum amount of time.
+    const udword renderTimeRef   = SDL_GetTicks();
+    horseRaceRender();
+    const udword renderTimeNow   = SDL_GetTicks();
+    const udword renderTimeDelta = renderTimeNow - renderTimeRef;
+    lastRenderTime = renderTimeNow;
+
+    // Only delay if the overall time so far is not enough.
+    // The loading will speed up once there's no longer any point in slowing it down.
+    const udword startTimeDeltaMin = max( HR_MinOverallTime, opLoadTimeMinMs );
+    const udword startTimeDelta    = renderTimeNow - startTimeRef;
+    if (startTimeDelta  < startTimeDeltaMin)
+    if (renderTimeDelta < HR_MinRenderTime)
+        SDL_Delay( HR_MinRenderTime - renderTimeDelta );
 
     return TRUE;
 }

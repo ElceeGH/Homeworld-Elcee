@@ -744,6 +744,7 @@ scriptEntry utyOptionsList[] =
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
     {"RenderInterpolation",            scriptSetBool,     &opRenderInterpolation},
     {"EffectFrequencytMultiplier",     scriptSetUdwordCB, &opEffectFreqMult},
+    {"LoadingTimeMinimumMillisecs",    scriptSetUdwordCB, &opLoadTimeMinMs},
 
     END_SCRIPT_ENTRY
 };

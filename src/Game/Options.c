@@ -453,6 +453,7 @@ sdword opNumEffects;
 sdword opSaveNumEffects;
 
 udword opEffectFreqMult      = 100 * 2; ///< It's a percentage, 200% by default
+udword opLoadTimeMinMs       = 3000;    ///< 3 seconds loading time
 bool   opRenderInterpolation = TRUE;
 
 
