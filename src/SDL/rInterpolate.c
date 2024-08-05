@@ -14,12 +14,13 @@
 #include "rInterpolate.h"
 #include "Types.h"
 #include "Debug.h"
-#include "Vector.h"
-#include "SDL.h"
+#include "Matrix.h"
 #include "Options.h"
-#include "rResScaling.h"
 #include "NIS.h"
 #include "Universe.h"
+#include "Vector.h"
+
+#include "rResScaling.h"
 #include <stdio.h>
 
 
@@ -117,6 +118,44 @@ static vector lerp( vector from, vector to, real32 f ) {
 
 
 
+/// Signed saturated dot product of normalised vectors.
+static real32 dotProductClamped( vector a, vector b ) {
+    real32 dot = vecDotProduct( a, b );
+    dot = min( dot, +1.0f );
+    dot = max( dot, -1.0f );
+    return dot;
+}
+
+
+
+/// Interpolate an orientation. Vectors must be unit length.
+static vector slerp( vector from, vector to, real32 f ) {
+    const real32 dot = dotProductClamped( from, to );
+
+    // If they're almost exactly the same, just lerp.
+    if (fabsf(dot) > 0.99f)
+        return lerp( from, to, f );
+
+    vector rel = {
+        to.x - from.x * dot,
+        to.y - from.y * dot,
+        to.z - from.z * dot
+    };
+    
+    vecNormalize( &rel );
+    const real32 rads = acosf( dot ) * f;
+    const real32 cos  = cosf( rads );
+    const real32 sin  = sinf( rads );
+
+    return (vector) {
+        from.x * cos + rel.x * sin,
+        from.y * cos + rel.y * sin,
+        from.z * cos + rel.z * sin
+    };
+}
+
+
+
 /// Interpolation metadata
 typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
@@ -124,8 +163,11 @@ typedef struct Interp {
     vector    pcurr;  ///< Current  uninterpolated position
     vector    cprev;  ///< Previous uninterpolated collision position (ships only)
     vector    ccurr;  ///< Current  uninterpolated collision position (ships only)
+    matrix    hprev;  ///< Previous uninterpolated coordsys matrix
+    matrix    hcurr;  ///< Current  uninterpolated coordsys matrix
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
 } Interp;
+
 
 
 // Interp memory
@@ -136,7 +178,7 @@ static Interp* interpData  = NULL; ///< Interpolation items
 
 // Interps to apply, in the same order as the render list.
 static Interp** renderList      = NULL;  ///< List of interps, in the same order as the universe render list. The same number of items allocated as with interps.
-static Interp** renderListEnd   = NULL;  ///< List exclusive end
+static Interp** renderListEnd   = NULL;  ///< List exclusive end / append pointer
 static bool     renderListReady = FALSE; ///< Whether list is built already. Only needs to be done once after a universe update.
 
 
@@ -199,7 +241,7 @@ static Interp* interpFindFreeSlot( void ) {
     // No free slots. Well shit, better make some more.
     if (interp == NULL) {
         rintGrowMemory();
-        return interpFind( NULL );
+        interp = interpFind( NULL );
     }
 
     return interp;
@@ -270,17 +312,38 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
             return 0 != (((Effect*) obj)->flags       & (SOF_AttachPosition | SOF_AttachVelocity | SOF_AttachCoordsys))
                 || 0 != (((Effect*) obj)->effectFlags & (EAF_Position       | EAF_Velocity       | EAF_Coordsys      ));
 
-        // Some types of objects just never move.
-        case OBJ_AsteroidType: // or do they...? Diamond shoals?
+        // These are normal objects.
+        case OBJ_ShipType:
+        case OBJ_BulletType:
+        case OBJ_MissileType:
+        case OBJ_AsteroidType:
         case OBJ_DerelictType:
+            return TRUE;
+
+        // Some types of objects just never move/rotate.
         case OBJ_NebulaType:
         case OBJ_GasType:
         case OBJ_DustType:
             return FALSE;
 
-        // That leaves bullets, ships and missiles.
         default:
+            return FALSE;
+    }
+}
+
+
+
+/// Some object types get extras. Their orientation and collision origin are also interpolated.
+/// Applies only for SpaceObjRotImp compatible objects.
+static bool filterExtraInterpAllowed( SpaceObj* obj ) {
+    switch (obj->objtype) {
+        case OBJ_ShipType:
+        case OBJ_DerelictType:
+        case OBJ_AsteroidType:
             return TRUE;
+
+        default:
+            return FALSE;
     }
 }
 
@@ -319,8 +382,10 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
     // Populate initial info
     interp->pprev = obj->posinfo.position;
 
-    if (obj->objtype == OBJ_ShipType) {
-        interp->cprev = ((Ship *)obj)->collInfo.collPosition;
+    if (filterExtraInterpAllowed( obj )) {
+        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+        interp->cprev = sori->collInfo.collPosition;
+        interp->hprev = sori->rotinfo.coordsys;
     }
 }
 
@@ -334,40 +399,66 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
     if (interp == NULL)
         return;
 
-    interp->pcurr  = obj->posinfo.position;
+    // Mark as existing, store current pos
     interp->exists = TRUE;
-
-    if (obj->objtype == OBJ_ShipType) {
-        interp->ccurr = ((Ship *)obj)->collInfo.collPosition;
+    interp->pcurr  = obj->posinfo.position;
+    
+    // Handle the more advanced cases
+    if (filterExtraInterpAllowed( obj )) {
+        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+        interp->ccurr = sori->collInfo.collPosition;
+        interp->hcurr = sori->rotinfo.coordsys;
     }
 }
 
 
 
-/// Interpolate the position of the associated spaceobj
-static void interpolatePosition( const Interp* interp ) {
+/// Interpolate the values of the associated spaceobj
+static void interpolateObject( const Interp* interp ) {
     SpaceObj*    obj = interp->obj;
-    const vector pa  = interp->pprev;
-    const vector pb  = interp->pcurr;
     const real32 f   = rintFraction();
+
+    const vector pa = interp->pprev;
+    const vector pb = interp->pcurr;
     obj->posinfo.position = lerp( pa, pb, f );
 
-    if (obj->objtype == OBJ_ShipType) {
+    if (filterExtraInterpAllowed( obj )) {
+        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+
         const vector ca = interp->cprev;
         const vector cb = interp->ccurr;
-        ((Ship *)obj)->collInfo.collPosition = lerp( ca, cb, f );
+        sori->collInfo.collPosition = lerp( ca, cb, f );
+
+        vector upA, upB, rightA, rightB, headA, headB;
+        matGetVectFromMatrixCol1( upA,    interp->hprev );
+        matGetVectFromMatrixCol1( upB,    interp->hcurr );
+        matGetVectFromMatrixCol2( rightA, interp->hprev );
+        matGetVectFromMatrixCol2( rightB, interp->hcurr );
+        matGetVectFromMatrixCol3( headA,  interp->hprev );
+        matGetVectFromMatrixCol3( headB,  interp->hcurr );
+
+        vector up    = slerp( upA,    upB,    f );
+        vector right = slerp( rightA, rightB, f );
+        vector head  = slerp( headA,  headB,  f );
+
+        matrix* mat = &sori->rotinfo.coordsys;
+        matPutVectIntoMatrixCol1( up   , *mat );
+        matPutVectIntoMatrixCol2( right, *mat );
+        matPutVectIntoMatrixCol3( head , *mat );
     }
 }
 
 
 
-/// Restore the original position of the associated spaceobj
-static void restorePosition( const Interp* interp ) {
+/// Restore the original values of the associated spaceobj
+static void restoreObject( const Interp* interp ) {
     SpaceObj* obj = interp->obj;
     obj->posinfo.position = interp->pcurr;
 
-    if (obj->objtype == OBJ_ShipType) {
-        ((Ship *)obj)->collInfo.collPosition = interp->ccurr;
+    if (filterExtraInterpAllowed( obj )) {
+        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+        sori->collInfo.collPosition = interp->ccurr;
+        sori->rotinfo.coordsys      = interp->hcurr;
     }
 }
 
@@ -521,7 +612,7 @@ void rintRenderBegin( void ) {
 
     // Interpolate everything
     for (Interp** interp=renderList; interp!=renderListEnd; interp++)
-        interpolatePosition( *interp );
+        interpolateObject( *interp );
 }
 
 
@@ -534,7 +625,7 @@ void rintRenderEnd( void ) {
 
     // Restore everything
     for (Interp** interp=renderList; interp!=renderListEnd; interp++)
-        restorePosition( *interp );
+        restoreObject( *interp );
 }
 
 
