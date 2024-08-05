@@ -41,6 +41,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "Vector.h"
+#include "rInterpolate.h"
 
 #define GUNBURST_STATE_READY        0
 #define GUNBURST_STATE_BURST        1
@@ -211,8 +212,8 @@ void gunNewGimbleUpdateCoordSys(Gun *gun,GunStatic *gunstatic)
 {
     matrix newmat,rotxmatrix,rotymatrix;
 
-    matMakeRotAboutY(&rotymatrix,(real32)cos(gun->declination),(real32)sin(gun->declination));
-    matMakeRotAboutX(&rotxmatrix,(real32)cos(gun->angle),(real32)sin(gun->angle));
+    matMakeRotAboutY(&rotymatrix,cosf(gun->declination),sinf(gun->declination));
+    matMakeRotAboutX(&rotxmatrix,cosf(gun->angle),sinf(gun->angle));
 
     matMultiplyMatByMat(&newmat,&gunstatic->defaultgunorientation,&rotxmatrix);
     matMultiplyMatByMat(&gun->curgunorientation,&newmat,&rotymatrix);
@@ -802,7 +803,8 @@ void gunRecoilVectorCompute(vector *dest, real32 recoilLength, real32 lastFired,
     real32 timeElapsed, offset;
     sdword index;
 
-    timeElapsed = universe.totaltimeelapsed - lastFired;
+    real32 timeRef = universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
+    timeElapsed = timeRef - lastFired;
     if (timeElapsed > rateOfFire)
     {                                                       //if the gun is sitting idle
         dest->x = dest->y = dest->z = 0.0f;                 //no recoil at all
@@ -1535,7 +1537,7 @@ bool gunMatrixUpdate(udword flags, hmatrix *startMatrix, hmatrix *matrix, void *
             {
                 hmatrix rotmatrix;
                 real32 angle = gun->angle;
-                hmatMakeRotAboutX(&rotmatrix,(real32)cos(angle),(real32)sin(angle));
+                hmatMakeRotAboutX(&rotmatrix,cosf(angle),sinf(angle));
                 hmatMultiplyHMatByHMat(matrix, startMatrix, &rotmatrix);
                 break;
             }
@@ -1543,7 +1545,7 @@ bool gunMatrixUpdate(udword flags, hmatrix *startMatrix, hmatrix *matrix, void *
             {
                 hmatrix rotmatrix;
                 real32 declination = gun->declination;
-                hmatMakeRotAboutY(&rotmatrix,(real32)cos(declination),(real32)sin(declination));
+                hmatMakeRotAboutY(&rotmatrix,cosf(declination),sinf(declination));
                 hmatMultiplyHMatByHMat(matrix, startMatrix, &rotmatrix);
                 break;
             }
