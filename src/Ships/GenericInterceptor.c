@@ -758,7 +758,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                 randegf = (real32) ((randeg & 1) ? randeg : -randeg);
                 randegf = DEG_TO_RAD(randegf);
 
-                matMakeRotAboutZ(&tmpmat,(real32)cos(randegf),(real32)sin(randegf));
+                matMakeRotAboutZ(&tmpmat,cosf(randegf),sinf(randegf));
                 matMultiplyMatByVec(&spec->aivec,&tmpmat,&tmpvec);
 
                 vecAddTo(spec->aivec,target->posinfo.position);
@@ -851,16 +851,14 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                         ship->tacticsTalk = 0;  //reset variable
 
                         if (targetIndex == CLASS_Fighter)
-                            randegf = (real32) randeg;  // always break left for fighters so they avoid each other better
-                        else
-                            randegf = (real32) ((randeg & 1) ? randeg : -randeg);
+                             randegf = (real32) randeg;  // always break left for fighters so they avoid each other better
+                        else randegf = (real32) ((randeg & 1) ? randeg : -randeg);
                     }
                     randegf = DEG_TO_RAD(randegf);
 
                     if ((ship->formationcommand) && (ship->tacticstype != Evasive))
-                        formtype = ship->formationcommand->formation.formationtype;
-                    else
-                        formtype = NO_FORMATION;
+                         formtype = ship->formationcommand->formation.formationtype;
+                    else formtype = NO_FORMATION;
 
                     if ((target->objtype == OBJ_ShipType) && (((Ship *)target)->shiptype == Mothership) && (((Ship *)target)->shiprace == R1) )
                     {
@@ -871,7 +869,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                     {
                         //vecScalarMultiply(tmpvec,trajectory,interceptorstat->flyPastDist[ship->tacticstype][targetIndex]);
                         vecScalarMultiply(tmpvec,trajectory,FAKE_FLY_BY_DISTANCE_MUCH_BIGGER_THAN_NEEDED);
-                        matMakeRotAboutY(&tmpmat,(real32)cos(randegf),(real32)sin(randegf));
+                        matMakeRotAboutY(&tmpmat,cosf(randegf),sinf(randegf));
                         matMultiplyMatByVec(&spec->aivec,&tmpmat,&tmpvec);
                     }
                     else if ( (formtype == DELTA_FORMATION) || (formtype == BROAD_FORMATION) )
@@ -887,11 +885,11 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
 
                         if (ABS(trajectory.x) > ABS(trajectory.y))
                         {
-                            matMakeRotAboutY(&tmpmat,(real32)cos(randegf),(real32)sin(randegf));
+                            matMakeRotAboutY(&tmpmat,cosf(randegf),sinf(randegf));
                         }
                         else
                         {
-                            matMakeRotAboutX(&tmpmat,(real32)cos(randegf),(real32)sin(randegf));
+                            matMakeRotAboutX(&tmpmat,cosf(randegf),sinf(randegf));
                         }
                         matMultiplyMatByVec(&spec->aivec,&tmpmat,&tmpvec);
                         if (trajectory.z > 0.0f)
@@ -909,7 +907,7 @@ void GenericInterceptorAttack(Ship *ship,SpaceObjRotImpTarg *target,real32 maxdi
                     {
                         //vecScalarMultiply(tmpvec,trajectory,interceptorstat->flyPastDist[ship->tacticstype][targetIndex]);
                         vecScalarMultiply(tmpvec,trajectory,FAKE_FLY_BY_DISTANCE_MUCH_BIGGER_THAN_NEEDED);
-                        matMakeRotAboutZ(&tmpmat,(real32)cos(randegf),(real32)sin(randegf));
+                        matMakeRotAboutZ(&tmpmat,cosf(randegf),sinf(randegf));
                         matMultiplyMatByVec(&spec->aivec,&tmpmat,&tmpvec);
                     }
 
