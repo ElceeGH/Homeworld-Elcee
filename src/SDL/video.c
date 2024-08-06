@@ -421,7 +421,6 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
     // Create the full file path
     char path[ MAX_PATH ];
     snprintf( path, sizeof(path), "%s%s", fileHomeworldDataPath, filename );
-    printf( "Animatic video: %s\n", filename );
 
     // Video param struct
     VideoParams params = { 0 };
