@@ -1706,7 +1706,7 @@ void trailLine(sdword LOD, sdword i, vector vectors[], color c, real32 alpha,
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamIndex)
+void mistrailDraw(vector* current, missiletrail* trail, real32 thicknessScale, real32 lifetimeFadeAlpha, sdword teamIndex)
 {
     if (!enableTrails)
         return;
@@ -1716,7 +1716,7 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
     if (trail->nLength < 1)
         return;
 
-    glccLineWidth( 1.5f * sqrtf(getResDensityRelative()) );
+    glccLineWidth( thicknessScale * sqrtf(getResDensityRelative()) );
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
     glShadeModel(GL_SMOOTH);
@@ -1728,11 +1728,12 @@ void mistrailDraw(vector* current, missiletrail* trail, sdword LOD, sdword teamI
     const sdword segmentCount = trail->staticInfo->nSegments;
     const sdword limit        = min( trail->nLength, segmentCount );
     sdword       index        = (trail->iHead <= 0 ? limit : trail->iHead) - 1;
+    const real32 fracRcp      = 1.0f / (real32)(limit - 1);
     
     for (sdword i=0; i<limit; i++)
     {
-        const real32 fraction = 1.0f - (real32)i / (real32)(limit - 1);
-        const ubyte  alpha    = (ubyte)(255.0f * fraction * meshFadeAlpha);
+        const real32 fraction = 1.0f - (real32)i * fracRcp;
+        const ubyte  alpha    = (ubyte)(255.0f * fraction * meshFadeAlpha * lifetimeFadeAlpha);
         const color  col      = segmentArray[ i ];
     
         glColor4ub( colRed(col), colGreen(col), colBlue(col), alpha );

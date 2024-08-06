@@ -2272,6 +2272,13 @@ void rndMainViewAllButRenderFunction(Camera *camera)
 
 
 
+static real32 lerpf( real32 a, real32 b, real32 f ) {
+    return a + (b - a) * f;
+}
+
+
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : rndMainViewRenderFunction
@@ -3078,7 +3085,22 @@ renderDefault:
                         if (mis->trail != NULL)
                         {
                             playerIndex = (sdword)mis->playerowner->playerIndex;
-                            mistrailDraw(&mis->posinfo.position, mis->trail, spaceobj->currentLOD, mis->colorScheme);
+
+                            // Fade out missile trails when they're about to disappear.
+                            real32 lifeLerp  = mis->timelived + UNIVERSE_UPDATE_PERIOD * rintFraction();
+                            real32 lifeLeft  = max( 0.0f, mis->totallifetime - lifeLerp);
+                            real32 lifeFade  = 0.250f;
+                            real32 lifeRatio = (lifeLeft<lifeFade) ? lifeLeft/lifeFade : 1.0f;
+
+                            // Scale up the trail thickness when the missile is very close to the camera.
+                            vector camDelta;
+                            vecSub( camDelta, camera->eyeposition, mis->posinfo.position );
+                            real32 dist       = sqrtf(vecMagnitudeSquared( camDelta ));
+                            real32 distThresh = 1200.0f;
+                            real32 distRatio  = (dist<distThresh) ? dist/distThresh : 1.0f;
+                            real32 distScale  = lerpf( 8.0f, 1.0f, distRatio );
+
+                            mistrailDraw(&mis->posinfo.position, mis->trail, distScale, lifeRatio, mis->colorScheme);
                         }
                     }
                 }
