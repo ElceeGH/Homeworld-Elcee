@@ -233,7 +233,7 @@ void glccPointSize( const GLfloat size ) {
 
 void glccLineWidth( GLfloat width ) {
     cacheWrite( GL_LINE_WIDTH, &width );
-    glPointSize( width );
+    glLineWidth( width );
 }
 
 
