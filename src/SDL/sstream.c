@@ -28,7 +28,8 @@ static int  streamerThread( void* v );
 
 
 /* data */
-SDL_sem* streamerThreadSem = NULL;
+SDL_sem*   streamerThreadSem = NULL;
+SDL_mutex* streamerDataMutex = NULL;
 
 CHANNEL speechchannels[SOUND_MAX_STREAM_BUFFERS];
 STREAM  streams[SOUND_MAX_STREAM_BUFFERS];
@@ -753,6 +754,9 @@ static sdword isoundstreamreadblock(STREAMQUEUE *pqueue, void *buffer, smemsize 
 
 /// Round X up to a multiple of M.
 static sdword roundDownToMultiple( sdword x, sdword m ) {
+    if (m == 0)
+        return x;
+    
     return (x / m) * m;
 }
 
