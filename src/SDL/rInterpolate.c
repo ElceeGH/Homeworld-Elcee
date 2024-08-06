@@ -343,8 +343,6 @@ static bool canInterpOrientation( SpaceObj* obj ) {
         case OBJ_EffectType:   // Only really needed for ion beams, but the overhead is low anyway.
             return TRUE;
 
-
-
         default:
             return FALSE;
     }
@@ -529,11 +527,11 @@ void rintInit( void ) {
 
 
 /// Get the interpolation factor (0:1 inclusive)
-/// If interpolation is disabled, returns the fixed value 1.
+/// If interpolation is disabled, returns the fixed value 0.
 real32 rintFraction( void ) {
     if (updateEnabled)
          return fraction;
-    else return 1.0f;
+    else return 0.0f;
 }
 
 
