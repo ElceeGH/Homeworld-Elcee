@@ -16,8 +16,8 @@
 
 
 static void ssGenScreenshotFilename( char* filepath, const size_t filepathSize );
-static bool ssVerticallyFlipImage( ubyte* buffer, const size_t width, const size_t height, const size_t bpp );
-static void ssSaveScreenshot( ubyte* buffer, const size_t width, const size_t height );
+static void ssVerticallyFlipImage( ubyte* buffer, const size_t width, const size_t height, const size_t bpp );
+static void ssSaveScreenshot     ( ubyte* buffer, const size_t width, const size_t height );
 
 
 
@@ -39,8 +39,7 @@ void ssTakeScreenshot(void)
     glReadPixels( 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer );
 
     // Vertically flip image
-    if ( ! ssVerticallyFlipImage( buffer, width, height, bpp))
-        return;
+    ssVerticallyFlipImage( buffer, width, height, bpp);
 
     // Save it and free memory
     ssSaveScreenshot( buffer, width, height );
@@ -52,7 +51,7 @@ void ssTakeScreenshot(void)
 /// OpenGL stores images with origin in the lower left.
 /// Pretty much everything else places it at the top left.
 /// Returns whether it succeeded.
-static bool ssVerticallyFlipImage( ubyte* data, const size_t width, const size_t height, const size_t bpp )
+static void ssVerticallyFlipImage( ubyte* data, const size_t width, const size_t height, const size_t bpp )
 {
     const size_t rows       = height;
     const size_t rowBytes   = width * bpp;
@@ -61,9 +60,6 @@ static bool ssVerticallyFlipImage( ubyte* data, const size_t width, const size_t
     ubyte* const rowStart = data;
     ubyte* const rowEnd   = rowStart + imageBytes - rowBytes;
     ubyte* const rowT     = malloc( rowBytes );
-
-    if (rowT == NULL)
-        return FALSE;
 
     for (size_t rowOffset=0; rowOffset<rows/2; rowOffset++) {
         ubyte* const rowA = rowStart + (rowOffset * rowBytes);
@@ -75,7 +71,6 @@ static bool ssVerticallyFlipImage( ubyte* data, const size_t width, const size_t
     }
 
     free( rowT );
-    return TRUE;
 }
 
 
