@@ -333,9 +333,29 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
 
 
 
-/// Some object types get extras. Their orientation and collision origin are also interpolated.
+/// Some objects can have their orientation interpolated.
+/// Applies only for SpaceObjRot compatible objects.
+static bool canInterpOrientation( SpaceObj* obj ) {
+    switch (obj->objtype) {
+        case OBJ_ShipType:     // Spinning like hell all the time
+        case OBJ_DerelictType: // They spin too
+        case OBJ_AsteroidType: // Also spinning all over
+        case OBJ_EffectType:   // Only really needed for ion beams, but the overhead is low anyway.
+            return TRUE;
+
+
+
+        default:
+            return FALSE;
+    }
+}
+
+
+
+/// Some objects need their collision interpolated since you can select them and whatnot.
+/// It's also important for camera following.
 /// Applies only for SpaceObjRotImp compatible objects.
-static bool filterExtraInterpAllowed( SpaceObj* obj ) {
+static bool canInterpCollision( SpaceObj* obj ) {
     switch (obj->objtype) {
         case OBJ_ShipType:
         case OBJ_DerelictType:
@@ -382,10 +402,14 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
     // Populate initial info
     interp->pprev = obj->posinfo.position;
 
-    if (filterExtraInterpAllowed( obj )) {
+    if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         interp->cprev = sori->collInfo.collPosition;
-        interp->hprev = sori->rotinfo.coordsys;
+    }
+
+    if (canInterpOrientation( obj )) {
+        SpaceObjRot* sor = (SpaceObjRot*) obj;
+        interp->hprev = sor->rotinfo.coordsys;
     }
 }
 
@@ -404,10 +428,14 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
     interp->pcurr  = obj->posinfo.position;
     
     // Handle the more advanced cases
-    if (filterExtraInterpAllowed( obj )) {
+    if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         interp->ccurr = sori->collInfo.collPosition;
-        interp->hcurr = sori->rotinfo.coordsys;
+    }
+
+    if (canInterpOrientation( obj )) {
+        SpaceObjRot* sor = (SpaceObjRot*) obj;
+        interp->hcurr = sor->rotinfo.coordsys;
     }
 }
 
@@ -422,12 +450,15 @@ static void interpolateObject( const Interp* interp ) {
     const vector pb = interp->pcurr;
     obj->posinfo.position = lerp( pa, pb, f );
 
-    if (filterExtraInterpAllowed( obj )) {
+    if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
-
         const vector ca = interp->cprev;
         const vector cb = interp->ccurr;
         sori->collInfo.collPosition = lerp( ca, cb, f );
+    }
+
+    if (canInterpOrientation( obj )) {
+        SpaceObjRot* sor = (SpaceObjRot*) obj;
 
         vector upA, upB, rightA, rightB, headA, headB;
         matGetVectFromMatrixCol1( upA,    interp->hprev );
@@ -441,7 +472,7 @@ static void interpolateObject( const Interp* interp ) {
         vector right = slerp( rightA, rightB, f );
         vector head  = slerp( headA,  headB,  f );
 
-        matrix* mat = &sori->rotinfo.coordsys;
+        matrix* mat = &sor->rotinfo.coordsys;
         matPutVectIntoMatrixCol1( up   , *mat );
         matPutVectIntoMatrixCol2( right, *mat );
         matPutVectIntoMatrixCol3( head , *mat );
@@ -455,10 +486,14 @@ static void restoreObject( const Interp* interp ) {
     SpaceObj* obj = interp->obj;
     obj->posinfo.position = interp->pcurr;
 
-    if (filterExtraInterpAllowed( obj )) {
+    if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         sori->collInfo.collPosition = interp->ccurr;
-        sori->rotinfo.coordsys      = interp->hcurr;
+    }
+
+    if (canInterpOrientation( obj )) {
+        SpaceObjRot* sor = (SpaceObjRot*) obj;
+        sor->rotinfo.coordsys = interp->hcurr;
     }
 }
 
