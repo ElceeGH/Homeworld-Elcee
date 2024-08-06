@@ -768,32 +768,21 @@ void lmBarDraw(rectangle *rect, color back, color fore, real32 percent)
 ----------------------------------------------------------------------------*/
 void lmFighterUsedDraw(featom *atom, regionhandle region)
 {
-    real32 percent;
-    sdword numused;
-    fonthandle currentFont;
-
-    if (lmRenderEverythingCounter > 0)
-    {
+    if (lmRenderEverythingCounter > 0) {
         lmRenderEverythingCounter--;
         feRenderEverything = TRUE;
     }
 
-    if (launchship->shipsInsideMe == NULL) return;
+    if (launchship->shipsInsideMe == NULL)
+        return;
 
-    currentFont = fontMakeCurrent(lmShipListFont);
+    sdword slotsMax     = launchship->staticinfo->maxDockableFighters;
+    sdword slotsUsed    = min( slotsMax, launchship->shipsInsideMe->FightersInsideme );
+    real32 slotsPercent = (real32)slotsUsed / (real32)slotsMax;
 
-    numused = (sdword)launchship->shipsInsideMe->FightersInsideme;
-
-    percent = (real32)(launchship->shipsInsideMe->FightersInsideme) /
-              (real32)(launchship->staticinfo->maxDockableFighters);
-
-    if (numused >= launchship->staticinfo->maxDockableFighters)
-        numused = launchship->staticinfo->maxDockableFighters;
-
-    lmBarDraw(&region->rect, lmAvailableColor, lmUsedColor, percent);
-
-    fontPrintf(region->rect.x1,region->rect.y0,FEC_ListItemStandard/*lmShipListTextColor*/," %i",numused);
-
+    fonthandle currentFont = fontMakeCurrent(lmShipListFont);
+    lmBarDraw(&region->rect, lmAvailableColor, lmUsedColor, slotsPercent);
+    fontPrintf(region->rect.x1,region->rect.y0,FEC_ListItemStandard/*lmShipListTextColor*/," %i/%i", slotsUsed,slotsMax);
     fontMakeCurrent(currentFont);
 }
 
@@ -807,26 +796,18 @@ void lmFighterUsedDraw(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void lmCorvetteUsedDraw(featom *atom, regionhandle region)
 {
-    real32 percent;
-    sdword numused;
-    fonthandle currentFont;
+    if (launchship->shipsInsideMe == NULL)
+        return;
 
-    if (launchship->shipsInsideMe == NULL) return;
+    
 
-    currentFont = fontMakeCurrent(lmShipListFont);
+    sdword slotsMax     = launchship->staticinfo->maxDockableCorvettes;
+    sdword slotsUsed    = min( slotsMax, launchship->shipsInsideMe->CorvettesInsideme );
+    real32 slotsPercent = (real32)slotsUsed / (real32)slotsMax;
 
-    numused = (sdword)launchship->shipsInsideMe->CorvettesInsideme;
-
-    percent = (real32)(launchship->shipsInsideMe->CorvettesInsideme) /
-              (real32)(launchship->staticinfo->maxDockableCorvettes);
-
-    if (numused >= launchship->staticinfo->maxDockableCorvettes)
-        numused = launchship->staticinfo->maxDockableCorvettes;
-
-    lmBarDraw(&region->rect, lmAvailableColor, lmUsedColor, percent);
-
-    fontPrintf(region->rect.x1,region->rect.y0,FEC_ListItemStandard/*lmShipListTextColor*/," %i",numused);
-
+    fonthandle currentFont = fontMakeCurrent(lmShipListFont);
+    lmBarDraw(&region->rect, lmAvailableColor, lmUsedColor, slotsPercent);
+    fontPrintf(region->rect.x1,region->rect.y0,FEC_ListItemStandard/*lmShipListTextColor*/," %i/%i",slotsUsed,slotsMax);
     fontMakeCurrent(currentFont);
 }
 
