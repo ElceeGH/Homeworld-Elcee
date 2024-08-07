@@ -161,8 +161,8 @@ typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
     vector    pprev;  ///< Previous uninterpolated position
     vector    pcurr;  ///< Current  uninterpolated position
-    vector    cprev;  ///< Previous uninterpolated collision position (ships only)
-    vector    ccurr;  ///< Current  uninterpolated collision position (ships only)
+    vector    cprev;  ///< Previous uninterpolated collision position
+    vector    ccurr;  ///< Current  uninterpolated collision position
     matrix    hprev;  ///< Previous uninterpolated coordsys matrix
     matrix    hcurr;  ///< Current  uninterpolated coordsys matrix
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.

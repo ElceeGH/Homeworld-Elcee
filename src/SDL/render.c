@@ -3089,7 +3089,7 @@ renderDefault:
                             // Fade out missile trails when they're about to disappear.
                             real32 lifeLerp  = mis->timelived + UNIVERSE_UPDATE_PERIOD * rintFraction();
                             real32 lifeLeft  = max( 0.0f, mis->totallifetime - lifeLerp);
-                            real32 lifeFade  = 0.250f;
+                            real32 lifeFade  = 0.250f; // Seconds
                             real32 lifeRatio = (lifeLeft<lifeFade) ? lifeLeft/lifeFade : 1.0f;
 
                             // Scale up the trail thickness when the missile is very close to the camera.
