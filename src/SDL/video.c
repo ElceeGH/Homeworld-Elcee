@@ -55,7 +55,7 @@ typedef struct Video {
     GLenum      texGpuFormat; ///< OpenGL internal texture format
     GLenum      texMemFormat; ///< OpenGL upload texture layout
     GLenum      texMemType;   ///< OpenGL upload texture datatype
-    udword      time;         ///< Time last frame was decoded
+    udword      timeStart;    ///< Time video started
     bool        finished;     ///< Whether video is finished playing
 } Video;
 
@@ -167,6 +167,7 @@ static void videoConstruct( Video* vid, LavContext lav, VideoParams params ) {
     vid->texGpuFormat = GL_RGBA;
     vid->texMemFormat = GL_BGRA;
     vid->texMemType   = GL_UNSIGNED_BYTE;
+    vid->timeStart    = SDL_GetTicks();
 }
 
 
@@ -194,13 +195,17 @@ static void videoClose( Video* vid ) {
 
 /// Check whether it's time to generate a new frame.
 static bool videoShouldUpdate( const Video* vid ) {
-    const real64 frameN = vid->lav.stream->time_base.num;
-    const real64 frameD = vid->lav.stream->time_base.den;
-    const real64 frame  = 1.0 / (frameD / frameN) * 1000.0;
+    const int    frameCur = vid->lav.cctx->frame_number;
+    const real64 frameN   = vid->lav.stream->time_base.num;
+    const real64 frameD   = vid->lav.stream->time_base.den;
+    const real64 frameMs  = 1.0 / (frameD / frameN) * 1000.0;
 
-    const real64 now   = SDL_GetTicks();
-    const real64 delta = now - vid->time;
-    return delta >= frame;
+    const real64 now     = SDL_GetTicks();
+    const real64 elapsed = now - vid->timeStart;
+    const real64 done    = frameCur * frameMs;
+    
+    return frameCur == 0   // Always update the first time.
+        || done < elapsed; // Compare the actual time with where the video should be.
 }
 
 
@@ -227,9 +232,6 @@ static bool videoUpdate( Video* vid ) {
     // Create converted frame and upload it to the GPU.
     videoConvert( vid );
     videoUpload ( vid );
-
-    // Update time reference.
-    vid->time = SDL_GetTicks();
 
     // Update status for the callback
     videoUpdateStatus( vid );
