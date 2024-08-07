@@ -285,20 +285,17 @@ void trailStaticDelete(trailstatic *trailInfo)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-missiletrail* mistrailNew(trailstatic* staticInfo, void* vmissile)
+missiletrail* mistrailNew(trailstatic* staticInfo, struct Missile* missile)
 {
     missiletrail* trail;
     MissileStaticInfo* missilestaticinfo;
-    Missile* missile;
-
-    missile = (Missile*)vmissile;
 
     dbgAssertOrIgnore(staticInfo != NULL);
 #if TRAIL_VERBOSE_LEVEL >= 2
     dbgMessagef("mistrailNew: %d segments, 0x%x staticInfo", staticInfo->nSegments, staticInfo);
 #endif
     trail = memAlloc(mistrailSize(staticInfo->nSegments), "Missile Trail", NonVolatile);
-    trail->vmissile = vmissile;
+    trail->vmissile = (void*) missile;
     trail->iHead = trail->iTail = trail->nLength = 0;
     trail->grainCounter = 0;
     trail->staticInfo = staticInfo;
@@ -318,10 +315,9 @@ missiletrail* mistrailNew(trailstatic* staticInfo, void* vmissile)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-shiptrail *trailNew(trailstatic *staticInfo, void* vship, bool8 second, ubyte trailNum)
+shiptrail *trailNew(trailstatic *staticInfo, Ship* ship, bool8 second, ubyte trailNum)
 {
     shiptrail *trail;
-    Ship* ship;
     ShipStaticInfo* shipstaticinfo;
 
 #if TRAIL_VERBOSE_LEVEL >= 2
@@ -341,7 +337,7 @@ shiptrail *trailNew(trailstatic *staticInfo, void* vship, bool8 second, ubyte tr
     trail->ran = 0.0f;
     trail->ranCounter = 0;
     trail->lastvelsquared = trail->prevvelsquared = 0.0f;
-    trail->vship = vship;
+    trail->vship = (void*) ship;
     trail->iHead = trail->iTail = trail->nLength = 0;
     trail->grainCounter = 0;
     trail->staticInfo = staticInfo;
@@ -350,7 +346,6 @@ shiptrail *trailNew(trailstatic *staticInfo, void* vship, bool8 second, ubyte tr
 
     trail->wobbly = FALSE;
 
-    ship = (Ship*)vship;
     shipstaticinfo = (ShipStaticInfo*)ship->staticinfo;
 
     if (second == 2 || second == 3)

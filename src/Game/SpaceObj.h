@@ -1466,7 +1466,7 @@ typedef struct MissileID
     uword missileNumber;
 } MissileID;
 
-typedef struct
+typedef struct Missile
 {
     Node objlink;
     ObjType objtype;                            // object type (ship or bullet, etc)

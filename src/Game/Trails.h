@@ -14,6 +14,8 @@
 #include "Types.h"
 #include "Vector.h"
 
+struct Missile;
+
 /*=============================================================================
     Switches:
 =============================================================================*/
@@ -113,6 +115,8 @@ typedef struct missiletrail
     missiletrailsegment segments[1];
 } missiletrail;
 
+
+
 /*=============================================================================
     Data:
 =============================================================================*/
@@ -135,7 +139,7 @@ void trailStartup(void);
 void trailShutdown(void);
 
 //allocate and initialize a new missile trail
-missiletrail* mistrailNew(trailstatic* staticInfo, void* vmissile);
+missiletrail* mistrailNew(trailstatic* staticInfo, struct Missile* missile);
 void mistrailDelete(missiletrail* trail);
 void mistrailUpdate(missiletrail* trail, vector* position);
 void mistrailDraw(vector* current, missiletrail* trail, real32 thicknessScale, real32 lifetimeFadeAlpha, sdword teamIndex);
