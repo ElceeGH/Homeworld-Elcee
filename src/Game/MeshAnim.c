@@ -258,7 +258,7 @@ bool madAnimBindingUpdate(udword flags, hmatrix *startMatrix, hmatrix *matrixDes
     {                                                       //if we'll go past the end
         if (bitTest(animation->flags, MAF_Loop))
         {                                                   //if this is a looping animation
-            timeElapsed = (real32)fmod((double)(curve[0].timeElapsed + timeElapsed - animation->endTime), (double)(animation->endTime - animation->startTime));
+            timeElapsed = fmodf((curve[0].timeElapsed + timeElapsed - animation->endTime), (animation->endTime - animation->startTime));
 
             for (startPoint = 0; startPoint < curve[0].nPoints; startPoint++)
             {                                               //find a point to restart at
