@@ -338,6 +338,7 @@ static bool filterInterpAllowed( SpaceObj* obj ) {
 static bool canInterpOrientation( SpaceObj* obj ) {
     switch (obj->objtype) {
         case OBJ_ShipType:     // Spinning like hell all the time
+        case OBJ_MissileType:  // You can barely see them, but it will matter for trails later.
         case OBJ_DerelictType: // They spin too
         case OBJ_AsteroidType: // Also spinning all over
         case OBJ_EffectType:   // Only really needed for ion beams, but the overhead is low anyway.
