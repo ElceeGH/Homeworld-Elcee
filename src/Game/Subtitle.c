@@ -1269,19 +1269,6 @@ void subTitlesDraw(subregion *region)
     primRectOutline2(&region->rect, 1, colWhite);
 #endif
 
-    if ((!mrRenderMainScreen && !smFleetIntel) && region == &subRegion[STR_LetterboxBar])
-    {                                                       //if some full screen gui is up
-        rndTextureEnable(FALSE);
-        glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-        glBegin(GL_QUADS);
-        //top scissor part
-        glVertex2f(primScreenToGLX(-1), primScreenToGLY(0));
-        glVertex2f(primScreenToGLX(-1), primScreenToGLY(NIS_LetterHeight));
-        glVertex2f(primScreenToGLX(MAIN_WindowWidth), primScreenToGLY(NIS_LetterHeight));
-        glVertex2f(primScreenToGLX(MAIN_WindowWidth), primScreenToGLY(0));
-        glEnd();
-        //ferDrawBoxRegion(region->rect, ferMediumTextures, ferInternalGlow, NULL, FALSE);
-    }
     //scroll the text, if applicable
     scroll = region->rect.y0;
     if (region->scrollDistance != 0.0f)
@@ -1356,17 +1343,6 @@ void subTitlesDraw(subregion *region)
                 }
             }
             //draw the text
-            /*
-            while (newLine != NULL)
-            {
-                fontPrintN(x, y, card->c, lineStart, newLine - lineStart);
-                y += fontHeight(" ") + 1;
-                x = card->margin;
-                newLine += NIS_NewLineLength;
-                lineStart = newLine;
-                newLine = strstr(newLine, NIS_NewLine);
-            }
-            */
             if (card->bDropShadow)
             {
                 fontShadowSet(FS_SE, colBlack);
