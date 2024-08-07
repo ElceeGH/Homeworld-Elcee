@@ -12,6 +12,7 @@
 #include "Types.h"
 
 extern sdword animaticJustPlayed;
+extern sdword animaticIsPlaying;
 
 void animStartup(void);
 void animShutdown(void);

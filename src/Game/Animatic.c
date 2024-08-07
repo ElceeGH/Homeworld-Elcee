@@ -23,13 +23,16 @@
 
 
 
-// Decrementing counter for delaying purposes used by the renderer.
-sdword animaticJustPlayed = 0;  
-
+/// Animatic list entry
 typedef struct animlst {
-    char   filename[32];
-    udword endDelayMs;
+    char filename[32];
 } animlst;
+
+
+
+// Globals
+sdword animaticJustPlayed = 0;     ///< Decrementing counter for delaying purposes used by the renderer.
+sdword animaticIsPlaying  = FALSE; ///< For sound hackery.
 
 static animlst    animlisting[NUMBER_SINGLEPLAYER_MISSIONS];
 static nisheader* animScriptHeader = NULL;
@@ -151,8 +154,6 @@ static void animSubtitlesDraw(void)
 ----------------------------------------------------------------------------*/
 static nisheader* animLoadNISScript(char* scriptname)
 {
-    animCurrentEvent = 0;
-
     nisheader* newHeader = memAlloc(sizeof(nisheader), "animatic NIS header", NonVolatile);
     memset(newHeader, 0, sizeof(nisheader));
 
@@ -216,15 +217,6 @@ static nisheader* animLoadNISScript(char* scriptname)
 
 
 
-/// Some mild hackery. Some of the animatics have video runtime shorter than the speech runtime, and the video player has no idea.
-/// So I just add some hard offsets here.
-static void setEndDelay( animlst* anim ) {
-    if (NULL != strstr( anim->filename, "12_13" )) // Captain Elston speaks before Karos
-        anim->endDelayMs = 1500;
-}
-
-
-
 /*-----------------------------------------------------------------------------
     Name        : animStartup
     Description : reads animatics.lst from the Movies directory
@@ -256,8 +248,6 @@ void animStartup(void)
         sscanf(line, "%d %s", &level, temp);
         dbgAssertOrIgnore(level >= 0 && level < NUMBER_SINGLEPLAYER_MISSIONS);
         memStrncpy(animlisting[level].filename, temp, 31);
-
-        setEndDelay( &animlisting[level] );
     }
     fileClose(lst);
 }
@@ -289,22 +279,23 @@ static void animUpdateCallback( VideoStatus status ) {
     if (animScriptHeader == NULL)
         return;
 
-    // Get current elapsed time for the animatic
+    // Get current elapsed time for the animatic (in seconds)
     const real32 timeElapsed = (real32)status.frameIndex / status.frameRate;
-    universe.totaltimeelapsed = timeElapsed;
+    
 
     // Search for events to trigger based on their index and time
-    nisevent* event = &animScriptHeader->events[ animCurrentEvent ];
-    while (animCurrentEvent < animScriptHeader->nEvents &&
-           event->time <= timeElapsed)
-    {
-        dbgAssertOrIgnore(nisEventDispatch[event->code] != NULL);
-        nisEventDispatch[event->code](NULL, event);
-        animCurrentEvent++;
-        event++;
+    for (udword i=animCurrentEvent; i<animScriptHeader->nEvents; i++) {
+        nisevent* event = &animScriptHeader->events[ i ];
+
+        if (event->time <= timeElapsed) {
+            dbgAssertOrIgnore(nisEventDispatch[event->code] != NULL);
+            universe.totaltimeelapsed = timeElapsed;
+            nisEventDispatch[event->code](NULL, event);
+            animCurrentEvent++;
+        }
     }
 
-    // Update systems
+    universe.totaltimeelapsed = timeElapsed;
     musicEventUpdateVolume();
     speechEventUpdate();
     subTitlesUpdate();
@@ -333,12 +324,16 @@ static bool animSetup( sdword a, sdword b ) {
 
     // Global counter reset.
     animaticJustPlayed = 0;
+    animCurrentEvent   = 0;
 
     // Don't show animatics when entering tutorials.
     if (tutorial == 1)
         return FALSE;
 
     // Reset subtitles.
+    soundstopall(0.0);
+    speechEventUpdate();
+    speechEventCleanup();
     subReset();
 
     // If there's no listing for this, don't try to play anything.
@@ -353,7 +348,7 @@ static bool animSetup( sdword a, sdword b ) {
     // Clear the screen (todo: remove this, it's pointless? Then again I don't actually clear the screen, do I...)
     rndSetClearColor(colBlack);
     rndClear();
-
+     
     // Hide the cursor for da movies
     mouseCursorHide();
 
@@ -365,6 +360,7 @@ static bool animSetup( sdword a, sdword b ) {
     soundEventGetVolume( &animPreviousSFXVolume, &animPreviousSpeechVolume, &animPreviousMusicVolume );
 
     // Hey, we got this far.
+    animaticIsPlaying = TRUE;
     return TRUE;
 }
 
@@ -395,6 +391,7 @@ static void animCleanup( void )
     soundEventSpeechVol( animPreviousSpeechVolume );
     soundEventSFXVol   ( animPreviousSFXVolume    );
 
+    animaticIsPlaying  = FALSE;
     animaticJustPlayed = 8;
 }
 
@@ -416,7 +413,7 @@ void animPlay(sdword a, sdword b)
     snprintf( videoFile, sizeof(videoFile), "Movies/%s.bik", animlisting[a].filename );
 
     // Play the video and run callbacks as we go.
-    videoPlay( videoFile, animUpdateCallback, animRenderCallback, animlisting[a].endDelayMs, TRUE );
+    videoPlay( videoFile, animUpdateCallback, animRenderCallback, TRUE );
 
     // Clean up now that the video is finished.
     animCleanup();

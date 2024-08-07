@@ -3753,7 +3753,7 @@ char* utyGameSystemsPreInit(void)
 ----------------------------------------------------------------------------*/
 static void utyPlayIntro( char* movieName, sdword musicTrack ) {
     soundEventPlayMusic( musicTrack );
-    videoPlay( movieName, NULL, NULL, 0, FALSE );
+    videoPlay( movieName, NULL, NULL, FALSE );
     soundEventStopMusic( 0.0f );
     SDL_Delay( 500 ); // Let the music fade completely before going further
 }

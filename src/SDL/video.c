@@ -381,7 +381,7 @@ static void videoRender( const Video* vid ) {
 /// Handle events during video playback.
 /// It only allows skipping the video using ESC / RETURN / SPACE.
 /// Note: Allowing any key to skip isn't a good idea. Don't skip a video just because I adjust the volume.
-static void videoHandleEvents( bool* more, bool* skipped ) {
+static void videoHandleEvents( bool* more ) {
     SDL_Event ev;
     while (SDL_PollEvent( &ev )) {
         if (ev.type != SDL_KEYDOWN)
@@ -392,9 +392,6 @@ static void videoHandleEvents( bool* more, bool* skipped ) {
             case SDLK_RETURN:
             case SDLK_SPACE: {
                 *more = FALSE;
-
-                if (skipped)
-                    *skipped = TRUE;
             }
         }
     }
@@ -402,24 +399,9 @@ static void videoHandleEvents( bool* more, bool* skipped ) {
 
 
 
-/// Handle end-of-video delay time.
-static void videoHandleEndDelay( udword durationMs ) {
-    udword end  = SDL_GetTicks() + durationMs;
-    bool   more = TRUE;
-
-    while (more) {
-        videoHandleEvents( &more, NULL );
-
-        if (SDL_GetTicks() > end)
-            more = FALSE;
-    }
-}
-
-
-
 /// Play a video. Blocks until complete/skipped.
 /// Callbacks allow external code to take action after each update and render.
-void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, udword endDelayMs, bool isAnimatic ) {
+void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender, bool isAnimatic ) {
     // Create the full file path
     char path[ MAX_PATH ];
     snprintf( path, sizeof(path), "%s%s", fileHomeworldDataPath, filename );
@@ -449,12 +431,8 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
         videoRender( &video );
         rndFlush();
 
-        videoHandleEvents( &more, &skipped );
+        videoHandleEvents( &more );
     }
-
-    // Wait for specified time at the end, unless the player skipped already.
-    if ( ! skipped)
-        videoHandleEndDelay( endDelayMs );
 
     // Clean up.
     videoClose( &video );
