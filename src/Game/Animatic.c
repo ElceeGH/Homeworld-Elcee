@@ -87,34 +87,6 @@ static void animSubtitlesSetup(bool on)
 
 
 /*-----------------------------------------------------------------------------
-    Name        : animSubtitlesClear
-    Description : clear (to black) the region that subtitles appear in
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-static void animSubtitlesClear(void)
-{
-    if (animSubY1 < 0 || animSubY1 > (MAIN_WindowHeight / 2))
-    {
-        return;
-    }
-
-    animSubtitlesSetup(TRUE);
-
-    //rectangle r;
-    //r.x0 = -1;
-    //r.y0 =  0;
-    //r.x1 = MAIN_WindowWidth;
-    //r.y1 = (animSubY1 > 128) ? animSubY1 : 128;
-    //primRectSolid2(&r, colBlack);
-
-    animSubtitlesSetup(FALSE);
-}
-
-
-
-/*-----------------------------------------------------------------------------
     Name        : animSubtitlesDraw
     Description : render any subtitles
     Inputs      :
@@ -310,7 +282,6 @@ static void animUpdateCallback( VideoStatus status ) {
     Return      :
 ----------------------------------------------------------------------------*/
 static void animRenderCallback( VideoStatus video ) {
-    animSubtitlesClear();
     animSubtitlesDraw();
 }
 
