@@ -281,7 +281,6 @@ static void animUpdateCallback( VideoStatus status ) {
 
     // Get current elapsed time for the animatic (in seconds)
     const real32 timeElapsed = (real32)status.frameIndex / status.frameRate;
-    
 
     // Search for events to trigger based on their index and time
     for (udword i=animCurrentEvent; i<animScriptHeader->nEvents; i++) {
@@ -323,6 +322,7 @@ static bool animSetup( sdword a, sdword b ) {
     dbgAssertOrIgnore(b < NUMBER_SINGLEPLAYER_MISSIONS);
 
     // Global counter reset.
+    animaticIsPlaying  = FALSE;
     animaticJustPlayed = 0;
     animCurrentEvent   = 0;
 
