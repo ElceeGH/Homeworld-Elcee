@@ -1822,7 +1822,7 @@ real32 nisUpdate(nisplaying *NIS, real32 timeElapsed)
             }
         }
         //cap the velocity vector of the ship
-        if (ABS(tempVect.x) + ABS(tempVect.y) + ABS(tempVect.z) > 0.0f)
+        if (ABS(tempVect.x) + ABS(tempVect.y) + ABS(tempVect.z) > 0.00005f)
         {
             if (NIS->header->objectPath[index].type < NUM_RACES)
             {
