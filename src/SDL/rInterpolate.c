@@ -2,9 +2,14 @@
     Name    : rInterpolate.c
     Purpose : Rendering interpolation timing and utility functions.
     
-    Helps generate in-between position updates for game objects. It also exposes
-    the interpolated time fraction so other systems can take advantage of it.
-    When disabled, the interpolation fraction is simply fixed at 1.
+    Helps generate in-between position and rotation updates for game objects.
+    It also exposes the interpolated time fraction so other systems can take
+    advantage of it. When disabled, the interpolation fraction is fixed at 0.
+
+    This covers most cases, though if you interpolate between a previous and
+    current value then the current one should be selected if interpolation is
+    turned off. Otherwise you get into a situation where the object will be 
+    one universe update behind, visually, out of sync with others things.
 
     Created 27/09/2021 by Elcee
 =============================================================================*/
@@ -12,11 +17,11 @@
 
 
 #include "rInterpolate.h"
-#include "Types.h"
 #include "Debug.h"
 #include "Matrix.h"
-#include "Options.h"
 #include "NIS.h"
+#include "Options.h"
+#include "Types.h"
 #include "Universe.h"
 #include "Vector.h"
 
@@ -25,25 +30,31 @@
 
 
 
-
-static void clearRenderList( void );
-
-
-
-#define HistoryLen 4
+// Defines
+#define TimingHistory           4
 #define RenderEnableDelayFrames 10
 
+
+
+// Forward decl
+static void clearRenderList( void );
+static void clearInterpList( void );
+
+
+
+/// Timing info for update and render
 typedef struct TimingData {
-    uqword last;                  ///< Last absolute time
-    uqword delta;                 ///< Last delta time
-    uqword deltaAvg;              ///< Delta time nominal, from average
-    real64 frequency;             ///< Frequency computed from delta average
-    uqword history[ HistoryLen ]; ///< History of delta times
-    udword index;                 ///< Wrapping index into history
+    uqword last;                     ///< Last absolute time
+    uqword delta;                    ///< Last delta time
+    uqword deltaAvg;                 ///< Delta time nominal, from average
+    real64 frequency;                ///< Frequency computed from delta average
+    uqword history[ TimingHistory ]; ///< History of delta times
+    udword index;                    ///< Wrapping index into history
 } TimingData;
 
 
 
+// Timing vars
 static TimingData updateTiming;
 static TimingData frameTiming;
 static real32     fraction;
@@ -66,16 +77,16 @@ static void updateTimingData( TimingData* td ) {
 
     // Write into history ring
     td->history[td->index] = td->delta;
-    td->index              = (td->index + 1) % HistoryLen;
+    td->index              = (td->index + 1) % TimingHistory;
 
     // Sum all deltas in ring
     uqword sum = 0;
-    for (udword i=0; i<HistoryLen; i++)
+    for (udword i=0; i<TimingHistory; i++)
         sum += td->history[i];
 
     // Produce average, rounded to closest integer
-    const uqword half = (HistoryLen / 2);
-    td->deltaAvg = (sum + half) / HistoryLen;
+    const uqword half = (TimingHistory / 2);
+    td->deltaAvg = (sum + half) / TimingHistory;
 
     // Compute frequency. Mainly for debugging
     td->frequency = (real64)freq / (real64)max(1,td->deltaAvg);
@@ -174,6 +185,7 @@ typedef struct Interp {
 static udword  interpCount = 0;    ///< Current count
 static udword  interpPeak  = 0;    ///< Highest count so far
 static udword  interpAlloc = 0;    ///< Allocated count
+static udword  interpLimit = 0;    ///< Highest used count
 static Interp* interpData  = NULL; ///< Interpolation items
 
 // Interps to apply, in the same order as the render list.
@@ -183,14 +195,14 @@ static bool     renderListReady = FALSE; ///< Whether list is built already. Onl
 
 
 
-/// Get the limit for searching/iterating over the interps.
+/// Get the limit for searching/iterating over the interps (exclusive end).
 static udword interpRangeLimit(void) {
-    return min( interpAlloc, interpPeak + 2 ); // +2 instead of +1; it needs to find empty spaces not just the last occupied space.
+    return min( interpAlloc, interpLimit + 1 ); // +1 because it needs to iterate over empty spaces too, not just the last occupied space.
 }
 
 
 
-/// Allocte memory and update pointers
+/// Allocate memory and update vars
 static void rintAllocMemory( udword count ) {
     udword interpBytes = count * sizeof(Interp);
     udword renderBytes = count * sizeof(Interp*);
@@ -207,15 +219,18 @@ static void rintAllocMemory( udword count ) {
 }
 
 
+
 /// Grows allocated memory.
 static void rintGrowMemory( void ) {
-    // Save old pointers, grow to 150% of original size
-    void*   oldMem   = interpData;
-    udword  oldAlloc = interpAlloc;
-    udword  newAlloc = (udword) (interpAlloc * 1.5);
+    // Save old pointer to copy data from
+    void*  oldMem   = interpData;
+    udword oldAlloc = interpAlloc;
+
+    // Grow to 150% of original size
+    udword newAlloc = (udword) (interpAlloc * 1.5);
     rintAllocMemory( newAlloc );
 
-    // Copy previous data.  Not needed for the render list because it's created fresh every update.
+    // Copy previous data.  Not needed for the render list because it's created fresh after every update.
     memcpy( interpData, oldMem, oldAlloc*sizeof(Interp) );
 }
 
@@ -251,10 +266,18 @@ static Interp* interpFindFreeSlot( void ) {
 
 /// Create a new interp object mapped to the given spaceobj
 static void interpCreate( Interp* interp, SpaceObj* obj ) {
+    // Set object pointer
     interp->obj = obj;
+
+    // Track stats
     interpCount++;
     interpPeak = max( interpPeak, interpCount );
-    //printf( "interpCreate: count=%i, peak=%i\n", interpCount, interpPeak );
+
+    // Track range usage
+    udword index = interp - interpData;
+    interpLimit = max( index+1, interpLimit );
+
+    //printf( "interpCreate: count=%i, peak=%i, alloc=%i, limit=%i\n", interpCount, interpPeak, interpAlloc, interpLimit );
 }
 
 
@@ -263,7 +286,8 @@ static void interpCreate( Interp* interp, SpaceObj* obj ) {
 static void interpDestroy( Interp* interp ) {
     interpCount--;
     memset( interp, 0x00, sizeof(*interp) );
-    //printf( "interpDestroy: count=%i, peak=%i\n", interpCount, interpPeak );
+
+    //printf( "interpDestroy: count=%i, peak=%i, alloc=%i, limit=%i\n", interpCount, interpPeak, interpAlloc, interpLimit );
 }
 
 
@@ -275,7 +299,7 @@ typedef bool(SpaceObjFilter)(SpaceObj*);
 
 
 /// Iterate over all space objects in the universe list
-static void iterateSpaceObjectsUniverse( SpaceObjIter* iter, SpaceObjFilter filter ) {
+static void iterateSpaceObjectsUniverse( SpaceObjIter iter, SpaceObjFilter filter ) {
     Node* node = universe.SpaceObjList.head;
     
     while (node != NULL) {
@@ -290,7 +314,7 @@ static void iterateSpaceObjectsUniverse( SpaceObjIter* iter, SpaceObjFilter filt
 
 
 /// Iterate over all space objects in the render list
-static void iterateSpaceObjectsRender( SpaceObjIter* iter, SpaceObjFilter filter ) {
+static void iterateSpaceObjectsRender( SpaceObjIter iter, SpaceObjFilter filter ) {
     Node* node = universe.RenderList.head;
     
     while (node != NULL) {
@@ -389,7 +413,7 @@ static void cleanInterps(void) {
 /// Set the previous position
 /// Adds objects to the interp list.
 static void setPrevPosAndAdd( SpaceObj* obj ) {
-    // Find the object in the list
+    // Find the interp data for object in the list
     Interp* interp = interpFind( obj );
 
     // Doesn't exist? Create one
@@ -417,8 +441,10 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
 /// Set the current position and mark it as alive
 /// DOES NOT add objects to the interp list, since it can create visual artifacts if they don't have the previous values to lerp from.
 static void setCurPosAndMarkExists( SpaceObj* obj ) {
+    // Find the related interpolation data
     Interp* interp = interpFind( obj );
 
+    // Doesn't exist? Don't do anything.
     if (interp == NULL)
         return;
 
@@ -472,9 +498,9 @@ static void interpolateObject( const Interp* interp ) {
         vector head  = slerp( headA,  headB,  f );
 
         matrix* mat = &sor->rotinfo.coordsys;
-        matPutVectIntoMatrixCol1( up   , *mat );
+        matPutVectIntoMatrixCol1( up,    *mat );
         matPutVectIntoMatrixCol2( right, *mat );
-        matPutVectIntoMatrixCol3( head , *mat );
+        matPutVectIntoMatrixCol3( head,  *mat );
     }
 }
 
@@ -520,9 +546,17 @@ void rintInit( void ) {
     if (interpData == NULL)
         rintAllocMemory( 1024 );
 
-    rintClear();
+    clearInterpList();
     memset( &updateTiming, 0x00, sizeof(updateTiming) );
     memset( &frameTiming,  0x00, sizeof(frameTiming)  );
+}
+
+
+
+/// Check if interpolation is enabled.
+/// Not affected by temporary render disables.
+bool rintIsEnabled( void ) {
+    return updateEnabled;
 }
 
 
@@ -539,16 +573,18 @@ real32 rintFraction( void ) {
 
 /// Disable interpolation temporarily during rendering. Call when starting/loading a new game.
 /// If it's enabled on the very first frame, things will go to hell.
-void rintRenderDisable( void ) {
-    rintClear();
+/// There are also certain times when interpolation can interfere in a negative way, e.g. the Quick Dock button when hyperspacing.
+void rintRenderClearAndDisableTemporarily( void ) {
+    clearInterpList();
     renderEnabled = FALSE;
     renderTimer   = RenderEnableDelayFrames;
 }
 
 
 
-/// Enable interpolation (call in renderer before render begin/end functions)
+/// Enable interpolation (call in renderer before render begin/end function pair)
 /// The enable doesn't take effect instantly, as doing the interpolation trickery on the very first frame will crash the game.
+/// Also, even if you enable it here, nothing will happen if interpolated isn't turned on.
 void rintRenderEnableDeferred( void ) {
     if (renderTimer != 0)
          renderTimer--;
@@ -558,9 +594,10 @@ void rintRenderEnableDeferred( void ) {
 
 
 /// Clear all interpolation objects to empty
-void rintClear( void ) {
+void clearInterpList( void ) {
     memset( interpData, 0x00, sizeof(Interp) * interpAlloc );
     interpCount = 0;
+    interpLimit = 0;
     interpPeak  = 0;
 }
 
@@ -633,7 +670,7 @@ static void clearRenderList( void ) {
 
 
 /// Move everything to the interpolated positions.
-void rintRenderBegin( void ) {
+void rintRenderBeginAndInterpolate( void ) {
     // Set the render fraction
     updateTimeFraction();
 
@@ -652,7 +689,7 @@ void rintRenderBegin( void ) {
 
 
 /// Move everything back to its original position.
-void rintRenderEnd( void ) {
+void rintRenderEndAndRestore( void ) {
     // May not be allowed
     if ( ! interpRenderAllowed())
         return;

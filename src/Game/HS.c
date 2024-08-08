@@ -281,8 +281,11 @@ bool hsShouldDisplayEffect(Ship* ship)
 }
 
 /// Get interpolated parameter for hyperspace effects.
+/// If interpolation isn't enabled, it just uses the current value.
 static real32 hsLerpT( const ShipSinglePlayerGameInfo* ssinfo ) {
-    return ssinfo->clipt + (ssinfo->clipt - ssinfo->cliptPrev) * rintFraction();
+    if (rintIsEnabled())
+         return ssinfo->clipt + (ssinfo->clipt - ssinfo->cliptPrev) * rintFraction();
+    else return ssinfo->clipt;
 }
 
 /*-----------------------------------------------------------------------------

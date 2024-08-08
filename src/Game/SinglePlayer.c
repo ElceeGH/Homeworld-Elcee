@@ -688,8 +688,8 @@ void spGoNowHyperspaceCB(char *string, featom *atom)
     if (singlePlayerGameInfo.hyperspaceState == HYPERSPACE_WAITINGROLLCALL)
     {
         // Prevent interpolation from interfering with the instant ship movement.
-        rintRenderEnd();     // Move back to actual position from universe update 
-        rintRenderDisable(); // Disable for a few frames
+        rintRenderEndAndRestore();              // Move back to actual position from universe update 
+        rintRenderClearAndDisableTemporarily(); // Disable for a few frames while the game moves the ships
 
         SelectCommand *selectAll;
         CommandToDo *militaryGroup;
@@ -1927,8 +1927,9 @@ void singlePlayerInit(void)
     singlePlayerGameLoadNewLevelFlag = FALSE;
 
     singlePlayerGameInfo.playerCanHyperspace = FALSE;
-    rintRenderDisable();
     smUpdateHyperspaceStatus(FALSE);
+
+    rintRenderClearAndDisableTemporarily();
     
     listInit(&singlePlayerGameInfo.ShipsInHyperspace);
     growSelectInit(&singlePlayerGameInfo.ShipsToHyperspace);

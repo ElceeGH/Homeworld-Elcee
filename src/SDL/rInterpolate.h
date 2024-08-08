@@ -6,12 +6,12 @@
 
 
 
-void   rintInit                 ( void );
-real32 rintFraction             ( void );
-void   rintClear                ( void );
-void   rintUnivUpdatePreMove    ( void );
-void   rintUnivUpdatePostDestroy( void );
-void   rintRenderBegin          ( void );
-void   rintRenderEnd            ( void );
-void   rintRenderDisable        ( void );
-void   rintRenderEnableDeferred ( void );
+void   rintInit                            ( void );
+bool   rintIsEnabled                       ( void );
+real32 rintFraction                        ( void );
+void   rintUnivUpdatePreMove               ( void );
+void   rintUnivUpdatePostDestroy           ( void );
+void   rintRenderBeginAndInterpolate       ( void );
+void   rintRenderEndAndRestore             ( void );
+void   rintRenderClearAndDisableTemporarily( void );
+void   rintRenderEnableDeferred            ( void );

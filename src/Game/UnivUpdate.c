@@ -6247,7 +6247,8 @@ void univupdateReset()
     growSelectClose(&ClampedShipList);
     growSelectInit(&ClampedShipList);
 
-    rintClear();
+    // Clear interp data
+    rintRenderClearAndDisableTemporarily();
 }
 
 /*-----------------------------------------------------------------------------

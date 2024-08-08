@@ -3867,7 +3867,7 @@ DEFINE_TASK(rndRenderTask)
 
         // Interp
         rintRenderEnableDeferred();
-        rintRenderBegin();
+        rintRenderBeginAndInterpolate();
 
         rndScissorEnabled = glccIsEnabled(GL_SCISSOR_TEST);   //can we do scissoring?
         primErrorMessagePrint();
@@ -3992,7 +3992,7 @@ DEFINE_TASK(rndRenderTask)
     afterTheSwap:
 
     // Interp
-    rintRenderEnd();
+    rintRenderEndAndRestore();
 
 #if RND_GL_STATE_DEBUG
         rndGLStateSaving = FALSE;                           //done saving the file for now
