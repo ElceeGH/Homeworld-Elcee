@@ -27,7 +27,6 @@ uniform vec4      uCrossCol;  // Colour of hyperspace intersect
 
 
 
-
 // Position of the fragment in eye space.
 // Same result as having a vertex shader output modelview * vertex.
 vec4 eyeSpacePosition() {
@@ -61,7 +60,8 @@ float nearPlaneGlow( float dist ) {
         return 0.0;
     
     float linear = 1.0 - (dist / uGlowDist);
-    return pow( linear, 2.2 ); // Linear to gamma space
+    float gamma  = pow( linear, 2.2 );
+    return gamma;
 }
 
 
