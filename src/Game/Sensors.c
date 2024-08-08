@@ -3448,10 +3448,9 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             smClicking = FALSE;
             break;
         case RPE_PressRight:
-#ifdef _LINUX_FIX_ME
             mouseClipToRect(&smViewRectangle);
-#endif
-            smHoldLeft = smNULL;
+
+            smHoldLeft  = smNULL;
             smHoldRight = mrCameraMotion;
             mrOldMouseX = mouseCursorX();                   //save current mouse location for later restoration
             mrOldMouseY = mouseCursorY();
@@ -3465,6 +3464,7 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             piePointModePause(TRUE);                         //pause the point spec mode
             break;
         case RPE_ReleaseRight:
+            mouseClipToRect(NULL);
             if (smHoldRight == mrCameraMotion)
             {                                               //if in camera movement mode
                 mousePositionSet(mrOldMouseX, mrOldMouseY); //restore mouse position
@@ -3473,7 +3473,6 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             }
             //region->rect = smViewRectangle;                 //restore origional rectangle
             piePointModePause(FALSE);
-            mouseClipToRect(NULL);
             break;
         case RPE_WheelUp:
             wheel_up = TRUE;
