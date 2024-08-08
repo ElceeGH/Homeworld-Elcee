@@ -53,6 +53,7 @@ typedef struct HsProgramState {
     bool    programEnable;      ///< Whether program will be bound when hsProgramUpdate() is called
     GLfloat clipPlane[4];       ///< Hyperspace clip plane
     GLfloat glowColour[4];      ///< Hyperspace glow colour
+    GLfloat glowDist;           ///< Hyperspace glow distance from plane
     GLfloat crossColour[4];     ///< Hyperspace cross section colour
     GLint   locTex;
     GLint   locTexMode;
@@ -119,7 +120,7 @@ void hsProgramUpdate( void ) {
     glUniform4fv      ( hsp.locClipPlane, 1, hsp.clipPlane      );
     glUniform4fv      ( hsp.locViewport,  1, &viewport.x        );
     glUniformMatrix4fv( hsp.locProjInv,   1, GL_FALSE, &inv.m11 );
-    glUniform1f       ( hsp.locGlowDist,     32.0f              );
+    glUniform1f       ( hsp.locGlowDist,     hsp.glowDist       );
     glUniform4fv      ( hsp.locGlowCol,   1, hsp.crossColour    );
     glUniform4fv      ( hsp.locCrossCol,  1, hsp.crossColour    );
 }
@@ -170,19 +171,24 @@ static void hsProgramDisable(void) {
 
 
 
-static void hsProgramSetCrossColour( color col ) {
+static void hsProgramSetShipSpecifics( const Ship* ship ) {
+    // Colour, which can differ per-ship
+    color col = hsDefaultColor;
+    if (ship->staticinfo->hyperspaceColor != colBlack)
+         col = ship->staticinfo->hyperspaceColor;
+
+    // Set colour as vec4
     hsp.crossColour[0] = colRed  (col) / 255.0f;
     hsp.crossColour[1] = colGreen(col) / 255.0f;
     hsp.crossColour[2] = colBlue (col) / 255.0f;
     hsp.crossColour[3] = 1.0f;
 
-    hsp.glowColour[0] = hsp.crossColour[0] * 0.5f;
-    hsp.glowColour[1] = hsp.crossColour[1] * 0.5f;
-    hsp.glowColour[2] = hsp.crossColour[2] * 0.5f;
-    hsp.glowColour[3] = 1.0f;
+    // Use the same colour for glow
+    memcpy( hsp.glowColour, hsp.crossColour, sizeof(hsp.glowColour) );
+
+    // Set glow radius based on the ship's rough size
+    hsp.glowDist = ship->staticinfo->staticheader.staticCollInfo.approxcollspheresize / 10.0f;
 }
-
-
 
 
 
@@ -487,10 +493,7 @@ void hsContinue(Ship* ship, bool displayEffect)
         hsProgramEnable( equation );
     }
 
-    color c = hsDefaultColor;
-    if (ship->staticinfo->hyperspaceColor != colBlack)
-         c = ship->staticinfo->hyperspaceColor;
-    hsProgramSetCrossColour( c );
+    hsProgramSetShipSpecifics( ship );
 }
 
 /*-----------------------------------------------------------------------------
@@ -736,6 +739,9 @@ void hsEnd(Ship* ship, bool displayEffect)
     default:
         return;
     }
+    
+    
+    hsProgramSetShipSpecifics( ship );
 
     //setup our coordinate system so the rectangles agree w/ the ETG effect
     glccPushMatrix();
@@ -755,7 +761,7 @@ void hsEnd(Ship* ship, bool displayEffect)
     color c = hsDefaultColor;
     if (ship->staticinfo->hyperspaceColor != colBlack)
          c = ship->staticinfo->hyperspaceColor;
-    hsProgramSetCrossColour( c );
+    
 
     //monkey with the effect origin so it scales properly and starts in proper spot
     //vector origin = {0.0f, 0.0f, sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z};
