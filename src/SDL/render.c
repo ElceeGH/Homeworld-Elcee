@@ -3881,11 +3881,7 @@ DEFINE_TASK(rndRenderTask)
         {
             rndDrawScissorBars(rndScissorEnabled);
         }
-        glccDisable(GL_SCISSOR_TEST);                         //in case the scene was rendered with scissoring, turn it off properly.
-
-
-        /* need to update audio event layer */
-        soundEventUpdate();
+        glccDisable(GL_SCISSOR_TEST);                         //in case the scene was rendered with scissoring, turn it off properly
 
         //draw the subtitle text.  It's done here because it has to draw over everything
         for (index = 0; index < SUB_NumberRegions; index++)
