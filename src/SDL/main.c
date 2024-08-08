@@ -1806,9 +1806,6 @@ int main (int argc, char* argv[])
 
         while (TRUE)
         {
-            // Give sound a break :)
-            //SDL_Delay(0);
-
             if (SDL_PollEvent(&e))
             {
                 event_res = HandleEvent(&e);
