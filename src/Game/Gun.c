@@ -1133,21 +1133,15 @@ void gunShoot(Ship *ship, Gun *gun, SpaceObjRotImpTarg *target)
     if (etgLOD != NULL)
     {
         if (target != NULL)
-        {
-            LOD = min(ship->currentLOD, target->currentLOD);
-        }
-        else
-        {
-            LOD = ship->currentLOD;
-        }
+             LOD = min(ship->currentLOD, target->currentLOD);
+        else LOD = ship->currentLOD;
+        
+        if (bullet->bulletType == BULLET_Beam)
+            LOD = 0;
+
         if (LOD >= etgLOD->nLevels)
-        {
-            stat = NULL;
-        }
-        else
-        {
-            stat = etgLOD->level[LOD];
-        }
+             stat = NULL;
+        else stat = etgLOD->level[LOD];
     }
     else
     {
@@ -1177,6 +1171,8 @@ void gunShoot(Ship *ship, Gun *gun, SpaceObjRotImpTarg *target)
     bullet->hitEffect = etgGunEventTable[shipstatic->shiprace][gunstatic->gunsoundtype][EGT_GunHit];//get pointer to bullet effect
 //    bullet->hitEffect = etgGunEventTable[ship->shiprace][gunstatic->gunsoundtype][EGT_GunHit];//just get pointer from parent gun
     etgLOD = etgGunEventTable[shipstatic->shiprace][gunstatic->gunsoundtype][EGT_GunFire];//get pointer to bullet effect
+
+    // Maintain readability of the original game's muzzle flash effects.
     if (etgLOD != NULL)
     {
         LOD  = lodLevelComputeDefault( (SpaceObj*) ship, &mrCamera->eyeposition );
