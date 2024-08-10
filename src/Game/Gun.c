@@ -800,21 +800,17 @@ void gunRecoilTableCompute(void)
 ----------------------------------------------------------------------------*/
 void gunRecoilVectorCompute(vector *dest, real32 recoilLength, real32 lastFired, real32 rateOfFire)
 {
-    real32 timeElapsed, offset;
-    sdword index;
-
-    real32 timeRef = universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
-    timeElapsed = timeRef - lastFired;
+    real32 timeElapsed = rintUniverseElapsedTime() - lastFired;
     if (timeElapsed > rateOfFire)
     {                                                       //if the gun is sitting idle
         dest->x = dest->y = dest->z = 0.0f;                 //no recoil at all
         return;
     }
+
     timeElapsed /= rateOfFire;                              //normalize time elapsed from 0 to 1
 
-    index = (sdword)(timeElapsed * (real32)GUN_RecoilTableLength);
-    offset = gunRecoilTable[index];                         //table-lookup for gun recoil curve
-    offset *= -recoilLength;
+    sdword index = (sdword)(timeElapsed * (real32)GUN_RecoilTableLength);
+    real32 offset = gunRecoilTable[index] * -recoilLength; //table-lookup for gun recoil curve
     dest->x *= offset;
     dest->y *= offset;
     dest->z *= offset;

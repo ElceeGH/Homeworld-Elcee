@@ -427,7 +427,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
         thisPing = listGetStructOfNode(thisNode);
 
         pingCycle = thisPing->pingDuration + thisPing->interPingPause;
-        pingAge = (universe.totaltimeelapsed + rintFraction() * UNIVERSE_UPDATE_PERIOD) - thisPing->creationTime;
+        pingAge = rintUniverseElapsedTime() - thisPing->creationTime;
         pingMod = fmodf(pingAge, pingCycle);
         if (pingMod <= thisPing->pingDuration)
         {

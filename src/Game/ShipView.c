@@ -381,7 +381,7 @@ void svShipViewRender(featom* atom, regionhandle region)
     if(svShipType != DefaultShip)
     {
         // Use interpolated time to make the movement smooth at all framerates
-        real32 timeRef = universe.totaltimeelapsed + rintFraction() * UNIVERSE_UPDATE_PERIOD;
+        real32 timeRef = rintUniverseElapsedTime();
 
         svCamera.closestZoom = info->minimumZoomDistance*svZoomInScalar;
         svCamera.farthestZoom = (svCamera.closestZoom+info->staticheader.staticCollInfo.approxcollspheresize)*svZoomOutScalar;

@@ -9,6 +9,7 @@
 void   rintInit                            ( void );
 bool   rintIsEnabled                       ( void );
 real32 rintFraction                        ( void );
+real32 rintUniverseElapsedTime             ( void );
 void   rintUnivUpdatePreMove               ( void );
 void   rintUnivUpdatePostDestroy           ( void );
 void   rintRenderBeginAndInterpolate       ( void );

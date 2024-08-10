@@ -410,6 +410,16 @@ static void cleanInterps(void) {
 
 
 
+/// Clear all interpolation objects to empty
+static void clearInterpList( void ) {
+    memset( interpData, 0x00, sizeof(Interp) * interpAlloc );
+    interpCount = 0;
+    interpLimit = 0;
+    interpPeak  = 0;
+}
+
+
+
 /// Set the previous position
 /// Adds objects to the interp list.
 static void setPrevPosAndAdd( SpaceObj* obj ) {
@@ -571,6 +581,15 @@ real32 rintFraction( void ) {
 
 
 
+/// Get the current universe time extrapolated forward using rintFraction().
+/// This is the real time, but it should only be used for visual things while rendering.
+/// If interpolation isn't enabled, it's the same as universe.totaltimeelapsed.
+real32 rintUniverseElapsedTime( void ) {
+    return universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
+}
+
+
+
 /// Disable interpolation temporarily during rendering. Call when starting/loading a new game.
 /// If it's enabled on the very first frame, things will go to hell.
 /// There are also certain times when interpolation can interfere in a negative way, e.g. the Quick Dock button when hyperspacing.
@@ -589,16 +608,6 @@ void rintRenderEnableDeferred( void ) {
     if (renderTimer != 0)
          renderTimer--;
     else renderEnabled = TRUE;
-}
-
-
-
-/// Clear all interpolation objects to empty
-void clearInterpList( void ) {
-    memset( interpData, 0x00, sizeof(Interp) * interpAlloc );
-    interpCount = 0;
-    interpLimit = 0;
-    interpPeak  = 0;
 }
 
 

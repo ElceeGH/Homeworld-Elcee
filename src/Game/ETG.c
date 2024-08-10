@@ -2371,7 +2371,7 @@ void etgEffectDraw(Effect *effect)
         if (effect->particleBlock[index] != NULL)
         {
             part = (pointSystem *)effect->particleBlock[index];
-            real32 timeRef = universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
+            real32 timeRef = rintUniverseElapsedTime();
             timeElapsed = timeRef - part->lastUpdated;
             if (timeElapsed >= 0)
             {
