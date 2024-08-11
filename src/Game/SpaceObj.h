@@ -46,7 +46,7 @@
 -----------------------------------------------------------------------------*/
 //flags for the gun object
 #define GF_MultiLevelMatrix     0x00000001
-typedef struct
+typedef struct GunStatic
 {
     GunType guntype;
     GunSoundType gunsoundtype;
@@ -97,8 +97,8 @@ typedef struct
     sdword slaveDriver;         //for slaving guns together
 
 } GunStatic;
-
-typedef struct
+ 
+typedef struct NAVLightStatic
 {
     NAVLightType lightType;      // type of nav light
     vector position;             // position relative to ship
@@ -112,24 +112,24 @@ typedef struct
     memsize texturehandle;      // handle to a texture (if any).		// actually trhandle, but not defined here
 } NAVLightStatic;
 
-typedef struct
+typedef struct DamageLightStatic
 {
     vector position;            // position relative to ship
     vector normal;              // normal vector (rel to ship)
 } DamageLightStatic;
 
-typedef struct
+typedef struct ResNozzleStatic
 {
     vector position;            // position relative to ship
     vector nozzlenormal;        // normal vector describing nozzle orientation (rel to ship)
 } ResNozzleStatic;
 
-typedef struct
+typedef struct RepairNozzleStatic
 {
     vector position;            // position relative to ship
 } RepairNozzleStatic;
 
-typedef struct
+typedef struct TractorBeamStatic
 {
     vector position;            // position relative to ship
     vector nozzlenormal;        // normal vector describing nozzle orientation (rel to ship)
@@ -142,7 +142,7 @@ typedef struct
 #define PULSE_MONITOR_EFFECT 2
 #define PULSE_REDIRECT 3
 
-typedef struct
+typedef struct MineFormationInfo
 {
     Node FormLink;
     LinkedList MineList;
@@ -156,7 +156,7 @@ typedef struct
     udword numat;
 } MineFormationInfo;
 
-typedef struct
+typedef struct Gun
 {
     // for GUN_Gimble
     vector gunheading;          // gun heading (relative to ship)
@@ -182,32 +182,32 @@ typedef struct
     GunStatic *gunstatic;       // pointer to static information
 } Gun;
 
-typedef struct
+typedef struct NAVLight
 {
     udword lightstate;
     real32 lastTimeFlashed;
     NAVLightStatic *navlightstatic;
 } NAVLight;
 
-typedef struct
+typedef struct GunInfo
 {
     sdword numGuns;
     Gun guns[1];
 } GunInfo;
 
-typedef struct
+typedef struct NAVLightInfo
 {
     sdword numLights;
     NAVLight navLights[1];
 } NAVLightInfo;
 
-typedef struct
+typedef struct 
 {
     sdword numGuns;
     GunStatic gunstatics[1];
 } GunStaticInfo;
 
-typedef struct
+typedef struct NAVLightStaticInfo
 {
     sdword numNAVLights;
     NAVLightStatic navlightstatics[1];
