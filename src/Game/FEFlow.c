@@ -522,7 +522,9 @@ udword feScrollBarProcess(regionhandle region, sdword ID, udword event, udword d
             break;
     }
 
-    atom = shandle->reg.atom;
+    if (shandle != NULL)
+         atom = shandle->reg.atom;
+    else return 0;
 
     dbgAssertOrIgnore(atom->type == FA_ScrollBar);
 
