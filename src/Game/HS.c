@@ -280,13 +280,6 @@ bool hsShouldDisplayEffect(Ship* ship)
     return displayEffect;
 }
 
-/// Get interpolated parameter for hyperspace effects.
-/// If interpolation isn't enabled, it just uses the current value.
-static real32 hsLerpT( const ShipSinglePlayerGameInfo* ssinfo ) {
-    if (rintIsEnabled())
-         return ssinfo->clipt + (ssinfo->clipt - ssinfo->cliptPrev) * rintFraction();
-    else return ssinfo->clipt;
-}
 
 /*-----------------------------------------------------------------------------
     Name        : hsStart
@@ -301,11 +294,11 @@ void hsStart(Ship* ship, real32 cliptDelta, bool into, bool displayEffect)
     StaticCollInfo*           sinfo  = &ship->staticinfo->staticheader.staticCollInfo;
 
     ssinfo->clipt            = 1.0f;
-    ssinfo->cliptPrev        = 1.0f;
     ssinfo->cliptDelta       = cliptDelta;
     ssinfo->hsState          = into ? HS_POPUP_INTO : HS_POPUP_OUTOF;
     ssinfo->hyperspaceEffect = NULL;
 
+    rintMarkHsDiscontinuity( (SpaceObj*) ship, ssinfo->clipt );
     dmgStopEffect(ship, DMG_All);
 
     if (!displayEffect)
@@ -369,7 +362,7 @@ void hsGetEquation(Ship* ship, GLfloat equation[])
     {
     case HS_SLICING_INTO:
         equation[2] = -1.0f;
-        equation[3] = hsLerpT(ssinfo) * (sinfo->forwardlength);
+        equation[3] = ssinfo->clipt * (sinfo->forwardlength);
         break;
     case HS_COLLAPSE_INTO:
         equation[2] = -1.0f;
@@ -381,7 +374,7 @@ void hsGetEquation(Ship* ship, GLfloat equation[])
         break;
     case HS_SLICING_OUTOF:
         equation[2] = 1.0f;
-        equation[3] = -hsLerpT(ssinfo) * (sinfo->forwardlength);
+        equation[3] = -ssinfo->clipt * (sinfo->forwardlength);
         break;
     case HS_COLLAPSE_OUTOF:
         equation[2] = 1.0f;
@@ -444,7 +437,7 @@ void hsContinue(Ship* ship, bool displayEffect)
             return;
         case HS_SLICING_INTO:
             equation[2] = -1.0f;
-            equation[3] = hsLerpT(ssinfo) * (sinfo->forwardlength);
+            equation[3] = ssinfo->clipt * (sinfo->forwardlength);
             break;
         case HS_COLLAPSE_INTO:
             if (!singlePlayerGameInfo.hyperspaceFails)
@@ -459,7 +452,7 @@ void hsContinue(Ship* ship, bool displayEffect)
             break;
         case HS_SLICING_OUTOF:
             equation[2] = 1.0f;
-            equation[3] = -hsLerpT(ssinfo) * (sinfo->forwardlength);
+            equation[3] = -ssinfo->clipt * (sinfo->forwardlength);
             break;
         case HS_COLLAPSE_OUTOF:
             equation[2] = 1.0f;
@@ -597,7 +590,6 @@ void hsUpdate(Ship* ship)
 {
     real32 minimum = 0.0, delta;
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
-    ssinfo->cliptPrev = ssinfo->clipt;
 
     extern real32 HS_CLIPT_NEG_THRESH;
     extern real32 HS_CLIPT_NEG_SCALAR;
@@ -662,8 +654,8 @@ void hsUpdate(Ship* ship)
         }
         else
         {
-            ssinfo->clipt     = 1.0f;
-            ssinfo->cliptPrev = 1.0f;
+            ssinfo->clipt = 1.0f;
+            rintMarkHsDiscontinuity( (SpaceObj*) ship, ssinfo->clipt );
             switch (ssinfo->hsState)
             {
             case HS_POPUP_INTO:
@@ -672,8 +664,8 @@ void hsUpdate(Ship* ship)
                     if(gravwellIsShipStuckForHyperspaceing(ship))
                     {
                         //ship is stuck because of gravwell near by
-                        ssinfo->clipt     = 0.0f;
-                        ssinfo->cliptPrev = 0.0f;
+                        ssinfo->clipt = 0.0f;
+                        rintMarkHsDiscontinuity( (SpaceObj*) ship, ssinfo->clipt );
                         goto noupdateHSMPOUT;
                     }
                 }
@@ -684,8 +676,8 @@ noupdateHSMPOUT:
                 if (singlePlayerGame && spHoldHyperspaceWindow)
                 {
                         //ship is stuck 'cause I want it to
-                        ssinfo->clipt     = 0.0f;
-                        ssinfo->cliptPrev = 0.0f;
+                        ssinfo->clipt = 0.0f;
+                        rintMarkHsDiscontinuity( (SpaceObj*) ship, ssinfo->clipt );
                         break;  // don't change state
                 }
                 ssinfo->hsState = HS_SLICING_OUTOF;
@@ -764,46 +756,6 @@ void hsEnd(Ship* ship, bool displayEffect)
     color c = hsDefaultColor;
     if (ship->staticinfo->hyperspaceColor != colBlack)
          c = ship->staticinfo->hyperspaceColor;
-    
-
-    //monkey with the effect origin so it scales properly and starts in proper spot
-    //vector origin = {0.0f, 0.0f, sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z};
-    //
-    //switch (ssinfo->hsState)
-    //{
-    //    case HS_POPUP_INTO:
-    //    case HS_POPUP_OUTOF: {
-    //        real32 t = 1.0f - ssinfo->clipt;
-    //        hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
-    //        if (ssinfo->hyperspaceEffect != NULL)
-    //        {
-    //            //monkey effect position
-    //            vector vecTemp;
-    //            matMultiplyMatByVec(&vecTemp, &ship->rotinfo.coordsys, &origin);
-    //            ssinfo->hyperspaceEffect->posinfo.position = ship->collInfo.collPosition;
-    //            vecAddTo(ssinfo->hyperspaceEffect->posinfo.position, vecTemp);
-    //        }
-    //        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * ssinfo->clipt), c);
-    //    } break;
-    //
-    //    case HS_COLLAPSE_INTO:
-    //    case HS_COLLAPSE_OUTOF: {
-    //        //monkey with the effect origin so it scales properly and starts in proper spot
-    //        if ( ! singlePlayerGameInfo.hyperspaceFails)
-    //            origin.z = -sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z;
-    //
-    //        real32 t = ssinfo->clipt;
-    //        hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
-    //        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * (1.0f - t)), c);
-    //    } break;
-    //
-    //    case HS_SLICING_INTO:
-    //    case HS_SLICING_OUTOF: {
-    //        hsRectangle(&origin, sinfo->rightlength, sinfo->uplength, 90, TRUE, c);
-    //    } break;
-    //}
-
-    
 
     vector origin = { 0,0,0 };
     switch (ssinfo->hsState)
@@ -812,7 +764,7 @@ void hsEnd(Ship* ship, bool displayEffect)
     case HS_POPUP_OUTOF: {
         //monkey with the effect origin so it scales properly and starts in proper spot
         origin.z = sinfo->forwardlength * ship->magnitudeSquared - sinfo->collsphereoffset.z;
-        real32 t = 1.0f - hsLerpT(ssinfo);
+        real32 t = 1.0f - ssinfo->clipt;
         hsRectangle(&origin, sinfo->rightlength, t * sinfo->uplength, 90, TRUE, c);
         if (ssinfo->hyperspaceEffect != NULL)
         {
@@ -823,13 +775,13 @@ void hsEnd(Ship* ship, bool displayEffect)
             vecAddTo(ssinfo->hyperspaceEffect->posinfo.position, vecTemp);
         }
 
-        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * hsLerpT(ssinfo)), c);
+        hsLine(&origin, sinfo->rightlength, 1.5f, (ubyte)(255.0f * ssinfo->clipt), c);
     } break;
 
     case HS_COLLAPSE_INTO:
     case HS_COLLAPSE_OUTOF:
         origin.z = (singlePlayerGameInfo.hyperspaceFails) ? sinfo->forwardlength : -sinfo->forwardlength;
-        real32 t = hsLerpT(ssinfo);
+        real32 t = ssinfo->clipt;
         //monkey with the effect origin so it scales properly and starts in proper spot
         origin.z *= ship->magnitudeSquared;
         origin.z -= sinfo->collsphereoffset.z;
@@ -839,7 +791,7 @@ void hsEnd(Ship* ship, bool displayEffect)
 
     case HS_SLICING_INTO:
     case HS_SLICING_OUTOF:
-        origin.z = hsLerpT(ssinfo) * (sinfo->forwardlength) * ship->magnitudeSquared - sinfo->collsphereoffset.z;
+        origin.z = ssinfo->clipt * (sinfo->forwardlength) * ship->magnitudeSquared - sinfo->collsphereoffset.z;
         //monkey with the effect origin so it scales properly and starts in proper spot
         hsRectangle(&origin, sinfo->rightlength, sinfo->uplength, 90, TRUE, c);
         break;
@@ -866,9 +818,10 @@ void hsFinish(Ship* ship)
 {
     ShipSinglePlayerGameInfo* ssinfo = ship->shipSinglePlayerGameInfo;
     ssinfo->clipt      = -2.0f;
-    ssinfo->cliptPrev  = -2.0f;
     ssinfo->cliptDelta =  0.0f;
     ssinfo->hsState    = (ssinfo->hsState == HS_COLLAPSE_INTO) ? HS_FINISHED : HS_INACTIVE;
+
+    rintMarkHsDiscontinuity( (SpaceObj*) ship, ssinfo->clipt );
 
     if (ssinfo->hyperspaceEffect != NULL)
     {

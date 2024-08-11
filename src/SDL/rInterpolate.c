@@ -21,6 +21,7 @@
 #include "Matrix.h"
 #include "NIS.h"
 #include "Options.h"
+#include "SinglePlayer.h"
 #include "Types.h"
 #include "Universe.h"
 #include "Vector.h"
@@ -118,17 +119,6 @@ static void updateTimeFraction(void) {
 
 
 
-/// Interpolate a position.
-static vector lerp( vector from, vector to, real32 f ) {
-    return (vector) {
-        from.x + (to.x - from.x) * f,
-        from.y + (to.y - from.y) * f,
-        from.z + (to.z - from.z) * f
-    };
-}
-
-
-
 /// Signed saturated dot product of normalised vectors.
 static real32 dotProductClamped( vector a, vector b ) {
     real32 dot = vecDotProduct( a, b );
@@ -139,13 +129,31 @@ static real32 dotProductClamped( vector a, vector b ) {
 
 
 
+/// Interpolate a scalar.
+static real32 lerpf( real32 from, real32 to, real32 f ) {
+    return from + (to - from) * f;
+}
+
+
+
+/// Interpolate a position.
+static vector lerpv( vector from, vector to, real32 f ) {
+    return (vector) {
+        from.x + (to.x - from.x) * f,
+        from.y + (to.y - from.y) * f,
+        from.z + (to.z - from.z) * f
+    };
+}
+
+
+
 /// Interpolate an orientation. Vectors must be unit length.
 static vector slerp( vector from, vector to, real32 f ) {
     const real32 dot = dotProductClamped( from, to );
 
     // If they're almost exactly the same, just lerp.
     if (fabsf(dot) > 0.99f)
-        return lerp( from, to, f );
+        return lerpv( from, to, f );
 
     vector rel = {
         to.x - from.x * dot,
@@ -167,16 +175,46 @@ static vector slerp( vector from, vector to, real32 f ) {
 
 
 
+/// Interpolate an orientation matrix.
+static void lerpm( matrix* out, const matrix* from, const matrix* to, real32 f ) {
+    vector upA, upB, rightA, rightB, headA, headB;
+    matGetVectFromMatrixCol1( upA,    *from );
+    matGetVectFromMatrixCol1( upB,    *to   );
+    matGetVectFromMatrixCol2( rightA, *from );
+    matGetVectFromMatrixCol2( rightB, *to   );
+    matGetVectFromMatrixCol3( headA,  *from );
+    matGetVectFromMatrixCol3( headB,  *to   );
+
+    vector up    = slerp( upA,    upB,    f );
+    vector right = slerp( rightA, rightB, f );
+    vector head  = slerp( headA,  headB,  f );
+
+    matPutVectIntoMatrixCol1( up,    *out );
+    matPutVectIntoMatrixCol2( right, *out );
+    matPutVectIntoMatrixCol3( head,  *out );
+}
+
+
+
+/// Ship-specific interpolation info.
+typedef struct ShipInterp {
+    real32 hsClipT; ///< Hyperspace parameter previous value (Note: discontinuous!)
+} ShipInfo;
+
+
+
 /// Interpolation metadata
 typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
+    bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
     vector    pprev;  ///< Previous uninterpolated position
     vector    pcurr;  ///< Current  uninterpolated position
     vector    cprev;  ///< Previous uninterpolated collision position
     vector    ccurr;  ///< Current  uninterpolated collision position
     matrix    hprev;  ///< Previous uninterpolated coordsys matrix
     matrix    hcurr;  ///< Current  uninterpolated coordsys matrix
-    bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
+    ShipInfo  sprev;  ///< Previous ship-specifics
+    ShipInfo  scurr;  ///< Current  ship-specific
 } Interp;
 
 
@@ -216,6 +254,8 @@ static void rintAllocMemory( udword count ) {
     // Zero
     memset( interpData, 0x00, interpBytes );
     memset( renderList, 0x00, renderBytes );
+
+    printf( "Interpolator allocated %i items, %i bytes.\n", interpAlloc, interpBytes+renderBytes );
 }
 
 
@@ -444,6 +484,11 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
         SpaceObjRot* sor = (SpaceObjRot*) obj;
         interp->hprev = sor->rotinfo.coordsys;
     }
+
+    if (obj->objtype == OBJ_ShipType) {
+        Ship* ship = (Ship*) obj;
+        interp->sprev.hsClipT = ship->shipSinglePlayerGameInfo->clipt;
+    }
 }
 
 
@@ -472,6 +517,11 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
         SpaceObjRot* sor = (SpaceObjRot*) obj;
         interp->hcurr = sor->rotinfo.coordsys;
     }
+
+    if (obj->objtype == OBJ_ShipType) {
+        Ship* ship = (Ship*) obj;
+        interp->scurr.hsClipT = ship->shipSinglePlayerGameInfo->clipt;
+    }
 }
 
 
@@ -483,34 +533,27 @@ static void interpolateObject( const Interp* interp ) {
 
     const vector pa = interp->pprev;
     const vector pb = interp->pcurr;
-    obj->posinfo.position = lerp( pa, pb, f );
+    obj->posinfo.position = lerpv( pa, pb, f );
 
     if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         const vector ca = interp->cprev;
         const vector cb = interp->ccurr;
-        sori->collInfo.collPosition = lerp( ca, cb, f );
+        sori->collInfo.collPosition = lerpv( ca, cb, f );
     }
 
     if (canInterpOrientation( obj )) {
         SpaceObjRot* sor = (SpaceObjRot*) obj;
+        const matrix* ha = &interp->hprev;
+        const matrix* hb = &interp->hcurr;
+        lerpm( &sor->rotinfo.coordsys, ha, hb, f );
+    }
 
-        vector upA, upB, rightA, rightB, headA, headB;
-        matGetVectFromMatrixCol1( upA,    interp->hprev );
-        matGetVectFromMatrixCol1( upB,    interp->hcurr );
-        matGetVectFromMatrixCol2( rightA, interp->hprev );
-        matGetVectFromMatrixCol2( rightB, interp->hcurr );
-        matGetVectFromMatrixCol3( headA,  interp->hprev );
-        matGetVectFromMatrixCol3( headB,  interp->hcurr );
-
-        vector up    = slerp( upA,    upB,    f );
-        vector right = slerp( rightA, rightB, f );
-        vector head  = slerp( headA,  headB,  f );
-
-        matrix* mat = &sor->rotinfo.coordsys;
-        matPutVectIntoMatrixCol1( up,    *mat );
-        matPutVectIntoMatrixCol2( right, *mat );
-        matPutVectIntoMatrixCol3( head,  *mat );
+    if (obj->objtype == OBJ_ShipType) {
+        Ship* ship = (Ship*) obj;
+        const real32 ta = interp->sprev.hsClipT;
+        const real32 tb = interp->scurr.hsClipT;
+        ship->shipSinglePlayerGameInfo->clipt = lerpf( ta, tb, f );
     }
 }
 
@@ -530,13 +573,18 @@ static void restoreObject( const Interp* interp ) {
         SpaceObjRot* sor = (SpaceObjRot*) obj;
         sor->rotinfo.coordsys = interp->hcurr;
     }
+
+    if (obj->objtype == OBJ_ShipType) {
+        Ship* ship = (Ship*) obj;
+        ship->shipSinglePlayerGameInfo->clipt = interp->scurr.hsClipT;
+    }
 }
 
 
 
 /// Check whether it's safe to do interpolation on the render side.
 /// It's always safe on the universe update end.
-static udword interpRenderAllowed() {
+static bool interpRenderAllowed() {
     return updateEnabled
         && renderEnabled
         && ! nisIsRunning
@@ -586,6 +634,25 @@ real32 rintFraction( void ) {
 /// If interpolation isn't enabled, it's the same as universe.totaltimeelapsed.
 real32 rintUniverseElapsedTime( void ) {
     return universe.totaltimeelapsed + UNIVERSE_UPDATE_PERIOD * rintFraction();
+}
+
+
+
+/// Mark point of discontinuity in hsClipT.
+/// Otherwise the effect will bounce around stupidly at those moments.
+void rintMarkHsDiscontinuity( SpaceObj* obj, real32 clipT ) {
+    // Don't do anything stupid, kid
+    if (obj == NULL)
+        return;
+
+    // Map the object
+    Interp* interp = interpFind( obj );
+    if (interp == NULL)
+        return;
+
+    // Make the values equal
+    interp->sprev.hsClipT = clipT;
+    interp->scurr.hsClipT = clipT;
 }
 
 
