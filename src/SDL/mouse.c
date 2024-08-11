@@ -1780,27 +1780,14 @@ void mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
 =============================================================================*/
 void mousePoll(void)
 {
-    //rectangle clientRect;
-    //POINT mousePoint;
-    sdword tmpX, tmpY;
-
-    if (mouseDisabled)
+    if (mouseDisabled || demDemoPlaying)
     {
         return;
     }
-    if (demDemoPlaying)
-    {
-        return;
-    }
-    //utyClientRectGet(&clientRect);                          //get window location
-    /*
-    GetCursorPos(&mousePoint);                              //get location of Windows mouse cursor
-    mouseCursorXPosition = mousePoint.x - clientRect.x0;    //compute relative coords
-    mouseCursorYPosition = mousePoint.y - clientRect.y0;
-    */
 
     if (mouseClip)
     {
+        sdword tmpX, tmpY;
         SDL_GetRelativeMouseState(&tmpX, &tmpY);
         mouseCursorXPosition += tmpX;
         mouseCursorYPosition += tmpY;
@@ -1811,27 +1798,6 @@ void mousePoll(void)
     {
         SDL_GetMouseState(&mouseCursorXPosition, &mouseCursorYPosition);
     }
-    //perform client area enter/exit logic to hide/show Windows system cursor
-    /*
-    if (primPointInRectXY2(&clientRect, mousePoint.x, mousePoint.y))
-    {                                                       //mouse inside window's client area
-        if (!mouseInsideClient)
-        {                                                   //just entered region
-            //ShowCursor(FALSE);
-            SDL_ShowCursor(SDL_DISABLE);
-            mouseInsideClient = TRUE;
-        }
-    }
-    else
-    {                                                       //else outside region
-        if (mouseInsideClient)
-        {                                                   //just exited region
-            //ShowCursor(TRUE);
-            SDL_ShowCursor(SDL_ENABLE);
-            mouseInsideClient = FALSE;
-        }
-    }
-    */
 }
 
 /*-----------------------------------------------------------------------------
