@@ -7475,6 +7475,9 @@ bool univUpdate(real32 phystimeelapsed)
         wkTradeUpdate();
     }
 
+    // Interpolation
+    rintUnivUpdatePreMove();
+
     if (singlePlayerGame)
         singlePlayerGameUpdate();
     else if (bitTest(tpGameCreated.flag,MG_Hyperspace))
@@ -7517,8 +7520,6 @@ bool univUpdate(real32 phystimeelapsed)
 
     PTSLAB(6,"updateobjpos");
 
-    // Interpolation
-    rintUnivUpdatePreMove();
 
     //old school function replaced with new functions below
     //univUpdateAllPosVel();       // also does a univCheckShipStates
