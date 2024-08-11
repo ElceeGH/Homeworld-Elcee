@@ -462,18 +462,19 @@ void mousePositionSet(sdword x, sdword y)
 ----------------------------------------------------------------------------*/
 void mouseClipToRect(rectangle *rect)
 {
-    sdword x, y;
     if (rect == NULL)
     {
         mouseClip = FALSE;
+        SDL_SetRelativeMouseMode(FALSE);
     }
     else
     {
-        mouseClip = TRUE;
+        sdword x, y;
+        mouseClip     = TRUE;
         mouseClipRect = *rect;
+        SDL_SetRelativeMouseMode(TRUE);
         SDL_GetRelativeMouseState(&x, &y); // prime the next poll to start at 0,0
     }
-    SDL_SetRelativeMouseMode(mouseClip);
 }
 
 
