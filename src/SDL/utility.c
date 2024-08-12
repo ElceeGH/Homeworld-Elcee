@@ -4541,10 +4541,8 @@ void utyClipMouse(sdword clip)
 ----------------------------------------------------------------------------*/
 void utyMouseButtonsClear(void)
 {
-    Uint8 mouse_state;
+    udword mouse_state = SDL_GetMouseState( NULL, NULL );
 
-    mousePoll();
-    mouse_state = SDL_GetMouseState(0, 0);
     if (mouse_state & SDL_BUTTON_LMASK)
     {
         keyPressDown(LMOUSE_BUTTON);

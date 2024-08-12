@@ -90,15 +90,22 @@ typedef struct
 //so we need to include singlePlayerGameInfo
 extern SinglePlayerGameInfo singlePlayerGameInfo;
 
-sdword mouseCursorXPosition, mouseCursorYPosition;
-uword mouseButtons;
-udword mouseModuleInit;
+sdword    mouseCursorXPosition = 0;
+sdword    mouseCursorYPosition = 0;
+sdword    mouseCursorXDelta    = 0;
+sdword    mouseCursorYDelta    = 0;
+uword     mouseButtons;
+udword    mouseModuleInit;
 rectangle mouseClipRect;
-bool8 mouseClip = FALSE;
-bool8 mouseIsVisible = TRUE;
-uword mouseWillBeVisible = 0;
-bool8 mouseDisabled = FALSE;
-uword mouseInsideClient = FALSE;
+bool8     mouseCaptureEnabled     = FALSE; // When true, mouse is locked to a certain pos
+bool8     mouseCaptureEnabledPrev = FALSE;
+sdword    mouseCapturePosX    = 0;
+sdword    mouseCapturePosY    = 0;
+bool8     mouseClip           = FALSE;
+bool8     mouseIsVisible      = TRUE;
+uword     mouseWillBeVisible  = 0;
+bool8     mouseDisabled       = FALSE;
+uword     mouseInsideClient   = FALSE;
 
 static bool mouseGLInitialized;
 
@@ -169,6 +176,7 @@ static GLuint tex_Traders = 0;
 
 
 static mouseInfoType mouseInfo = {0, 0, 0, MC_NO_SHIP};
+
 
 
 /*=============================================================================
@@ -448,32 +456,26 @@ void mousePositionSet(sdword x, sdword y)
 {
     mouseCursorXPosition = x;                               //set internal mouse location
     mouseCursorYPosition = y;
-
-    if (!mouseClip)
-        SDL_WarpMouseInWindow(NULL, x, y);
+    mouseCursorXDelta    = 0;
+    mouseCursorYDelta    = 0;
+    SDL_WarpMouseInWindow( NULL, x, y );
 }
 
 /*-----------------------------------------------------------------------------
     Name        : mouseClipToRect
-    Description : Clips the mouse to a given rectangle.
+    Description : Sets up the mouse for clipping to a given rectangle. (Not immediate effect, done in mousePoll())
     Inputs      : rect - rectangle to clip to.  NULL means no rectangle.
-    Outputs     :
-    Return      :
 ----------------------------------------------------------------------------*/
 void mouseClipToRect(rectangle *rect)
 {
     if (rect == NULL)
     {
         mouseClip = FALSE;
-        SDL_SetRelativeMouseMode(FALSE);
     }
     else
     {
-        sdword x, y;
         mouseClip     = TRUE;
         mouseClipRect = *rect;
-        SDL_SetRelativeMouseMode(TRUE);
-        SDL_GetRelativeMouseState(&x, &y); // prime the next poll to start at 0,0
     }
 }
 
@@ -627,19 +629,6 @@ bool mouseLDoubleClick(void)
 
         }
     }
-//    else if ((mouseCursorObjPtr != NULL) &&
-//             (mouseCursorObjPtr->objtype != OBJ_ShipType))
-//    {
-//        if (mouseCursorSelect.numShips > 0)
-//        {
-//            selSelectionCopy((MaxAnySelection *)&selSelected,
-//                             (MaxAnySelection *)&mouseCursorSelect);
-//            mouseCursorSelect.numShips = 0;
-//            tutGameMessage("Game_DoubleClickHarvest");
-//            clWrapCollectResource(&universe.mainCommandLayer, (SelectCommand *)&selSelected, (Resource*)mouseCursorObjPtr);
-//        }
-//        return TRUE;
-//    }
     return FALSE;
 }
 
@@ -1071,10 +1060,10 @@ void mouseDraw(void)
     }
     if (mouseCursorObjPtr != NULL)
     {                                                       //if the mouse is over an object
-        mouseCursorObjLast = mouseCursorObjPtr;             //remember where and when it was
+        mouseCursorObjLast     = mouseCursorObjPtr;             //remember where and when it was
         mouseCursorLastObjTime = universe.totaltimeelapsed;
-        mouseCursorLastX = mouseCursorX();
-        mouseCursorLastY = mouseCursorY();
+        mouseCursorLastX       = mouseCursorX();
+        mouseCursorLastY       = mouseCursorY();
     }
     //rndGLStateLog("MouseDraw (end)");
 //    glPopAttrib();
@@ -1751,24 +1740,69 @@ void mouseCursorTextDraw(void)
     Outputs     : clips x, y to rect
     Return      :
 ----------------------------------------------------------------------------*/
-void mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
+bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
 {
-    if (*x < rect->x0)
-    {
+    bool modified = FALSE;
+
+    if (*x < rect->x0) {
         *x = rect->x0;
+        modified = TRUE;
     }
-    if (*x >= rect->x1)
-    {
-        *x = rect->x1 - 1;
+
+    if (*x >= rect->x1) {
+        *x  = rect->x1 - 1;
+        modified = TRUE;
     }
-    if (*y < rect->y0)
-    {
+
+    if (*y < rect->y0) {
         *y = rect->y0;
+        modified = TRUE;
     }
-    if (*y >= rect->y1)
-    {
-        *y = rect->y1 - 1;
+
+    if (*y >= rect->y1) {
+        *y  = rect->y1 - 1;
+        modified = TRUE;
     }
+
+    return modified;
+}
+
+
+
+/// Reset the mouse capture position to the centre of the screen.
+static void mouseCaptureResetHoldPos( void ) {
+    mouseCapturePosX = MAIN_WindowWidth  / 2;
+    mouseCapturePosY = MAIN_WindowHeight / 2;
+}
+
+
+
+/// Start capturing the mouse.
+/// The mouse is held in the centre of the screen.
+void mouseCaptureStart( void ) {
+    mouseCaptureEnabled = TRUE;
+    mouseCaptureResetHoldPos();
+}
+
+
+
+/// Start capturing the mouse, and keep it in a specific absolute position.
+/// As opposed to the screen centre which is the default.
+/// It sometimes matters since UI regions only get events if the mouse is over them.
+/// Zero isn't a valid option here.
+void mouseCaptureStartCustomPos( sdword cx, sdword cy ) {
+    mouseCaptureEnabled = TRUE;
+    mouseCapturePosX    = cx;
+    mouseCapturePosY    = cy;
+}
+
+
+
+/// Stop capturing the mouse.
+/// Resets the hold position automatically.
+void mouseCaptureStop( void ) {
+    mouseCaptureEnabled = FALSE;
+    mouseCaptureResetHoldPos();
 }
 
 /*=============================================================================
@@ -1778,27 +1812,70 @@ void mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
     Created 7/7/1997 by lmoloney
     Copyright Relic Entertainment, Inc.  All rights reserved.
 =============================================================================*/
+
+/// Elcee here.  Ah, yes, hello. I rewrote this in 2024. Well, bye.
+/// The whole mouse capturing thing was sorely needed!
 void mousePoll(void)
 {
+    // No updates here
     if (mouseDisabled || demDemoPlaying)
-    {
         return;
+
+    // Configure the initial capture position if it's invalid
+    if (mouseCapturePosX == 0
+    &&  mouseCapturePosY == 0)
+        mouseCaptureResetHoldPos();
+
+    // Sample current mouse pos
+    sdword ix, iy;
+    SDL_GetMouseState( &ix, &iy );
+
+    // If capture is enabled, move the mouse to the configured position after each sampling and update the deltas relative to that point.
+    // On the first sample, the deltas will be zeroed to filter out sudden unwanted jumps in movement.
+    if (mouseCaptureEnabled) {
+        // Move mouse to the capture position.
+        mousePositionSet( mouseCapturePosX, mouseCapturePosY );
+        mouseCursorXDelta = ix - mouseCapturePosX;
+        mouseCursorYDelta = iy - mouseCapturePosY;
+        
+        // Zero the deltas for the first few samples.
+        // Because of the way SDL works, the mouse will not ACTUALLY have moved yet in rare cases, and this will create bad deltas.
+        static sdword captureFilterCounter = 0;
+        if (mouseCaptureEnabled && mouseCaptureEnabledPrev == FALSE)
+            captureFilterCounter = 4;
+        
+        // Just zero them.
+        if (captureFilterCounter > 0) {
+            captureFilterCounter--;
+            mouseCursorXDelta = 0;
+            mouseCursorYDelta = 0;
+        }
+    } else {
+        // Normal mouse input. Simple.
+        mouseCursorXDelta    = ix - mouseCursorXPosition;
+        mouseCursorYDelta    = iy - mouseCursorYPosition;
+        mouseCursorXPosition = ix;
+        mouseCursorYPosition = iy;
+    }
+    
+    // Mouse rectangle clipping.
+    // @todo This overrides the deltas to zero if it actually gets clipped, is that a problem?
+    if (mouseClip) {
+        sdword tx = mouseCursorXPosition;
+        sdword ty = mouseCursorYPosition;
+
+        if (mouseClipPointToRect( &mouseCursorXPosition, &mouseCursorYPosition, &mouseClipRect )) {
+            mousePositionSet( mouseCursorXPosition, mouseCursorYPosition );
+        }
     }
 
-    if (mouseClip)
-    {
-        sdword tmpX, tmpY;
-        SDL_GetRelativeMouseState(&tmpX, &tmpY);
-        mouseCursorXPosition += tmpX;
-        mouseCursorYPosition += tmpY;
-        mouseClipPointToRect(&mouseCursorXPosition, &mouseCursorYPosition, &mouseClipRect);
-        mousePositionSet(mouseCursorXPosition, mouseCursorYPosition);
-    }
-    else
-    {
-        SDL_GetMouseState(&mouseCursorXPosition, &mouseCursorYPosition);
-    }
+    // Track the capture state so state changes can be detected
+    mouseCaptureEnabledPrev = mouseCaptureEnabled;
 }
+
+
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : mouseDisable/mouseEnable
@@ -1812,6 +1889,7 @@ void mouseDisable(void)
     mouseCursorHide();
     mouseDisabled = TRUE;
 }
+
 void mouseEnable(void)
 {
     mouseCursorShow();

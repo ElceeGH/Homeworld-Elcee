@@ -414,7 +414,7 @@ sdword cameraControl(Camera *camera, bool EnforceShipDistances)
             else
             {
                 cameraRotDeclination(camera,CAMERA_DECLINATION_ROT * (real32)camMouseY * CAMERA_MOUSE_SENS);
-                cameraRotAngle(camera,CAMERA_ANGLE_ROT * (real32)camMouseX * CAMERA_MOUSE_SENS);
+                cameraRotAngle      (camera,CAMERA_ANGLE_ROT       * (real32)camMouseX * CAMERA_MOUSE_SENS);
                 UserAction |= CAM_USER_MOVED;
             }
         }

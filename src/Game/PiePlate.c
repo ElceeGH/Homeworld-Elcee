@@ -979,8 +979,6 @@ void piePointSpecDraw(void)
     real32 windowHeightMinusOne;
     real32 eyeMagnitude;
 
-    mousePoll();
-
     if (pieDistReadFont == 0)
     {
         pieDistReadFont = frFontRegister(TW_DISTANCE_READOUT_FONT);

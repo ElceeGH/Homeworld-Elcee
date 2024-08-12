@@ -909,18 +909,8 @@ DEFINE_TASK(regProcessTask)
 #if REG_VERBOSE_LEVEL >= 2
         dbgMessage("Processing regions...");
 #endif
-        mousePoll();                                        //poll mouse
+        mousePoll(); //poll mouse
         regRenderEventIndex = 0;
-//        regRenderEventIndex = regRenderEventIndex - regRenderEventIndex;                            //no render events yet this frame
-
-        //special-case code for double-clicks
-/*
-        if (keyIsHit(LMOUSE_DOUBLE))
-        {
-            keyPressUp(LMOUSE_DOUBLE);
-            utyDoubleClick();
-        }
-*/
         if (demDemoRecording)
         {
             memcpy((ubyte *)&keyScanCode[0], (ubyte *)&keySaveScan[0], sizeof(keyScanCode));//freeze a snapshot of the key state

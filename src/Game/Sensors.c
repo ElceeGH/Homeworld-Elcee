@@ -3454,8 +3454,8 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             smHoldRight = mrCameraMotion;
             mrOldMouseX = mouseCursorX();                   //save current mouse location for later restoration
             mrOldMouseY = mouseCursorY();
-            mouseCursorHide();                              //hide cursor and move to centre of the screen
-            mousePositionSet(MAIN_WindowWidth / 2, MAIN_WindowHeight / 2);
+            mouseCursorHide();                              //hide cursor
+            mouseCaptureStart();                            //capture it
             mrMouseHasMoved = 0;                            //mouse hasn't moved yet
             region->rect.x0 = region->rect.y0 = 0;          //make it's rectangle full-screen
             region->rect.x1 = MAIN_WindowWidth;
@@ -3469,6 +3469,7 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             {                                               //if in camera movement mode
                 mousePositionSet(mrOldMouseX, mrOldMouseY); //restore mouse position
                 mouseCursorShow();                          //show mouse cursor
+                mouseCaptureStop();                         //release back into the wild
                 smHoldRight = smNULL;                       //idle mode
             }
             //region->rect = smViewRectangle;                 //restore origional rectangle

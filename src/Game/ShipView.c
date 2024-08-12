@@ -260,10 +260,11 @@ sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword dat
         svMouseLastX = mouseCursorX();
         svMouseLastY = mouseCursorY();
 
-        // Centre mouse
-        svMouseCentreX = (rect->x0 + rect->x1) >> 1;
-        svMouseCentreY = (rect->y0 + rect->y1) >> 1;
-        mousePositionSet(svMouseCentreX, svMouseCentreY);
+        // Capture mouse in the region
+        const sdword cx = (rect->x0 + rect->x1) / 2;
+        const sdword cy = (rect->y0 + rect->y1) / 2;
+        mouseCursorHide();
+        mouseCaptureStartCustomPos( cx, cy );
         mouseClipToRect(rect);
 
         svMousePressRight = TRUE;
@@ -274,7 +275,10 @@ sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword dat
         break;
 
     case RPE_ReleaseRight:
+        // Restore the mouse
         mousePositionSet(svMouseLastX, svMouseLastY);
+        mouseCursorShow();
+        mouseCaptureStop();
         mouseClipToRect(&defaultRect);
         svMousePressRight = FALSE;
         break;
@@ -397,14 +401,10 @@ void svShipViewRender(featom* atom, regionhandle region)
         }
         else if (svMouseInside && svMousePressRight)
         {
-            camMouseX = (svMouseCentreX - mouseCursorX()) * 4;      //was 2
-            camMouseY = (svMouseCentreY - mouseCursorY()) * 4;
-            savecamMouseX = savecamMouseX * SPIN_FEEDBACK +
-                (real32)camMouseX * (1.0f - SPIN_FEEDBACK);
+            camMouseX     = -mouseCursorXDelta * 4;
+            camMouseY     = -mouseCursorYDelta * 4;
+            savecamMouseX = savecamMouseX * SPIN_FEEDBACK + (real32)camMouseX * (1.0f - SPIN_FEEDBACK);
             cameraControl(&svCamera, FALSE);                         //update the camera
-
-            mouseCursorHide();
-            mousePositionSet(svMouseCentreX, svMouseCentreY); // Reset position so it doesn't walk off region
 
             // keep track of where the user left the camera so we can sync auto-rotation with it
             angle_user_rotated_to       = svCamera.angle;
@@ -433,9 +433,6 @@ void svShipViewRender(featom* atom, regionhandle region)
                     svCamera.declination = declination_user_rotated_to + (DEG_TO_RAD(svDeclination) - declination_user_rotated_to) * ((timeRef - time_user_rotated_view) / SV_PITCH_FLATTEN_SECS);
                 }
             }
-            
-            if (svMouseInside)
-                mouseCursorShow();
         }
     }
 
@@ -545,22 +542,11 @@ void svShipViewRender(featom* atom, regionhandle region)
 
     if (svShipType != DefaultShip && !resetRender)
     {
-        fontPrintf(
-            x,
-            y,
-            FEC_ListItemStandard,
-            "%s",
-            ShipTypeToNiceStr(svShipType));
+        fontPrintf( x, y, FEC_ListItemStandard, "%s", ShipTypeToNiceStr(svShipType) );
 
         y += fontHeight(" ");
-
         sprintf(temp, "%s %d %s",strGetString(strSVCost),info->buildCost, strGetString(strSVRUs));
-
-        fontPrintf(
-            x,
-            y,
-            FEC_ListItemStandard,
-            temp);
+        fontPrintf( x, y,FEC_ListItemStandard, temp );
 
         if (cmPrintHotKey)
         {
@@ -573,27 +559,17 @@ void svShipViewRender(featom* atom, regionhandle region)
             if (key & CM_SHIFT)
             {
                 width = fontWidthf("[SHIFT-%s]",keystring);
-                fontPrintf(
-                    x-width,
-                    y,
-                    FEC_ListItemStandard,
-                    "[SHIFT-%s]",
-                    keystring);
+                fontPrintf( x-width, y, FEC_ListItemStandard, "[SHIFT-%s]", keystring);
             }
             else if (key)
             {
                 width = fontWidthf("[%s]",keystring);
-                fontPrintf(
-                    x-width,
-                    y,
-                    FEC_ListItemStandard,
-                    "[%s]",
-                    keystring);
+                fontPrintf( x-width, y, FEC_ListItemStandard, "[%s]", keystring);
             }
         }
     }
-    fontMakeCurrent(currentFont);
 
+    fontMakeCurrent(currentFont);
     svDirtyShipView();
 }
 

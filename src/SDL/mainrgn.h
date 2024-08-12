@@ -82,8 +82,6 @@ extern void (*mrHoldRight)(void);
 
 extern char *mrMenuItemByTactic[];
 
-extern bool helpinfoactive;
-
 extern real32 mrNumberDoublePressTime;
 extern sdword mrLastKeyPressed;
 extern real32 mrLastKeyTime;

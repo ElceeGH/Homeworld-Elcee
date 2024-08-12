@@ -111,9 +111,6 @@ regionhandle ghMainRegion = NULL;
 //tactical overlay on/off flag
 bool mrDrawTactical = FALSE, mrSaveTactical = FALSE;
 
-//help info screen up or not
-bool helpinfoactive = FALSE;
-
 regionhandle helpinforegion;
 
 //debug for turning off enemy AI
@@ -1296,45 +1293,16 @@ void mrSelectHold(void)
 //nn: mouse wheel zoom doesn't call this code (at least in game and sensors manager)
 void mrCameraMotion(void)
 {
-    if (mouseCursorX() == mrOldMouseX
-    &&  mouseCursorY() == mrOldMouseY)
-    {
+    printf( "mrCameraMotion()\n");
+
+    mrMouseHasMoved += abs(mouseCursorXDelta);
+    mrMouseHasMoved += abs(mouseCursorYDelta);
+    camMouseX        = -mouseCursorXDelta;
+    camMouseY        = -mouseCursorYDelta;
+
+    if (mrMouseHasMoved == 0) {
         camMouseX = 0;
         camMouseY = 0;
-        return;
-    }
-
-    if (helpinfoactive)
-    {
-        if (!mouseInRect(&helpinforegion->rect))
-        {
-            sdword cx = helpinforegion->rect.x0 / 2;
-            sdword cy = MAIN_WindowHeight       / 2;
-
-            mrMouseHasMoved += abs(mouseCursorX() - cx);
-            mrMouseHasMoved += abs(mouseCursorY() - cy);
-            camMouseX = cx - mouseCursorX();
-            camMouseY = cy - mouseCursorY();
-            mousePositionSet(cx, cy);
-
-            rectangle rect;
-            rect.x0 = 0;
-            rect.y0 = 0;
-            rect.x1 = helpinforegion->rect.x0;
-            rect.y1 = MAIN_WindowHeight;
-            mouseClipToRect(&rect);
-        }
-    }
-    else
-    {
-        sdword cx = MAIN_WindowWidth  / 2;
-        sdword cy = MAIN_WindowHeight / 2;
-
-        mrMouseHasMoved += abs(mouseCursorX() - cx);
-        mrMouseHasMoved += abs(mouseCursorY() - cy);
-        camMouseX = cx - mouseCursorX();
-        camMouseY = cy - mouseCursorY();
-        mousePositionSet(cx, cy);
     }
 }
 
@@ -3155,36 +3123,6 @@ void mrRightClickMenu(void)
 #endif
 }
 
-#if MR_TEST_HPB
-#define MR_ROTATE_SCALAR        0.007f
-extern sdword madTestHPBIndex;
-bool mrTestHPBMode = FALSE;
-real32 mrHeading, mrPitch, mrBank;
-void mrHeadingPitchHold(void)
-{
-    if (mouseCursorX() != MAIN_WindowWidth / 2)
-    {
-        mrHeading += (real32)(mouseCursorX() - MAIN_WindowWidth / 2) * MR_ROTATE_SCALAR;
-        mousePositionSet(MAIN_WindowWidth / 2, mouseCursorY());
-    }
-    if (mouseCursorY() != MAIN_WindowHeight / 2)
-    {
-        mrPitch += (real32)(mouseCursorY() - MAIN_WindowHeight / 2) * MR_ROTATE_SCALAR;
-        mousePositionSet(mouseCursorX(), MAIN_WindowHeight / 2);
-    }
-    mrTestHPBMode = TRUE;
-}
-void mrBankHold(void)
-{
-    if (mouseCursorX() != MAIN_WindowWidth / 2)
-    {
-        mrBank += (real32)(MAIN_WindowWidth / 2 - mouseCursorX()) * MR_ROTATE_SCALAR;
-        mousePositionSet(MAIN_WindowWidth / 2, mouseCursorY());
-    }
-    mrTestHPBMode = TRUE;
-}
-#endif
-
 // later put in shipselect.c
 #define ShipIsntSelectable(x)        bitTest((x)->flags, SOF_Hide|SOF_Disabled|SOF_Crazy)
 
@@ -3732,17 +3670,8 @@ udword mrRegionProcess(regionhandle reg, sdword ID, udword event, udword data)
             mrHoldRight = mrCameraMotion;                   //set to zoom/rotate mode
             mrOldMouseX = mouseCursorX();                   //save current mouse location for later restoration
             mrOldMouseY = mouseCursorY();
-            mouseCursorHide();                              //hide cursor and move to centre of the screen
-
-            if (helpinfoactive)
-            {
-                mousePositionSet(helpinforegion->rect.x0 / 2, MAIN_WindowHeight / 2);
-            }
-            else
-            {
-                mousePositionSet(MAIN_WindowWidth / 2, MAIN_WindowHeight / 2);
-            }
-
+            mouseCursorHide();                              //hide cursor
+            mouseCaptureStart();                            //contain its evil
             mrMouseHasMoved = 0;                            //mouse hasn't moved yet
             break;
         case RPE_DoubleLeft:
@@ -4074,15 +4003,11 @@ endReleaseButtonLogic:
 #endif
             break;
     case RPE_ReleaseRight:
-            if (helpinfoactive)
-            {
-
-            }
             if (mrHoldRight == mrCameraMotion)
             {                                               //if in camera movement mode
-                piePointModePause(FALSE);                    //unpause point specification for the camera motion
+                piePointModePause(FALSE);                   //unpause point specification for the camera motion
                 mousePositionSet(mrOldMouseX, mrOldMouseY); //restore mouse position
-                
+                mouseCaptureStop();                         //leave it alone now
                 mouseCursorShow();                          //show mouse cursor
                 mrHoldRight = mrNULL;                       //idle mode
                 //mouseClipToRect(&defaultRect);

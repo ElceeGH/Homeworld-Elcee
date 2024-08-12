@@ -68,6 +68,7 @@
     Data:
 =============================================================================*/
 extern sdword mouseCursorXPosition, mouseCursorYPosition;
+extern sdword mouseCursorXDelta,    mouseCursorYDelta;
 extern sdword lastUnderWidth, lastUnderHeight;
 extern uword mouseButtons;
 extern bool8 mouseIsVisible;
@@ -160,7 +161,7 @@ void mouseClickShipDied(ShipPtr deadship);
 //set new position for mouse
 void mousePositionSet(sdword x, sdword y);
 void mouseClipToRect(rectangle *rect);
-void mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect);
+bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect);
 
 //draw mouse cursor and update cursor position/button flags
 void mouseStoreCursorUnder(void);
@@ -177,5 +178,10 @@ void mouseCursorTextDraw(void);
 
 //poll current location of mouse and store internally
 void mousePoll(void);
+
+//capture mode
+void mouseCaptureStart( void );
+void mouseCaptureStartCustomPos( sdword cx, sdword cy );
+void mouseCaptureStop( void );
 
 #endif
