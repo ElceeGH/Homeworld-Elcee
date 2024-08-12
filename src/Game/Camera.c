@@ -433,9 +433,8 @@ sdword cameraControl(Camera *camera, bool EnforceShipDistances)
 ----------------------------------------------------------------------------*/
 void cameraSensitivitySet(sdword sens100)
 {
-    real32 value;
-    value = ((real32)sens100 / 100.0f) * (CAMERA_MOUSE_SENS_MAX - CAMERA_MOUSE_SENS_MIN) + CAMERA_MOUSE_SENS_MIN;
-    CAMERA_MOUSE_SENS = (real32)pow(2.0, (double)value);
+    real32 value = ((real32)sens100 / 100.0f) * (CAMERA_MOUSE_SENS_MAX - CAMERA_MOUSE_SENS_MIN) + CAMERA_MOUSE_SENS_MIN;
+    CAMERA_MOUSE_SENS = powf(2.0f, value);
 }
 
 /*-----------------------------------------------------------------------------
