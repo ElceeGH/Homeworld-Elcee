@@ -36,6 +36,26 @@ LinkedList CircleList;
 /*=============================================================================
     Functions:
 =============================================================================*/
+
+void primLine3Fade(vector *p1, vector *p2, color c, real32 fade)
+{
+    bool blendon = FALSE;
+
+    blendon = glccIsEnabled(GL_BLEND);
+    if (!blendon) glccEnable(GL_BLEND);
+    glccEnable(GL_LINE_SMOOTH);
+    rndAdditiveBlends(FALSE);
+
+    glBegin(GL_LINES);
+    glColor4ub(colRed(c), colGreen(c), colBlue(c), (ubyte)(255.0f * fade));
+    glVertex3fv((const GLfloat *)p1);
+    glVertex3fv((const GLfloat *)p2);
+    glEnd();
+
+    if (!blendon) glccDisable(GL_BLEND);
+    glccDisable(GL_LINE_SMOOTH);
+}
+
 /*-----------------------------------------------------------------------------
     Name        : primLine3
     Description : Draw a line in 3D using having a thickness of 1 pixel
@@ -46,21 +66,7 @@ LinkedList CircleList;
 ----------------------------------------------------------------------------*/
 void primLine3(vector *p1, vector *p2, color c)
 {
-    bool blendon = FALSE;
-
-    blendon = glccIsEnabled(GL_BLEND);
-    if (!blendon) glccEnable(GL_BLEND);
-    glccEnable(GL_LINE_SMOOTH);
-    rndAdditiveBlends(FALSE);
-
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glBegin(GL_LINES);
-    glVertex3fv((const GLfloat *)p1);
-    glVertex3fv((const GLfloat *)p2);
-    glEnd();
-
-    if (!blendon) glccDisable(GL_BLEND);
-    glccDisable(GL_LINE_SMOOTH);
+    primLine3Fade( p1, p2, c, 1.0f );
 }
 
 /*-----------------------------------------------------------------------------

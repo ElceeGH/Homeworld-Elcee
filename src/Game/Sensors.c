@@ -676,98 +676,123 @@ void makeShipsNotBeDisabled(SelectCommand *selection)
 #define cam     ((Camera *)voidCam)
 void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, real32 distance)
 {
-    real32 startAngle, endAngle;
-    real32 x, y, radius;
-    vector startPoint, horizPoint, endPoint;
-    real32 angle, degAngle;
-    bool isEnabled = FALSE;
-    sdword nPrintfed;
     fonthandle oldFont = fontCurrentGet();
-//    distance = smCurrentCameraDistance; //!!!
-    distance *= smWorldPlaneDistanceFactor;
+    
+    real32 mw         = (real32) MAIN_WindowWidth;
+    real32 mh         = (real32) MAIN_WindowHeight;
+    real32 maxAspect  = max(mw,mh) / min(mw,mh);
+    real32 startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f - smHorizTickAngle * 2.0f;
+    real32 endAngle   = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f + smHorizTickAngle * 2.0f;
 
-    startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) / 2.0f - smHorizTickAngle * 2.0f;
-    endAngle   = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) / 2.0f + smHorizTickAngle * 2.0f;
+    real32 startRefAngle = floorf((startAngle / smHorizTickAngle)) * smHorizTickAngle;
+    real32 endRefAngle   = floorf((endAngle   / smHorizTickAngle)) * smHorizTickAngle;
+    real32 angle         = startRefAngle;
 
-    angle = (real32)floor((double)(startAngle / smHorizTickAngle)) * smHorizTickAngle;
-    startPoint.x = cam->lookatpoint.x + (real32)cos((double)angle) * distance;   //position of starting point
-    startPoint.y = cam->lookatpoint.y + (real32)sin((double)angle) * distance;
+    vector startPoint, endPoint;
+    startPoint.x = cam->lookatpoint.x + cosf(angle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
+    startPoint.y = cam->lookatpoint.y + sinf(angle) * distance * smWorldPlaneDistanceFactor;
     endPoint.z = startPoint.z = cam->lookatpoint.z;
 
     fontMakeCurrent(mouseCursorFont);
+    glccLineWidth( sqrtf(getResDensityRelative()) );
 
+    bool depthEnabled = FALSE;
     if (glccIsEnabled(GL_DEPTH_TEST))
     {
-        isEnabled = TRUE;
+        depthEnabled = TRUE;
         glccDisable(GL_DEPTH_TEST);
     }
+
     for (smTickTextIndex = 0; angle < endAngle; angle += smHorizTickAngle)
     {
-        endPoint.x = cam->lookatpoint.x + (real32)cos((double)(angle + smHorizTickAngle)) * distance;//position of current point
-        endPoint.y = cam->lookatpoint.y + (real32)sin((double)(angle + smHorizTickAngle)) * distance;
+        endPoint.x = cam->lookatpoint.x + cosf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor; //position of current point
+        endPoint.y = cam->lookatpoint.y + sinf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor;
+        //primLine3(&startPoint, &endPoint, smCurrentWorldPlaneColor); //draw the main arc
 
-        primLine3(&startPoint, &endPoint, smCurrentWorldPlaneColor);//draw the vertical tick
+        vector horizPoint;
         horizPoint.x = endPoint.x;
         horizPoint.y = endPoint.y;
         if (cam->eyeposition.z > cam->lookatpoint.z)
-        {
-            horizPoint.z = cam->lookatpoint.z + cam->clipPlaneFar * smHorizTickVerticalFactor;
-        }
-        else
-        {
-            horizPoint.z = cam->lookatpoint.z - cam->clipPlaneFar * smHorizTickVerticalFactor;
-        }
+             horizPoint.z = cam->lookatpoint.z + cam->clipPlaneFar * smHorizTickVerticalFactor;
+        else horizPoint.z = cam->lookatpoint.z - cam->clipPlaneFar * smHorizTickVerticalFactor;
 
         //figure out where to draw the tick text
+        real32 x, y, radius;
         selCircleComputeGeneral(modelView, projection, &horizPoint, 1.0f, &x, &y, &radius);
         dbgAssertOrIgnore(smTickTextIndex < SM_MaxTicksOnScreen);
         smTickText[smTickTextIndex].x = primGLToScreenX(x);
         smTickText[smTickTextIndex].y = primGLToScreenY(y);
-        degAngle = -RAD_TO_DEG(angle - smHorizTickAngle);
+
+        real32 degAngle = -RAD_TO_DEG(angle - smHorizTickAngle);
         if (degAngle < 0.0f)
-        {
             degAngle += 360.0f;
-        }
+
         if (degAngle > 360.0f)
-        {
             degAngle -= 360.0f;
-        }
-        if (degAngle < 10)
-        {
-            nPrintfed = sprintf(smTickText[smTickTextIndex].text, "00%.0f", degAngle);
-        }
-        else if (degAngle < 100)
-        {
-            nPrintfed = sprintf(smTickText[smTickTextIndex].text, "0%.0f", degAngle);
-        }
-        else
-        {
-            nPrintfed = sprintf(smTickText[smTickTextIndex].text, "%.0f", degAngle);
-        }
+        
+        sdword nPrintfed = 0;
+        if      (degAngle < 10)  nPrintfed = sprintf(smTickText[smTickTextIndex].text, "00%.0f", degAngle);
+        else if (degAngle < 100) nPrintfed = sprintf(smTickText[smTickTextIndex].text, "0%.0f",  degAngle);
+        else                     nPrintfed = sprintf(smTickText[smTickTextIndex].text, "%.0f",   degAngle);
         dbgAssertOrIgnore(nPrintfed < SM_TickTextChars);
+
         if (cam->eyeposition.z > cam->lookatpoint.z)
-        {
-            smTickText[smTickTextIndex].y -= fontHeight(" ") + smTickTextSpacing;
-        }
-        else
-        {
-            smTickText[smTickTextIndex].y += smTickTextSpacing;
-        }
+             smTickText[smTickTextIndex].y -= fontHeight(" ") + smTickTextSpacing;
+        else smTickText[smTickTextIndex].y += smTickTextSpacing;
+
         smTickText[smTickTextIndex].x -= fontWidth(smTickText[smTickTextIndex].text) / 2;
         smTickTextIndex++;
-        //draw the horizontal tick
-        primLine3(&endPoint, &horizPoint, smCurrentWorldPlaneColor);
-        horizPoint.x = (endPoint.x - cam->lookatpoint.x) * smHorizonTickHorizFactor + cam->lookatpoint.x;
-        horizPoint.y = (endPoint.y - cam->lookatpoint.y) * smHorizonTickHorizFactor + cam->lookatpoint.y;
+
+        //scale down the length/alpha of the horizontal ticks at the edges to avoid visible popping.
+        const real32 threshRange = 0.33f;
+        const real32 threshRcp   = 1.0f  / threshRange;
+        const real32 threshHigh  = 1.0f - threshRange;
+        const real32 threshLow   = threshRange;
+        const real32 edgeFactor  = 0.25f;
+        const real32 relAngle    = (angle - startRefAngle) / (endRefAngle - startRefAngle); // Rerange to 0:1
+
+        real32 relEdge = 0.0f;
+             if (relAngle <= threshLow)  relEdge = 1.0f - (relAngle * threshRcp);
+        else if (relAngle >= threshHigh) relEdge = (relAngle - threshHigh) * threshRcp;
+        
+        const real32 relEdgeInv      = 1.0f - relEdge;
+        const real32 edgeHorizFactor = 1.0f + relEdge * edgeFactor;
+
+        // Vertical tick lower
+        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, relEdgeInv);
+
+        // Vertical tick upper
+        horizPoint.x = (endPoint.x - cam->lookatpoint.x) * smHorizonTickHorizFactor * edgeHorizFactor + cam->lookatpoint.x;
+        horizPoint.y = (endPoint.y - cam->lookatpoint.y) * smHorizonTickHorizFactor * edgeHorizFactor + cam->lookatpoint.y;
         horizPoint.z = cam->lookatpoint.z;
-        primLine3(&endPoint, &horizPoint, smCurrentWorldPlaneColor);
-        startPoint = endPoint;                              //draw from this point to next point next time through
+        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, relEdgeInv);
+
+        startPoint = endPoint; //draw from this point to next point next time through
     }
-    if (isEnabled)
+
+
+    // Draw the main arc in much finer detail
+    startPoint.x = cam->lookatpoint.x + cosf(angle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
+    startPoint.y = cam->lookatpoint.y + sinf(angle) * distance * smWorldPlaneDistanceFactor;
+    endPoint.z   = startPoint.z = cam->lookatpoint.z;
+
+    real32 angleStep = smHorizTickAngle / 64.0f;
+    for (angle = startRefAngle;  angle < endAngle;  angle += angleStep)
+    {
+        endPoint.x = cam->lookatpoint.x + cosf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor; //position of current point
+        endPoint.y = cam->lookatpoint.y + sinf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor;
+        primLine3(&startPoint, &endPoint, smCurrentWorldPlaneColor);//draw the vertical tick
+        startPoint = endPoint; //draw from this point to next point next time through
+    }
+
+
+    if (depthEnabled)
     {
         glccEnable(GL_DEPTH_TEST);
     }
-    fontMakeCurrent(oldFont);
+
+    fontMakeCurrent( oldFont );
+    glccLineWidth( 1.0f );
 }
 #undef cam
 

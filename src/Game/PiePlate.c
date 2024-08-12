@@ -823,8 +823,7 @@ void piePlaneDraw(real32 distance)
     }
 
     glccLineWidth( sqrtf(getResDensityRelative()) );
-    primCircleOutlineZ(&selCentrePoint, piePizzaDishRadius * distance,
-                       piePizzaSlices, pieColor);//TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
+    primCircleOutlineZ(&selCentrePoint, piePizzaDishRadius * distance, piePizzaSlices, pieColor);//TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
     //get the heading of the mothership for drawing the 'spokes' of the pie plate
     pieMotherShipHeading.x = pieMotherShipHeading.z = 0.0f;
     pieMotherShipHeading.y = 1.0f;

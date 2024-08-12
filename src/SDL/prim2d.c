@@ -947,7 +947,7 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
 {
     sdword index;
     real32 centreX, centreY;
-    double theta, addAmount;
+    real32 theta, addAmount;
     real32 radXInner, radXOuter, radYInner, radYOuter;
     real32 x0, y0, x1, y1, x2, y2;
     real32 sinTheta, cosTheta;
@@ -963,7 +963,7 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
     radYInner = primScreenToGLScaleY(radInner);
     radXOuter = primScreenToGLScaleX(radOuter);
     radYOuter = primScreenToGLScaleY(radOuter);
-    addAmount = (double)(2.0f * PI / (real32)(nSlices - 1));
+    addAmount = (real32)(2.0f * PI / (real32)(nSlices - 1));
     theta = addAmount;
 
     x0 = x2 = centreX;
@@ -980,8 +980,8 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
         glVertex2f(x0, y0);                                 //2 common points
         glVertex2f(centreX, centreY);
 
-        sinTheta = (real32)sin(theta);
-        cosTheta = (real32)cos(theta);
+        sinTheta = sinf(theta);
+        cosTheta = cosf(theta);
 
         x0 = centreX + sinTheta * radXInner;
         y0 = centreY + cosTheta * radYInner;
