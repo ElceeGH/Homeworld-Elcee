@@ -58,7 +58,6 @@
 #endif
 
 
-#define ShouldHaveMousePtr (FALSE)
 
 extern Uint32 utyTimerLast;
 
@@ -1025,7 +1024,7 @@ void horseRaceInit()
         hrScreensHandle = feScreensLoad(HR_FIBFile);
     }
 
-    if (!ShouldHaveMousePtr) mouseCursorHide();
+    mouseCursorHide();
 
     if (singlePlayerGame)
     {
@@ -1043,7 +1042,7 @@ void horseRaceInit()
 
 void horseRaceShutdown()
 {
-    if (!ShouldHaveMousePtr) mouseCursorShow();
+    mouseCursorShow();
 
     for(sdword i=0;i<MAX_MULTIPLAYER_PLAYERS;i++)
     {
@@ -1192,6 +1191,7 @@ void horseRaceRender()
                 }
                 regProcessingRegions = FALSE;
             }
+
             if (ChatTextEntryBox!=NULL)
             {
                 bitSet(ChatTextEntryBox->reg.status,RSF_KeyCapture);
@@ -1205,26 +1205,8 @@ void horseRaceRender()
         }
     }
 
-    // All of the hacked stuff from the render task
-
-    //glColor3ub(colRed(RND_StarColor), colGreen(RND_StarColor), colBlue(RND_StarColor));
-
-    if (ShouldHaveMousePtr)
-    {
-        if (!feShouldSaveMouseCursor())
-        {
-            rndClearToBlack();
-            glClear(GL_DEPTH_BUFFER_BIT);
-        }
-    }
-
-//    primErrorMessagePrint();
-    //default rendering scheme is primitives on any
-    //functions which want it off should set it back on when done
-
-
     // If background isn't loaded yet, do it now
-    if(hrBackgroundTexture == 0)
+    if (hrBackgroundTexture == 0)
     {
         hrInitBackground();
     }
@@ -1234,35 +1216,8 @@ void horseRaceRender()
 
     regFunctionsDraw();                                //render all regions
     primErrorMessagePrint();
-
     hrUncleanDecorative();
-
-    if (ShouldHaveMousePtr)
-    {
-        // set the cursor type, reset the variables then draw the mouse cursor
-        mouseSelectCursorSetting();
-        mouseSetCursorSetting();
-        if (feShouldSaveMouseCursor())
-        {
-            mouseStoreCursorUnder();
-        }
-        mousePoll();
-        mouseDraw();                                        //draw mouse atop everything
-
-        if (demDemoPlaying)
-        {
-            rndShamelessPlug();
-        }
-    }
-
     rndFlush();
-    if (ShouldHaveMousePtr)
-    {
-        if (feShouldSaveMouseCursor())
-        {
-            mouseRestoreCursorUnder();
-        }
-    }
     primErrorMessagePrint();
 }
 
