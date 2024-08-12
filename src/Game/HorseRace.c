@@ -72,15 +72,15 @@ extern Uint32 utyTimerLast;
     #define HR_SCALE_MISSION_LOADING_SCREENS  FALSE
 #endif
 
-#define HR_PacketRateLimitTime 50 // One packet every N milliseconds, max
-#define HR_MinRenderTime       7  // Artificially delay if rendering is very fast (e.g. no vsync or an extremely high refresh rate)
-#define HR_MinOverallTime      1600 // Must be at least 1.6 seconds total to work properly with the audio system.
+#define HR_PacketRateLimitTime 50   // One packet every N milliseconds, max
+#define HR_MinRenderDelta      10   // One render every N milliseconds, max
+#define HR_MinOverallTime      1600 // Must be at least 1.5 seconds total to work properly with the audio system.
 #define HR_PlayerNameFont      "Arial_12.hff"
 #define MAX_CHAT_TEXT          64
 #define NUM_CHAT_LINES         10
 
 real32 HorseRacePlayerDropoutTime = 10.0f;     // tweakable
-color HorseRaceDropoutColor = colRGB(75,75,75);
+color  HorseRaceDropoutColor      = colRGB(75,75,75);
 
 /*=============================================================================
     data:
@@ -1041,17 +1041,6 @@ void horseRaceInit()
     hrRunning=TRUE;
 }
 
-// Enforce the minimum load time so sound doesn't break on your 10Ghz 100-core supercomputer with 1000Hz display
-void horseRaceEnforceMinLoadTime( void ) {
-    const udword startTimeDeltaMin = max( HR_MinOverallTime, opLoadTimeMinMs );
-
-    udword timeDelta;
-    do {
-        timeDelta = SDL_GetTicks() - startTimeRef;
-        SDL_Delay(1);
-    } while (timeDelta < startTimeDeltaMin);
-}
-
 void horseRaceShutdown()
 {
     if (!ShouldHaveMousePtr) mouseCursorShow();
@@ -1341,26 +1330,39 @@ bool HorseRaceNext(real32 percent)
         }
     }
 
-    // Don't try to render too fast, don't want to be TOO slow.
+    // Get the overall loading progress
+    const real32 overallRatio = horseRaceGetPacketPercent( percent );
+
+    // Don't try to render too fast. It does take some time to render things, and we don't want to slow down /too/ much.
+    const udword lastTimeMin   = HR_MinRenderDelta;
     const udword lastTimeRef   = SDL_GetTicks();
     const udword lastTimeDelta = lastRenderTime - lastTimeRef;
-    if (lastTimeDelta <= 1 && lastRenderTime != 0)
-        return TRUE;
+    const bool   isFirstRender = lastRenderTime == 0;
+    const bool   isComplete    = overallRatio >= 0.99f;
 
-    // Make rendering effectively take a certain minimum amount of time.
-    const udword renderTimeRef   = SDL_GetTicks();
-    horseRaceRender();
-    const udword renderTimeNow   = SDL_GetTicks();
-    const udword renderTimeDelta = renderTimeNow - renderTimeRef;
-    lastRenderTime = renderTimeNow;
+    // Render decision
+    if (lastTimeDelta >= lastTimeMin // Render if enough time elapsed
+    || isFirstRender                 // Render if the bar is empty
+    || isComplete) {                 // Render if the bar is full
+        horseRaceRender();
+        lastRenderTime = SDL_GetTicks();
+    }
 
-    // Only delay if the overall time so far is not enough.
-    // The loading will speed up once there's no longer any point in slowing it down.
-    const udword startTimeDeltaMin = max( HR_MinOverallTime, opLoadTimeMinMs );
-    const udword startTimeDelta    = renderTimeNow - startTimeRef;
-    if (startTimeDelta  < startTimeDeltaMin)
-    if (renderTimeDelta < HR_MinRenderTime)
-        SDL_Delay( HR_MinRenderTime - renderTimeDelta );
+    // Based on overall loading progress, apply a delay to meet the minimum time.
+    // For example if we're 75% done, we should also be 75% of the way through the minimum load time.
+    // The progress updates are very fine-grained so extrapolating or compensating for gaps in time isn't necessary.
+    const udword timeNow        = SDL_GetTicks();
+    const udword timeDelta      = timeNow - startTimeRef;
+    const udword timeDeltaMin   = max( HR_MinOverallTime, opLoadTimeMinMs );
+    const real32 timeRatio      = min( 1.0f, (real32) timeDelta / (real32) timeDeltaMin );
+    const real32 timeRatioError = overallRatio - timeRatio;
+    const bool   isProgLeading  = timeRatioError > 0.0f;
+
+    // If the progress ratio is leading the target time, add a proportional delay to compensate.
+    if (isProgLeading) {
+        const udword timeDeltaError = (udword) ceilf((real32) timeDeltaMin * timeRatioError);
+        SDL_Delay( timeDeltaError );
+    }
 
     return TRUE;
 }
