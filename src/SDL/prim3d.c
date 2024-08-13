@@ -39,9 +39,7 @@ LinkedList CircleList;
 
 void primLine3Fade(vector *p1, vector *p2, color c, real32 fade)
 {
-    bool blendon = FALSE;
-
-    blendon = glccIsEnabled(GL_BLEND);
+    bool blendon = glccIsEnabled(GL_BLEND);
     if (!blendon) glccEnable(GL_BLEND);
     glccEnable(GL_LINE_SMOOTH);
     rndAdditiveBlends(FALSE);
@@ -67,6 +65,48 @@ void primLine3Fade(vector *p1, vector *p2, color c, real32 fade)
 void primLine3(vector *p1, vector *p2, color c)
 {
     primLine3Fade( p1, p2, c, 1.0f );
+}
+
+
+void primLine3Stipple(vector *p1, vector *p2, color c)
+{
+    bool blendon = glccIsEnabled(GL_BLEND);
+    if (!blendon) glccEnable(GL_BLEND);
+    glccEnable(GL_LINE_SMOOTH);
+    rndAdditiveBlends(FALSE);
+
+    const real32 step     = 96.0f;
+    const real32 stepHalf = step * 0.5f;
+    const real32 distance = sqrtf(vecDistanceSquared(*p1,*p2));
+    const real32 limit    = distance - stepHalf;
+    
+    vector delta;
+    vecSub( delta, *p2, *p1 );
+    vecNormalizeToLength( &delta, stepHalf );
+
+    glBegin(GL_LINES);
+        glColor3ub(colRed(c), colGreen(c), colBlue(c));
+
+        vector pos = *p1;
+        real32 d   = 0.0f;
+
+        // Render every other segment
+        for (; d<limit; d+=step) {
+            glVertex3fv( &pos.x );
+            vecAddTo( pos, delta );
+            glVertex3fv( &pos.x );
+            vecAddTo( pos, delta );
+        }
+
+        // Complete the last partial segment
+        if (d < distance) {
+            glVertex3fv( &pos.x );
+            glVertex3fv( &p2->x );
+        }
+    glEnd();
+
+    if (!blendon) glccDisable(GL_BLEND);
+    glccDisable(GL_LINE_SMOOTH);
 }
 
 /*-----------------------------------------------------------------------------
@@ -363,28 +403,6 @@ void primCircleOutlineZ(vector *centre, real32 radius, sdword nSegments, color c
     //now that primCircleOutline3 has been optimized, it is faster than this one
     //this one can probably still be tweaked even further, so I'll leave it here
     primCircleOutline3(centre, radius, nSegments, 0, c, Z_AXIS);
-/*
-    GLfloat rim[3];
-    double theta, thetaDelta;
-    real32 x, y;
-
-    theta = 0.0f;
-    thetaDelta = 2.0 * PI / (double)nSegments;
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    rndGLStateLog("primCircleOutlineZ");
-    x = centre->x;
-    y = centre->y;
-    rim[2] = centre->z;
-    glBegin(GL_LINE_STRIP);
-    for (; nSegments >= 0; nSegments--)
-    {
-        rim[0] = x + (real32)sin(theta) * radius;
-        rim[1] = y + (real32)cos(theta) * radius;
-        glVertex3fv(rim);
-        theta += thetaDelta;
-    }
-    glEnd();
-*/
 }
 
 /*-----------------------------------------------------------------------------
