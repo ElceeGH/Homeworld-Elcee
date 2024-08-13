@@ -743,7 +743,7 @@ scriptEntry utyOptionsList[] =
     {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
     {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
     {"RenderInterpolation",            scriptSetBool,     &opRenderInterpolation},
-    {"EffectFrequencytMultiplier",     scriptSetUdwordCB, &opEffectFreqMult},
+    {"EffectFrequencyPercent",         scriptSetUdwordCB, &opEffectFreqMult},
     {"LoadingTimeMinimumMillisecs",    scriptSetUdwordCB, &opLoadTimeMinMs},
 
     END_SCRIPT_ENTRY
