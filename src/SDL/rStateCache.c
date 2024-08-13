@@ -6,7 +6,7 @@
     batch up a large number of operations. This makes glGet* a blocking sync
     operation which stalls for a very long time, especially since Homeworld
     is ancient and uses parts of GL that are no longer optimised with any real
-    effort by the driver developers.
+    effort by the driver developers.  Oh they could - but they won't.
     
     Profiling shows these functions take upwards of 50% of the game's execution time.
     This file caches the most common cases, drastically reducing that impact.
@@ -41,7 +41,6 @@ enum CacheEntry {
     CacheCullFace,
     CacheFog,
     CacheNormalize,
-    CacheClipPlane0,
 
     CacheEntryCount,
 };
@@ -81,7 +80,6 @@ typedef struct Cache {
     GLboolean cullFace;
     GLboolean fog;
     GLboolean normalizeNormals;
-    GLboolean clipPlane0;
 
     // Cache stats
     udword hits[ CacheEntryCount ];
@@ -115,7 +113,6 @@ static struct CacheMap cacheMap( GLenum id ) {
         case GL_CULL_FACE         : return (CacheMap) { &cache.cullFace          , sizeof(cache.cullFace        ) , 1<<CacheCullFace          };
         case GL_FOG               : return (CacheMap) { &cache.fog               , sizeof(cache.fog             ) , 1<<CacheFog               };
         case GL_NORMALIZE         : return (CacheMap) { &cache.normalizeNormals  , sizeof(cache.normalizeNormals) , 1<<CacheNormalize         };
-        case GL_CLIP_PLANE0       : return (CacheMap) { &cache.clipPlane0        , sizeof(cache.clipPlane0      ) , 1<<CacheClipPlane0        };
         default                   : return (CacheMap) { NULL, 0, 0 };
     }
 }
@@ -142,7 +139,6 @@ static char* idToName( GLenum id ) {
         case GL_CULL_FACE         : return "GL_CULL_FACE"        ;
         case GL_FOG               : return "GL_FOG"              ;
         case GL_NORMALIZE         : return "GL_NORMALIZE"        ;
-        case GL_CLIP_PLANE0       : return "GL_CLIP_PLANE0"      ;
         default                   : return "<UNKNOWN!>"          ;
     }
 }

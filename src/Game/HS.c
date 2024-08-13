@@ -110,19 +110,19 @@ void hsProgramUpdate( void ) {
     const hvector viewport = { 0.0f, 0.0f, (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight };
 
     // Invert projection matrix for vertex position reconstruction.
-    hmatrix per,inv;
-    glccGetFloatv( GL_PROJECTION_MATRIX, &per.m11 );
-    shInvertMatrix( &inv.m11, &per.m11 );
+    hmatrix proj, projInv;
+    glccGetFloatv( GL_PROJECTION_MATRIX, &proj.m11 );
+    shInvertMatrix( &projInv.m11, &proj.m11 );
 
     // Use shader program and update uniforms
     glUseProgram( *hsp.program );
-    glUniform1i       ( hsp.locTex,          0                  ); // HW only uses texture unit 0
-    glUniform4fv      ( hsp.locClipPlane, 1, hsp.clipPlane      );
-    glUniform4fv      ( hsp.locViewport,  1, &viewport.x        );
-    glUniformMatrix4fv( hsp.locProjInv,   1, GL_FALSE, &inv.m11 );
-    glUniform1f       ( hsp.locGlowDist,     hsp.glowDist       );
-    glUniform4fv      ( hsp.locGlowCol,   1, hsp.crossColour    );
-    glUniform4fv      ( hsp.locCrossCol,  1, hsp.crossColour    );
+    glUniform1i       ( hsp.locTex,          0                      ); // HW only uses texture unit 0
+    glUniform4fv      ( hsp.locClipPlane, 1, hsp.clipPlane          );
+    glUniform4fv      ( hsp.locViewport,  1, &viewport.x            );
+    glUniformMatrix4fv( hsp.locProjInv,   1, GL_FALSE, &projInv.m11 );
+    glUniform1f       ( hsp.locGlowDist,     hsp.glowDist           );
+    glUniform4fv      ( hsp.locGlowCol,   1, hsp.crossColour        );
+    glUniform4fv      ( hsp.locCrossCol,  1, hsp.crossColour        );
 }
 
 
@@ -137,34 +137,24 @@ void hsProgramCleanup() {
 
 
 
-/// @todo Do the clipping entirely in the shader and do not use the clipping planes at all.
-/// @todo Matrix state affects the clip plane. Do the transform directly instead of getting it from GL.
+/// Enable the shader and setup the clip plane.
 static void hsProgramEnable( real32 plane[] ) {
-    GLdouble dplane[4] = { plane[0], plane[1], plane[2], plane[3] };
+    // Invert modelview matrix for clip plane
+    // Must be done at this moment. The clip plane computed params should not be affected by later changes to modelview.
+    hmatrix modv, modvInv;
+    glccGetFloatv( GL_MODELVIEW_MATRIX, &modv.m11 );
+    shInvertMatrix( &modvInv.m11, &modv.m11 );
 
-#ifdef HW_ENABLE_GLES
-    glClipPlanef(GL_CLIP_PLANE0, plane);
-    glccEnable(GL_CLIP_PLANE0);
-#else
-    glClipPlane(GL_CLIP_PLANE0, dplane);
-    glccEnable(GL_CLIP_PLANE0);
-#endif
+    // Multiply plane params by the inverse modelview to mirror normal GL behaviour
+    hmatMultiplyHVecByHMat( (hvector*) hsp.clipPlane, (hvector*) plane, &modvInv );
 
-    // Update program state to match.
-    glGetClipPlane( GL_CLIP_PLANE0, dplane );
-    hsp.clipPlane[0] = (real32) dplane[0];
-    hsp.clipPlane[1] = (real32) dplane[1];
-    hsp.clipPlane[2] = (real32) dplane[2];
-    hsp.clipPlane[3] = (real32) dplane[3];
+    // Engage
     hsp.programEnable = TRUE;
 }
 
 
 
 static void hsProgramDisable(void) {
-    // Set GL clip plane (todo: remove the need for this)
-    glccDisable(GL_CLIP_PLANE0);
-
     // Update program state to match
     hsp.programEnable = FALSE;
 }
