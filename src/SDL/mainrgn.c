@@ -1293,8 +1293,6 @@ void mrSelectHold(void)
 //nn: mouse wheel zoom doesn't call this code (at least in game and sensors manager)
 void mrCameraMotion(void)
 {
-    printf( "mrCameraMotion()\n");
-
     mrMouseHasMoved += abs(mouseCursorXDelta);
     mrMouseHasMoved += abs(mouseCursorYDelta);
     camMouseX        = -mouseCursorXDelta;
