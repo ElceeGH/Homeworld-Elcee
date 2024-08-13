@@ -116,6 +116,12 @@ typedef struct hvector
 #define vecMagnitudeSquared(a) \
     ( ((a).x * (a).x) + ((a).y * (a).y) + ((a).z * (a).z) )
 
+#define sqr(a) \
+    ((a) * (a))
+
+#define vecDistanceSquared(a,b) \
+    ( sqr((a).x-(b).x) + sqr((a).y-(b).y) + sqr((a).z-(b).z) )
+
 #define vecAreEqual(a,b) \
     ( ((a).x == (b).x) && ((a).y == (b).y) && ((a).z == (b).z) )
 
