@@ -790,9 +790,11 @@ lifheader* mouseGetLIF(void)
         case rotate_camera:
         case zoom_camera:
             return NULL;
+
         case normal_mouse:
         case movement:
             return mouseNormalBitmap;
+
         case add_ships:
             return mouseAddShipsBitmap;
         case focus_no_select:
@@ -813,9 +815,11 @@ lifheader* mouseGetLIF(void)
             return mouseGUIBitmap;
         case resource:
             return mouseResourceBitmap;
+
         case docking:
         case small_docking:
             return mouseDockingBitmap;
+
         case research:
             return mouseResearchBitmap;
         case sensors:
@@ -828,6 +832,7 @@ lifheader* mouseGetLIF(void)
             return mouseSupportBitmap;
         case traders:
             return mouseTradersBitmap;
+
         default:
             return NULL;
     }
@@ -876,8 +881,6 @@ void mouseDraw(void)
         mouseInitGL();
         mouseGLInitialized = TRUE;
     }
-
-    //mousePoll();
 
     if (!primModeEnabled)
     {
@@ -1740,7 +1743,7 @@ void mouseCursorTextDraw(void)
     Outputs     : clips x, y to rect
     Return      :
 ----------------------------------------------------------------------------*/
-bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
+static bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
 {
     bool modified = FALSE;
 
@@ -1821,51 +1824,52 @@ void mousePoll(void)
     if (mouseDisabled || demDemoPlaying)
         return;
 
-    // Configure the initial capture position if it's invalid
-    if (mouseCapturePosX == 0
-    &&  mouseCapturePosY == 0)
-        mouseCaptureResetHoldPos();
-
     // Sample current mouse pos
     sdword ix, iy;
     SDL_GetMouseState( &ix, &iy );
 
-    // If capture is enabled, move the mouse to the configured position after each sampling and update the deltas relative to that point.
-    // On the first sample, the deltas will be zeroed to filter out sudden unwanted jumps in movement.
+    // Normal mouse input. Simple, just update vars and make deltas.
+    if ( ! mouseCaptureEnabled) {
+        mouseCursorXDelta    = ix - mouseCursorXPosition;
+        mouseCursorYDelta    = iy - mouseCursorYPosition;
+        mouseCursorXPosition = ix;
+        mouseCursorYPosition = iy;
+    }
+
+    // If capture is enabled, it's a bit more complicated.
     if (mouseCaptureEnabled) {
-        // Move mouse to the capture position.
+        // Move mouse to the capture position and update deltas.
         mousePositionSet( mouseCapturePosX, mouseCapturePosY );
         mouseCursorXDelta = ix - mouseCapturePosX;
         mouseCursorYDelta = iy - mouseCapturePosY;
         
         // Zero the deltas for the first few samples.
         // Because of the way SDL works, the mouse will not ACTUALLY have moved yet in rare cases, and this will create bad deltas.
+        // There's no perceptible difference in the mouse responsiveness or anything, because of the way capture is used.
         static sdword captureFilterCounter = 0;
-        if (mouseCaptureEnabled && mouseCaptureEnabledPrev == FALSE)
+        const  bool   isFirstSample = mouseCaptureEnabled && mouseCaptureEnabledPrev == FALSE;
+        if (isFirstSample)
             captureFilterCounter = 4;
         
-        // Just zero them.
+        // Zero 'em if the filter is still active.
         if (captureFilterCounter > 0) {
             captureFilterCounter--;
             mouseCursorXDelta = 0;
             mouseCursorYDelta = 0;
         }
-    } else {
-        // Normal mouse input. Simple.
-        mouseCursorXDelta    = ix - mouseCursorXPosition;
-        mouseCursorYDelta    = iy - mouseCursorYPosition;
-        mouseCursorXPosition = ix;
-        mouseCursorYPosition = iy;
     }
     
-    // Mouse rectangle clipping.
-    // @todo This overrides the deltas to zero if it actually gets clipped, is that a problem?
+    // Mouse rectangle clipping. The position is constrained, the deltas remain unchanged.
     if (mouseClip) {
-        sdword tx = mouseCursorXPosition;
-        sdword ty = mouseCursorYPosition;
-
+        // Save existing deltas, position setting clears them.
+        const sdword dx = mouseCursorXDelta;
+        const sdword dy = mouseCursorYDelta;
+        
+        // If the mouse is outside the rect, constrain it.
         if (mouseClipPointToRect( &mouseCursorXPosition, &mouseCursorYPosition, &mouseClipRect )) {
             mousePositionSet( mouseCursorXPosition, mouseCursorYPosition );
+            mouseCursorXDelta = dx;
+            mouseCursorYDelta = dy;
         }
     }
 
