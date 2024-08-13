@@ -20,7 +20,7 @@ uniform bool      uTexMode;   // 0=replace, 1=modulate
 uniform bool      uTexEnable; // Whether to use the texure, or just a flat colour.
 uniform vec4      uViewport;  // glViewport params
 uniform mat4      uProjInv;   // Projection matrix inverse
-uniform vec4      uClipPlane; // Clip plane equation params
+uniform vec4      uClipPlane; // Clip plane equation params (pretransformed)
 uniform float     uGlowDist;  // Radius of hyperspace glow
 uniform vec4      uGlowCol;   // Colour of hyperspace glow
 uniform vec4      uCrossCol;  // Colour of hyperspace intersect
@@ -66,6 +66,7 @@ float nearPlaneGlow( float dist ) {
 
 
 
+// What things look like normally.
 vec4 fixedFunctionColour() {
     vec4 col = gl_Color;
     vec4 tex = texture2D( uTex, gl_TexCoord[0].xy );
@@ -81,7 +82,7 @@ vec4 fixedFunctionColour() {
 
 
 void main() {
-    // Get the distance to the clip plane.
+    // Get the signed distance to the clip plane.
     vec4  pos  = eyeSpacePosition();
     float dist = planeSignedDistance( pos.xyz );
     
