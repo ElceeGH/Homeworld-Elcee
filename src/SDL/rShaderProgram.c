@@ -92,8 +92,10 @@ static void   checkLink         ( const char* name, GLuint handle );
 
 /// Initialise the OpenGL function pointers.
 void loadShaderFunctions() {
+    // This can be called multiple times, so don't be leakin'
     unloadAllShaderPrograms();
 
+    // Load em
     glCreateShader      = SDL_GL_GetProcAddress( "glCreateShader"      );
     glShaderSource      = SDL_GL_GetProcAddress( "glShaderSource"      );
     glCompileShader     = SDL_GL_GetProcAddress( "glCompileShader"     );
@@ -217,7 +219,9 @@ void unloadShaderProgram( GLuint* handle ) {
 
 /// Unload shader and free resources used by it.
 static void unloadShaderProgramInternal( GLuint handle ) {
-    glDeleteProgram( handle );
+    // This can be called before we actually know how to delete things!
+    if (glDeleteProgram)
+        glDeleteProgram( handle );
 }
 
 
