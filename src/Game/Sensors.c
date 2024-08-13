@@ -1675,9 +1675,6 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
                 primPoint3(&obj->posinfo.position, c);
                 break;
             default:
-//#ifndef DEBUG_COLLBLOBS
-//                dbgAssertOrIgnore(FALSE);       // don't assert if DEBUG_COLLBLOBS because debug collblobs can have bullets,etc.
-//#endif
                 break;
         }
 
