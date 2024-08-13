@@ -15,7 +15,7 @@
     Defines:
 =============================================================================*/
 
-#define COMMAND_MAX_SHIPS 1000
+#define COMMAND_MAX_SHIPS 1000 // @todo Increase for comical multiplayer shenanigans?
 
 /*=============================================================================
     Types:
