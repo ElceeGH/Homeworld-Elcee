@@ -1288,7 +1288,7 @@ void btgRender(void)
     static GLint   ditherTemporalLoc   = -1;
 
     if ( ! ditherProgram) {
-        ditherProgram     = loadShaderProgram( "dither.frag" );
+        ditherProgram     = loadShaderProgram( "dither" );
         ditherTemporalLoc = glGetUniformLocation( *ditherProgram, "uDitherTemporal" );
     }
 

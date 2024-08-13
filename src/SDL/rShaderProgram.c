@@ -82,9 +82,9 @@ static GLuint loadShaderProgramInternal  ( const char* name );
 static void   unloadShaderProgramInternal( GLuint handle );
 static void   unloadAllShaderPrograms    ( void );
 
-static char*  loadSourceFromFile( const char* name );
-static GLuint compileShader     ( const char* name, const char* source );
-static GLuint linkProgram       ( const char* name, GLuint shader );
+static char*  loadSourceFromFile( const char* name, GLuint type );
+static GLuint compileShader     ( const char* name, const char* source, GLuint type );
+static GLuint linkProgram       ( const char* name, GLuint shaderVert, GLuint shaderFrag );
 static void   checkCompile      ( const char* name, GLuint handle );
 static void   checkLink         ( const char* name, GLuint handle );
 
@@ -180,6 +180,8 @@ static void unloadAllShaderPrograms( void ) {
 
 
 /// Load a shader program. Returns a pointer to the handle.
+/// The name doesn't include the file extension. It will look for .vert and .frag and deal with both.
+/// If there's only .frag, or only .vert, that's fine too.
 /// The pointer is valid until the program is unloaded.
 /// Do not store the dereferenced handle anywhere across multiple frames.
 /// This allows the shader to be dynamically reloaded which makes shader development much easier.
@@ -197,14 +199,24 @@ GLuint* loadShaderProgram( const char* name ) {
 
 
 /// Load a shader program, compile it, link it and return the resulting handle.
+/// Name doesn't include the extension. It automatically looks for .vert and .frag.
 static GLuint loadShaderProgramInternal( const char* name ) {
     // Load the file and compile it
-    void*  source = loadSourceFromFile( name );
-    GLuint shader = compileShader( name, source );
-    free( source );
+    void* sourceVert = loadSourceFromFile( name, GL_VERTEX_SHADER   );
+    void* sourceFrag = loadSourceFromFile( name, GL_FRAGMENT_SHADER );
+
+    // If neither could be loaded, error out.
+    if (!sourceVert && !sourceFrag)
+        dbgFatalf( DBG_Loc, "Failed to load any shader sources for program '%s'.", name );
+
+    // Compile whichever ones existed.
+    GLuint shaderVert = compileShader( name, sourceVert, GL_VERTEX_SHADER );
+    GLuint shaderFrag = compileShader( name, sourceFrag, GL_FRAGMENT_SHADER );
+    free( sourceVert );
+    free( sourceFrag );
     
     // Link and return the fully formed program.
-    return linkProgram( name, shader );
+    return linkProgram( name, shaderVert, shaderFrag );
 }
 
 
@@ -227,17 +239,19 @@ static void unloadShaderProgramInternal( GLuint handle ) {
 
 
 /// Get FILE* for shader source.
-static FILE* openShaderSourceFile( const char* name ) {
-    char pathDev[MAX_PATH] = { '\0' };
-    char pathRel[MAX_PATH] = { '\0' };
+/// Returns NULL if it can't be found.
+static FILE* openShaderSourceFile( const char* name, GLuint type ) {
+    char        pathDev[MAX_PATH] = { '\0' };
+    char        pathRel[MAX_PATH] = { '\0' };
+    const char* ext               = (type == GL_FRAGMENT_SHADER) ? "frag" : "vert";
     
-    snprintf( pathDev, sizeof(pathDev), "%s/%s", SHADER_DIR_DEV,     name );
-    snprintf( pathRel, sizeof(pathRel), "%s/%s", SHADER_DIR_RELEASE, name );
+    snprintf( pathDev, sizeof(pathDev), "%s/%s.%s", SHADER_DIR_DEV,     name, ext );
+    snprintf( pathRel, sizeof(pathRel), "%s/%s.%s", SHADER_DIR_RELEASE, name, ext );
 
-    // Try dev path first, then release, and if that fails then die.
+    // Try dev path first, then release, and if that fails then return NULL.
     FILE*        file = fopen( pathDev, "rb" );
     if ( ! file) file = fopen( pathRel, "rb" );
-    if ( ! file) dbgFatalf( DBG_Loc, "Could not open shader '%s'", name );
+    if ( ! file) return NULL;
 
     return file;
 }
@@ -245,8 +259,11 @@ static FILE* openShaderSourceFile( const char* name ) {
 
 
 /// Load shader source for compilation.
-static char* loadSourceFromFile( const char* name ) {
-    FILE* file = openShaderSourceFile( name );
+static char* loadSourceFromFile( const char* name, GLuint type ) {
+    FILE* file = openShaderSourceFile( name, type );
+
+    if (file == NULL)
+        return NULL;
 
     fseek( file, 0, SEEK_END);
     size_t size = ftell( file );
@@ -265,9 +282,14 @@ static char* loadSourceFromFile( const char* name ) {
 
 /// Compile the shader.
 /// Prints any message from the shader compiler to stdout.
-static GLuint compileShader( const char* name, const char* source ) {
+/// If the source is null, 0 is returned.
+static GLuint compileShader( const char* name, const char* source, GLuint type ) {
+    // Don't do anything for NULL case
+    if (source == NULL)
+        return 0;
+
     // Create, load source, compile it
-    GLuint handle = glCreateShader( GL_FRAGMENT_SHADER );
+    GLuint handle = glCreateShader( type );
     glShaderSource( handle, 1, &source, NULL );
     glCompileShader( handle );
     checkCompile( name, handle );
@@ -276,20 +298,23 @@ static GLuint compileShader( const char* name, const char* source ) {
 
 
 
-/// Link the shader into a program. For now this only supports fragment shaders.
+/// Link the shaders into a program. Pass zero if there's no shader.
 /// Prints any message from the shader linker to stdout.
-static GLuint linkProgram( const char* name, GLuint shader ) {
+static GLuint linkProgram( const char* name, GLuint shaderVert, GLuint shaderFrag ) {
     // Create, attach and link
     GLuint handle = glCreateProgram();
-    glAttachShader( handle, shader );
+    if (shaderVert) glAttachShader( handle, shaderVert );
+    if (shaderFrag) glAttachShader( handle, shaderFrag );
     glLinkProgram( handle );
 
     // Check
     checkLink( name, handle );
     
     // Detach and delete (has no effect on linked shader program)
-    glDetachShader( handle, shader );
-    glDeleteShader( shader );
+    if (shaderVert) glDetachShader( handle, shaderVert );
+    if (shaderFrag) glDetachShader( handle, shaderFrag );
+    if (shaderVert) glDeleteShader( shaderVert );
+    if (shaderFrag) glDeleteShader( shaderFrag );
 
     // Return handle to use with glUseProgram
     return handle;
@@ -304,7 +329,7 @@ static void checkCompile( const char* name, GLuint handle ) {
     glGetShaderiv( handle, GL_COMPILE_STATUS,  &compileGood );
     glGetShaderiv( handle, GL_INFO_LOG_LENGTH, &logLen   );
 
-    // If present, output log on standard error stream.
+    // If present, output log.
     if ( ! compileGood  ||  logLen > 1) { // +1 for null terminator
         const char* what = compileGood ? "message" : "error";
         printf( "Shader compile %s for shader '%s'. Log:\n", what, name );
@@ -325,7 +350,7 @@ static void checkLink( const char* name, GLuint handle ) {
     glGetProgramiv( handle, GL_LINK_STATUS,     &linkGood );
     glGetProgramiv( handle, GL_INFO_LOG_LENGTH, &logLen   );
 
-    // Output log on standard error stream.
+    // Output log.
     if ( ! linkGood  || logLen > 1) {
         const char* what = linkGood ? "message" : "error";
         printf( "Program link %s for program '%s'. Log:\n", what, name );
