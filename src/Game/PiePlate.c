@@ -505,7 +505,7 @@ void pieAllShipsToPiePlateDraw(real32 distance)
 {
     Node *objnode;
     Ship *ship;
-    vector planePoint, shipPoint;//, innerPoint;
+    vector planePoint, shipPoint;
     real32 length;
     real32 closestDistance = REALlyBig;
     bool bHeightPointDrawn   = FALSE,
@@ -515,10 +515,19 @@ void pieAllShipsToPiePlateDraw(real32 distance)
     real32 screenX, screenY, screenRadius, radius;
     sdword nSegments;
 
-    objnode = universe.RenderList.head;                    //get first node in list
-
     distance *= pieShipLineTickSize;                         //get distance-adjusted size
 
+    // Scale the lines, but keep then thinner than normal because the information density is very high here.
+    // Also add a neat little knob to cap off the plane intersect point.
+    GLfloat lineWidthPrev, pointSizePrev;
+    glccGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
+    glccGetFloatv( GL_POINT_SIZE, &pointSizePrev );
+
+    const GLfloat thickness = max( 1.0f, 0.5f * sqrtf(getResDensityRelative()));
+    glccLineWidth( thickness );
+    glccPointSize( thickness * 3.0f );
+
+    objnode = universe.RenderList.head;                    //get first node in list
     piePlaneScreenPointIndex = 0;
     while (objnode != NULL)
     {                                                       //for every ship
@@ -551,37 +560,25 @@ void pieAllShipsToPiePlateDraw(real32 distance)
         shipPoint.z = ship->posinfo.position.z;
         planePoint.z = selCentrePoint.z;
 
-        if (ship == pieLastClosestShip)
-        {                                                   //if closest ship from last frame
-            c = TW_SHIP_LINE_CLOSEST_COLOR;
-        }
-        else
-        {
-            c = TW_SHIP_LINE_COLOR;
-        }
+        c = (ship == pieLastClosestShip) ? TW_SHIP_LINE_CLOSEST_COLOR : TW_SHIP_LINE_COLOR; //if closest ship from last frame
         primLine3(&planePoint, &shipPoint, c);              //draw line from plane to ship
-        length = sqrtf(((shipPoint.x - selCentrePoint.x) * (shipPoint.x - selCentrePoint.x) +
-                 (shipPoint.y - selCentrePoint.y) * (shipPoint.y - selCentrePoint.y)));
+        primPoint3(&planePoint, c);
+        
         //now draw circle on the plane
         bHeightPointDrawn = FALSE;
         if (ABS(shipPoint.z - planePoint.z) > ship->staticinfo->staticheader.staticCollInfo.collspheresize)
         {
             radius = ship->staticinfo->staticheader.staticCollInfo.collspheresize;
-            selCircleComputeGeneral(&rndCameraMatrix, &rndProjectionMatrix,
-                                &planePoint, radius, &screenX, &screenY, &screenRadius);
-            if (screenRadius > 0.0f)
+            selCircleComputeGeneral(&rndCameraMatrix, &rndProjectionMatrix, &planePoint, radius, &screenX, &screenY, &screenRadius);
+            if (screenRadius > 0.0f && piePlaneScreenPointIndex < PIE_PlaneScreenPointIndex)
             {
-//                dbgAssertOrIgnore(piePlaneScreenPointIndex < PIE_PlaneScreenPointIndex);
-                if (piePlaneScreenPointIndex < PIE_PlaneScreenPointIndex)
-                {
-                    piePlaneScreenPoint[piePlaneScreenPointIndex].x = screenX;
-                    piePlaneScreenPoint[piePlaneScreenPointIndex].y = screenY;
-                    piePlaneScreenPointIndex++;
-                    nSegments = pieCircleSegmentsCompute(screenRadius);
-                    primCircleOutlineZ(&planePoint, radius,
-                                       nSegments, c);
-                    bHeightPointDrawn = TRUE;
-                }
+                piePlaneScreenPoint[piePlaneScreenPointIndex].x = screenX;
+                piePlaneScreenPoint[piePlaneScreenPointIndex].y = screenY;
+                piePlaneScreenPointIndex++;
+                nSegments = pieCircleSegmentsCompute(screenRadius);
+                primCircleOutlineZ(&planePoint, radius,
+                                    nSegments, c);
+                bHeightPointDrawn = TRUE;
             }
         }
 
@@ -614,6 +611,10 @@ nextnode:
     }
 
     pieLastClosestShip = closestShip;
+
+    // Restore
+    glccLineWidth( lineWidthPrev );
+    glccLineWidth( lineWidthPrev );
 }
 
 /*-----------------------------------------------------------------------------
@@ -714,22 +715,43 @@ bool pieNeedSpecialAttackAndMoveColor()
 ----------------------------------------------------------------------------*/
 void pieMovementCursorDraw(real32 distance)
 {
-    real32 scaledSize;
-    sdword nSegments;
+    GLfloat lineWidthPrev, pointSizePrev;
+    glccGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
+    glccGetFloatv( GL_POINT_SIZE, &pointSizePrev );
 
-    if (ABS(piePointSpecZ) < pieDottedDistance)
+    const GLfloat thickness = sqrtf(getResDensityRelative());
+    glccLineWidth( thickness * 1.0f );
+    glccPointSize( thickness * 3.0f );
+
+    const color c = moveLineColor;
+
+    if (ABS(piePointSpecZ) < pieDottedDistance) // point on standard Z-plane?
     {
-        primLine3(&piePlanePoint, &selCentrePoint, moveLineColor);//draw line from centre to mouse point on x/y plane
+        primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
+        primPoint3(&piePlanePoint, c); // Cap off
     }
     else
-    {                                                       //if point off standard Z-plane
-        primLine3(&pieHeightPoint, &selCentrePoint, moveLineColor);//draw from centre of dish to height point
-        primLine3(&pieHeightPoint, &piePlanePoint, moveLineColor); //TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
-        primLine3(&piePlanePoint, &selCentrePoint, moveLineColor);//draw line from centre to mouse point on x/y plane
+    {
+        primLine3(&pieHeightPoint, &selCentrePoint, c);//draw from centre of dish to height point
+        primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
+
+        // In OG Homeworld, the height indicator was originally stippled.
+        // Always have the stipple grow from the reference plane
+        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c);
+
         //destination circle
+        sdword nSegments;
+        real32 scaledSize;
         pieScreenSizeOfCircleCompute(&pieHeightPoint, selAverageSize, &scaledSize, &nSegments);
-        primCircleOutlineZ(&pieHeightPoint, scaledSize, nSegments, moveLineColor);
+        primCircleOutlineZ(&pieHeightPoint, scaledSize, nSegments, c);
+
+        // Cap off with points
+        primPoint3(&piePlanePoint, c);
+        primPoint3(&pieHeightPoint,c);
     }
+
+    glccLineWidth( lineWidthPrev );
+    glccPointSize( pointSizePrev );
 }
 
 /*-----------------------------------------------------------------------------
