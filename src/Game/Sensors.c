@@ -663,6 +663,20 @@ void makeShipsNotBeDisabled(SelectCommand *selection)
     }
 }
 
+// Helper for scaling down the length/alpha at the edges to avoid visible popping.
+// Returns how edgy you are in 0:1 range
+static real32 getHorizonEdgeFactor( real32 angle, real32 angleLow, real32 angleHigh ) {
+    const real32 threshRange = 0.25f;
+    const real32 threshRcp   = 1.0f  / threshRange;
+    const real32 threshHigh  = 1.0f - threshRange;
+    const real32 threshLow   = threshRange;
+    const real32 relAngle    = (angle - angleLow) / (angleHigh - angleLow); // Re-range to 0:1
+
+         if (relAngle <= threshLow)  return 1.0f - (relAngle * threshRcp);
+    else if (relAngle >= threshHigh) return (relAngle - threshHigh) * threshRcp;
+    else                             return 0.0f;
+}
+
 /*-----------------------------------------------------------------------------
     Name        : smHorizonLineDraw
     Description : Draw the horizon line with compass tick marks
@@ -678,36 +692,33 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
 {
     fonthandle oldFont = fontCurrentGet();
     
-    real32 mw         = (real32) MAIN_WindowWidth;
-    real32 mh         = (real32) MAIN_WindowHeight;
-    real32 maxAspect  = max(mw,mh) / min(mw,mh);
-    real32 startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f - smHorizTickAngle * 2.0f;
-    real32 endAngle   = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f + smHorizTickAngle * 2.0f;
+    const real32 mw         = (real32) MAIN_WindowWidth;
+    const real32 mh         = (real32) MAIN_WindowHeight;
+    const real32 maxAspect  = max(mw,mh) / min(mw,mh);
+    const real32 startAngle = cam->angle - PI - DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f - smHorizTickAngle * 2.0f;
+    const real32 endAngle   = cam->angle - PI + DEG_TO_RAD(cam->fieldofview) * maxAspect * 0.75f + smHorizTickAngle * 2.0f;
 
-    real32 startRefAngle = floorf((startAngle / smHorizTickAngle)) * smHorizTickAngle;
-    real32 endRefAngle   = floorf((endAngle   / smHorizTickAngle)) * smHorizTickAngle;
-    real32 angle         = startRefAngle;
+    const real32 startRefAngle = floorf((startAngle / smHorizTickAngle)) * smHorizTickAngle;
+    const real32 endRefAngle   = floorf((endAngle   / smHorizTickAngle)) * smHorizTickAngle;
 
     vector startPoint, endPoint;
-    startPoint.x = cam->lookatpoint.x + cosf(angle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
-    startPoint.y = cam->lookatpoint.y + sinf(angle) * distance * smWorldPlaneDistanceFactor;
+    startPoint.x = cam->lookatpoint.x + cosf(startRefAngle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
+    startPoint.y = cam->lookatpoint.y + sinf(startRefAngle) * distance * smWorldPlaneDistanceFactor;
     endPoint.z = startPoint.z = cam->lookatpoint.z;
 
     fontMakeCurrent(mouseCursorFont);
     glccLineWidth( sqrtf(getResDensityRelative()) );
 
-    bool depthEnabled = FALSE;
-    if (glccIsEnabled(GL_DEPTH_TEST))
-    {
-        depthEnabled = TRUE;
-        glccDisable(GL_DEPTH_TEST);
-    }
+    const bool depthTestEnabled =   glccIsEnabled(GL_DEPTH_TEST);
+    const bool blendDisabled    = ! glccIsEnabled(GL_BLEND);
+    if (depthTestEnabled) glccDisable(GL_DEPTH_TEST);
+    if (blendDisabled)    glccEnable(GL_BLEND);
 
-    for (smTickTextIndex = 0; angle < endAngle; angle += smHorizTickAngle)
-    {
+    // Draw the ticks on the horizon separately first
+    smTickTextIndex = 0;
+    for (real32 angle=startRefAngle; angle<endAngle; angle+=smHorizTickAngle) {
         endPoint.x = cam->lookatpoint.x + cosf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor; //position of current point
         endPoint.y = cam->lookatpoint.y + sinf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor;
-        //primLine3(&startPoint, &endPoint, smCurrentWorldPlaneColor); //draw the main arc
 
         vector horizPoint;
         horizPoint.x = endPoint.x;
@@ -743,53 +754,50 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
         smTickText[smTickTextIndex].x -= fontWidth(smTickText[smTickTextIndex].text) / 2;
         smTickTextIndex++;
 
-        //scale down the length/alpha of the horizontal ticks at the edges to avoid visible popping.
-        const real32 threshRange = 0.33f;
-        const real32 threshRcp   = 1.0f  / threshRange;
-        const real32 threshHigh  = 1.0f - threshRange;
-        const real32 threshLow   = threshRange;
-        const real32 edgeFactor  = 0.25f;
-        const real32 relAngle    = (angle - startRefAngle) / (endRefAngle - startRefAngle); // Rerange to 0:1
-
-        real32 relEdge = 0.0f;
-             if (relAngle <= threshLow)  relEdge = 1.0f - (relAngle * threshRcp);
-        else if (relAngle >= threshHigh) relEdge = (relAngle - threshHigh) * threshRcp;
-        
-        const real32 relEdgeInv      = 1.0f - relEdge;
-        const real32 edgeHorizFactor = 1.0f + relEdge * edgeFactor;
-
         // Vertical tick lower
-        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, relEdgeInv);
+        const real32 edgeiness       = getHorizonEdgeFactor( angle, startRefAngle, endRefAngle );
+        const real32 edgeFactor      = 0.25f;
+        const real32 edgeinessInv    = 1.0f - edgeiness; // Good, good
+        const real32 edgeHorizFactor = 1.0f + edgeiness * edgeFactor;
+        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, edgeinessInv);
 
         // Vertical tick upper
         horizPoint.x = (endPoint.x - cam->lookatpoint.x) * smHorizonTickHorizFactor * edgeHorizFactor + cam->lookatpoint.x;
         horizPoint.y = (endPoint.y - cam->lookatpoint.y) * smHorizonTickHorizFactor * edgeHorizFactor + cam->lookatpoint.y;
         horizPoint.z = cam->lookatpoint.z;
-        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, relEdgeInv);
+        primLine3Fade(&endPoint, &horizPoint, smCurrentWorldPlaneColor, edgeinessInv);
 
-        startPoint = endPoint; //draw from this point to next point next time through
+        //draw from this point to next point next time through
+        startPoint = endPoint; 
     }
 
 
-    // Draw the main arc in much finer detail
-    startPoint.x = cam->lookatpoint.x + cosf(angle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
-    startPoint.y = cam->lookatpoint.y + sinf(angle) * distance * smWorldPlaneDistanceFactor;
+    // Draw the main arc in much finer detail, but using a more efficient method.
+    const ubyte  red      = colRed  ( smCurrentWorldPlaneColor );
+    const ubyte  green    = colGreen( smCurrentWorldPlaneColor );
+    const ubyte  blue     = colBlue ( smCurrentWorldPlaneColor );
+    const real32 fineStep = smHorizTickAngle / 32.0f;
+
+    startPoint.x = cam->lookatpoint.x + cosf(startRefAngle) * distance * smWorldPlaneDistanceFactor;   //position of starting point
+    startPoint.y = cam->lookatpoint.y + sinf(startRefAngle) * distance * smWorldPlaneDistanceFactor;
     endPoint.z   = startPoint.z = cam->lookatpoint.z;
 
-    real32 angleStep = smHorizTickAngle / 64.0f;
-    for (angle = startRefAngle;  angle < endAngle;  angle += angleStep)
-    {
+    glBegin(GL_LINE_STRIP);    
+    for (real32 angle=startRefAngle; angle<endAngle; angle+=fineStep) {
+        const real32 edgeinessInv = 1.0f - getHorizonEdgeFactor( angle, startRefAngle, endRefAngle );
+        const ubyte  alpha        = (ubyte) (255.0f * edgeinessInv);
         endPoint.x = cam->lookatpoint.x + cosf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor; //position of current point
         endPoint.y = cam->lookatpoint.y + sinf(angle + smHorizTickAngle) * distance * smWorldPlaneDistanceFactor;
-        primLine3(&startPoint, &endPoint, smCurrentWorldPlaneColor);//draw the vertical tick
+        glColor4ub( red, green, blue, alpha );
+        glVertex3fv( &startPoint.x );
+        glVertex3fv( &endPoint  .x );
         startPoint = endPoint; //draw from this point to next point next time through
     }
+    glEnd();
 
-
-    if (depthEnabled)
-    {
-        glccEnable(GL_DEPTH_TEST);
-    }
+    // Restore state
+    if (depthTestEnabled) glccEnable(GL_DEPTH_TEST);
+    if (blendDisabled)    glccDisable(GL_BLEND);
 
     fontMakeCurrent( oldFont );
     glccLineWidth( 1.0f );
