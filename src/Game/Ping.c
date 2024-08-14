@@ -514,9 +514,9 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
             if ((TOFlags & pingTOList[index].bitMask))
             {
     //            fontPrint(xScreen, yScreen, *pingTOList[index].c, "O");
-                pingTOList[index].lastTimeDrawn = universe.totaltimeelapsed;
+                pingTOList[index].lastTimeDrawn = rintUniverseElapsedTime();
             }
-            if (universe.totaltimeelapsed - pingTOList[index].lastTimeDrawn <= pingTOLingerTime)
+            if (rintUniverseElapsedTime() - pingTOList[index].lastTimeDrawn <= pingTOLingerTime)
             {
                 o.centreX = viewPort->x0 + rowHeight * 3 / 2;
                 o.centreY = yScreen + rowHeight / 2;
