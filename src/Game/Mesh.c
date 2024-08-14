@@ -74,6 +74,13 @@ bool gSelfIllum;
 bool bFade = FALSE;
 real32 meshFadeAlpha = 1.0f;
 
+// When this is true, the mesh renderer expects the GPU to calculate the final specular colour.
+// It simply passes the basic colour and normals instead of doing any per-vertex colouring.
+// Calculating this is very slow in software because of per-vertex powf() calls.
+// It knocks 12% off the runtime in a typical battle scene (meaasured in Cathedral of Kadesh) because it's used for all the capital ship trails.
+// Can you believe it? Hardware transform AND lighting? In 2024??? :D
+bool g_MeshHardwareAcceleratedSpecular = FALSE;
+
 bool8 g_NoMatSwitch = FALSE;
 bool8 g_ReplaceHack = FALSE;
 bool8 g_WireframeHack = FALSE;
@@ -1426,22 +1433,27 @@ void meshAlmostCurrentMaterial(materialentry* material, sdword iColorScheme)
 ----------------------------------------------------------------------------*/
 void meshSpecColour(normalentry* normal, vertexentry* vertex, real32* m, real32* minv)
 {
-    vector vert;
-    vector norm;
-    ubyte  colour[4];
+    if (g_MeshHardwareAcceleratedSpecular) {
+        glNormal3fv( &normal->x );
+        glColor4ub(specColour[0], specColour[1], specColour[2], specColour[3]);
+    } else {
+        vector vert;
+        vector norm;
+        ubyte  colour[4];
 
-    norm.x = normal->x;
-    norm.y = normal->y;
-    norm.z = normal->z;
-    vert.x = vertex->x;
-    vert.y = vertex->y;
-    vert.z = vertex->z;
-    colour[0] = specColour[0];
-    colour[1] = specColour[1];
-    colour[2] = specColour[2];
-    colour[3] = specColour[3];
-    shSpecularColour(specIndex, 0, &vert, &norm, colour, m, minv);
-    glColor4ub(colour[0], colour[1], colour[2], colour[3]);
+        norm.x = normal->x;
+        norm.y = normal->y;
+        norm.z = normal->z;
+        vert.x = vertex->x;
+        vert.y = vertex->y;
+        vert.z = vertex->z;
+        colour[0] = specColour[0];
+        colour[1] = specColour[1];
+        colour[2] = specColour[2];
+        colour[3] = specColour[3];
+        shSpecularColour(specIndex, 0, &vert, &norm, colour, m, minv);
+        glColor4ub(colour[0], colour[1], colour[2], colour[3]);
+    }
 }
 
 void meshMorphedSpecColour(vector* normal, real32* m, real32* minv)
