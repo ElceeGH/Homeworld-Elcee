@@ -216,11 +216,12 @@ static inline void glVertex3fv(const GLfloat *v) {
 #else
 
 #include <SDL_opengl.h>
+#include "rStateCacheInject.h"
 
-extern PFNGLBINDBUFFERPROC glBindBuffer;
+extern PFNGLBINDBUFFERPROC    glBindBuffer;
 extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-extern PFNGLGENBUFFERSPROC glGenBuffers;
-extern PFNGLBUFFERDATAPROC glBufferData;
+extern PFNGLGENBUFFERSPROC    glGenBuffers;
+extern PFNGLBUFFERDATAPROC    glBufferData;
 extern PFNGLBUFFERSUBDATAPROC glBufferSubData;
 
 typedef void (APIENTRYP PFNGLDRAWTEXIOESPROC) (GLint x, GLint y, GLint z, GLint width, GLint height);

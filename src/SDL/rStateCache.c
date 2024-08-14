@@ -16,6 +16,11 @@
 
 
 
+// For obvious reasons, the cache itself can't have its own functions intercepted!
+#define NO_GL_CACHE_INJECT
+
+
+
 #include "rStateCache.h"
 #include "rMatrixStack.h"
 #include <stdio.h>
