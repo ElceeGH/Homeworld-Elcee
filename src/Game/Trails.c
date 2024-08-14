@@ -34,6 +34,7 @@
 #include "Universe.h"
 #include "rResScaling.h"
 #include "rStateCache.h"
+#include "rShaderProgram.h"
 
 #define MIN2(x,y) ((x) < (y) ? (x) : (y))
 #define MAX2(x,y) ((x) > (y) ? (x) : (y))
@@ -786,6 +787,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     real32 scale[3];
     bool moshipGlow;
     extern bool8 g_NoMatSwitch;
+    extern bool  g_MeshHardwareAcceleratedSpecular;
 
     if (trail->width == -1.0f || trail->state == TRAIL_CONTRACTED)
     {
@@ -932,112 +934,67 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
         scale[2] = scaleFactor * trail->width * trail->ribbonadjust;
     }
 
-    glccScalef(scale[0], scale[1], scale[2]);
-
     g_NoMatSwitch = TRUE;
     glccEnable(GL_NORMALIZE);
-    shSetExponent(2, trail->exponent);
-
     glShadeModel(GL_SMOOTH);
+    shSetExponent(2, trail->exponent); // Mode 2 = light vector from camera along -z
 
-    if (shipstaticinfo->shiprace == P1 &&
-        shipstaticinfo->shipclass == CLASS_Mothership)
-    {
-        switch (LOD)
-        {
-            case 0:
-            case 1:
-                meshRender(trailMeshes[TM_MOSHIP_GLOW_P1_0], 0);
-                break;
-            case 2:
-                meshRender(trailMeshes[TM_MOSHIP_GLOW_P1_1], 0);
-                break;
-            case 3:
-                meshRender(trailMeshes[TM_MOSHIP_GLOW_P1_2], 0);
-                break;
-            default:
-                meshRender(trailMeshes[TM_MOSHIP_GLOW_P1_3], 0);
+    // Shader program stuff
+    static GLuint* glowProg     = NULL;
+    static GLint   glowLightLoc = -1;
+    static GLint   glowSpecLoc  = -1;
+    static GLint   glowFadeLoc  = -1;
+
+    if ( ! glowProg) {
+        glowProg     = loadShaderProgram( "capitalglow" );
+        glowLightLoc = glGetUniformLocation( *glowProg, "uLightVec" );
+        glowSpecLoc  = glGetUniformLocation( *glowProg, "uSpecExp" );
+        glowFadeLoc  = glGetUniformLocation( *glowProg, "uFade" );
+    }
+
+    // The light is simply pointing the same way as the camera for these glow trails.
+    // The colour of the glow is part of the vertex data given to the shader by the mesh renderer.
+    const GLfloat lightVec[3] = { 0, 0, -1 };
+    
+    // Set up program
+    glUseProgram( *glowProg );
+    glUniform3fv( glowLightLoc, 1, lightVec );
+    glUniform1f ( glowSpecLoc, trail->exponent );
+    glUniform1f ( glowFadeLoc, meshFadeAlpha );
+
+    // Make mesh renderer aware that we're doing specular on GPU
+    g_MeshHardwareAcceleratedSpecular = TRUE;
+
+    // Decide which mesh to render
+    udword meshLodMap[5]   = { 0, 0, 1, 2, 3 };
+    udword meshSelectOffs  = meshLodMap[ min(4,LOD) ];
+    udword meshSelectBase  = TM_GLOW_0;
+    udword meshColorScheme = 0;
+    real32 meshYScale      = 1.0f;
+
+    if (shipstaticinfo->shiprace == P1 && shipstaticinfo->shipclass == CLASS_Mothership) {
+        meshSelectBase = TM_MOSHIP_GLOW_P1_0;
+    } else if (trail->style == 5) {
+        meshSelectBase = TM_FRIGATE_GLOW_0;
+    } else if (moshipGlow) {
+        if (shipstaticinfo->shiprace == R1) {
+            meshYScale     =  1.5f;
+            meshSelectBase = TM_MOSHIP_GLOW_R1_0;
+        } else {
+            meshSelectBase = TM_MOSHIP_GLOW_R2_0;
         }
     }
-    else if (trail->style == 5)
-    {
-        switch (LOD)
-        {
-        case 0:
-        case 1:
-            meshRender(trailMeshes[TM_FRIGATE_GLOW_0], 0);
-            break;
-        case 2:
-            meshRender(trailMeshes[TM_FRIGATE_GLOW_1], 0);
-            break;
-        case 3:
-            meshRender(trailMeshes[TM_FRIGATE_GLOW_2], 0);
-            break;
-        default:
-            meshRender(trailMeshes[TM_FRIGATE_GLOW_3], 0);
-        }
-    }
-    else
-    {
-        if (moshipGlow)
-        {
-            if (shipstaticinfo->shiprace == R1)
-            {
-                glccScalef(1.0f, 1.5f, 1.0f);
-                switch (LOD)
-                {
-                case 0:
-                case 1:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R1_0], 0);
-                    break;
-                case 2:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R1_1], 0);
-                    break;
-                case 3:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R1_2], 0);
-                    break;
-                default:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R1_3], 0);
-                }
-            }
-            else
-            {
-                switch (LOD)
-                {
-                case 0:
-                case 1:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R2_0], 0);
-                    break;
-                case 2:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R2_1], 0);
-                    break;
-                case 3:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R2_2], 0);
-                    break;
-                default:
-                    meshRender(trailMeshes[TM_MOSHIP_GLOW_R2_3], 0);
-                }
-            }
-        }
-        else
-        {
-            switch (LOD)
-            {
-            case 0:
-            case 1:
-                meshRender(trailMeshes[TM_GLOW_0], 0);
-                break;
-            case 2:
-                meshRender(trailMeshes[TM_GLOW_1], 0);
-                break;
-            case 3:
-                meshRender(trailMeshes[TM_GLOW_2], 0);
-                break;
-            default:
-                meshRender(trailMeshes[TM_GLOW_3], 0);
-            }
-        }
-    }
+
+    // Set scaling
+    glccScalef(scale[0], scale[1]*meshYScale, scale[2]);
+
+    // Render the mesh
+    meshdata* mesh = trailMeshes[ meshSelectBase + meshSelectOffs ];
+    meshRender( mesh, meshColorScheme );
+
+    // Switch back to normal rendering
+    glUseProgram(0);
+    g_MeshHardwareAcceleratedSpecular = FALSE;
 
     glccDisable(GL_NORMALIZE);
     g_NoMatSwitch = FALSE;
