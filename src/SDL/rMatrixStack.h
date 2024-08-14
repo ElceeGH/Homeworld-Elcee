@@ -22,7 +22,6 @@ typedef struct MatrixStack {
 
 
 void         msInitStacks  ( void );
-MatrixStack* msGetStack    ( void );
 Matrix*      msGetMatrix   ( void );
 void         msSetSelect   ( sdword sel );
 sdword       msGetSelect   ( void );
