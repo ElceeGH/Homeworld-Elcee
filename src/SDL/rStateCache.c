@@ -156,11 +156,11 @@ static udword cacheRead( GLenum id, void* out ) {
 
     if (cache.flags & map.mask) {
         memcpy( out, map.address, map.size );
-        //printf( "GLCC cache read: HIT, %s, id=0x%04x, size=%i\n", idToName(id), id, map.size );
+        //printf( "ccgl cache read: HIT, %s, id=0x%04x, size=%i\n", idToName(id), id, map.size );
         return TRUE;
     }
 
-    //printf( "GLCC cache read: MISS, %s, id=0x%04x\n", idToName(id), id );
+    //printf( "ccgl cache read: MISS, %s, id=0x%04x\n", idToName(id), id );
     return FALSE;
 }
 
@@ -181,18 +181,18 @@ static udword cacheWrite( GLenum id, const void* in ) {
 
 
 
-void glccInit( void ) {
+void ccglInit( void ) {
     memset( &cache, 0x00, sizeof(cache) );
 }
 
 
 
-void glccGetFloatv( GLenum id, GLfloat* out ) {
+void ccglGetFloatv( GLenum id, GLfloat* out ) {
     if ( ! cacheRead( id, out ))
         glGetFloatv( id, out );
 }
 
-void glccGetIntegerv( GLenum id, GLint* out ) {
+void ccglGetIntegerv( GLenum id, GLint* out ) {
     if ( ! cacheRead( id, out ))
         glGetIntegerv( id, out );
 }
@@ -202,7 +202,7 @@ void glccGetIntegerv( GLenum id, GLint* out ) {
 // For enable/disable, check if the value is already set using the cache.
 // This knocked off around 12000 GL calls per frame in the Cathedral.
 
-void glccEnable( GLenum id ) {
+void ccglEnable( GLenum id ) {
     GLboolean current;
     if (cacheRead( id, &current ))
     if (current)
@@ -213,7 +213,7 @@ void glccEnable( GLenum id ) {
     glEnable( id );
 }
 
-void glccDisable( GLenum id ) {
+void ccglDisable( GLenum id ) {
     GLboolean current;
     if (cacheRead( id, &current ))
     if ( ! current)
@@ -224,7 +224,7 @@ void glccDisable( GLenum id ) {
     glDisable( id );
 }
 
-GLboolean glccIsEnabled( GLenum id ) {
+GLboolean ccglIsEnabled( GLenum id ) {
     GLboolean value = 0;
     if (cacheRead( id, &value ))
          return value;
@@ -238,20 +238,20 @@ GLboolean glccIsEnabled( GLenum id ) {
 
 
 
-void glccPointSize( const GLfloat size ) {
+void ccglPointSize( const GLfloat size ) {
     cacheWrite( GL_POINT_SIZE, &size );
     glPointSize( size );
 
 }
 
-void glccLineWidth( GLfloat width ) {
+void ccglLineWidth( GLfloat width ) {
     cacheWrite( GL_LINE_WIDTH, &width );
     glLineWidth( width );
 }
 
 
 
-void glccViewport( GLint x, GLint y, GLint w, GLint h ) {
+void ccglViewport( GLint x, GLint y, GLint w, GLint h ) {
     GLint vp[4] = {x,y, w,h};
     cacheWrite( GL_VIEWPORT, vp );
     glViewport( x,y, w,h );
@@ -259,7 +259,7 @@ void glccViewport( GLint x, GLint y, GLint w, GLint h ) {
 
 
 
-void glccScissor( GLint x, GLint y, GLint w, GLint h ) {
+void ccglScissor( GLint x, GLint y, GLint w, GLint h ) {
     GLint sb[4] = {x,y, w,h};
     cacheWrite( GL_SCISSOR_BOX, sb );
     glScissor( x,y, w,h );
@@ -267,7 +267,7 @@ void glccScissor( GLint x, GLint y, GLint w, GLint h ) {
 
 
 
-void glccClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a ) {
+void ccglClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a ) {
     GLclampf col[4] = {r,g,b,a};
     cacheWrite( GL_COLOR_CLEAR_VALUE, col );
     glClearColor( r,g,b,a );
@@ -298,64 +298,64 @@ static void updateGlMatrix( void ) {
 
 
 
-void glccLoadIdentity( void ) {
+void ccglLoadIdentity( void ) {
     msSetIdentity( msGetMatrix() );
     updateGlMatrix();
 }
 
-void glccMatrixMode( GLenum mode ) {
+void ccglMatrixMode( GLenum mode ) {
     msSetSelect( mapGlMatrixModeToSelect(mode) );
     cacheWrite( GL_MATRIX_MODE, &mode );
     glMatrixMode( mode );
 }
 
-void glccPushMatrix( void ) {
+void ccglPushMatrix( void ) {
     msPushMatrix();
     updateGlMatrix();
 }
 
-void glccPopMatrix( void ) {
+void ccglPopMatrix( void ) {
     msPopMatrix();
     updateGlMatrix();
 }
 
-void glccLoadMatrixf( const GLfloat* mat ) {
+void ccglLoadMatrixf( const GLfloat* mat ) {
     memcpy( msGetMatrix(), mat, sizeof(Matrix) );
     updateGlMatrix();
 }
 
-void glccMultMatrixf( const GLfloat* mat ) {
+void ccglMultMatrixf( const GLfloat* mat ) {
     msMultMatrix( (Matrix*) mat );
     updateGlMatrix();
 }
 
-void glccRotatef( GLfloat angle, GLfloat x, GLfloat y, GLfloat z ) {
+void ccglRotatef( GLfloat angle, GLfloat x, GLfloat y, GLfloat z ) {
     Matrix rotation;
     msSetRotate( &rotation, angle, x, y, z );
-    glccMultMatrixf( rotation.m );
+    ccglMultMatrixf( rotation.m );
 }
 
-void glccScalef( GLfloat x, GLfloat y, GLfloat z ) {
+void ccglScalef( GLfloat x, GLfloat y, GLfloat z ) {
     Matrix scale;
     msSetScale( &scale, x, y, z );
-    glccMultMatrixf( scale.m );
+    ccglMultMatrixf( scale.m );
 }
 
-void glccTranslatef( GLfloat x, GLfloat y, GLfloat z ) {
+void ccglTranslatef( GLfloat x, GLfloat y, GLfloat z ) {
     Matrix trans;
     msSetTranslate( &trans, x, y, z );
-    glccMultMatrixf( trans.m );
+    ccglMultMatrixf( trans.m );
 }
 
-void glccFrustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv ) {
+void ccglFrustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv ) {
     Matrix frustum;
     msSetFrustum( &frustum, (float)left, (float)right, (float)bottom, (float)top, (float)nearv, (float)farv );
-    glccMultMatrixf( frustum.m );
+    ccglMultMatrixf( frustum.m );
 }
 
-void glccOrtho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv ) {
+void ccglOrtho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv ) {
     Matrix ortho;
     msSetOrtho( &ortho, (float)left, (float)right, (float)bottom, (float)top, (float)nearv, (float)farv );
-    glccMultMatrixf( ortho.m );
+    ccglMultMatrixf( ortho.m );
 }
 

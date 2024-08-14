@@ -7,39 +7,39 @@
 
 
 // Init
-void glccInit( void );
+void ccglInit( void );
 
 // Generic gets
-void glccGetFloatv  ( GLenum id, GLfloat* out );
-void glccGetIntegerv( GLenum id, GLint* out );
+void ccglGetFloatv  ( GLenum id, GLfloat* out );
+void ccglGetIntegerv( GLenum id, GLint* out );
 
 // Matrix control
-void glccLoadIdentity( void );
-void glccPushMatrix  ( void );
-void glccPopMatrix   ( void );
-void glccMatrixMode  ( GLenum mode );
-void glccLoadMatrixf ( const GLfloat* mat );
-void glccMultMatrixf ( const GLfloat* mat );
-void glccRotatef     ( GLfloat angle, GLfloat x, GLfloat y,  GLfloat z );
-void glccScalef      ( GLfloat x, GLfloat y, GLfloat z );
-void glccTranslatef  ( GLfloat x, GLfloat y, GLfloat z );
-void glccFrustum     ( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv );
-void glccOrtho       ( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv );
+void ccglLoadIdentity( void );
+void ccglPushMatrix  ( void );
+void ccglPopMatrix   ( void );
+void ccglMatrixMode  ( GLenum mode );
+void ccglLoadMatrixf ( const GLfloat* mat );
+void ccglMultMatrixf ( const GLfloat* mat );
+void ccglRotatef     ( GLfloat angle, GLfloat x, GLfloat y,  GLfloat z );
+void ccglScalef      ( GLfloat x, GLfloat y, GLfloat z );
+void ccglTranslatef  ( GLfloat x, GLfloat y, GLfloat z );
+void ccglFrustum     ( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv );
+void ccglOrtho       ( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearv, GLdouble farv );
 
 // State control
-void      glccEnable   ( GLenum id );
-void      glccDisable  ( GLenum id );
-GLboolean glccIsEnabled( GLenum id );
+void      ccglEnable   ( GLenum id );
+void      ccglDisable  ( GLenum id );
+GLboolean ccglIsEnabled( GLenum id );
 
 // Points and lines
-void glccPointSize( GLfloat size  );
-void glccLineWidth( GLfloat width );
+void ccglPointSize( GLfloat size  );
+void ccglLineWidth( GLfloat width );
 
 // Viewport and scissor
-void glccViewport( GLint x, GLint y, GLint w, GLint h );
-void glccScissor ( GLint x, GLint y, GLint w, GLint h );
+void ccglViewport( GLint x, GLint y, GLint w, GLint h );
+void ccglScissor ( GLint x, GLint y, GLint w, GLint h );
 
 // Clear col
-void glccClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a );
+void ccglClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a );
 
 

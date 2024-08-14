@@ -18,36 +18,36 @@
 #ifndef NO_GL_CACHE_INJECT
 
     // Generic gets
-    #define glGetFloatv     glccGetFloatv  
-    #define glGetIntegerv   glccGetIntegerv
+    #define glGetFloatv     ccglGetFloatv  
+    #define glGetIntegerv   ccglGetIntegerv
 
     // Matrix control
-    #define glLoadIdentity  glccLoadIdentity
-    #define glPushMatrix    glccPushMatrix  
-    #define glPopMatrix     glccPopMatrix   
-    #define glMatrixMode    glccMatrixMode  
-    #define glLoadMatrixf   glccLoadMatrixf 
-    #define glMultMatrixf   glccMultMatrixf 
-    #define glRotatef       glccRotatef     
-    #define glScalef        glccScalef      
-    #define glTranslatef    glccTranslatef  
-    #define glFrustum       glccFrustum     
-    #define glOrtho         glccOrtho       
+    #define glLoadIdentity  ccglLoadIdentity
+    #define glPushMatrix    ccglPushMatrix  
+    #define glPopMatrix     ccglPopMatrix   
+    #define glMatrixMode    ccglMatrixMode  
+    #define glLoadMatrixf   ccglLoadMatrixf 
+    #define glMultMatrixf   ccglMultMatrixf 
+    #define glRotatef       ccglRotatef     
+    #define glScalef        ccglScalef      
+    #define glTranslatef    ccglTranslatef  
+    #define glFrustum       ccglFrustum     
+    #define glOrtho         ccglOrtho       
 
     // State control
-    #define glEnable        glccEnable   
-    #define glDisable       glccDisable  
-    #define glIsEnabled     glccIsEnabled
+    #define glEnable        ccglEnable   
+    #define glDisable       ccglDisable  
+    #define glIsEnabled     ccglIsEnabled
 
     // Points and lines
-    #define glPointSize     glccPointSize
-    #define glLineWidth     glccLineWidth
+    #define glPointSize     ccglPointSize
+    #define glLineWidth     ccglLineWidth
 
     // Viewport and scissor
-    #define glViewport      glccViewport
-    #define glScissor       glccScissor 
+    #define glViewport      ccglViewport
+    #define glScissor       ccglScissor 
 
     // Clear col
-    #define glClearColor    glccClearColor
+    #define glClearColor    ccglClearColor
 
 #endif
