@@ -21,7 +21,6 @@ void main() {
     vec3  normal = normalize( gl_NormalMatrix * gl_Normal );
     float cosine = dot( normal, uLightVec );
           cosine = abs( cosine );
-          cosine = clamp( cosine, 0.0, 1.0 );
     float alpha  = pow( cosine, uSpecExp );
 
     vec4  col    = gl_Color;
