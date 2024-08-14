@@ -68,14 +68,13 @@ void primLine3(vector *p1, vector *p2, color c)
 }
 
 
-void primLine3Stipple(vector *p1, vector *p2, color c)
+void primLine3Stipple(vector *p1, vector *p2, color c, real32 step)
 {
     bool blendon = glIsEnabled(GL_BLEND);
     if (!blendon) glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
     rndAdditiveBlends(FALSE);
 
-    const real32 step     = 96.0f;
     const real32 stepHalf = step * 0.5f;
     const real32 distance = sqrtf(vecDistanceSquared(*p1,*p2));
     const real32 limit    = distance - stepHalf;

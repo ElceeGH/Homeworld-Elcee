@@ -35,7 +35,7 @@ void primEndPointSize3Fade(void);
 //draw 3D lines
 void primLine3(vector *p1, vector *p2, color c);
 void primLine3Fade(vector *p1, vector *p2, color c, real32 fade);
-void primLine3Stipple(vector *p1, vector *p2, color c);
+void primLine3Stipple(vector *p1, vector *p2, color c, real32 step);
 
 //draw 3D 'pizza dish' circle using poly fans
 void primCircleSolid3(vector *centre, real32 radius, sdword nSpokes, color c);
