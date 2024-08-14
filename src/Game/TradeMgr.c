@@ -759,10 +759,10 @@ void tmNumberRUsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, colRGB(0, 0, 0));
 
-    glccEnable(GL_SCISSOR_TEST);
-    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glccDisable(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
     feStaticRectangleDraw(region);                          //draw regular rectangle as backdrop
     fontPrintf(region->rect.x1 - width - TM_RUMarginRight,

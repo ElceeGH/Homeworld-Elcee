@@ -169,7 +169,7 @@ void lightPositionSet(void)
 {
     real32 m[16];
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
 
 //    glLightfv(GL_LIGHT0, GL_POSITION, (GLfloat*)(&lightPosition));//position light(s) within world
 //    glLightfv(GL_LIGHT1, GL_POSITION, (GLfloat*)(&lightPosition));
@@ -407,7 +407,7 @@ void lightSetLighting()
         lightParseHSF("hsf\\default.hsf");
     }
 
-    glccEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_AMBIENT, currentLight->ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, currentLight->diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, currentLight->specular);
@@ -415,7 +415,7 @@ void lightSetLighting()
 
     if (lightNumLights == 2)
     {
-        glccEnable(GL_LIGHT1);
+        glEnable(GL_LIGHT1);
         glLightfv(GL_LIGHT1, GL_AMBIENT, currentLight1.ambient);
         glLightfv(GL_LIGHT1, GL_DIFFUSE, currentLight1.diffuse);
         glLightfv(GL_LIGHT1, GL_SPECULAR, currentLight1.specular);
@@ -423,7 +423,7 @@ void lightSetLighting()
     }
     else
     {
-        glccDisable(GL_LIGHT1);
+        glDisable(GL_LIGHT1);
     }
 }
 

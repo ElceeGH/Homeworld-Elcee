@@ -1797,8 +1797,8 @@ int main (int argc, char* argv[])
         }
     }
 
-    // GL state cache system
-    glccInit();
+    // GL state cache system init
+    ccglInit();
 
     if (errorString == NULL)
     {

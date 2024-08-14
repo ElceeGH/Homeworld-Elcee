@@ -1037,12 +1037,12 @@ void kasDebugDraw(void)
         primModeClear2();
         rndLightingEnable(FALSE);
         rndTextureEnable(FALSE);
-        glccDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
 
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadIdentity();
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
         rgluPerspective(mrCamera->fieldofview, rndAspectRatio, mrCamera->clipPlaneNear, mrCamera->clipPlaneFar * 15.0f);
-        glccMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW);
 
         #if KAS_DEBUG
         {
@@ -1140,9 +1140,9 @@ void kasDebugDraw(void)
             }
         }
 
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-        glccMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+        glMatrixMode(GL_MODELVIEW);
         primModeSet2();
     }
 #endif //SP_DEBUGLEVEL2

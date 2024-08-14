@@ -393,8 +393,8 @@ bool clipPointToScreen(vector* p, vector* screen, bool force)
 {
     real32 modelview[16], projection[16];
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
     return clipPointToScreenWithMatrices(p, screen, modelview, projection, force);
 }
 
@@ -426,7 +426,7 @@ bool clipPointToScreenWithMatrices(
     screen->y = 0.0f;
     screen->z = 0.0f;
 
-    glccGetIntegerv(GL_VIEWPORT, param);
+    glGetIntegerv(GL_VIEWPORT, param);
 
     viewportS.x = (real32)param[2] / 2.0f;
     viewportS.y = (real32)param[3] / 2.0f;
@@ -547,8 +547,8 @@ bool clipBBoxIsClipped(
     vecAdd(rectpos[6], rectpos[2], upvector);
     vecAdd(rectpos[7], rectpos[3], upvector);
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
     clipTransformPoints(8, (real32*)rectpos, (real32*)vbEye, modelview);
     clipProjectPoints(8, (real32*)vbEye, (real32*)vbClip, clipmask,
@@ -616,7 +616,7 @@ bool clipLineToScreen(
 
     GLint param[4];
 
-    glccGetIntegerv(GL_VIEWPORT, param);
+    glGetIntegerv(GL_VIEWPORT, param);
     viewportS.x = (real32)param[2] / 2.0f;
     viewportS.y = (real32)param[3] / 2.0f;
     viewportS.z = DEPTH_SCALE * ((1.0f - 0.0f) / 2.0f);

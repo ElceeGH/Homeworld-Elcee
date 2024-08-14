@@ -5144,7 +5144,7 @@ void nisStaticDraw(nisstatic *snow)
         trRGBTextureMakeCurrent(snow->texture);
         if (snow->bAlpha)
         {                                                   //if it uses an alpha texture
-            glccEnable(GL_BLEND);
+            glEnable(GL_BLEND);
         }
         rndGLStateLog("Textured Static");
         glBegin(GL_QUADS);
@@ -5183,7 +5183,7 @@ void nisStaticDraw(nisstatic *snow)
         maxAlpha = min(snow->alpha + snow->alphaVariation, 1.0f);
         if (snow->bAlpha)
         {                                                   //if it uses an alpha texture
-            glccEnable(GL_BLEND);
+            glEnable(GL_BLEND);
         }
         glBegin(GL_LINES);
         while (nLines)
@@ -5205,7 +5205,7 @@ void nisStaticDraw(nisstatic *snow)
         }
     }
     glEnd();
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     rndTextureEnable(FALSE);
 }
 

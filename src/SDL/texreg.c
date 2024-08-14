@@ -3176,18 +3176,18 @@ void trMakeCurrent(trhandle handle)
         }
         trNoPalMakeCurrent(newPalette, reg->handle);
         primErrorMessagePrint();
-        glccDisable(GL_ALPHA_TEST);                           //ditto
+        glDisable(GL_ALPHA_TEST);                           //ditto
     }
     else
     {                                                       //else it's an non-paletted texture
         if (bitTest(reg->flags, TRF_Alpha))
         {                                                   //and has alpha
-            glccEnable(GL_ALPHA_TEST);
+            glEnable(GL_ALPHA_TEST);
             glAlphaFunc(GL_GREATER, 0.0f);
         }
         else
         {                                                   //else turning alpha off
-            glccDisable(GL_ALPHA_TEST);
+            glDisable(GL_ALPHA_TEST);
         }
         //bind the proper version of this texture
         if (reg->nPalettes > 1)

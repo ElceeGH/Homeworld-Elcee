@@ -2344,7 +2344,7 @@ void etgEffectDraw(Effect *effect)
     real32 timeElapsed;
     vector velInverse;
 
-    //!!!ASSERT: glccMatrixMode == GL_MODELVIEW
+    //!!!ASSERT: glMatrixMode == GL_MODELVIEW
 
     if (effect->timeElapsed < 0.0f)
     {                                                       //if effect hasn't started yet
@@ -2403,13 +2403,13 @@ void etgEffectDraw(Effect *effect)
                 hmatMakeHMatFromMat(&ownerCoordMatrix, &tempMatrix);
                 hmatPutVectIntoHMatrixCol4(effect->owner->posinfo.position, ownerCoordMatrix);
 
-                glccPushMatrix();
-                glccMultMatrixf((GLfloat*)&ownerCoordMatrix);
-                glccMultMatrixf((GLfloat*)&coordMatrixX);
+                glPushMatrix();
+                glMultMatrixf((GLfloat*)&ownerCoordMatrix);
+                glMultMatrixf((GLfloat*)&coordMatrixX);
 
                 partRenderSystem((psysPtr)effect->particleBlock[index]);  //render the particle
 
-                glccPopMatrix();
+                glPopMatrix();
             }
             else
             {
@@ -2418,10 +2418,10 @@ void etgEffectDraw(Effect *effect)
                     partModifyBillPosition((psysPtr)effect->particleBlock[index],
                                        &effect->posinfo.position);
                 }
-                glccPushMatrix();
-                glccMultMatrixf((float *)&coordMatrixX);      //effect's rotation matrix
+                glPushMatrix();
+                glMultMatrixf((float *)&coordMatrixX);      //effect's rotation matrix
                 partRenderSystem((psysPtr)effect->particleBlock[index]);
-                glccPopMatrix();
+                glPopMatrix();
             }
         }
     }
@@ -2429,12 +2429,12 @@ void etgEffectDraw(Effect *effect)
 /*
     if (worldRendered)
     {
-        glccEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
         rndNormalizeEnable(FALSE);
-//        glccPopMatrix();
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-        glccMatrixMode(GL_MODELVIEW);
+//        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+        glMatrixMode(GL_MODELVIEW);
     }
 */
 }

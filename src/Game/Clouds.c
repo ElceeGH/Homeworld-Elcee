@@ -295,10 +295,10 @@ void ellipsoid_render(ellipseObject* ellipse, real32 radius)
 {
     alodIncPolys(ellipse->nf / 2);
 
-    glccEnable(GL_RESCALE_NORMAL);
-    glccPushMatrix();
+    glEnable(GL_RESCALE_NORMAL);
+    glPushMatrix();
 
-    glccScalef(radius, radius, radius);
+    glScalef(radius, radius, radius);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
@@ -320,8 +320,8 @@ void ellipsoid_render(ellipseObject* ellipse, real32 radius)
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 
-    glccPopMatrix();
-    glccDisable(GL_RESCALE_NORMAL);
+    glPopMatrix();
+    glDisable(GL_RESCALE_NORMAL);
 }
 
 /*-----------------------------------------------------------------------------
@@ -985,17 +985,17 @@ void cloudRenderLightning(vector* pa, vector* pb, udword depth, sdword lod) {
     memcpy(&lightning[0], pa, sizeof(vector));
     memcpy(&lightning[depth - 1], pb, sizeof(vector));
     cloudGenerateLightning(&lightning[0], &lightning[depth - 1]);
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, lightning);
-    glccLineWidth(width);
+    glLineWidth(width);
     glColor4f(CLOUD_LIGHTNING_FRINGE_RED, CLOUD_LIGHTNING_FRINGE_GREEN, CLOUD_LIGHTNING_FRINGE_BLUE, CLOUD_LIGHTNING_FRINGE_ALPHA * alpha);
     glDrawArrays(GL_LINE_STRIP, 0, depth);
-    glccLineWidth(width / 3.0f);
+    glLineWidth(width / 3.0f);
     glColor4f(CLOUD_LIGHTNING_MAIN_RED, CLOUD_LIGHTNING_MAIN_GREEN, CLOUD_LIGHTNING_MAIN_BLUE, CLOUD_LIGHTNING_MAIN_ALPHA * alpha);
     glDrawArrays(GL_LINE_STRIP, 0, depth);
     glDisableClientState(GL_VERTEX_ARRAY);
-    glccLineWidth(1.0f);
+    glLineWidth(1.0f);
     free( lightning );
 }
 
@@ -1058,8 +1058,8 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
         return;
     }
 
-    fogOn = glccIsEnabled(GL_FOG);
-    if (fogOn) glccDisable(GL_FOG);
+    fogOn = glIsEnabled(GL_FOG);
+    if (fogOn) glDisable(GL_FOG);
 
     radius = system->radius * system->healthFactor;
 
@@ -1071,7 +1071,7 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
     glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
     rndTextureEnable(FALSE);
     glShadeModel(GL_SMOOTH);
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     rndAdditiveBlends(TRUE);
 
     glDepthMask(GL_FALSE);
@@ -1139,15 +1139,15 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
         else depth = 5;
 
         rndAdditiveBlends(TRUE);
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         cloudRenderLightning(&pointA, &pointB, depth, lod);
     }
 
     glDepthMask(GL_TRUE);
     rndLightingEnable(TRUE);
     rndAdditiveBlends(FALSE);
-    if (fogOn) glccEnable(GL_FOG);
-    glccDisable(GL_BLEND);
+    if (fogOn) glEnable(GL_FOG);
+    glDisable(GL_BLEND);
 }
 
 //ship lightning render & think fn
@@ -1174,7 +1174,7 @@ void cloudRenderAndUpdateLightning(lightning* l, sdword lod)
     glDepthMask(GL_FALSE);
 
     rndAdditiveBlends(TRUE);
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     cloudRenderLightning(&pointA, &pointB, depth, lod);
 
     glDepthMask(GL_TRUE);

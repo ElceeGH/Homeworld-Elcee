@@ -4487,8 +4487,8 @@ void toDrawMoveCircle(ShipPtr ship, real32 scale, color linecolor, color pulseco
     hmatMakeHMatFromMat(&rotmat, &ship->rotinfo.coordsys);
     hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, rotmat);
 
-    glccPushMatrix();
-    glccMultMatrixf((GLfloat *)&rotmat);
+    glPushMatrix();
+    glMultMatrixf((GLfloat *)&rotmat);
 
     shipradius = ship->magnitudeSquared*TO_MOVE_LINE_RADIUS_STRETCH*ship->staticinfo->staticheader.staticCollInfo.approxcollspheresize;
 
@@ -4501,7 +4501,7 @@ void toDrawMoveCircle(ShipPtr ship, real32 scale, color linecolor, color pulseco
         primCircleOutline3(&origin, shipradius, 32, 0, linecolor, X_AXIS);
     }
 
-    glccPopMatrix();
+    glPopMatrix();
 
 }
 
@@ -4628,14 +4628,14 @@ void toFieldSphereDraw(ShipPtr ship, real32 radius, real32 scale,color passedCol
     hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
 
 
-    glccPushMatrix();
-        glccMultMatrixf((GLfloat *)&rotmat);
+    glPushMatrix();
+        glMultMatrixf((GLfloat *)&rotmat);
 
         primCircleOutline3(&origin, radius, 32, 4, passedColour, Z_AXIS);
         primCircleOutline3(&origin, radius, 32, 4, passedColour, X_AXIS);
         primCircleOutline3(&origin, radius, 32, 4, passedColour, Y_AXIS);
 
-        glccPopMatrix();
+        glPopMatrix();
     //stop drawing circles
 
 
@@ -4671,14 +4671,14 @@ void toFieldSphereDrawGeneral(vector position, real32 radius,color passedColour)
     hmatPutVectIntoHMatrixCol4(position, rotmat);
 
 
-    glccPushMatrix();
-        glccMultMatrixf((GLfloat *)&rotmat);
+    glPushMatrix();
+        glMultMatrixf((GLfloat *)&rotmat);
 
         primCircleOutline3(&origin, radius, 32, 4, passedColour, Z_AXIS);
         primCircleOutline3(&origin, radius, 32, 4, passedColour, X_AXIS);
         primCircleOutline3(&origin, radius, 32, 4, passedColour, Y_AXIS);
 
-        glccPopMatrix();
+        glPopMatrix();
     //stop drawing circles
 
 
@@ -4726,8 +4726,8 @@ void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color pass
    //hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
 
 
-   glccPushMatrix();
-   glccMultMatrixf((GLfloat *)&rotmat);
+   glPushMatrix();
+   glMultMatrixf((GLfloat *)&rotmat);
 
    //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, Z_AXIS);
    //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, X_AXIS);
@@ -4823,7 +4823,7 @@ void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color pass
    vecAdd(tmpvec2,lineend,tmpvecright2);
    primLine3(&tmpvec1,&tmpvec2,TO_CROSS_COLOR1);
 
-   glccPopMatrix();
+   glPopMatrix();
    //stop drawing circles
 
 
@@ -4941,8 +4941,8 @@ void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color pass
    //hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
 
 
-   glccPushMatrix();
-   glccMultMatrixf((GLfloat *)&rotmat);
+   glPushMatrix();
+   glMultMatrixf((GLfloat *)&rotmat);
 
    //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, Z_AXIS);
    //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, X_AXIS);
@@ -5038,7 +5038,7 @@ void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color pass
    vecAdd(tmpvec2,lineend,tmpvecright2);
    primLine3(&tmpvec1,&tmpvec2,TO_CROSS_COLOR2);
 
-   glccPopMatrix();
+   glPopMatrix();
    //stop drawing circles
 
    //Turn on 2D primmode
@@ -5195,14 +5195,14 @@ void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color pass
        //hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
 
 
-       glccPushMatrix();
-       glccMultMatrixf((GLfloat *)&rotmat);
+       glPushMatrix();
+       glMultMatrixf((GLfloat *)&rotmat);
 
        primCircleOutline3(&circlestart, newrad, 32, 0, passedColour, Z_AXIS);
        //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, X_AXIS);
        //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, Y_AXIS);
 
-       glccPopMatrix();
+       glPopMatrix();
        //stop drawing circles
 
 
@@ -5300,14 +5300,14 @@ void toDrawRadialIndicator4(ShipPtr ship, real32 radius, real32 scale,color pass
        //hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
 
 
-       glccPushMatrix();
-       glccMultMatrixf((GLfloat *)&rotmat);
+       glPushMatrix();
+       glMultMatrixf((GLfloat *)&rotmat);
 
        primCircleOutline3(&circlestart, newrad, 32, 0, passedColour, Z_AXIS);
        //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, X_AXIS);
        //primCircleOutline3(&ship->posinfo.position, radius, 32, 0, TO_CROSS_COLOR1, Y_AXIS);
 
-       glccPopMatrix();
+       glPopMatrix();
        //stop drawing circles
 
 
@@ -5347,8 +5347,8 @@ void mrRegionDraw(regionhandle reg)
     {
         if (nisIsRunning && nisFullyScissored && rndScissorEnabled)
         {
-            glccEnable(GL_SCISSOR_TEST);
-            glccScissor(0, NIS_LetterHeight, MAIN_WindowWidth, MAIN_WindowHeight - NIS_LetterHeight * 2);
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(0, NIS_LetterHeight, MAIN_WindowWidth, MAIN_WindowHeight - NIS_LetterHeight * 2);
         }
         if (mrClearRenderEverything)
         {
@@ -5394,8 +5394,8 @@ void mrRegionDraw(regionhandle reg)
 
     if (nisIsRunning && nisFullyScissored && rndScissorEnabled)
     {
-        glccEnable(GL_SCISSOR_TEST);
-        glccScissor(0, NIS_LetterHeight, MAIN_WindowWidth, MAIN_WindowHeight - NIS_LetterHeight * 2);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(0, NIS_LetterHeight, MAIN_WindowWidth, MAIN_WindowHeight - NIS_LetterHeight * 2);
     }
     if (nisCaptureCamera)
     {
@@ -5416,8 +5416,8 @@ void mrRegionDraw(regionhandle reg)
         mouseCursorTextDraw();
 
     rndTextureEnable(FALSE);
-    glccDisable(GL_TEXTURE_2D);
-    glccEnable( GL_MULTISAMPLE );
+    glDisable(GL_TEXTURE_2D);
+    glEnable( GL_MULTISAMPLE );
     if (!thisNisPlaying)
     {
         mrTacticalOverlayState(utyCapsLockToggleState());   //make sure we have the right TO state
@@ -5425,7 +5425,7 @@ void mrRegionDraw(regionhandle reg)
     if (mrDrawTactical)
     {                                                       //need better key mechanism
         rndTextureEnable(FALSE);
-        glccDisable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_2D);
         toAllShipsDraw();                                   //draw tactical overlays
         toLegendDraw();                                     //draw legend for overlays
     }
@@ -5436,7 +5436,7 @@ void mrRegionDraw(regionhandle reg)
         selSelectingDraw();
         primRectOutline2(&mrSelectionRect, 1, TW_SELECT_BOX_COLOR);
     }
-    glccDisable( GL_MULTISAMPLE );
+    glDisable( GL_MULTISAMPLE );
 
 #if SP_DEBUGKEYS
     kasDebugDraw();
@@ -5465,7 +5465,7 @@ void mrRegionDraw(regionhandle reg)
         }
     }
 
-    //glccDisable(GL_SCISSOR_TEST);
+    //glDisable(GL_SCISSOR_TEST);
 
     //this should be reworked to use the actual formation CSM
 
@@ -5605,7 +5605,7 @@ void mrRegionDraw(regionhandle reg)
         {
             y = NIS_LetterHeight;
         }
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         glColor4f(0.0f, 0.0f, 0.0f, nisBlackFade);
         glBegin(GL_QUADS);
         glVertex2f(primScreenToGLX(-1), primScreenToGLY(y - NIS_EXCESSSCISSORMARGIN));
@@ -5613,7 +5613,7 @@ void mrRegionDraw(regionhandle reg)
         glVertex2f(primScreenToGLX(MAIN_WindowWidth), primScreenToGLY(MAIN_WindowHeight - y + NIS_EXCESSSCISSORMARGIN));
         glVertex2f(primScreenToGLX(MAIN_WindowWidth), primScreenToGLY(y - NIS_EXCESSSCISSORMARGIN));
         glEnd();
-        glccDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 
     if (mrWhiteOut)
@@ -5626,11 +5626,11 @@ void mrRegionDraw(regionhandle reg)
         {
             t = mrWhiteOutT * 2.0f;
             c = (sdword)(t * 255.0f);
-            glccEnable(GL_BLEND);
+            glEnable(GL_BLEND);
             rndAdditiveBlends(TRUE);
             primRectSolid2(&rect, colRGBA(70,70,255,c));
             rndAdditiveBlends(FALSE);
-            glccDisable(GL_BLEND);
+            glDisable(GL_BLEND);
         }
         else
         {

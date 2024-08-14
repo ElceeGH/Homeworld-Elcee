@@ -3057,10 +3057,10 @@ void cmNumberRUsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glccEnable(GL_SCISSOR_TEST);
-    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glccDisable(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
     width = fontWidthf("%d", universe.curPlayerPtr->resourceUnits);//width of number
     feStaticRectangleDraw(region);                          //draw regular rectangle as backdrop
@@ -3097,10 +3097,10 @@ void cmTotalRUsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glccEnable(GL_SCISSOR_TEST);
-    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glccDisable(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
     for (index = RUs = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {
@@ -3169,10 +3169,10 @@ void cmTotalShipsDraw(featom *atom, regionhandle region)
     primModeSet2();
     primRectSolid2(&rect, CM_BackgroundColor);
 
-    glccEnable(GL_SCISSOR_TEST);
-    glccScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glccDisable(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
     for (index = nShips = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {

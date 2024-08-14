@@ -111,7 +111,7 @@ void hsProgramUpdate( void ) {
 
     // Invert projection matrix for vertex position reconstruction.
     hmatrix proj, projInv;
-    glccGetFloatv( GL_PROJECTION_MATRIX, &proj.m11 );
+    glGetFloatv( GL_PROJECTION_MATRIX, &proj.m11 );
     shInvertMatrix( &projInv.m11, &proj.m11 );
 
     // Use shader program and update uniforms
@@ -142,7 +142,7 @@ static void hsProgramEnable( real32 plane[] ) {
     // Invert modelview matrix for clip plane
     // Must be done at this moment. The clip plane computed params should not be affected by later changes to modelview.
     hmatrix modv, modvInv;
-    glccGetFloatv( GL_MODELVIEW_MATRIX, &modv.m11 );
+    glGetFloatv( GL_MODELVIEW_MATRIX, &modv.m11 );
     shInvertMatrix( &modvInv.m11, &modv.m11 );
 
     // Multiply plane params by the inverse modelview to mirror normal GL behaviour
@@ -394,22 +394,22 @@ void hsContinue(Ship* ship, bool displayEffect)
             {
                 //we're in NLIP'ed shipspace;
                 hmatrix coordMatrixForGL, prevModelview;
-                glccGetFloatv(GL_MODELVIEW_MATRIX, &prevModelview.m11);
-                glccPopMatrix();
-                glccPushMatrix();
+                glGetFloatv(GL_MODELVIEW_MATRIX, &prevModelview.m11);
+                glPopMatrix();
+                glPushMatrix();
                 
                 //put glstack info similar state as before
                 hmatMakeHMatFromMat(&coordMatrixForGL,&host->rotinfo.coordsys);
                 hmatPutVectIntoHMatrixCol4(host->posinfo.position,coordMatrixForGL);
-                glccMultMatrixf(&coordMatrixForGL.m11);//ship's rotation matrix
+                glMultMatrixf(&coordMatrixForGL.m11);//ship's rotation matrix
 
                 real32 nliphak = host->magnitudeSquared;
-                glccScalef(nliphak,nliphak,nliphak);
+                glScalef(nliphak,nliphak,nliphak);
 
                 hsGetEquation(host, equation);
                 hsProgramEnable( equation );
 
-                glccLoadMatrixf((GLfloat*)&prevModelview);
+                glLoadMatrixf((GLfloat*)&prevModelview);
             }
         }
         return;
@@ -509,10 +509,10 @@ void hsRectangle(vector* origin, real32 rightlength, real32 uplength, ubyte alph
 
     if (outline) {
         ubyte l[4] = { 0, 1, 3, 2 };
-        glccLineWidth(2.0f * sqrtf(getResDensityRelative()));
+        glLineWidth(2.0f * sqrtf(getResDensityRelative()));
         glColor4ub((ubyte)(red + 40), (ubyte)(green + 40), blue, alpha);
         glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_BYTE, l);
-        glccLineWidth(1.0f);
+        glLineWidth(1.0f);
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);
@@ -561,12 +561,12 @@ void hsLine(vector* origin, real32 rightlength, real32 uplength, ubyte alpha, co
     hsDesat(&red, &green, &blue, c, 0.70f);
     glColor4ub(red, green, blue, alpha);
 
-    glccLineWidth(uplength * sqrtf(getResDensityRelative()));
+    glLineWidth(uplength * sqrtf(getResDensityRelative()));
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, v);
     glDrawArrays(GL_LINES, 0, 2);
     glDisableClientState(GL_VERTEX_ARRAY);
-    glccLineWidth(1.0f);
+    glLineWidth(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
@@ -729,18 +729,18 @@ void hsEnd(Ship* ship, bool displayEffect)
     hsProgramSetShipSpecifics( ship );
 
     //setup our coordinate system so the rectangles agree w/ the ETG effect
-    glccPushMatrix();
+    glPushMatrix();
     hmatrix hcoordsys;
     hmatMakeHMatFromMat(&hcoordsys, &ship->rotinfo.coordsys);
     hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, hcoordsys);
-    glccMultMatrixf((GLfloat*)&hcoordsys);
+    glMultMatrixf((GLfloat*)&hcoordsys);
 
     rndAdditiveBlends(TRUE);
     rndBackFaceCullEnable(FALSE);
     rndTextureEnable(FALSE);
     bool lightEnabled = rndLightingEnable(FALSE);
 
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
 
     color c = hsDefaultColor;
@@ -788,13 +788,13 @@ void hsEnd(Ship* ship, bool displayEffect)
     }
 
     glDepthMask(GL_TRUE);
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
     rndLightingEnable(lightEnabled);
     rndBackFaceCullEnable(TRUE);
     rndAdditiveBlends(FALSE);
 
-    glccPopMatrix();
+    glPopMatrix();
 }
 
 /*-----------------------------------------------------------------------------
@@ -947,12 +947,12 @@ void hsStaticGateRender(hsStaticGate* gate)
 
     if (derelict != NULL)
     {
-        glccMatrixMode(GL_MODELVIEW);
-        glccPushMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
         hmatrix hmat;
         hmatMakeHMatFromMat(&hmat, &derelict->rotinfo.coordsys);
         hmatPutVectIntoHMatrixCol4(derelict->collInfo.collPosition, hmat);
-        glccMultMatrixf((GLfloat*)&hmat);
+        glMultMatrixf((GLfloat*)&hmat);
     }
 
     hsProgramDisable();
@@ -961,7 +961,7 @@ void hsStaticGateRender(hsStaticGate* gate)
     rndTextureEnable(FALSE);
     bool lightEnabled = rndLightingEnable(FALSE);
 
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
 
     vector origin = { 0.0f, 0.0f, 0.0f };
@@ -969,11 +969,11 @@ void hsStaticGateRender(hsStaticGate* gate)
     hsRectangle(&origin, HYPERSPACEGATE_WIDTH, HYPERSPACEGATE_HEIGHT, 90, TRUE, col);
 
     glDepthMask(GL_TRUE);
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
     if (derelict != NULL)
     {
-        glccPopMatrix();
+        glPopMatrix();
     }
 
     rndLightingEnable(lightEnabled);

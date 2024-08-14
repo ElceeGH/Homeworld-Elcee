@@ -888,7 +888,7 @@ void mouseDraw(void)
         primModeSetFunction2();
     }
 
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
     rndTextureEnvironment(RTE_Modulate);
 
@@ -1044,7 +1044,7 @@ void mouseDraw(void)
 
   finish:
 
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
     if (!primModeOn)
     {

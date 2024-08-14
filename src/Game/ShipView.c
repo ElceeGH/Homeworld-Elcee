@@ -445,8 +445,8 @@ void svShipViewRender(featom* atom, regionhandle region)
     width  = drawRect.x1 - drawRect.x0;
     height = drawRect.y1 - drawRect.y0;
 
-    glccGetIntegerv(GL_VIEWPORT, viewPort);
-    glccViewport(drawRect.x0, MAIN_WindowHeight - drawRect.y1, width, height);
+    glGetIntegerv(GL_VIEWPORT, viewPort);
+    glViewport(drawRect.x0, MAIN_WindowHeight - drawRect.y1, width, height);
 
     primModeSet2();
     if (!resetRender)
@@ -455,11 +455,11 @@ void svShipViewRender(featom* atom, regionhandle region)
     }
     primModeClear2();
 
-    glccEnable(GL_SCISSOR_TEST);
-    glccGetIntegerv(GL_SCISSOR_BOX, box);
-    glccScissor(drawRect.x0, MAIN_WindowHeight - drawRect.y1, width, height);
+    glEnable(GL_SCISSOR_TEST);
+    glGetIntegerv(GL_SCISSOR_BOX, box);
+    glScissor(drawRect.x0, MAIN_WindowHeight - drawRect.y1, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glccDisable(GL_SCISSOR_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
     //svCamera.lookatpoint.x = -info->staticheader.staticCollInfo.collsphereoffset.z * scale;
     //svCamera.lookatpoint.y = -info->staticheader.staticCollInfo.collsphereoffset.x * scale;
@@ -480,8 +480,8 @@ void svShipViewRender(featom* atom, regionhandle region)
     cameraSetEyePosition(&svCamera);
 
     rndLightingEnable(TRUE);
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
 
     rgluPerspective(
         svCamera.fieldofview,
@@ -489,18 +489,18 @@ void svShipViewRender(featom* atom, regionhandle region)
         svCamera.clipPlaneNear,
         svCamera.clipPlaneFar);
 
-    glccMatrixMode(GL_MODELVIEW);
-    glccLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     rgluLookAt( svCamera.eyeposition, svCamera.lookatpoint, svCamera.upvector );
-    glccPushMatrix();
-    glccRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    glPushMatrix();
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
-    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
+    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
-    glccEnable(GL_NORMALIZE);
+    glEnable(GL_NORMALIZE);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);      //position light(s) within 
-    glccScalef(scale, scale, scale);
+    glScalef(scale, scale, scale);
 
     if (svShipType != DefaultShip)
     {
@@ -524,17 +524,17 @@ void svShipViewRender(featom* atom, regionhandle region)
                 index = universe.curPlayerIndex;
             }
         }
-        glccEnable( GL_MULTISAMPLE );
+        glEnable( GL_MULTISAMPLE );
         meshRender((meshdata *)info->staticheader.LOD->level[0].pData, index);
-        glccDisable( GL_MULTISAMPLE );
+        glDisable( GL_MULTISAMPLE );
     }
 
-    glccDisable(GL_NORMALIZE);
-    glccPopMatrix();
+    glDisable(GL_NORMALIZE);
+    glPopMatrix();
     primModeSet2();
 
-    glccScissor(box[0], box[1], box[2], box[3]);
-    glccViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+    glScissor(box[0], box[1], box[2], box[3]);
+    glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
     rndLightingEnable(FALSE);
 
     x = rect->x0 + 2 + SV_ViewMargin;

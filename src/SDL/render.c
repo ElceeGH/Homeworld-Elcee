@@ -527,7 +527,7 @@ void rndGLStateLogFunction(char *location)
         switch (rndStateSaveTable[index].type)
         {
             case G_Bool:
-                bools[0] = glccIsEnabled(rndStateSaveTable[index].enumeration);
+                bools[0] = glIsEnabled(rndStateSaveTable[index].enumeration);
                 for (j = 0; j < rndStateSaveTable[index].nValues; j++)
                 {
                     if (rndStateSaveTable[index].enumTable != NULL)
@@ -565,7 +565,7 @@ void rndGLStateLogFunction(char *location)
                 }
                 break;
             case G_Integer:
-                glccGetIntegerv(rndStateSaveTable[index].enumeration, ints);
+                glGetIntegerv(rndStateSaveTable[index].enumeration, ints);
                 for (j = 0; j < rndStateSaveTable[index].nValues; j++)
                 {
                     if (rndStateSaveTable[index].enumTable != NULL)
@@ -584,7 +584,7 @@ void rndGLStateLogFunction(char *location)
                 }
                 break;
             case G_Float:
-                glccGetFloatv(rndStateSaveTable[index].enumeration, floats);
+                glGetFloatv(rndStateSaveTable[index].enumeration, floats);
                 for (j = 0; j < rndStateSaveTable[index].nValues; j++)
                 {
                     sprintf(valueString, "%.2f", floats[j]);
@@ -596,7 +596,7 @@ void rndGLStateLogFunction(char *location)
                 }
                 break;
             case G_FloatByte:
-                glccGetFloatv(rndStateSaveTable[index].enumeration, floats);
+                glGetFloatv(rndStateSaveTable[index].enumeration, floats);
                 for (j = 0; j < rndStateSaveTable[index].nValues; j++)
                 {
                     sprintf(valueString, "%d", colRealToUbyte(floats[j]));
@@ -850,7 +850,7 @@ static GLint getMaxMultisamples(void) {
 
     // Get the info
     GLint maxSamples = 0;
-    glccGetIntegerv( GL_MAX_FRAMEBUFFER_SAMPLES, &maxSamples );
+    glGetIntegerv( GL_MAX_FRAMEBUFFER_SAMPLES, &maxSamples );
 
     // Clean up
     SDL_GL_DeleteContext( context );
@@ -1162,9 +1162,9 @@ sdword rndInit(void)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     rndAdditiveBlending = FALSE;
 
-    glccEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-    glccEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
 
     glLightfv( GL_LIGHT0, GL_AMBIENT, ambientProperties);
     glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuseProperties);
@@ -1172,12 +1172,12 @@ sdword rndInit(void)
     glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0f);
 //    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientProperties);
 
-    glccEnable( GL_LIGHT0 );
+    glEnable( GL_LIGHT0 );
 
 //    glShadeModel(GL_FLAT);
 
     glCullFace(GL_BACK);                                    //enable culling of back-facing polys
-    glccEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     rndPreObjectCallback = rndPostObjectCallback = NULL;    //no render callbacks yet
 
@@ -1257,13 +1257,13 @@ void rndBillboardEnable(vector *centre)
     }
     rndBillboardEnabled = TRUE;
 #endif
-    glccLoadIdentity();
+    glLoadIdentity();
     hCentre.x = centre->x;
     hCentre.y = centre->y;
     hCentre.z = centre->z;
     hCentre.w = 1.0f;
     hmatMultiplyHMatByHVec(&rndBillboardCentre, &rndCameraMatrix, &hCentre);
-    glccTranslatef(rndBillboardCentre.x, rndBillboardCentre.y, rndBillboardCentre.z);
+    glTranslatef(rndBillboardCentre.x, rndBillboardCentre.y, rndBillboardCentre.z);
 }
 
 /*-----------------------------------------------------------------------------
@@ -1283,7 +1283,7 @@ void rndBillboardDisable(void)
     }
     rndBillboardEnabled = FALSE;
 #endif
-    glccLoadMatrixf((GLfloat *)(&rndCameraMatrix));    //restore previous camera matrix
+    glLoadMatrixf((GLfloat *)(&rndCameraMatrix));    //restore previous camera matrix
 }
 
 void rndFilter(bool on)
@@ -1306,12 +1306,12 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
     bDrawStars = FALSE;
 #endif
 
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
-    glccMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);
 
     if (showBackgrounds && gameIsRunning)
     {
@@ -1324,21 +1324,21 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
     rndTextureEnable(FALSE);
     if (bDrawStars && gameIsRunning)
     {
-        glccEnable(GL_POINT_SMOOTH);
-        glccEnable(GL_BLEND);
+        glEnable(GL_POINT_SMOOTH);
+        glEnable(GL_BLEND);
 
         //additively blend only if background are enabled
         rndAdditiveBlends(showBackgrounds);
 
         //need to reset the projection matrix
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadIdentity();
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
         rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
         //draw small stars
         const real32 resDensity    = getResDensity();
         const real32 smallStarSize = sqrtf( 0.0016f * resDensity );
-        glccPointSize(smallStarSize);
+        glPointSize(smallStarSize);
         glEnableClientState(GL_COLOR_ARRAY);
         glEnableClientState(GL_VERTEX_ARRAY);
         if (useVBO) {
@@ -1357,20 +1357,20 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
         /// Extrapolate the curve originally specified for the size of big stars in BTG, proportional to screen resolution.
         /// It was originally based on only the width of the screen as a proxy for resolution but that's no good nowadays.
         const real32 bigStarSize = sqrtf( 0.0064f * resDensity );
-        glccPointSize(bigStarSize);
+        glPointSize(bigStarSize);
         glDrawArrays(GL_POINTS, (universe.star3dinfo->Num3dStars - NUM_BIG_STARS), NUM_BIG_STARS);
         glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
 
-        glccDisable(GL_BLEND);
-        glccDisable(GL_POINT_SMOOTH);
-        glccPointSize(1.0f);
+        glDisable(GL_BLEND);
+        glDisable(GL_POINT_SMOOTH);
+        glPointSize(1.0f);
     }
 
     rndAdditiveBlends(FALSE);
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadMatrixf(projection);
-    glccMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(projection);
+    glMatrixMode(GL_MODELVIEW);
 }
 
 /*-----------------------------------------------------------------------------
@@ -1485,28 +1485,28 @@ bool rndShipVisibleUsingCoordSys(SpaceObj* spaceobj, Camera* camera)
     hmatrix coordMatrixForGL;
     bool    result;
 
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
-    glccGetFloatv(GL_MODELVIEW_MATRIX,  modelview);
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetFloatv(GL_MODELVIEW_MATRIX,  modelview);
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     rgluPerspective(camera->fieldofview, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
-    glccMatrixMode(GL_MODELVIEW);
-    glccLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     rgluLookAt(camera->eyeposition, camera->lookatpoint, camera->upvector);
 
     hmatMakeHMatFromMat(&coordMatrixForGL, &((SpaceObjRot*)spaceobj)->rotinfo.coordsys);
     hmatPutVectIntoHMatrixCol4(spaceobj->posinfo.position, coordMatrixForGL);
-    glccMultMatrixf((GLfloat*)&coordMatrixForGL);
+    glMultMatrixf((GLfloat*)&coordMatrixForGL);
 
     result = rndShipVisible(spaceobj, camera);
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadMatrixf(projection);
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(projection);
 
-    glccMatrixMode(GL_MODELVIEW);
-    glccLoadMatrixf(modelview);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(modelview);
 
     return result;
 }
@@ -1674,28 +1674,28 @@ void rndRenderAHomeworld(void* voidCamera, void *voidWorld)
     planetScale = world->staticinfo->scaleFactor;
     position = &world->posinfo.position;
     worldMesh = (meshdata *)world->staticinfo->staticheader.LOD->level[0].pData;
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, CAMERA_CLIP_FAR_PLANET);
 
-    glccMatrixMode(GL_MODELVIEW);
-    glccPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
     hmatMakeHMatFromMat(&coordMatrixForGL,&world->rotinfo.coordsys);
     hmatPutVectIntoHMatrixCol4(*position, coordMatrixForGL);
-    glccMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
-    glccScalef(planetScale, planetScale, planetScale);
+    glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+    glScalef(planetScale, planetScale, planetScale);
 
     rndNormalizeEnable(TRUE);
-    glccDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     meshObjectRender(&worldMesh->object[0], worldMesh->localMaterial, colorScheme);
-    glccEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     rndNormalizeEnable(FALSE);
 
-    glccPopMatrix();
+    glPopMatrix();
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-    glccMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+    glMatrixMode(GL_MODELVIEW);
 }
 #undef world
 #undef camera
@@ -1710,22 +1710,22 @@ void rndRenderAHomeworld(void* voidCamera, void *voidWorld)
 ----------------------------------------------------------------------------*/
 void rndRenderAWorldEffect(Camera *camera, Effect *effect)
 {
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     rgluPerspective(btgFieldOfView, rndAspectRatio, camera->clipPlaneNear, CAMERA_CLIP_FAR_PLANET);
 
-    glccMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);
 
     rndNormalizeEnable(TRUE);
-    glccDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
     etgEffectDraw(effect);
 
-    glccEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     rndNormalizeEnable(FALSE);
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadMatrixf((GLfloat*)&rndProjectionMatrix);
-    glccMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf((GLfloat*)&rndProjectionMatrix);
+    glMatrixMode(GL_MODELVIEW);
 }
 
 static real32 lastTime0 = 0.0f;
@@ -1840,7 +1840,7 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
 void rndDrawAsteroid0(sdword n)
 {
     const real32 size = sqrtf( getResDensity() * 0.0058f );
-    glccPointSize( size );
+    glPointSize( size );
     glBegin(GL_POINTS);
     for (sdword index = 0; index < n; index++)
     {
@@ -1850,7 +1850,7 @@ void rndDrawAsteroid0(sdword n)
         glVertex3fv((GLfloat*)v);
     }
     glEnd();
-    glccPointSize(1.0f);
+    glPointSize(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2294,7 +2294,7 @@ static real32 lerpf( real32 a, real32 b, real32 f ) {
 ----------------------------------------------------------------------------*/
 void rndMainViewRenderFunction(Camera *camera)
 {
-    glccEnable( GL_MULTISAMPLE );
+    glEnable( GL_MULTISAMPLE );
 
     Node *objnode;
     SpaceObj *spaceobj;
@@ -2330,12 +2330,12 @@ void rndMainViewRenderFunction(Camera *camera)
 
     primModeClear2();                                       //go to 3D rendering mode
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     rgluPerspective(camera->fieldofview, rndAspectRatio, camera->clipPlaneNear, camera->clipPlaneFar);
 
-    glccMatrixMode(GL_MODELVIEW);
-    glccLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     if (gameIsRunning && !nisIsRunning && piePointSpecMode == PSM_Idle && !universePause)
     {
@@ -2372,8 +2372,8 @@ void rndMainViewRenderFunction(Camera *camera)
     vecAdd( offsetEyePos, camera->eyeposition, offsetVec );
     rgluLookAt(offsetEyePos, camera->lookatpoint, camera->upvector );
     //get local copy of matrices
-    glccGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
-    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX,  (GLfloat *)(&rndCameraMatrix));
+    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&rndProjectionMatrix));
 
     //position light(s) in world
     lightPositionSet();
@@ -2389,8 +2389,8 @@ void rndMainViewRenderFunction(Camera *camera)
 
 //draw the texture-mapped background
 #if RND_BACKGROUND_STATIC
-    glccPushMatrix();
-        glccTranslatef(camera->eyeposition.x, camera->eyeposition.y, camera->eyeposition.z);
+    glPushMatrix();
+        glTranslatef(camera->eyeposition.x, camera->eyeposition.y, camera->eyeposition.z);
 #endif
         primErrorMessagePrint();
 
@@ -2424,7 +2424,7 @@ void rndMainViewRenderFunction(Camera *camera)
 
         rndLightingEnable(FALSE);                           //stars are self-illuminated
         primErrorMessagePrint();
-        glccDisable(GL_DEPTH_TEST);                           //and infinitely far away
+        glDisable(GL_DEPTH_TEST);                           //and infinitely far away
         primErrorMessagePrint();
         if (singlePlayerGame && spGetCurrentMission() == MISSION_13_THE_KAROS_GRAVEYARD)
         {
@@ -2439,12 +2439,12 @@ void rndMainViewRenderFunction(Camera *camera)
         }
 
         rndTextureEnvironment(RTE_Modulate);
-        glccEnable(GL_DEPTH_TEST);                            //re-enable depth test
+        glEnable(GL_DEPTH_TEST);                            //re-enable depth test
         primErrorMessagePrint();
         rndLightingEnable(TRUE);                            //and lighting
         primErrorMessagePrint();
 #if RND_BACKGROUND_STATIC
-    glccPopMatrix();
+    glPopMatrix();
 #endif
 #if !LIGHT_PLAYER_COLORS
 //    lightDefaultLightSet();
@@ -2570,7 +2570,7 @@ dontdraw2:;
     #endif
 #endif
 
-                        glccPushMatrix();
+                        glPushMatrix();
                         level = lodLevelGet((void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
 
                         if (taskTimeElapsed-((Ship *)spaceobj)->flashtimer < FLASH_TIMER)
@@ -2589,7 +2589,7 @@ dontdraw2:;
 #endif //LIGHT_PLAYER_COLORS
                                 hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)spaceobj)->rotinfo.coordsys);
                                 hmatPutVectIntoHMatrixCol4(spaceobj->posinfo.position,coordMatrixForGL);
-                                glccMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+                                glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
                                 shPushLightMatrix(&coordMatrixForGL);
                                 if (selCameraSpace.z < 0.0f)
                                 {
@@ -2616,7 +2616,7 @@ dontdraw2:;
                                     if (shipStaticInfo->scaleCap != 0.0f)
                                     {                   //if there's a scaling cap
                                         
-                                        glccEnable(GL_RESCALE_NORMAL);
+                                        glEnable(GL_RESCALE_NORMAL);
                                         rndNormalization = TRUE;
 
                                         // Very slightly reduce the distance scaling for very high resolutions since you can see more clearly.
@@ -2633,7 +2633,7 @@ dontdraw2:;
                                         }
 #endif
                                         ((Ship *)spaceobj)->magnitudeSquared = scaleFactor;
-                                        glccScalef(scaleFactor, scaleFactor, scaleFactor);
+                                        glScalef(scaleFactor, scaleFactor, scaleFactor);
                                         ((Ship *)spaceobj)->collInfo.selCircleRadius *= scaleFactor;
                                     }
                                     else
@@ -2649,7 +2649,7 @@ dontdraw2:;
 #if SO_CLOOGE_SCALE
                                 if (shipStaticInfo->scaleFactor != 1.0f)
                                 {
-                                    glccScalef(shipStaticInfo->scaleFactor,
+                                    glScalef(shipStaticInfo->scaleFactor,
                                              shipStaticInfo->scaleFactor,
                                              shipStaticInfo->scaleFactor);
                                 }
@@ -2760,12 +2760,12 @@ dontdraw2:;
                                                 {
                                                     g_SpecificPoly = TRUE;
                                                     g_WireframeHack = TRUE;
-                                                    glccScalef(1.02f, 1.02f, 1.02f);
+                                                    glScalef(1.02f, 1.02f, 1.02f);
                                                     meshRenderShipHierarchy(((Ship*)spaceobj)->bindings,
                                                                             ((Ship*)spaceobj)->currentLOD,
                                                                             (meshdata*)level->pData, i);
                                                     g_WireframeHack = FALSE;
-                                                    glccScalef(1.01f, 1.01f, 1.01f);
+                                                    glScalef(1.01f, 1.01f, 1.01f);
                                                     g_Points = TRUE;
                                                     meshRenderShipHierarchy(((Ship*)spaceobj)->bindings,
                                                                             ((Ship*)spaceobj)->currentLOD,
@@ -2783,10 +2783,10 @@ dontdraw2:;
                                                 {
                                                     g_SpecificPoly = TRUE;
                                                     g_WireframeHack = TRUE;
-                                                    glccScalef(1.02f, 1.02f, 1.02f);
+                                                    glScalef(1.02f, 1.02f, 1.02f);
                                                     meshRender((meshdata *)level->pData, i);
                                                     g_WireframeHack = FALSE;
-                                                    glccScalef(1.01f, 1.01f, 1.01f);
+                                                    glScalef(1.01f, 1.01f, 1.01f);
                                                     g_Points = TRUE;
                                                     meshRender((meshdata *)level->pData, i);
                                                     g_Points = FALSE;
@@ -2825,7 +2825,7 @@ dontdraw2:;
                                 }
                                 shPopLightMatrix();
 
-                                glccDisable(GL_RESCALE_NORMAL);
+                                glDisable(GL_RESCALE_NORMAL);
                                 rndNormalization = FALSE;
                                 break;
                             case LT_TinySprite:
@@ -2872,7 +2872,7 @@ dontdraw2:;
                             }
                         }
 
-                        glccPopMatrix();
+                        glPopMatrix();
 
                         {
                             Ship* ship = (Ship*)spaceobj;
@@ -2963,7 +2963,7 @@ dontdraw2:;
 #endif
 #endif
 
-                    glccPushMatrix();
+                    glPushMatrix();
                     level = lodLevelGet((void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
 
                     if (taskTimeElapsed-((Ship *)spaceobj)->flashtimer < FLASH_TIMER)
@@ -2983,7 +2983,7 @@ dontdraw2:;
                             g_RndPosition = spaceobj->posinfo.position;
                             hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)spaceobj)->rotinfo.coordsys);
                             hmatPutVectIntoHMatrixCol4(spaceobj->posinfo.position,coordMatrixForGL);
-                            glccMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
+                            glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
                             shPushLightMatrix(&coordMatrixForGL);
 
                             if (spaceobj->objtype == OBJ_AsteroidType)
@@ -2991,7 +2991,7 @@ dontdraw2:;
                                 real32 scaling = ((Asteroid *)spaceobj)->scaling;
                                 if (scaling != 1.0f)
                                 {
-                                    glccScalef(scaling,scaling,scaling);
+                                    glScalef(scaling,scaling,scaling);
                                 }
                             }
 
@@ -3076,7 +3076,7 @@ renderDefault:
                         g_ReplaceHack = FALSE;
                     }
 
-                    glccPopMatrix();
+                    glPopMatrix();
 
                     if (spaceobj->objtype == OBJ_MissileType)
                     {
@@ -3120,7 +3120,7 @@ renderDefault:
     rndTextureEnable(FALSE);
     rndLightingEnable(FALSE);
     g_WireframeHack = FALSE;
-    glccPointSize(1.0f);
+    glPointSize(1.0f);
 
     asteroid0Count = 0;
 
@@ -3168,7 +3168,7 @@ renderDefault:
     primModeSet2();
     rndPostRenderDebug2DStuff(camera);
 
-    glccDisable( GL_MULTISAMPLE );
+    glDisable( GL_MULTISAMPLE );
 }
 
 GLuint plug_handle = 0;
@@ -3342,21 +3342,21 @@ void rndShamelessPlug()
     winWidth  = (GLfloat)MAIN_WindowWidth;
     winHeight = (GLfloat)MAIN_WindowHeight;
 
-    glccGetIntegerv(GL_MATRIX_MODE, &matrixMode);
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadIdentity();
-    glccOrtho(0.0f, winWidth, 0.0f, winHeight,-1,+1);
-    glccMatrixMode(GL_MODELVIEW);
-    glccPushMatrix();
-    glccLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0f, winWidth, 0.0f, winHeight,-1,+1);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
 
-    blendOn = glccIsEnabled(GL_BLEND);
+    blendOn = glIsEnabled(GL_BLEND);
     lightOn = rndLightingEnable(FALSE);
-    depthOn = glccIsEnabled(GL_DEPTH_TEST);
-    if (!blendOn) glccEnable(GL_BLEND);
-    if (depthOn)  glccDisable(GL_DEPTH_TEST);
+    depthOn = glIsEnabled(GL_DEPTH_TEST);
+    if (!blendOn) glEnable(GL_BLEND);
+    if (depthOn)  glDisable(GL_DEPTH_TEST);
 
     winWidth  -= 1.0f;
     winHeight -= 1.0f;
@@ -3378,17 +3378,17 @@ void rndShamelessPlug()
     glVertex2f(winWidth, fheight);
     glEnd();
 
-    glccPopMatrix();
-    glccMatrixMode(GL_PROJECTION);
-    glccLoadMatrixf(projection);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(projection);
     if (matrixMode == GL_MODELVIEW)
     {
-        glccMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW);
     }
 
     rndLightingEnable(lightOn);
-    if (!blendOn) glccDisable(GL_BLEND);
-    if (depthOn)  glccEnable(GL_DEPTH_TEST);
+    if (!blendOn) glDisable(GL_BLEND);
+    if (depthOn)  glEnable(GL_DEPTH_TEST);
 }
 
 extern udword receivedPacketNumber;
@@ -3783,7 +3783,7 @@ void rndDrawScissorBars(bool scissorEnabled)
         glVertex2f(primScreenToGLX(MAIN_WindowWidth), oneGLy);
         glEnd();
 
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         glColor4f(0.0f, 0.0f, 0.0f, nisScissorFade);
     }
     glBegin(GL_QUADS);
@@ -3798,7 +3798,7 @@ void rndDrawScissorBars(bool scissorEnabled)
     glVertex2f(primScreenToGLX(MAIN_WindowWidth), primScreenToGLY(MAIN_WindowHeight));
     glVertex2f(primScreenToGLX(MAIN_WindowWidth), oneGLy);
     glEnd();
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 }
 
 /*-----------------------------------------------------------------------------
@@ -3869,7 +3869,7 @@ DEFINE_TASK(rndRenderTask)
         rintRenderEnableDeferred();
         rintRenderBeginAndInterpolate();
 
-        rndScissorEnabled = glccIsEnabled(GL_SCISSOR_TEST);   //can we do scissoring?
+        rndScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);   //can we do scissoring?
         primErrorMessagePrint();
         //default rendering scheme is primitives on. any
         //functions which want it off should set it back on when done
@@ -3881,7 +3881,7 @@ DEFINE_TASK(rndRenderTask)
         {
             rndDrawScissorBars(rndScissorEnabled);
         }
-        glccDisable(GL_SCISSOR_TEST);                         //in case the scene was rendered with scissoring, turn it off properly
+        glDisable(GL_SCISSOR_TEST);                         //in case the scene was rendered with scissoring, turn it off properly
 
         //draw the subtitle text.  It's done here because it has to draw over everything
         for (index = 0; index < SUB_NumberRegions; index++)
@@ -4007,7 +4007,7 @@ DEFINE_TASK(rndRenderTask)
     Name        : rndLightingEnable
     Description : Enable or disable lighting
     Inputs      : bEnable - TRUE enables, FALSE disables
-    Outputs     : just calls glccEnable/glccDisable
+    Outputs     : just calls glEnable/glDisable
     Return      : void
 ----------------------------------------------------------------------------*/
 sdword rndLightingEnable(sdword bEnable)
@@ -4018,7 +4018,7 @@ sdword rndLightingEnable(sdword bEnable)
     {
         if (!rndLightingEnabled)
         {
-            glccEnable(GL_LIGHTING);
+            glEnable(GL_LIGHTING);
             rndLightingEnabled = TRUE;
         }
     }
@@ -4026,7 +4026,7 @@ sdword rndLightingEnable(sdword bEnable)
     {
         if (rndLightingEnabled)
         {
-            glccDisable(GL_LIGHTING);
+            glDisable(GL_LIGHTING);
             rndLightingEnabled = FALSE;
         }
     }
@@ -4038,18 +4038,18 @@ sdword rndLightingEnable(sdword bEnable)
     Name        : rndBackFaceCullEnable
     Description : Enable or disable back-face culling
     Inputs      : bEnable - TRUE enables, FALSE disables
-    Outputs     : just calls glccEnable/glccDisable
+    Outputs     : just calls glEnable/glDisable
     Return      : void
 ----------------------------------------------------------------------------*/
 void rndBackFaceCullEnable(sdword bEnable)
 {
     if (bEnable)
     {
-        glccEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
     }
     else
     {
-        glccDisable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
     }
 }
 
@@ -4067,7 +4067,7 @@ sdword rndTextureEnable(sdword bEnable)
     {
         if (!rndTextureEnabled)
         {
-            glccEnable(GL_TEXTURE_2D);
+            glEnable(GL_TEXTURE_2D);
             rndTextureEnabled = TRUE;
         }
     }
@@ -4075,7 +4075,7 @@ sdword rndTextureEnable(sdword bEnable)
     {
         if (rndTextureEnabled)
         {
-            glccDisable(GL_TEXTURE_2D);
+            glDisable(GL_TEXTURE_2D);
             rndTextureEnabled = FALSE;
         }
     }
@@ -4114,12 +4114,12 @@ sdword rndNormalizeEnable(sdword bEnable)
     sdword oldStatus = rndNormalization;
     if (bEnable)
     {
-        glccEnable(GL_NORMALIZE);
+        glEnable(GL_NORMALIZE);
         rndNormalization = TRUE;
     }
     else
     {
-        glccDisable(GL_NORMALIZE);
+        glDisable(GL_NORMALIZE);
         rndNormalization = FALSE;
     }
     return(oldStatus);
@@ -4316,7 +4316,7 @@ static bool  clearColorSet = FALSE;
 static color clearColorCur;
 void rndSetClearColor(color c)
 {
-    glccClearColor(colReal32(colRed  (c)),
+    glClearColor(colReal32(colRed  (c)),
                  colReal32(colGreen(c)),
                  colReal32(colBlue (c)),
                  1.0f);
@@ -4341,22 +4341,22 @@ void rndResetGLState(void)
     rndAdditiveBlends(rndAdditiveBlending);
 
     if (rndNormalization)
-         glccEnable (GL_NORMALIZE);
-    else glccDisable(GL_NORMALIZE);
+         glEnable (GL_NORMALIZE);
+    else glDisable(GL_NORMALIZE);
     
     rndNormalizeEnable(rndNormalization);
     rndTextureEnvironment(RTE_Modulate);
 
     if (rndTextureEnabled)
-         glccEnable (GL_TEXTURE_2D);
-    else glccDisable(GL_TEXTURE_2D);
+         glEnable (GL_TEXTURE_2D);
+    else glDisable(GL_TEXTURE_2D);
     
     rndTextureEnable(rndTextureEnabled);
     rndBackFaceCullEnable(TRUE);
 
     if (rndLightingEnabled)
-         glccEnable (GL_LIGHTING);
-    else glccDisable(GL_LIGHTING);
+         glEnable (GL_LIGHTING);
+    else glDisable(GL_LIGHTING);
 
     rndLightingEnable(rndLightingEnabled);
     rndSetClearColor(colBlack);
@@ -4487,13 +4487,13 @@ void rndClearToBlack(void)
     real32 bgcolor[4];
 
     //get current clearcolor
-    glccGetFloatv(GL_COLOR_CLEAR_VALUE, (GLfloat*)bgcolor);
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, (GLfloat*)bgcolor);
     //set clearcolor to black
-    glccClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //clear the screen
     glClear(GL_COLOR_BUFFER_BIT);
     //reset clearcolor
-    glccClearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
+    glClearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
 }
 
 /*-----------------------------------------------------------------------------
@@ -4508,13 +4508,13 @@ void rndAllClearToBlack(void)
     real32 bgcolor[4];
 
     //get current clearcolor
-    glccGetFloatv(GL_COLOR_CLEAR_VALUE, (GLfloat*)bgcolor);
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, (GLfloat*)bgcolor);
     //set clearcolor to black
-    glccClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //clear the screen
     rndClear();
     //reset clearcolor
-    glccClearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
+    glClearColor(bgcolor[0], bgcolor[1], bgcolor[2], bgcolor[3]);
 }
 
 /*-----------------------------------------------------------------------------

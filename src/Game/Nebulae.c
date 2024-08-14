@@ -1237,7 +1237,7 @@ void nebDrawChunk2(nebChunk* chunk, sdword lod)
 
     real32 m[16], minv[16];
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
     shInvertMatrix(minv, m);
 
     dbgAssertOrIgnore(chunk != NULL);
@@ -1389,7 +1389,7 @@ void nebDrawTendril(nebTendril* tendril, sdword lod)
 
     real32 m[16], minv[16];
 
-    glccGetFloatv(GL_MODELVIEW_MATRIX, m);
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
     shInvertMatrix(minv, m);
 
     dPosA = tendril->a->dPos;
@@ -2006,20 +2006,20 @@ void nebRenderNebula(nebulae_t* neb)
 
     _bright = TRUE;
 
-    fogOn = glccIsEnabled(GL_FOG);
-    atOn = glccIsEnabled(GL_ALPHA_TEST);
-    cullOff = !glccIsEnabled(GL_CULL_FACE);
+    fogOn = glIsEnabled(GL_FOG);
+    atOn = glIsEnabled(GL_ALPHA_TEST);
+    cullOff = !glIsEnabled(GL_CULL_FACE);
 
     glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
-    if (fogOn) glccDisable(GL_FOG);
+    if (fogOn) glDisable(GL_FOG);
 
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
-    glccEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
     glDepthMask(GL_FALSE);
-    if (atOn) glccDisable(GL_ALPHA_TEST);
-    if (cullOff) glccEnable(GL_CULL_FACE);
+    if (atOn) glDisable(GL_ALPHA_TEST);
+    if (cullOff) glEnable(GL_CULL_FACE);
 
     TENDRILCOLOR0(TENDRILALPHA);
 
@@ -2080,11 +2080,11 @@ void nebRenderNebula(nebulae_t* neb)
     }
 
     glDepthMask(GL_TRUE);
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
-    if (fogOn) glccEnable(GL_FOG);
-    if (atOn) glccEnable(GL_ALPHA_TEST);
-    if (cullOff) glccDisable(GL_CULL_FACE);
+    if (fogOn) glEnable(GL_FOG);
+    if (atOn) glEnable(GL_ALPHA_TEST);
+    if (cullOff) glDisable(GL_CULL_FACE);
 
     rndLightingEnable(TRUE);
 }

@@ -62,25 +62,25 @@ static void animSubtitlesSetup(bool on)
 
     if (on)
     {
-        glccGetIntegerv(GL_MATRIX_MODE, &matrixMode);
-        glccGetFloatv(GL_PROJECTION_MATRIX, projection);
+        glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
+        glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadIdentity();
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
 
-        glccMatrixMode(GL_MODELVIEW);
-        glccPushMatrix();
-        glccLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
     }
     else
     {
-        glccMatrixMode(GL_MODELVIEW);
-        glccPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
 
-        glccMatrixMode(GL_PROJECTION);
-        glccLoadMatrixf(projection);
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf(projection);
 
-        glccMatrixMode(matrixMode);
+        glMatrixMode(matrixMode);
     }
 }
 

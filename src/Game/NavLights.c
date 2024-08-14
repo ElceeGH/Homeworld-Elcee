@@ -34,9 +34,9 @@ void navLightBillboardEnable(Ship *s, NAVLightStatic *nls)
     vecAddTo(dst, s->posinfo.position);
 
     //setup billboarding
-    glccPushMatrix();
+    glPushMatrix();
     rndBillboardEnable(&dst);
-    glccDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
 }
 
 /*-----------------------------------------------------------------------------
@@ -50,8 +50,8 @@ void navLightBillboardDisable(void)
 {
     //undo billboarding
     rndBillboardDisable();
-    glccPopMatrix();
-    glccEnable(GL_CULL_FACE);
+    glPopMatrix();
+    glEnable(GL_CULL_FACE);
 }
 
 /*-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ void RenderNAVLights(Ship* ship)
         // Render each light
         bool lightOn = rndLightingEnable(FALSE);
         glDepthMask(GL_FALSE);
-        glccEnable(GL_POINT_SMOOTH);
+        glEnable(GL_POINT_SMOOTH);
         rndAdditiveBlends(TRUE);
         rndTextureEnable(FALSE);
         
@@ -167,7 +167,7 @@ void RenderNAVLights(Ship* ship)
 
         rndLightingEnable(lightOn);
         rndAdditiveBlends(FALSE);
-        glccDisable(GL_POINT_SMOOTH);
+        glDisable(GL_POINT_SMOOTH);
         glDepthMask(GL_TRUE);
     }
 }

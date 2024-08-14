@@ -1231,7 +1231,7 @@ void tutDrawTextPointers(rectangle *pRect)
     color c;
     vector temp;
 
-    glccEnable( GL_MULTISAMPLE );
+    glEnable( GL_MULTISAMPLE );
     real32 lineWidth = sqrtf(getResDensityRelative());
 
     for (pointer = tutPointer, index = 0; index < TUT_NumberPointers; index++, pointer++)
@@ -1249,7 +1249,7 @@ void tutDrawTextPointers(rectangle *pRect)
 
                 tutClipSegToTextBox(&x0, &y0, &x1, &y1);
                 c = colRGB(tutPulse, tutPulse, tutPulse);
-                glccLineWidth( lineWidth );
+                glLineWidth( lineWidth );
                 primLine2(x0, y0, x1, y1, c);
                 dx = (real32)(x0 - x1);                     //vector from arrowhead to source
                 dy = (real32)(y0 - y1);
@@ -1318,7 +1318,7 @@ shipsCase:
                     //x = pointer->ship->collInfo.selCircleX;
                     //y = pointer->ship->collInfo.selCircleY;
 
-                    glccLineWidth( lineWidth );
+                    glLineWidth( lineWidth );
                     primGLCircleOutline2(x, y, rad, pieCircleSegmentsCompute(rad), colRGB(tutPulse/2, tutPulse, tutPulse/2));
 
                     sx = primScreenToGLX((pRect->x0 + pRect->x1) / 2);
@@ -1356,7 +1356,7 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &x1, &y0, &y1);
-                    glccLineWidth( lineWidth );
+                    glLineWidth( lineWidth );
                     primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                     primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                 }
@@ -1373,7 +1373,7 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &y0, &x1, &y1);
-                    glccLineWidth( lineWidth );
+                    glLineWidth( lineWidth );
                     primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                     primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
                 }
@@ -1394,7 +1394,7 @@ shipsCase:
                 {
                     real32 x, y, deltx, delty, len;
 
-                    glccLineWidth( lineWidth );
+                    glLineWidth( lineWidth );
                     rad = max(rad, TUT_ShipCircleSizeMin);
                     x = sx;
                     y = sy;
@@ -1424,8 +1424,8 @@ shipsCase:
     tutPulse = PulseVal(tutPulse);
     tutPointersDrawnThisFrame = TRUE;
 
-    glccLineWidth( 1.0f );
-    glccDisable( GL_MULTISAMPLE );
+    glLineWidth( 1.0f );
+    glDisable( GL_MULTISAMPLE );
 }
 
 // This function actually handles drawing the text in the region added by tutShowText
@@ -1529,9 +1529,9 @@ void tutDrawNextButtonFunction(regionhandle reg)
     else
         trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_OFF]);
 
-//  glccEnable(GL_BLEND);
+//  glEnable(GL_BLEND);
     primRectSolidTextured2(&reg->rect);
-//  glccDisable(GL_BLEND);
+//  glDisable(GL_BLEND);
 }
 
 sdword tutNextButtonClicked(void)
@@ -1652,9 +1652,9 @@ void tutDrawBackButtonFunction(regionhandle reg)
             trRGBTextureMakeCurrent(tutTexture[TUT_REST_OFF]);
     }
 
-//  glccEnable(GL_BLEND);
+//  glEnable(GL_BLEND);
     primRectSolidTextured2(&reg->rect);
-//  glccDisable(GL_BLEND);
+//  glDisable(GL_BLEND);
 }
 
 
@@ -1774,7 +1774,7 @@ void tutDrawImageFunction(regionhandle reg)
     x = reg->rect.x0;
     y = reg->rect.y0;
 
-//  glccEnable(GL_BLEND);
+//  glEnable(GL_BLEND);
     i = 0;
 
     while(szImageIndexList[i])
@@ -1790,7 +1790,7 @@ void tutDrawImageFunction(regionhandle reg)
 
         i++;
     }
-//  glccDisable(GL_BLEND);
+//  glDisable(GL_BLEND);
 }
 
 

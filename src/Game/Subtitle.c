@@ -1360,10 +1360,10 @@ void subTitlesDraw(subregion *region)
         rect.x1 = rect.x0 + SUB_PictureWidth;
         rect.y1 = rect.y0 + SUB_PictureHeight;
         trMakeCurrent(region->picture);
-        glccDisable(GL_ALPHA_TEST);
-        glccEnable(GL_BLEND);
+        glDisable(GL_ALPHA_TEST);
+        glEnable(GL_BLEND);
         primRectSolidTextured2(&rect);
-        glccDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 
     if (region->cardIndex == 0 && region == &subRegion[STR_LetterboxBar] && (!region->bAborted) && !region->bContinuousEvent)

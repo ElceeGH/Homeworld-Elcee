@@ -1249,7 +1249,7 @@ void btgRender(void)
 #else
     glShadeModel(GL_SMOOTH);
 #endif
-    glccGetFloatv(GL_COLOR_CLEAR_VALUE, _bgColor);
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, _bgColor);
     for (index = 0; index < 4; index++)
     {
         _bgByte[index] = (GLubyte)(_bgColor[index] * 255.0f);
@@ -1258,14 +1258,14 @@ void btgRender(void)
     dnext = (udword*)_bgByte;
     dlast = (udword*)lastbg;
 
-    depthOn = glccIsEnabled(GL_DEPTH_TEST);
+    depthOn = glIsEnabled(GL_DEPTH_TEST);
     lightOn = rndLightingEnable(FALSE);
-    texOn = glccIsEnabled(GL_TEXTURE_2D);
-    blendOn = glccIsEnabled(GL_BLEND);
-    glccDisable(GL_DEPTH_TEST);
-    glccDisable(GL_CULL_FACE);
-    glccDisable(GL_TEXTURE_2D);
-    glccEnable(GL_BLEND);
+    texOn = glIsEnabled(GL_TEXTURE_2D);
+    blendOn = glIsEnabled(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
     rndAdditiveBlends(FALSE);
 
     //polys
@@ -1311,7 +1311,7 @@ void btgRender(void)
     rndAdditiveBlends(TRUE);
 
     trClearCurrent();
-    glccEnable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
     rndTextureEnvironment(RTE_Modulate);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glVertexPointer(3, GL_FLOAT, sizeof(GLfloat) * 5, (GLubyte*)btgTransStars);
@@ -1328,20 +1328,20 @@ void btgRender(void)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     rndAdditiveBlends(FALSE);
 
     rndLightingEnable(lightOn);
     if (texOn)
-        glccEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_2D);
 
     if (blendOn) 
-         glccEnable(GL_BLEND);
-    else glccDisable(GL_BLEND);
+         glEnable(GL_BLEND);
+    else glDisable(GL_BLEND);
 
-    glccEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     if (depthOn)
-         glccEnable(GL_DEPTH_TEST);
-    else glccDisable(GL_DEPTH_TEST);
+         glEnable(GL_DEPTH_TEST);
+    else glDisable(GL_DEPTH_TEST);
 }

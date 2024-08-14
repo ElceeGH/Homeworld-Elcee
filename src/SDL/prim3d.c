@@ -39,9 +39,9 @@ LinkedList CircleList;
 
 void primLine3Fade(vector *p1, vector *p2, color c, real32 fade)
 {
-    bool blendon = glccIsEnabled(GL_BLEND);
-    if (!blendon) glccEnable(GL_BLEND);
-    glccEnable(GL_LINE_SMOOTH);
+    bool blendon = glIsEnabled(GL_BLEND);
+    if (!blendon) glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
     rndAdditiveBlends(FALSE);
 
     glBegin(GL_LINES);
@@ -50,8 +50,8 @@ void primLine3Fade(vector *p1, vector *p2, color c, real32 fade)
     glVertex3fv((const GLfloat *)p2);
     glEnd();
 
-    if (!blendon) glccDisable(GL_BLEND);
-    glccDisable(GL_LINE_SMOOTH);
+    if (!blendon) glDisable(GL_BLEND);
+    glDisable(GL_LINE_SMOOTH);
 }
 
 /*-----------------------------------------------------------------------------
@@ -70,9 +70,9 @@ void primLine3(vector *p1, vector *p2, color c)
 
 void primLine3Stipple(vector *p1, vector *p2, color c)
 {
-    bool blendon = glccIsEnabled(GL_BLEND);
-    if (!blendon) glccEnable(GL_BLEND);
-    glccEnable(GL_LINE_SMOOTH);
+    bool blendon = glIsEnabled(GL_BLEND);
+    if (!blendon) glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
     rndAdditiveBlends(FALSE);
 
     const real32 step     = 96.0f;
@@ -105,8 +105,8 @@ void primLine3Stipple(vector *p1, vector *p2, color c)
         }
     glEnd();
 
-    if (!blendon) glccDisable(GL_BLEND);
-    glccDisable(GL_LINE_SMOOTH);
+    if (!blendon) glDisable(GL_BLEND);
+    glDisable(GL_LINE_SMOOTH);
 }
 
 /*-----------------------------------------------------------------------------
@@ -150,11 +150,11 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
     sdword index;
     GLfloat v[3];
     double theta;
-    GLboolean blend = glccIsEnabled(GL_BLEND);
+    GLboolean blend = glIsEnabled(GL_BLEND);
 
     if (!blend)
     {
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         rndAdditiveBlends(FALSE);
     }
 
@@ -178,7 +178,7 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
 
     if (!blend)
     {
-        glccDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 }
 
@@ -284,8 +284,8 @@ void primCircleOutline3(vector *centre, real32 radius, sdword nSlices,
     c[2] = centre->z;
 
     glShadeModel(GL_SMOOTH);
-    glccEnable(GL_BLEND);
-    glccEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
     rndAdditiveBlends(FALSE);
 
     vec_ptr = &vertices->vertice[0];
@@ -383,8 +383,8 @@ void primCircleOutline3(vector *centre, real32 radius, sdword nSlices,
             break;
     }
 
-    glccDisable(GL_BLEND);
-    glccDisable(GL_LINE_SMOOTH);
+    glDisable(GL_BLEND);
+    glDisable(GL_LINE_SMOOTH);
 }
 
 /*-----------------------------------------------------------------------------
@@ -467,11 +467,11 @@ static bool gWasBlending;
 ----------------------------------------------------------------------------*/
 void primBeginPointSize3Fade(real32 size)
 {
-    glccPointSize(size);
-    gWasBlending = glccIsEnabled(GL_BLEND);
+    glPointSize(size);
+    gWasBlending = glIsEnabled(GL_BLEND);
     if (!gWasBlending)
     {
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
     }
     rndAdditiveBlends(FALSE);
     glBegin(GL_POINTS);
@@ -516,7 +516,7 @@ void primEndPointSize3Fade(void)
     glEnd();
     if (gFastBlends && !gWasBlending)
     {
-        glccDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 }
 
@@ -531,33 +531,33 @@ void primEndPointSize3Fade(void)
 ----------------------------------------------------------------------------*/
 void primPointSize3(vector *p1, real32 size, color c)
 {
-    glccPointSize(size);
+    glPointSize(size);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_POINTS);
     glVertex3f(p1->x, p1->y, p1->z);                        //!!! no size
     glEnd();
-    glccPointSize(1.0f);
+    glPointSize(1.0f);
 }
 
 void primPointSize3Fade(vector *p1, real32 size, color c, real32 fade)
 {
-    GLboolean blend = glccIsEnabled(GL_BLEND);
+    GLboolean blend = glIsEnabled(GL_BLEND);
 
     if (!blend)
     {
-        glccEnable(GL_BLEND);
+        glEnable(GL_BLEND);
     }
 
-    glccPointSize(size);
+    glPointSize(size);
     glColor4ub(colRed(c), colGreen(c), colBlue(c), (ubyte)(fade * 255.0f));
     glBegin(GL_POINTS);
     glVertex3f(p1->x, p1->y, p1->z);                        //!!! no size
     glEnd();
-    glccPointSize(1.0f);
+    glPointSize(1.0f);
 
     if (!blend)
     {
-        glccDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 }
 
@@ -585,8 +585,8 @@ void primSolidTexture3(vector *p1, real32 size, color c, trhandle tex)
     reg = trStructureGet(tex);
     if (bitTest(reg->flags, TRF_Alpha))
     {
-        glccEnable(GL_BLEND);
-        glccDisable(GL_ALPHA_TEST);
+        glEnable(GL_BLEND);
+        glDisable(GL_ALPHA_TEST);
         rndAdditiveBlends(TRUE);
     }
 
@@ -607,7 +607,7 @@ void primSolidTexture3(vector *p1, real32 size, color c, trhandle tex)
     glVertex3f(p1->x-halfsize, p1->y+halfsize, 0.0f);
     glEnd();
 
-    glccDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 //    glDepthMask(GL_TRUE);
     rndAdditiveBlends(FALSE);
 }
@@ -624,8 +624,8 @@ void primSolidTexture3Fade(vector *p1, real32 size, color c, trhandle tex, real3
    reg = trStructureGet(tex);
    if (bitTest(reg->flags, TRF_Alpha))
    {
-      glccEnable(GL_BLEND);
-      glccDisable(GL_ALPHA_TEST);
+      glEnable(GL_BLEND);
+      glDisable(GL_ALPHA_TEST);
       rndAdditiveBlends(TRUE);
    }
 
@@ -646,7 +646,7 @@ void primSolidTexture3Fade(vector *p1, real32 size, color c, trhandle tex, real3
    glVertex3f(p1->x-halfsize, p1->y+halfsize, 0.0f);
    glEnd();
 
-   glccDisable(GL_BLEND);
+   glDisable(GL_BLEND);
    rndAdditiveBlends(FALSE);
 }
 

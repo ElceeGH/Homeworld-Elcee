@@ -574,10 +574,10 @@ bool glfontDisplayString(fontheader* font, char* string, sdword x, sdword y, col
     trClearCurrent();
     lastGLHandle = 0;
     texOn = rndTextureEnable(TRUE);
-    blendOn = (bool)glccIsEnabled(GL_BLEND);
-    alphatestOn = (bool)glccIsEnabled(GL_ALPHA_TEST);
-    if (!blendOn) glccEnable(GL_BLEND);
-    if (alphatestOn) glccDisable(GL_ALPHA_TEST);
+    blendOn = (bool)glIsEnabled(GL_BLEND);
+    alphatestOn = (bool)glIsEnabled(GL_ALPHA_TEST);
+    if (!blendOn) glEnable(GL_BLEND);
+    if (alphatestOn) glDisable(GL_ALPHA_TEST);
     rndAdditiveBlends(FALSE);
     glShadeModel(GL_FLAT);
     rndTextureEnvironment(RTE_Modulate);
@@ -632,8 +632,8 @@ bool glfontDisplayString(fontheader* font, char* string, sdword x, sdword y, col
 
     //reset state
     rndTextureEnable(texOn);
-    if (!blendOn) glccDisable(GL_BLEND);
-    if (alphatestOn) glccEnable(GL_ALPHA_TEST);
+    if (!blendOn) glDisable(GL_BLEND);
+    if (alphatestOn) glEnable(GL_ALPHA_TEST);
 
     return rval;
 }

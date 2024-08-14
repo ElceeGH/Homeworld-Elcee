@@ -427,22 +427,22 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
     }
 
     //find the screen coordinates of the moveto pointer
-    glccGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&modelview));
-    glccGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&projection));
+    glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *)(&modelview));
+    glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *)(&projection));
     selCircleComputeGeneral(&modelview, &projection, movepoint, 0, &screen_x, &screen_y, &dummy_r);
 
     fhSave = fontCurrentGet();
     fontMakeCurrent(pieDistReadFont);
 
     //and here I set up my own 2D space
-    glccMatrixMode(GL_PROJECTION);
-    glccPushMatrix();
-    glccLoadIdentity();
-    glccMatrixMode(GL_MODELVIEW);
-    glccPushMatrix();
-    glccLoadIdentity();
-    depthOn = (bool)glccIsEnabled(GL_DEPTH_TEST);
-    if (depthOn) glccDisable(GL_DEPTH_TEST);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    depthOn = (bool)glIsEnabled(GL_DEPTH_TEST);
+    if (depthOn) glDisable(GL_DEPTH_TEST);
 
     //using the mousecursor position to position the distance readout is more
     //stable, but can't be used when the camera is being moved, so the moveto
@@ -474,13 +474,13 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
         }
     }
 
-    if (depthOn) glccEnable(GL_DEPTH_TEST);
+    if (depthOn) glEnable(GL_DEPTH_TEST);
 
     //back to previous space
-    glccPopMatrix();
-    glccMatrixMode(GL_PROJECTION);
-    glccPopMatrix();
-    glccMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 
     fontMakeCurrent(fhSave);
 }
@@ -520,12 +520,12 @@ void pieAllShipsToPiePlateDraw(real32 distance)
     // Scale the lines, but keep then thinner than normal because the information density is very high here.
     // Also add a neat little knob to cap off the plane intersect point.
     GLfloat lineWidthPrev, pointSizePrev;
-    glccGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
-    glccGetFloatv( GL_POINT_SIZE, &pointSizePrev );
+    glGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
+    glGetFloatv( GL_POINT_SIZE, &pointSizePrev );
 
     const GLfloat thickness = max( 1.0f, 0.5f * sqrtf(getResDensityRelative()));
-    glccLineWidth( thickness );
-    glccPointSize( thickness * 3.0f );
+    glLineWidth( thickness );
+    glPointSize( thickness * 3.0f );
 
     objnode = universe.RenderList.head;                    //get first node in list
     piePlaneScreenPointIndex = 0;
@@ -613,8 +613,8 @@ nextnode:
     pieLastClosestShip = closestShip;
 
     // Restore
-    glccLineWidth( lineWidthPrev );
-    glccLineWidth( lineWidthPrev );
+    glLineWidth( lineWidthPrev );
+    glLineWidth( lineWidthPrev );
 }
 
 /*-----------------------------------------------------------------------------
@@ -716,12 +716,12 @@ bool pieNeedSpecialAttackAndMoveColor()
 void pieMovementCursorDraw(real32 distance)
 {
     GLfloat lineWidthPrev, pointSizePrev;
-    glccGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
-    glccGetFloatv( GL_POINT_SIZE, &pointSizePrev );
+    glGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
+    glGetFloatv( GL_POINT_SIZE, &pointSizePrev );
 
     const GLfloat thickness = sqrtf(getResDensityRelative());
-    glccLineWidth( thickness * 1.0f );
-    glccPointSize( thickness * 3.0f );
+    glLineWidth( thickness * 1.0f );
+    glPointSize( thickness * 3.0f );
 
     const color c = moveLineColor;
 
@@ -750,8 +750,8 @@ void pieMovementCursorDraw(real32 distance)
         primPoint3(&pieHeightPoint,c);
     }
 
-    glccLineWidth( lineWidthPrev );
-    glccPointSize( pointSizePrev );
+    glLineWidth( lineWidthPrev );
+    glPointSize( pointSizePrev );
 }
 
 /*-----------------------------------------------------------------------------
@@ -844,7 +844,7 @@ void piePlaneDraw(real32 distance)
         headingColor = TW_MOVE_HEADING_COLOR;
     }
 
-    glccLineWidth( sqrtf(getResDensityRelative()) );
+    glLineWidth( sqrtf(getResDensityRelative()) );
     primCircleOutlineZ(&selCentrePoint, piePizzaDishRadius * distance, piePizzaSlices, pieColor);//TW_MOVE_PIZZA_COLOR tweakable global variable (tweak.*)
     //get the heading of the mothership for drawing the 'spokes' of the pie plate
     pieMotherShipHeading.x = pieMotherShipHeading.z = 0.0f;
@@ -872,7 +872,7 @@ void piePlaneDraw(real32 distance)
     pieScreenSizeOfCircleCompute(&piePlanePoint, selAverageSize, &scaledSize, &nSegments);
     primCircleOutlineZ(&piePlanePoint, scaledSize, nSegments, moveLineColor);
 
-    glccLineWidth(1.0f);
+    glLineWidth(1.0f);
 }
 
 /*-----------------------------------------------------------------------------
@@ -1017,9 +1017,9 @@ void piePointSpecDraw(void)
 
     if (piePointSpecMouseReset)
     {                                                       //if we should reset location of mouse
-        glccGetFloatv(GL_PROJECTION_MATRIX,                   //get the matrices in hmatrix format
+        glGetFloatv(GL_PROJECTION_MATRIX,                   //get the matrices in hmatrix format
                     (float *)(&projectionF));
-        glccGetFloatv(GL_MODELVIEW_MATRIX,
+        glGetFloatv(GL_MODELVIEW_MATRIX,
                     (float *)(&modelViewF));
         if (piePointSpecMode == PSM_XY)
         {
@@ -1044,8 +1044,8 @@ void piePointSpecDraw(void)
 
     windowHeightMinusOne = (real32)(MAIN_WindowHeight - 1);
 
-    glccGetFloatv(GL_PROJECTION_MATRIX, projection);
-    glccGetFloatv(GL_MODELVIEW_MATRIX, modelView);           //get the matrices
+    glGetFloatv(GL_PROJECTION_MATRIX, projection);
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelView);           //get the matrices
 
     world0.x = mrCamera->eyeposition.x - selCentrePoint.x;
     world0.y = mrCamera->eyeposition.y - selCentrePoint.y;
