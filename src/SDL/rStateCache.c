@@ -42,7 +42,7 @@ enum CacheEntry {
     CacheFog,
     CacheNormalize,
 
-    CacheEntryCount,
+    CacheEntryCount
 };
 
 
@@ -119,7 +119,7 @@ static struct CacheMap cacheMap( GLenum id ) {
 
 
 
-static char* idToName( GLenum id ) {
+static const char* idToName( GLenum id ) {
     switch (id) {
         case GL_MATRIX_MODE       : return "GL_MATRIX_MODE"      ;
         case GL_PROJECTION_MATRIX : return "GL_PROJECTION_MATRIX";
@@ -178,7 +178,6 @@ static udword cacheWrite( GLenum id, const void* in ) {
 
 void glccInit( void ) {
     memset( &cache, 0x00, sizeof(cache) );
-    
 }
 
 
@@ -195,13 +194,26 @@ void glccGetIntegerv( GLenum id, GLint* out ) {
 
 
 
+// For enable/disable, check if the value is already set using the cache.
+// This knocked off around 12000 GL calls per frame in the Cathedral.
+
 void glccEnable( GLenum id ) {
+    GLboolean current;
+    if (cacheRead( id, &current ))
+    if (current)
+        return;
+
     const GLboolean value = GL_TRUE;
     cacheWrite( id, &value );
     glEnable( id );
 }
 
 void glccDisable( GLenum id ) {
+    GLboolean current;
+    if (cacheRead( id, &current ))
+    if ( ! current)
+        return;
+
     const GLboolean value = GL_FALSE;
     cacheWrite( id, &value );
     glDisable( id );
@@ -260,10 +272,12 @@ void glccClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a ) {
 
 
 static sdword mapGlMatrixModeToSelect( GLenum mode ) {
+    static_assert( GL_MODELVIEW + 1 == GL_PROJECTION, "Bad assumption" );
     return mode - GL_MODELVIEW;
 }
 
 static GLenum mapSelectToGlMatrix( sdword sel ) {
+    static_assert( GL_MODELVIEW_MATRIX + 1 == GL_PROJECTION_MATRIX, "Bad assumption" );
     return GL_MODELVIEW_MATRIX + sel;
 }
 
