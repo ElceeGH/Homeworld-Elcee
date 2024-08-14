@@ -303,9 +303,6 @@ missiletrail* mistrailNew(trailstatic* staticInfo, struct Missile* missile)
 
     missilestaticinfo = missile->staticinfo;
 
-    trail->width = missilestaticinfo->trailWidth;
-    trail->height = missilestaticinfo->trailHeight;
-
     return trail;
 }
 

@@ -109,7 +109,6 @@ typedef struct missiletrail
     trailstatic* staticInfo;
     void* vmissile;
 
-    real32 width, height;
     sdword grainCounter;
     sdword iHead, iTail, nLength;
     missiletrailsegment segments[1];
