@@ -223,7 +223,7 @@ typedef struct Interp {
 static udword  interpCount = 0;    ///< Current count
 static udword  interpPeak  = 0;    ///< Highest count so far
 static udword  interpAlloc = 0;    ///< Allocated count
-static udword  interpLimit = 0;    ///< Highest used count
+static udword  interpLimit = 0;    ///< Highest index accessed + 1
 static Interp* interpData  = NULL; ///< Interpolation items
 
 // Interps to apply, in the same order as the render list.
@@ -234,8 +234,8 @@ static bool     renderListReady = FALSE; ///< Whether list is built already. Onl
 
 
 /// Get the limit for searching/iterating over the interps (exclusive end).
-static udword interpRangeLimit(void) {
-    return min( interpAlloc, interpLimit + 1 ); // +1 because it needs to iterate over empty spaces too, not just the last occupied space.
+static udword interpSearchLimit(void) {
+    return min( interpAlloc, interpLimit + 1 ); // +1 because it needs to search empty spaces too, not just the last occupied space.
 }
 
 
@@ -279,7 +279,7 @@ static void rintGrowMemory( void ) {
 /// Find interp with matching obj pointer.
 /// Returns NULL on failure
 static Interp* interpFind( SpaceObj* obj ) {
-    for (udword i=0; i<interpRangeLimit(); i++)
+    for (udword i=0; i<interpSearchLimit(); i++)
         if (interpData[i].obj == obj)
             return &interpData[i];
 
@@ -433,16 +433,16 @@ static bool canInterpCollision( SpaceObj* obj ) {
 
 
 /// Clear all the exist flags.
-static void clearExistFlags(void) {
-    for (udword i=0; i<interpRangeLimit(); i++)
+static void clearExistFlags( void ) {
+    for (udword i=0; i<interpSearchLimit(); i++)
         interpData[i].exists = FALSE;
 }
 
 
 
 /// Remove interps which no longer exist.
-static void cleanInterps(void) {
-    for (udword i=0; i<interpRangeLimit(); i++)
+static void cleanInterps( void ) {
+    for (udword i=0; i<interpSearchLimit(); i++)
         if (interpData[i].exists == FALSE)
         if (interpData[i].obj    != NULL)
             interpDestroy( &interpData[i] );
@@ -461,8 +461,8 @@ static void clearInterpList( void ) {
 
 
 /// Set the previous position
-/// Adds objects to the interp list.
-static void setPrevPosAndAdd( SpaceObj* obj ) {
+/// Adds objects to the interp list if needed.
+static void setPrevAndAdd( SpaceObj* obj ) {
     // Find the interp data for object in the list
     Interp* interp = interpFind( obj );
 
@@ -476,17 +476,17 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
     interp->pprev = obj->posinfo.position;
 
     if (canInterpCollision( obj )) {
-        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+        const SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         interp->cprev = sori->collInfo.collPosition;
     }
 
     if (canInterpOrientation( obj )) {
-        SpaceObjRot* sor = (SpaceObjRot*) obj;
+        const SpaceObjRot* sor = (SpaceObjRot*) obj;
         interp->hprev = sor->rotinfo.coordsys;
     }
 
     if (obj->objtype == OBJ_ShipType) {
-        Ship* ship = (Ship*) obj;
+        const Ship* ship = (Ship*) obj;
         interp->sprev.hsClipT = ship->shipSinglePlayerGameInfo->clipt;
     }
 }
@@ -495,7 +495,7 @@ static void setPrevPosAndAdd( SpaceObj* obj ) {
 
 /// Set the current position and mark it as alive
 /// DOES NOT add objects to the interp list, since it can create visual artifacts if they don't have the previous values to lerp from.
-static void setCurPosAndMarkExists( SpaceObj* obj ) {
+static void setCurrAndMarkExists( SpaceObj* obj ) {
     // Find the related interpolation data
     Interp* interp = interpFind( obj );
 
@@ -509,17 +509,17 @@ static void setCurPosAndMarkExists( SpaceObj* obj ) {
     
     // Handle the more advanced cases
     if (canInterpCollision( obj )) {
-        SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
+        const SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
         interp->ccurr = sori->collInfo.collPosition;
     }
 
     if (canInterpOrientation( obj )) {
-        SpaceObjRot* sor = (SpaceObjRot*) obj;
+        const SpaceObjRot* sor = (SpaceObjRot*) obj;
         interp->hcurr = sor->rotinfo.coordsys;
     }
 
     if (obj->objtype == OBJ_ShipType) {
-        Ship* ship = (Ship*) obj;
+        const Ship* ship = (Ship*) obj;
         interp->scurr.hsClipT = ship->shipSinglePlayerGameInfo->clipt;
     }
 }
@@ -537,22 +537,22 @@ static void interpolateObject( const Interp* interp ) {
 
     if (canInterpCollision( obj )) {
         SpaceObjRotImp* sori = (SpaceObjRotImp*) obj;
-        const vector ca = interp->cprev;
-        const vector cb = interp->ccurr;
+        const vector    ca   = interp->cprev;
+        const vector    cb   = interp->ccurr;
         sori->collInfo.collPosition = lerpv( ca, cb, f );
     }
 
     if (canInterpOrientation( obj )) {
-        SpaceObjRot* sor = (SpaceObjRot*) obj;
-        const matrix* ha = &interp->hprev;
-        const matrix* hb = &interp->hcurr;
+        SpaceObjRot*  sor = (SpaceObjRot*) obj;
+        const matrix* ha  = &interp->hprev;
+        const matrix* hb  = &interp->hcurr;
         lerpm( &sor->rotinfo.coordsys, ha, hb, f );
     }
 
     if (obj->objtype == OBJ_ShipType) {
-        Ship* ship = (Ship*) obj;
-        const real32 ta = interp->sprev.hsClipT;
-        const real32 tb = interp->scurr.hsClipT;
+        Ship*        ship = (Ship*) obj;
+        const real32 ta   = interp->sprev.hsClipT;
+        const real32 tb   = interp->scurr.hsClipT;
         ship->shipSinglePlayerGameInfo->clipt = lerpf( ta, tb, f );
     }
 }
@@ -645,12 +645,12 @@ void rintMarkHsDiscontinuity( SpaceObj* obj, real32 clipT ) {
     if (obj == NULL)
         return;
 
-    // Map the object
+    // Find the object
     Interp* interp = interpFind( obj );
     if (interp == NULL)
         return;
 
-    // Make the values equal
+    // Make the ccurr/prev values equal
     interp->sprev.hsClipT = clipT;
     interp->scurr.hsClipT = clipT;
 }
@@ -681,6 +681,7 @@ void rintRenderEnableDeferred( void ) {
 
 /// Update interpolation state
 /// Pre-move phase where the previous position and keepalive flag are set
+/// Interps get added here, never removed.
 void rintUnivUpdatePreMove( void ) {
     // Use the option to decide whether interpolation is enabled
     updateEnabled = opRenderInterpolation;
@@ -690,21 +691,27 @@ void rintUnivUpdatePreMove( void ) {
 
     updateTimeReference();
     clearExistFlags();
-    iterateSpaceObjectsUniverse( setPrevPosAndAdd, filterInterpAllowed );
+    iterateSpaceObjectsUniverse( setPrevAndAdd, filterInterpAllowed );
 }
 
 
 
 /// Update interpolation state
-/// Post-destroy phase where nonexistent objects have been destroyed
-/// Last event before rendering begins
+/// Post-destroy phase where nonexistent game objects have stopped existing in the game logic.
+/// Interps get removed here, never added.
+/// Last event before rendering begins.
 void rintUnivUpdatePostDestroy( void ) {
+    // Don't do anything if interpolation is off
     if ( ! updateEnabled)
         return;
 
-    iterateSpaceObjectsUniverse( setCurPosAndMarkExists, filterInterpAllowed );
+    iterateSpaceObjectsUniverse( setCurrAndMarkExists, filterInterpAllowed );
+
+    // Clean up any objects that got destroyed between updates.
     cleanInterps();
-    clearRenderList(); // Must be last event, just before rendering!
+
+    // Empty the render list. Must be last event before rendering!
+    clearRenderList();
 }
 
 
@@ -725,7 +732,7 @@ static void generateRenderListElement( SpaceObj* obj ) {
 
 
 /// The mapping of objects to interps only needs to be done once per universe update.
-/// So generate the list just once on the first frame.
+/// So generate the list just once on the first subsequent frame.
 static void generateRenderList( void ) {
     if (renderListReady)
         return;
@@ -758,8 +765,8 @@ void rintRenderBeginAndInterpolate( void ) {
     generateRenderList();
 
     // Interpolate everything
-    for (Interp** interp=renderList; interp!=renderListEnd; interp++)
-        interpolateObject( *interp );
+    for (Interp** iter=renderList; iter!=renderListEnd; iter++)
+        interpolateObject( *iter );
 }
 
 
@@ -771,8 +778,8 @@ void rintRenderEndAndRestore( void ) {
         return;
 
     // Restore everything
-    for (Interp** interp=renderList; interp!=renderListEnd; interp++)
-        restoreObject( *interp );
+    for (Interp** iter=renderList; iter!=renderListEnd; iter++)
+        restoreObject( *iter );
 }
 
 
