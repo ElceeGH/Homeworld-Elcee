@@ -1082,9 +1082,7 @@ void shMultiplyHVecByHMatRotInv(hvector *result, hvector *vector, hmatrix *matri
 
 static void shUpdateLightsFromMatrix(hmatrix *pMat)
 {
-long	i;
-
-	for(i=0; i<2; i++)
+	for(udword i=0; i<2; i++)
 	{
 		shMultiplyHVecByHMatRotInv(
 			(hvector *)shLight[i].inverseworldposition,
