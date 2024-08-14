@@ -2103,6 +2103,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
                     selCircleComputeGeneral(modelView, projection, &p1, smBlobCircleSize, &x, &y, &screenRadius);
                     nSegments = pieCircleSegmentsCompute(screenRadius);
                     primCircleOutlineZ(&p1, smBlobCircleSize, nSegments, c);//draw the circle on plane
+                    primPointSize3( &p1, 2.0f*sqrtf(getResDensityRelative()), c ); // cap the line, using smaller cap than non-sensor view (uses 3x)
                 }
             }
         }

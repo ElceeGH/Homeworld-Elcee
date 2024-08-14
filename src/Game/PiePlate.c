@@ -719,9 +719,10 @@ void pieMovementCursorDraw(real32 distance)
     glGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
     glGetFloatv( GL_POINT_SIZE, &pointSizePrev );
 
-    const GLfloat thickness = sqrtf(getResDensityRelative());
-    glLineWidth( thickness * 1.0f );
-    glPointSize( thickness * 3.0f );
+    const GLfloat thickness  = sqrtf(getResDensityRelative());
+    const GLfloat capSizeMul = smSensorsActive ? 1.25f : 3.0f;
+    glLineWidth( thickness );
+    glPointSize( thickness * capSizeMul );
 
     const color c = moveLineColor;
 
@@ -735,9 +736,11 @@ void pieMovementCursorDraw(real32 distance)
         primLine3(&pieHeightPoint, &selCentrePoint, c);//draw from centre of dish to height point
         primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
 
-        // In OG Homeworld, the height indicator was originally stippled.
-        // Always have the stipple grow from the reference plane
-        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c);
+        // In OG Homeworld, the movement line was originally stippled.
+        // I've gone and stippled the inter-plane height line here, misremembering, but it looks good.
+        // Always have the stipple grow from the reference plane, and make it more granular when zoomed out in sensors
+        real32 step = smSensorsActive ? 160.0f : 96.0f;
+        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c, step);
 
         //destination circle
         sdword nSegments;
