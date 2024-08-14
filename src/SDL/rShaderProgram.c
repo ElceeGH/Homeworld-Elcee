@@ -200,6 +200,7 @@ GLuint* loadShaderProgram( const char* name ) {
 
 /// Load a shader program, compile it, link it and return the resulting handle.
 /// Name doesn't include the extension. It automatically looks for .vert and .frag.
+/// Dies if neither source file can be located, but not if they can't be compiled. (Because it would interfere with realtime editing horribly)
 static GLuint loadShaderProgramInternal( const char* name ) {
     // Load the file and compile it
     void* sourceVert = loadSourceFromFile( name, GL_VERTEX_SHADER   );
