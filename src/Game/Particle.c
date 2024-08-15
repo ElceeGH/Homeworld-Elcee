@@ -1230,12 +1230,12 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
         if (bitTest(p->flags, PART_SPECULAR))
         {
             g_SpecHack = TRUE;
-            meshSetSpecular(0, 200,200,200,200);
+            meshSetSpecular(shSpecModeNormalZ, 200,200,200,200);
         }
         else
         {
             g_SpecHack = FALSE;
-            meshSetSpecular(-1, 0,0,0,0);
+            meshSetSpecular(shSpecModeOff, 0,0,0,0);
         }
 
         if (bitTest(p->flags, PART_NODEPTHWRITE))
@@ -1266,7 +1266,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 
             if (g_SpecHack)
             {
-                shSetExponent(0, p->exponent);
+                shSetExponent(shSpecModeNormalZ, p->exponent);
             }
 
             if (bitTest(flags, PART_ALPHA))
@@ -1275,7 +1275,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
                 glEnable(GL_BLEND);
                 if (g_SpecHack)
                 {
-                    meshSetSpecular(0, RUB(p->icolor[0]), RUB(p->icolor[1]), RUB(p->icolor[2]), RUB(p->icolor[3]));
+                    meshSetSpecular(shSpecModeNormalZ, RUB(p->icolor[0]), RUB(p->icolor[1]), RUB(p->icolor[2]), RUB(p->icolor[3]));
                 }
             }
             else
@@ -1283,7 +1283,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
                 glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
                 if (g_SpecHack)
                 {
-                    meshSetSpecular(0, RUB(p->icolor[0]), RUB(p->icolor[1]), RUB(p->icolor[2]), 255);
+                    meshSetSpecular(shSpecModeNormalZ, RUB(p->icolor[0]), RUB(p->icolor[1]), RUB(p->icolor[2]), 255);
                 }
             }
 
@@ -1409,8 +1409,8 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
         glPopMatrix();
     }
 
-    shSetExponent(0, -1.0f);
-    meshSetSpecular(-1, 0, 0, 0, 0);
+    shSetExponent(shSpecModeNormalZ, -1.0f);
+    meshSetSpecular(shSpecModeOff, 0, 0, 0, 0);
 
     g_SpecHack = FALSE;
     glDepthMask(GL_TRUE);

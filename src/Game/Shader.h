@@ -14,20 +14,16 @@ Copyright Relic Entertainment, Inc.  All rights reserved.
 #include "Types.h"
 #include "Vector.h"
 
-typedef struct
-{
+typedef struct {
     ubyte c[4];
 } shColor;
 
-extern shColor* colorList;
-
-#define shColorSetIndexed(index) \
-    { \
-        shColor* c; \
-        \
-        c = colorList + index; \
-        glColor4ub(c->c[0], c->c[1], c->c[2], c->c[3]); \
-    }
+typedef enum shSpecMode {
+    shSpecModeOff     = -1, ///< No specular lighting
+    shSpecModeNormalZ =  0, ///< Light intensity is taken from vertex normal z axis. (No dot product used)
+    shSpecModeLights  =  1, ///< Standard specular, light vectors dotted with normals.
+    shSpecModeCamera  =  2, ///< Standard specular, but uses the camera view vector as the light vector.
+} SpecMode;
 
 void shStartup(void);
 void shShutdown(void);

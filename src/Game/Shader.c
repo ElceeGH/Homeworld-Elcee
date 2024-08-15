@@ -26,6 +26,10 @@ Copyright Relic Entertainment, Inc.  All rights reserved.
 #define CLAMP(X, MIN, MAX) ((X) < (MIN) ? (MIN) : ((X) > (MAX) ? (MAX) : (X)))
 #endif
 
+#ifndef SAT
+#define SAT(X) CLAMP(X,0,1)
+#endif
+
 #ifndef MIN2
 #define MIN2(X, Y) ((X) < (Y) ? (X) : (Y))
 #endif
@@ -311,18 +315,18 @@ void shUpdateLighting()
 /*-----------------------------------------------------------------------------
     Name        : shSetExponent
     Description : sets the exponent to use for the specular alpha term
-    Inputs      : index - [0..2]
+    Inputs      : mode - one of shSpecModes
                   exponent - if -1, reset to default; else use given as exponent
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void shSetExponent(sdword index, real32 exponent)
+void shSetExponent(sdword mode, real32 exponent)
 {
-    if (index < 0 || index > 2)
+    if (mode < shSpecModeOff || mode > shSpecModeCamera)
     {
         return;
     }
-    shSpecularExponent[index] = (exponent == -1.0f) ? shSpecularDefault[index] : exponent;
+    shSpecularExponent[mode] = (exponent == -1.0f) ? shSpecularDefault[mode] : exponent;
 }
 
 /*-----------------------------------------------------------------------------
@@ -731,99 +735,63 @@ void shColourSet0(vector* norm)
     Return      :
 ----------------------------------------------------------------------------*/
 void shSpecularColour(
-    sdword specInd, sdword side, vector* vobj, vector* norm, ubyte* color,
+    sdword specInd, sdword side, vector* vobj, vector* innorm, ubyte* color,
     real32* m, real32* minv)
 {
-    vector veye = {0.0f, 0.0f, 1.0f};
-    vector xnorm, xvobj;
-    real32 nx, ny, nz;
-    real32 alpha, nDotVP;
-    real32 fade;
     extern bool bFade;
     extern real32 meshFadeAlpha;
 
-    fade = bFade ? meshFadeAlpha : 1.0f;
+    real32 exponent = shSpecularExponent[specInd];
+    real32 fade     = bFade ? meshFadeAlpha : 1.0f;
 
-    shTransformNormal(&xnorm, norm, minv);
+    vector xnorm;
+    shTransformNormal(&xnorm, innorm, minv);
 
-    if (side == 0)
+    if (side != 0)
+        vecNegate(xnorm);
+    
+    if (specInd == shSpecModeNormalZ)
     {
-        nx = xnorm.x;
-        ny = xnorm.y;
-        nz = xnorm.z;
+        real32 alpha;
+        if (xnorm.z > 0.0f)
+             alpha = powf( xnorm.z, exponent );
+        else alpha = 0.0f;
+
+        color[3] = (ubyte)((real32)color[3] * SAT(alpha) * fade);
     }
-    else
+    else if (specInd == shSpecModeLights)
     {
-        nx = -xnorm.x;
-        ny = -xnorm.y;
-        nz = -xnorm.z;
-    }
+        real32 alpha = 0.0f;
+        udword count = min(2,lightNumLights);
 
-    if (specInd == 0)
-    {
-        nDotVP = nz;
-        if (nDotVP > 0.0f)
-        {
-            alpha = powf(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[specInd]);
-        }
-        else
-        {
-            alpha = 0.0f;
-        }
+        for (udword li=0; li<count; li++) {
+            vector vpInfNorm;
+            memcpy( &vpInfNorm, shLight[li].position, sizeof(vector) );
+            real32 dot = vecDotProduct(xnorm, vpInfNorm);
 
-        color[3] = (ubyte)(fade * (real32)color[3] * CLAMP(alpha, 0.0f, 1.0f));
-    }
-    else if (specInd == 1)
-    {
-        vector vpInfNorm[2];
-        //real32 alpha0;
-        real32 alpha1;
-        sdword l, c;
-
-        memcpy(&vpInfNorm[0], shLight[0].position, sizeof(vector));
-        memcpy(&vpInfNorm[1], shLight[1].position, sizeof(vector));
-
-        alpha1 = 0.0f;
-        for (l = 0; l < lightNumLights; l++)
-        {
-            nDotVP = nx * vpInfNorm[l].x
-                   + ny * vpInfNorm[l].y
-                   + nz * vpInfNorm[l].z;
-            if (nDotVP > 0.0f)
-            {
-                alpha1 += powf(nDotVP, shSpecularExponent[1]);
-            }
+            if (dot > 0.0f)
+                alpha += powf( dot, exponent );
         }
 
-        alpha = 2.3f * alpha1;//(0.9f * alpha0) + (0.23f * alpha1);
-
-        c = (sdword)(fade * color[3] * alpha);
-        c = CLAMP(c, 0, 255);
-
-        color[3] = (ubyte)c;
+        sdword c = (sdword)(color[3] * alpha * fade * 2.3f);
+        color[3] = (ubyte) min( c, 255 );
     }
-    else/* if (specInd == 2)*/
+    else/* if (specInd == shSpecModeCamera)*/
     {
-        shTransformVertex(&xvobj, vobj, m);
-        veye.x = xvobj.x;
-        veye.y = xvobj.y;
-        veye.z = xvobj.z;
+        vector veye;
+        shTransformVertex(&veye, vobj, m);
         vecNormalize(&veye);
 
-        nDotVP = nx * veye.x + ny * veye.y + nz * veye.z;
-        nDotVP = fabsf( nDotVP );
+        real32 dot = vecDotProduct( xnorm, veye );
+        dot = dot<0.0f ? -dot : +dot; // abs
         
-        if (nDotVP > 0.0f)
-        {
-            alpha = powf(CLAMP(nDotVP, 0.0f, 1.0f), shSpecularExponent[2]);
-        }
-        else
-        {
-            alpha = 0.0f;
-        }
+        real32 alpha;
+        if (dot > 0.0f)
+             alpha = powf( SAT(dot), exponent );
+        else alpha = 0.0f;
 
         color[1] = (ubyte)((real32)color[1] * CLAMP(alpha, 0.0f, 0.92f));
-        color[3] = (ubyte)(fade * (real32)color[3] * CLAMP(alpha, 0.0f, 1.0f));
+        color[3] = (ubyte)(fade * (real32)color[3] * SAT(alpha));
     }
 }
 

@@ -89,7 +89,7 @@ bool8 g_HiddenRemoval = TRUE;
 bool  g_Points = FALSE;
 bool  g_Output = FALSE;
 
-static sdword specIndex;
+static sdword specMode;
 static ubyte specColour[4];
 
 #if MESH_LOAD_DUMMY_TEXTURE
@@ -193,7 +193,7 @@ void meshSetFade(real32 fade)
 ----------------------------------------------------------------------------*/
 void meshSetSpecular(sdword mode, ubyte red, ubyte green, ubyte blue, ubyte alpha)
 {
-    specIndex = mode;
+    specMode = mode;
     if (mode == -1)
     {
         g_SpecHack = 0;
@@ -1451,7 +1451,7 @@ void meshSpecColour(normalentry* normal, vertexentry* vertex, real32* m, real32*
         colour[1] = specColour[1];
         colour[2] = specColour[2];
         colour[3] = specColour[3];
-        shSpecularColour(specIndex, 0, &vert, &norm, colour, m, minv);
+        shSpecularColour(specMode, 0, &vert, &norm, colour, m, minv);
         glColor4ub(colour[0], colour[1], colour[2], colour[3]);
     }
 }
@@ -1464,7 +1464,7 @@ void meshMorphedSpecColour(vector* normal, real32* m, real32* minv)
     colour[1] = specColour[1];
     colour[2] = specColour[2];
     colour[3] = specColour[3];
-    shSpecularColour(specIndex, 0, NULL, normal, colour, m, minv);
+    shSpecularColour(specMode, 0, NULL, normal, colour, m, minv);
     glColor4ub(colour[0], colour[1], colour[2], colour[3]);
 }
 

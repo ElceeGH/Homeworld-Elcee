@@ -843,7 +843,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
 
     if (trail->style == 4 || trail->style == 5)
     {
-        meshSetSpecular(2,
+        meshSetSpecular(shSpecModeCamera,
                         (ubyte)TRAIL_GLOW_1_RED,
                         (ubyte)TRAIL_GLOW_1_GREEN,
                         (ubyte)TRAIL_GLOW_1_BLUE,
@@ -851,7 +851,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     }
     else
     {
-        meshSetSpecular(2,
+        meshSetSpecular(shSpecModeCamera,
                         (ubyte)TRAIL_GLOW_2_RED,
                         (ubyte)TRAIL_GLOW_2_GREEN,
                         (ubyte)TRAIL_GLOW_2_BLUE,
@@ -934,7 +934,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     g_NoMatSwitch = TRUE;
     glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
-    shSetExponent(2, trail->exponent); // Mode 2 = light vector from camera along -z
+    shSetExponent(shSpecModeCamera, trail->exponent);
 
     // Shader program stuff
     static GLuint* glowProg     = NULL;
@@ -1001,7 +1001,7 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     rndAdditiveBlends(FALSE);
     glPopMatrix();
 
-    meshSetSpecular(-1, 0, 0, 0, 0);
+    meshSetSpecular(shSpecModeOff, 0, 0, 0, 0);
 }
 
 /*-----------------------------------------------------------------------------
