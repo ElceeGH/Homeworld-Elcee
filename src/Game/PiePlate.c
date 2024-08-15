@@ -726,21 +726,23 @@ void pieMovementCursorDraw(real32 distance)
 
     const color c = moveLineColor;
 
+    // Make stipples more readable when the camera is far away.
+    real32 stippleStep = smSensorsActive ? 160.0f : 96.0f;
+
     if (ABS(piePointSpecZ) < pieDottedDistance) // point on standard Z-plane?
     {
-        primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
+        primLine3Stipple(&piePlanePoint, &selCentrePoint, c, stippleStep);//draw line from centre to mouse point on x/y plane
         primPoint3(&piePlanePoint, c); // Cap off
     }
     else
     {
-        primLine3(&pieHeightPoint, &selCentrePoint, c);//draw from centre of dish to height point
+        primLine3Stipple(&pieHeightPoint, &selCentrePoint, c,stippleStep);//draw from centre of dish to height point
         primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
 
-        // In OG Homeworld, the movement line was originally stippled.
-        // I've gone and stippled the inter-plane height line here, misremembering, but it looks good.
-        // Always have the stipple grow from the reference plane, and make it more granular when zoomed out in sensors
-        real32 step = smSensorsActive ? 160.0f : 96.0f;
-        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c, step);
+        // Elcee: In OG Homeworld, the movement line was originally stippled.
+        // I've gone and stippled the inter-plane height line here too, misremembering, but it looks good.
+        // Always have the stipple grow from the reference plane (don't want movement on the fixed part)
+        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c, stippleStep);
 
         //destination circle
         sdword nSegments;
