@@ -1228,9 +1228,9 @@ renderDerelictAsDot:
                         primLineLoopPoint3F(shipTO[index].x + icon->loc[i].x * radius,
                                        shipTO[index].y + icon->loc[i].y * radius);
                 }
-            }
-            primLineLoopEnd2();
 
+                primLineLoopEnd2();
+            }
         }
         for (index = 0; index < nBigDots; index++)
         {
