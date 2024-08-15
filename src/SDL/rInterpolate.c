@@ -207,6 +207,7 @@ typedef struct ShipInterp {
 typedef struct Interp {
     SpaceObj* obj;    ///< Object being interpolated, null if an unused slot
     bool      exists; ///< Keepalive flag. Cleared before each update. If not set, entry gets removed from the list.
+    ObjType   type;   ///< Type of object upon interp creation. Obviously, this shouldn't change... But it can. And that's bad.
     vector    pprev;  ///< Previous uninterpolated position
     vector    pcurr;  ///< Current  uninterpolated position
     vector    cprev;  ///< Previous uninterpolated collision position
@@ -473,6 +474,7 @@ static void setPrevAndAdd( SpaceObj* obj ) {
     }
 
     // Populate initial info
+    interp->type  = obj->objtype;
     interp->pprev = obj->posinfo.position;
 
     if (canInterpCollision( obj )) {
@@ -501,6 +503,10 @@ static void setCurrAndMarkExists( SpaceObj* obj ) {
 
     // Doesn't exist? Don't do anything.
     if (interp == NULL)
+        return;
+
+    // Changed on us mid-update? Then don't start existing. But why does this happen, memory allocations being reused right away? (Yep)
+    if (obj->objtype != interp->type)
         return;
 
     // Mark as existing, store current pos
@@ -686,6 +692,7 @@ void rintUnivUpdatePreMove( void ) {
     // Use the option to decide whether interpolation is enabled
     updateEnabled = opRenderInterpolation;
 
+    // Don't do anything if interpolation is off
     if ( ! updateEnabled)
         return;
 
@@ -706,12 +713,8 @@ void rintUnivUpdatePostDestroy( void ) {
         return;
 
     iterateSpaceObjectsUniverse( setCurrAndMarkExists, filterInterpAllowed );
-
-    // Clean up any objects that got destroyed between updates.
-    cleanInterps();
-
-    // Empty the render list. Must be last event before rendering!
-    clearRenderList();
+    cleanInterps();    // Clean up any objects that got destroyed between updates.
+    clearRenderList(); // Empty the render list. Must be last event before rendering!
 }
 
 
@@ -756,7 +759,7 @@ static void clearRenderList( void ) {
 void rintRenderBeginAndInterpolate( void ) {
     // Set the render fraction
     updateTimeFraction();
-
+     
     // Don't do anything when NIS cutscenes are running, or the game isn't running
     if ( ! interpRenderAllowed())
         return;
