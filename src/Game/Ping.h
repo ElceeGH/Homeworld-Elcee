@@ -32,7 +32,7 @@
 /*=============================================================================
     Definitions:
 =============================================================================*/
-#define PNG_TaskPeriod              0.5f           //evaluate the pings every this often.
+#define PNG_TaskPeriod              0.125f          //evaluate the pings every this often.
 
 #define PING_AnomalyColor           colWhite
 #define PING_AnomalySize            1000.0f
