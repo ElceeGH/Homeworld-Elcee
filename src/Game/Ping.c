@@ -526,6 +526,8 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 yScreen += rowHeight + 1;
             }
         }
+
+        // Shows the tactical overlay ship classes in the corner
         for (shipClass = 0; shipClass < NUM_CLASSES; shipClass++)
         {
             if (!toClassUsed[shipClass][0])
@@ -544,8 +546,8 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
 
             for (index = icon->nPoints - 1; index >= 0; index--)
             {
-               primLineLoopPoint3F(realMargin + primScreenToGLX(rowHeight*1.5) + icon->loc[index].x * radius,
-                                          primScreenToGLY(yScreen + rowHeight/2) + icon->loc[index].y * radius);
+               primLineLoopPoint3F(realMargin + primScreenToGLX(rowHeight*1.5)         + icon->loc[index].x * radius,
+                                                primScreenToGLY(yScreen + rowHeight/2) + icon->loc[index].y * radius);
             }
             primLineLoopEnd2();
             yScreen += rowHeight + 1;
