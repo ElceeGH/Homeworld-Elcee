@@ -1095,20 +1095,7 @@ void cloudRenderSystem(cloudSystem* system, sdword lod)
     attrib[0] = 11.0f;
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, attrib);
 
-    switch (lod)
-    {
-    case 0:
-        ellipsoid_render(&ellipseLOD[0], radius);
-        break;
-    case 1:
-        ellipsoid_render(&ellipseLOD[1], radius);
-        break;
-    case 2:
-        ellipsoid_render(&ellipseLOD[2], radius);
-        break;
-    default:
-        ellipsoid_render(&ellipseLOD[3], radius);
-    }
+    ellipsoid_render(&ellipseLOD[ min(3,lod) ], radius);
 
     rndLightingEnable(FALSE);
 
