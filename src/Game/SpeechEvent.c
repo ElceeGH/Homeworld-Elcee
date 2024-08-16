@@ -689,7 +689,7 @@ void speechQueueUpdate(void)
 
         /* are we ready to play something? */
         if ((pSQueue->status == SOUND_STOPPED) && (pSQueue->nextevent >= SOUND_OK) && (!pSQueue->locked) &&
-            (((universe.totaltimeelapsed - pSQueue->timeover) >= SPEECH_PAUSE) || !gameIsRunning || animaticIsPlaying || FalkosFuckedUpTutorialFlag))
+            (((universe.totaltimeelapsed - pSQueue->timeover) >= SPEECH_PAUSE) || !gameIsRunning || animaticIsPlaying || nisIsRunning || FalkosFuckedUpTutorialFlag))
         {
             /* find the event that we should play */
 
