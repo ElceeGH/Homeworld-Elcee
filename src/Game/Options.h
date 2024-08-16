@@ -79,8 +79,12 @@ extern sdword opCPUAttack;
 extern udword opPauseOrders;
 extern udword opShipRecoil;
 extern udword opEffectFreqMult;
-extern udword opLoadTimeMinMs;
 extern bool   opRenderInterpolation;
+extern bool   opRenderBtgDitherEnable;
+extern bool   opRenderBtgDitherTemporal;
+extern udword opRenderBtgDitherBits;
+extern bool   opRenderShaderReload;
+extern udword opLoadTimeMinMs;
 
 void opOptionsSaveCustomEffectsSettings(void);
 

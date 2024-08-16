@@ -452,9 +452,14 @@ sdword opSaveInfoOverlay = 1;
 sdword opNumEffects;
 sdword opSaveNumEffects;
 
-udword opEffectFreqMult      = 100 * 2; ///< It's a percentage, 200% by default
-udword opLoadTimeMinMs       = 3000;    ///< 3 seconds loading time
-bool   opRenderInterpolation = TRUE;
+// New option defaults
+udword opEffectFreqMult          = 100 * 2; ///< It's a percentage, 200% by default
+bool   opRenderInterpolation     = TRUE;   ///< So nice
+bool   opRenderBtgDitherEnable   = TRUE;   ///< Pretty much always looks better
+bool   opRenderBtgDitherTemporal = TRUE;   ///< Enable by default, but rarely people get headaches so optional
+udword opRenderBtgDitherBits     = 6;      ///< Target baseline LCD monitor by default
+bool   opRenderShaderReload      = FALSE;  ///< For realtime editing during development
+udword opLoadTimeMinMs           = 3000;   ///< 3 seconds loading time by default
 
 
 // Game Options - Default Values

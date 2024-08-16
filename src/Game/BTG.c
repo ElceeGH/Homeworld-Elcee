@@ -17,6 +17,7 @@
 #include "main.h"
 #include "mainrgn.h"
 #include "Memory.h"
+#include "Options.h"
 #include "render.h"
 #include "rglu.h"
 #include "texreg.h"
@@ -1258,9 +1259,9 @@ void btgRender(void)
     dnext = (udword*)_bgByte;
     dlast = (udword*)lastbg;
 
-    depthOn = glIsEnabled(GL_DEPTH_TEST);
     lightOn = rndLightingEnable(FALSE);
-    texOn = glIsEnabled(GL_TEXTURE_2D);
+    depthOn = glIsEnabled(GL_DEPTH_TEST);
+    texOn   = glIsEnabled(GL_TEXTURE_2D);
     blendOn = glIsEnabled(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -1284,17 +1285,28 @@ void btgRender(void)
 
     // Dithering alleviates banding on the backgrounds.
     static GLuint* ditherProgram       = NULL;
-    static GLuint  ditherTemporalValue = 0;
+    static GLint   ditherScaleLoc      = -1;
     static GLint   ditherTemporalLoc   = -1;
 
-    if ( ! ditherProgram) {
+    if ( ! ditherProgram && opRenderBtgDitherEnable) {
         ditherProgram     = loadShaderProgram( "dither" );
+        ditherScaleLoc    = glGetUniformLocation( *ditherProgram, "uDitherScale"    );
         ditherTemporalLoc = glGetUniformLocation( *ditherProgram, "uDitherTemporal" );
     }
 
-    glUseProgram( *ditherProgram );
-    glUniform1i( ditherTemporalLoc, ditherTemporalValue & 0x3F );
-    ditherTemporalValue++;
+    // Apply dithering options
+    if (opRenderBtgDitherEnable) {
+        glUseProgram( *ditherProgram );
+
+        udword ditherScale = (1 << opRenderBtgDitherBits) - 1;
+        glUniform1f( ditherScaleLoc, (float) ditherScale );
+
+        if (opRenderBtgDitherTemporal) {
+            static udword ditherTemporalValue = 0;
+            glUniform1i( ditherTemporalLoc, ditherTemporalValue & 0x3F );
+            ditherTemporalValue++;
+        }
+    }
 
     //use DrawElements to render the bg polys
     glEnableClientState(GL_COLOR_ARRAY);

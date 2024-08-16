@@ -737,14 +737,18 @@ scriptEntry utyOptionsList[] =
     {"FirewallDetect",                 scriptSetUdwordCB, &firewallButton},
 
   {"\n[New HWSDL Options]\n", scriptSetStringCB, &filecfgblankspace},
-    {"CollectResourcesAtEndOfMission", scriptSetBool,     &spCollectResourcesAtEndOfMission},
-    {"PauseOrders",                    scriptSetUdwordCB, &opPauseOrders},
-    {"ShipRecoil",                     scriptSetUdwordCB, &opShipRecoil},
-    {"ShipsAlwaysUseOwnerColors",      scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
-    {"TimeCompressionFactor",          scriptSetUbyteCB,  &turboTimeCompressionFactor},
-    {"RenderInterpolation",            scriptSetBool,     &opRenderInterpolation},
-    {"EffectFrequencyPercent",         scriptSetUdwordCB, &opEffectFreqMult},
-    {"LoadingTimeMinimumMillisecs",    scriptSetUdwordCB, &opLoadTimeMinMs},
+    {"CollectResourcesAtEndOfMission",      scriptSetBool,     &spCollectResourcesAtEndOfMission},
+    {"PauseOrders",                         scriptSetUdwordCB, &opPauseOrders},
+    {"ShipRecoil",                          scriptSetUdwordCB, &opShipRecoil},
+    {"ShipsAlwaysUseOwnerColors",           scriptSetBool,     &utyShipsAlwaysUseOwnerColors},
+    {"TimeCompressionFactor",               scriptSetUbyteCB,  &turboTimeCompressionFactor},
+    {"RenderBackgroundDitherEnable",        scriptSetBool,     &opRenderBtgDitherEnable},
+    {"RenderBackgroundDitherTemporal",      scriptSetBool,     &opRenderBtgDitherTemporal},
+    {"RenderBackgroundDitherColorBits",     scriptSetUdwordCB, &opRenderBtgDitherBits},
+    {"RenderInterpolation",                 scriptSetBool,     &opRenderInterpolation},
+    {"RenderShaderRealtimeEditEnable",      scriptSetBool,     &opRenderShaderReload},
+    {"EffectFrequencyPercent",              scriptSetUdwordCB, &opEffectFreqMult},
+    {"LoadingTimeMinimumMillisecs",         scriptSetUdwordCB, &opLoadTimeMinMs},
 
     END_SCRIPT_ENTRY
 };

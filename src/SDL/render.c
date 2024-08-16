@@ -47,6 +47,7 @@
 #include "NetCheck.h"
 #include "NIS.h"
 #include "Objectives.h"
+#include "Options.h"
 #include "PiePlate.h"
 #include "prim2d.h"
 #include "prim3d.h"
@@ -1045,6 +1046,7 @@ static bool setupPixelFormat( void )
 
     useVBO = glCheckExtension("GL_ARB_vertex_buffer_object");
 
+    // Init render interpolation system
     rintInit();
 
 	return TRUE;
@@ -3822,6 +3824,9 @@ DEFINE_TASK(rndRenderTask)
     while (1)
     {
         primErrorMessagePrint();
+
+        if (opRenderShaderReload)
+            reloadAllShaderPrograms();
 
         subTitlesUpdate();
 

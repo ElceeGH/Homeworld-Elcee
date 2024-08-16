@@ -19,7 +19,7 @@
 #version 120
 
 // Uniforms
-uniform vec4  uDitherScale       = vec4(63.0); // Derived from output bit depth.      Value = power( 2, bits ) - 1
+uniform float uDitherScale       = 63.0;       // Derived from output bit depth.      Value = power( 2, bits ) - 1
 uniform int   uDitherTemporal    = 0;          // Temporal variation in bayer dither. Value = frameindex & 0x3F
 uniform float uDitherPattern[64] = float[64](  // Ordered dither pattern. 8x8 bayer is the default.
       0.0/255.0,  130.0/255.0,   32.0/255.0,  162.0/255.0,    8.0/255.0,  138.0/255.0,   40.0/255.0,  170.0/255.0,
