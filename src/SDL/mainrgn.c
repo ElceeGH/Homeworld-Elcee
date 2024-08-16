@@ -76,6 +76,7 @@
 #include "UnivUpdate.h"
 #include "utility.h"
 #include "rStateCache.h"
+#include "rResScaling.h"
 
 #undef UTY_SCREEN_SHOT
 

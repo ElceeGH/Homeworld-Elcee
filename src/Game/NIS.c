@@ -42,6 +42,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "miscUtil.h"
+#include "rResScaling.h"
 #include "rStateCache.h"
 
 #ifdef _MSC_VER
