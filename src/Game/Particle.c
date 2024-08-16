@@ -1420,6 +1420,73 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
     return hits;
 }
 
+
+
+// This comically heavy for a particle render function, but lol to hell with it
+// There aren't that many particles compared to a modern game so there's a huge
+// amount of headroom!
+static real32 getScreenSpaceLineLength( hmatrix* matProj, hmatrix* matMV, vector* pos, real32 length ) {
+    // Project origin into camera space
+    hvector hWorld, hCam;
+    vecMakeHVecFromVec( hWorld, *pos );
+    hmatMultiplyHMatByHVec( &hCam, matMV, &hWorld );
+
+    // Make another vector that's offset by the worldspace length on some axis
+    hvector hCamOffs = hCam;
+    hCamOffs.x += length;
+
+    // Project both points into screenspace
+    hvector hScreen, hScreenOffs;
+    hmatMultiplyHMatByHVec( &hScreen,     matProj, &hCam     );
+    hmatMultiplyHMatByHVec( &hScreenOffs, matProj, &hCamOffs );
+
+    // Length is the difference between the two projected positions on the offset axis
+    // Gotta account for the divide and scale to viewport size for that axis
+    real32 ndcA    = hScreen    .x / hScreen    .w;
+    real32 ndcB    = hScreenOffs.x / hScreenOffs.w;
+    real32 ndcDiff = ABS(ndcA - ndcB);
+    return ndcDiff * (real32) MAIN_WindowWidth;
+}
+
+
+
+// Helper for partRenderLineSystem
+static void partRenderLineGetPositions( const particle *p, udword flags, vector* posA, vector* posB ) {
+    vector pos = p->position;
+
+    if (bitTest(flags, PART_WORLDSPACE))
+    {
+        vector rv = p->wVel;
+        vecNormalize(&rv);
+        if (isnan((double)rv.x) || isnan((double)rv.y) || isnan((double)rv.z) ||
+			(ABS(rv.x) < REALlySmall && ABS(rv.y) <= REALlySmall && ABS(rv.z) <= REALlySmall))
+        {
+            rv.z = 1.0f;
+        }
+        if (!isnan((double)p->length))
+        {
+            vecMultiplyByScalar(rv, p->length);
+        }
+        vecAddTo(pos, rv);
+    }
+    else
+    {
+        vector rv = p->rvec;
+        vecMultiplyByScalar(rv, p->velR);
+        rv.z += p->velLOF;
+        if (rv.x == 0.0f && rv.y == 0.0f && rv.z == 0.0f)
+        {
+            rv.z = 1.0f;
+        }
+        vecNormalize(&rv);
+        vecMultiplyByScalar(rv, p->length);
+        vecAddTo(pos, rv);
+    }
+    
+    *posA = p->position;
+    *posB = pos;
+}
+
 /*-----------------------------------------------------------------------------
     Name        : partRenderLineSystem
     Description : render a line system
@@ -1433,87 +1500,89 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
 {
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
+    glEnable(GL_BLEND);
 
     bool alpha = FALSE;
     if (bitTest(flags, PART_ALPHA))
     {
         alpha = TRUE;
         rndAdditiveBlends(FALSE);
-        glEnable(GL_BLEND);
     }
 
     bool   texEnabled   = rndTextureEnable(FALSE);
     bool   lightEnabled = rndLightingEnable(FALSE);
-    real32 resScaling   = sqrtf(getResDensityRelative());
+    real32 resScaling   = 2.0f * sqrtf(getResDensityRelative());
+
+    // Get projection matrix for screenspace line length tests
+    hmatrix matProj, matMV;
+    glGetFloatv( GL_PROJECTION_MATRIX, &matProj.m11 );
+    glGetFloatv( GL_MODELVIEW_MATRIX,  &matMV  .m11 );
 
     udword i, hits;
     for (i = hits = 0; i < n; i++, p++)
     {
         if (p->lifespan < 0.0f)
             continue;
-        else
-            hits++;
+        else hits++;
+
         if (p->waitspan > 0.0f)
             continue;
+
+        vector posA, posB;
+        partRenderLineGetPositions( p, flags, &posA, &posB );
+        real32 nativeLength = sqrtf(vecDistanceSquared( posA, posB ));
 
         handleIllum(p);
         rndAdditiveBlends( bitTest(p->flags,PART_ADDITIVE) );
 
-        // Give lines resolution scaling, but also thin them out based on length.
-        // Note: this is worldspace length.
-        real32 lineWidth  = p->scale * resScaling;
-        real32 lineThresh = lineWidth * 64.0f;
-        real32 lineShrink = p->length<lineWidth ?  p->length/lineWidth  :  1.0f;
-        glLineWidth(lineWidth * lineShrink);
+        // Give lines resolution scaling, but also thin them out when they get too short, so it doens't look like hellcrap.
+        // This all relates to screenspace, not worldspace.
+        real32 lineWidthMin     = 0.75f;             // Minimum allowed width, for maintaining good visibility
+        real32 lineAspectMax    = 12.0f;             // Start fading when width exceeds length by a factor of this
+        real32 lineLengthMin    = 2.5f * resScaling; // Absolute screenspace length where width reduction begins no matter what
+        real32 lineWidth        = max( lineWidthMin, resScaling );
+        real32 lineLengthThresh = max( lineLengthMin, lineWidth * lineAspectMax );
+
+        real32 lineLength      = getScreenSpaceLineLength( &matProj, &matMV, &posA, nativeLength );
+        real32 lineLengthRatio = 1.0f;
+        if (lineLength <= lineLengthThresh) {
+            lineLengthRatio  = lineLength / lineLengthThresh;
+            lineWidth       *= lineLengthRatio;
+        }
+
+        // Fade out based on lifespan too
+        real32 lifeCur    = p->lifespan;
+        real32 lifeThresh = 1.0f / 30.0f; // In seconds
+        real32 lifeRatio  = min( 1.0f, lifeCur / lifeThresh );
+        real32 alphaMul   = lifeRatio;
+
+        // Thin lines out based on their alpha. It looks ugly if they fade out still really thick
+        if (alpha || alphaMul < 1.0f) {
+            real32 cur    = alpha ? p->icolor[3]*alphaMul : alphaMul; // Current alpha
+            real32 thresh = 0.15f;                     // Start thinning at this alpha
+            real32 ratio  = min( 1.0f, cur / thresh ); // Clamped relative alpha
+            lineWidth *= sqrtf(ratio);                 // Lerp down to zero, but relatively slowly
+        }
+
+        lineWidth = max( lineWidth, lineWidthMin ); // Never be TOO thin
+        lineWidth = min( lineWidth, lineLength );   // Never be longer than you are wide
+        glLineWidth( lineWidth );
 
         glBegin(GL_LINES);
-        if (alpha)
-             glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], p->icolor[3]);
-        else glColor3f(p->icolor[0], p->icolor[1], p->icolor[2]);
+            if (alpha)
+                 glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], alphaMul * p->icolor[3]);
+            else glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], alphaMul);
         
-        vector pos = p->position;
-        if (bitTest(flags, PART_WORLDSPACE))
-        {
-            vector rv = p->wVel;
-            vecNormalize(&rv);
-            if (isnan((double)rv.x) || isnan((double)rv.y) || isnan((double)rv.z) ||
-				(ABS(rv.x) < REALlySmall && ABS(rv.y) <= REALlySmall && ABS(rv.z) <= REALlySmall))
-            {
-                rv.z = 1.0f;
-            }
-            if (!isnan((double)p->length))
-            {
-                vecMultiplyByScalar(rv, p->length);
-            }
-            vecAddTo(pos, rv);
-        }
-        else
-        {
-            vector rv = p->rvec;
-            vecMultiplyByScalar(rv, p->velR);
-            rv.z += p->velLOF;
-            if (rv.x == 0.0f && rv.y == 0.0f && rv.z == 0.0f)
-            {
-                rv.z = 1.0f;
-            }
-            vecNormalize(&rv);
-            vecMultiplyByScalar(rv, p->length);
-            vecAddTo(pos, rv);
-        }
-        glVertex3f(p->position.x, p->position.y, p->position.z);
-        glVertex3f(pos.x, pos.y, pos.z);
+            glVertex3f(posA.x, posA.y, posA.z);
+            glVertex3f(posB.x, posB.y, posB.z);
         glEnd();
     }
 
-    if (alpha)
-    {
-        glDisable(GL_BLEND);
-    }
     rndAdditiveBlends(FALSE);
-
     rndTextureEnable(texEnabled);
     rndLightingEnable(lightEnabled);
 
+    glDisable(GL_BLEND);
     glLineWidth(linewidth);
     return hits;
 }
