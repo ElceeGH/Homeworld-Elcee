@@ -731,12 +731,12 @@ void pieMovementCursorDraw(real32 distance)
 
     if (ABS(piePointSpecZ) < pieDottedDistance) // point on standard Z-plane?
     {
-        primLine3Stipple(&piePlanePoint, &selCentrePoint, c, stippleStep);//draw line from centre to mouse point on x/y plane
+        primLine3Stipple(&selCentrePoint, &piePlanePoint, c, stippleStep);//draw line from centre to mouse point on x/y plane
         primPoint3(&piePlanePoint, c); // Cap off
     }
     else
     {
-        primLine3Stipple(&pieHeightPoint, &selCentrePoint, c,stippleStep);//draw from centre of dish to height point
+        primLine3Stipple(&selCentrePoint, &pieHeightPoint, c,stippleStep);//draw from centre of dish to height point
         primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
 
         // Elcee: In OG Homeworld, the movement line was originally stippled.
