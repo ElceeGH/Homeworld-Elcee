@@ -809,7 +809,6 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
         trail->ribbonadjust = 1.0f;
     }
 
-//    maxvel = ship->staticinfo->staticheader.maxvelocity;
     maxvel = tacticsGetShipsMaxVelocity(ship);
     VECCOPY(&vel, &ship->posinfo.velocity);
     mag = sqrtf(vecMagnitudeSquared(vel));
@@ -936,6 +935,9 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     glShadeModel(GL_SMOOTH);
     shSetExponent(shSpecModeCamera, trail->exponent);
 
+    // Make mesh renderer aware that we're doing specular on GPU. Big performance gain.
+    g_MeshHardwareAcceleratedSpecular = TRUE;
+
     // Shader program stuff
     static GLuint* glowProg     = NULL;
     static GLint   glowLightLoc = -1;
@@ -958,9 +960,6 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     glUniform3fv( glowLightLoc, 1, lightVec );
     glUniform1f ( glowSpecLoc, trail->exponent );
     glUniform1f ( glowFadeLoc, meshFadeAlpha );
-
-    // Make mesh renderer aware that we're doing specular on GPU
-    g_MeshHardwareAcceleratedSpecular = TRUE;
 
     // Decide which mesh to render
     udword meshLodMap[5]   = { 0, 0, 1, 2, 3 };
@@ -1890,7 +1889,7 @@ void trailDraw(vector *current, shiptrail *trail, sdword LOD, sdword teamIndex)
 
         wides[0] = wides[1] = FALSE;
 
-        for (i = 0; i < n; i++)
+        for (i = 1; i < n; i++) // Don't make the first one wide
         {
             wides[i] = trail->segments[i].wide;
         }
