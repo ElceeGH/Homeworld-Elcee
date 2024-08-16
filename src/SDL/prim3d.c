@@ -404,6 +404,66 @@ void primCircleOutlineZ(vector *centre, real32 radius, sdword nSegments, color c
     primCircleOutline3(centre, radius, nSegments, 0, c, Z_AXIS);
 }
 
+
+
+// Draw a point that fades out from the centre to the edge.
+// Used to replace primBlurryPoint22() and friends with a resolution-scalable alternative.
+void primBlurryPoint3Fade( vector* centre, real32 size, color col, real32 fade ) {
+    // This is for tiny objects, so just use a small fixed number of vertexes. YAGNI!
+    udword steps = 16;
+
+    // Circle edge position and rotational transform info
+    real32 ex   = 0;
+    real32 ey   = size;
+    real32 roto = DEG_TO_RAD(360.0f / (real32)steps);
+    real32 rotx = cosf( roto );
+    real32 roty = sinf( roto );
+
+    glEnable( GL_BLEND );
+    glDepthMask( GL_FALSE );
+    glShadeModel( GL_SMOOTH );
+    rndBillboardEnable( centre );
+
+    // Render fan with the centre at given alpha and edges transparent
+    glBegin( GL_TRIANGLE_FAN );
+        
+        // Colour components
+        ubyte red   = colRed(col);
+        ubyte green = colBlue(col);
+        ubyte blue  = colGreen(col);
+    
+        // Origin in centre
+        glColor4ub( red, green, blue, (ubyte) (fade*255.0f) );
+        glVertex2f( 0.0f, 0.0f );
+
+        // All points at the edge have the same colour
+        glColor4ub( red, green, blue, 0 );
+
+        // Rotate around the circle's edge
+        for (udword i=0; i<steps; i++) {
+            glVertex2f( ex, ey );
+            
+            // Rotate around Z
+            real32 nx = ex*rotx + ey*-roty;
+            real32 ny = ex*roty + ey*+rotx;
+            ex = nx;
+            ey = ny;
+        }
+
+        // Complete last triangle
+        glVertex2f( ex, ey );
+    
+    // Donezo, go back to normal
+    glEnd();
+
+    rndBillboardDisable();
+    glShadeModel( GL_FLAT );
+    glDepthMask( GL_TRUE );
+    glDisable( GL_BLEND );
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : primEllipseOutlineZ
     Description : Draw an axis-aligned ellipse centred about a specified point on the Z plane

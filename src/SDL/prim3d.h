@@ -44,6 +44,9 @@ void primCircleOutline3(vector *centre, real32 radius, sdword nSlices, sdword nS
 void primCircleOutlineZ(vector *centre, real32 radius, sdword nSegments, color c);
 void primEllipseOutlineZ(vector *centre, real32 rx, real32 ry, sdword nSegments, color c);
 
+//draw 3D billboarded edge-faded circle
+void primBlurryPoint3Fade( vector* centre, real32 size, color col, real32 fade );
+
 void primSolidTexture3(vector *p1, real32 size, color c, trhandle tex);
 void primSolidTexture3Fade(vector *p1, real32 size, color c, trhandle tex, real32 fade);
 
