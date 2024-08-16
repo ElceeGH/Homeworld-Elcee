@@ -3056,7 +3056,7 @@ renderDefault:
                             rndTextureEnable(FALSE);
                             rndLightingEnable(FALSE);
                             const real32 radius    = ((Ship *)spaceobj)->collInfo.selCircleRadius; // original scaling, too small now...
-                            const real32 pointSize = max(radius,0.65f) * max(1.0f, getResDensityRelative());
+                            const real32 pointSize = max(radius,0.65f) * getResDensityRelative();
                             primPointSize3(&spaceobj->posinfo.position, pointSize, spaceobj->staticinfo->staticheader.LOD->pointColor);
                             rndLightingEnable(TRUE);
                             break;
