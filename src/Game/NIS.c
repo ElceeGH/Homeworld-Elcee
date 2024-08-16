@@ -42,6 +42,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "miscUtil.h"
+#include "rInterpolate.h"
 #include "rResScaling.h"
 #include "rStateCache.h"
 
@@ -52,21 +53,24 @@
 #endif
 
 
+
 /*=============================================================================
     Data:
 =============================================================================*/
-extern regionhandle ghMainRegion;
-bool nisScreenStarted = FALSE;
 
-bool nisIsRunning = FALSE;
-bool nisCaptureCamera = FALSE;
-bool nisEnabled = TRUE;
-Camera *nisCamera = NULL;
+extern regionhandle ghMainRegion;
+
+bool    nisScreenStarted = FALSE;
+bool    nisCaptureCamera = FALSE;
+real32  nisUpdatePeriod  = UNIVERSE_UPDATE_PERIOD; // Note: Gets overridden when the task starts.
+bool    nisIsRunning     = FALSE;
+bool    nisEnabled       = TRUE;
+Camera* nisCamera        = NULL;
+bool    nisPaused        = FALSE;
 
 #if NIS_TIME_CONTROLS
 real32 nisPlayFactor = 1.0f;
 #endif
-bool nisPaused = FALSE;
 
 #if NIS_PRINT_INFO
 char nisInfoString[256] = "";
@@ -425,7 +429,7 @@ DEFINE_TASK(nisUpdateTask)
         //code for playing in-game NIS's
         if (nisScissorFadeOut != 0)
         {                                                   //if fading the scissor window out
-            nisScissorFadeTime += (real32)UNIVERSE_UPDATE_PERIOD;
+            nisScissorFadeTime += nisUpdatePeriod;
             nisFullyScissored = FALSE;                      //window no longer fully scissored
             if (nisScissorFadeTime >= nisScissorFadeOut)
             {                                               //if at the end of the fade
@@ -444,14 +448,14 @@ DEFINE_TASK(nisUpdateTask)
         //fade to/from black
         if (nisBlackFade != nisBlackFadeDest)
         {
-            if (ABS(nisBlackFade - nisBlackFadeDest) <= UNIVERSE_UPDATE_PERIOD)
+            if (ABS(nisBlackFade - nisBlackFadeDest) <= nisUpdatePeriod)
             {                                           //if the end of the fade
                 nisBlackFade = nisBlackFadeDest;
                 nisBlackFadeRate = 0.0f;
             }
             else
             {
-                nisBlackFade += nisBlackFadeRate * UNIVERSE_UPDATE_PERIOD;
+                nisBlackFade += nisBlackFadeRate * nisUpdatePeriod;
             }
 
 #if NIS_VERBOSE_LEVEL >= 1
@@ -470,7 +474,7 @@ DEFINE_TASK(nisUpdateTask)
                 nisScissorFadeIn = nisScissorFadeTime = 0.0f;//don't do any more fading
                 nisScissorFade = 0.0f;
             }
-            nisScissorFadeTime += UNIVERSE_UPDATE_PERIOD;
+            nisScissorFadeTime += nisUpdatePeriod;
         }
 
         if (thisNisPlaying)
@@ -481,7 +485,7 @@ DEFINE_TASK(nisUpdateTask)
             }
             //if (!nisPaused)
             {                                               //actually update NIS if NIS unpaused
-                newTime = nisUpdate(thisNisPlaying, UNIVERSE_UPDATE_PERIOD);
+                newTime = nisUpdate(thisNisPlaying, nisUpdatePeriod);
                 if (newTime == REALlyBig)
                 {
                     nisStop(thisNisPlaying);
@@ -503,7 +507,7 @@ DEFINE_TASK(nisUpdateTask)
             //fly the camera in
             if (nisCameraCutTime != 0.0f)
             {
-                timeElapsed = UNIVERSE_UPDATE_PERIOD;  //!!! cap camera velocity?
+                timeElapsed = nisUpdatePeriod;  //!!! cap camera velocity?
                 nisCameraFlyCompute(timeElapsed);
             }
 
@@ -512,7 +516,7 @@ DEFINE_TASK(nisUpdateTask)
 #if NIS_TEST
         if (testPlaying)
         {
-            newTime = nisUpdate(testPlaying, UNIVERSE_UPDATE_PERIOD);
+            newTime = nisUpdate(testPlaying, nisUpdatePeriod);
             if (newTime == REALlyBig || keyIsStuck(NUMPAD1))
             {
                 keyClearSticky(NUMPAD1);
@@ -530,10 +534,10 @@ DEFINE_TASK(nisUpdateTask)
         {
             if (!gameIsRunning)
             {
-                univUpdate(UNIVERSE_UPDATE_PERIOD);
+                univUpdate(nisUpdatePeriod);
                 soundEventUpdate();
             }
-            newTime = nisUpdate(utyTeaserPlaying, UNIVERSE_UPDATE_PERIOD);
+            newTime = nisUpdate(utyTeaserPlaying, nisUpdatePeriod);
 
             if (newTime == REALlyBig)
             {
@@ -567,7 +571,13 @@ DEFINE_TASK(nisUpdateTask)
 ----------------------------------------------------------------------------*/
 void nisStartup(void)
 {
-    nisTaskHandle = taskStart(nisUpdateTask, UNIVERSE_UPDATE_PERIOD, 0);
+    // If interpolation is enabled then beef up the NIS updates so they match the look.
+    // If not, then stay oldschool chunky!
+    if (rintIsEnabled())
+         nisUpdatePeriod = 1.0f / getResFrequency();
+    else nisUpdatePeriod = UNIVERSE_UPDATE_PERIOD;
+
+    nisTaskHandle = taskStart(nisUpdateTask, nisUpdatePeriod, 0);
     taskPause(nisTaskHandle);
 }
 
@@ -1599,7 +1609,7 @@ void nisSeek(nisplaying *NIS, real32 seekTime)
 ----------------------------------------------------------------------------*/
 void nisGoToEnd(nisplaying *NIS)
 {
-    nisSeek(NIS,NIS->header->length - UNIVERSE_UPDATE_PERIOD);
+    nisSeek(NIS,NIS->header->length - nisUpdatePeriod);
 }
 
 /*-----------------------------------------------------------------------------
@@ -4253,7 +4263,7 @@ void nisNewNISSet(char *directory, char *field, void *dataToFillIn)
     char fileName[80];
     sdword nScanned;
 
-    event->time -= UNIVERSE_UPDATE_PERIOD;                  //this is to make sure that hitting ESCAPE will seek over this event
+    event->time -= nisUpdatePeriod;                  //this is to make sure that hitting ESCAPE will seek over this event
     nScanned = sscanf(field, "%s %s", nisName, scriptName);
     dbgAssertOrIgnore(nScanned == 2);
     dbgAssertOrIgnore(strlen(nisName) > 0);
