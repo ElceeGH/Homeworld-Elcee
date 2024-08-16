@@ -28,7 +28,7 @@ static real32 sqrtSum( real32 x, real32 y ) {
 
 /// Get the screen pixel density
 real32 getResDensity( void ) {
-    return sqrtSum( (float) MAIN_WindowWidth, (float) MAIN_WindowHeight );
+    return sqrtSum( (real32) MAIN_WindowWidth, (real32) MAIN_WindowHeight );
 }
 
 /// Get the screen pixel density as a fraction of the original expected density (800x600)
@@ -55,4 +55,24 @@ real32 getResFrequency( void ) {
 /// Get the relative refresh frequency compared with the typical 60Hz the game was designed for.
 real32 getResFrequencyRelative( void ) {
     return getResFrequency() / 60.0f;
+}
+
+
+
+/// Get the height of the letterboxes when doing cutscenes.
+/// No matter how wide the aspect, there's still a minimum height just so you can see a cutscene is happening.
+ udword getResLetterboxHeight( void ) {
+    const real32 cinema = 2.35f; // How cinematic.
+    const real32 minH   = 32.0f; // Need to know cutscenes are happening though.
+    const real32 resW   = (real32) MAIN_WindowWidth;
+    const real32 resH   = (real32) MAIN_WindowHeight;
+    const real32 aspect = resW / resH;
+    
+    // If the screen is already C-I-N-E-M-A-S-C-O-P-E as hell, maintain only a minimal boxing.
+    if (aspect >= cinema)
+        return (udword) minH;
+
+    const real32 target = resW / cinema;
+    const real32 delta  = resH - target;
+    return (udword) max( minH, delta / 2.0f );
 }
