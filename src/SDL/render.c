@@ -1302,12 +1302,12 @@ void rndFilter(bool on)
 ----------------------------------------------------------------------------*/
 void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 {
-    real32 projection[16];
 
 #if DISABLE_RANDOM_STARS
     bDrawStars = FALSE;
 #endif
 
+    real32 projection[16];
     glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
     glMatrixMode(GL_PROJECTION);
@@ -1317,6 +1317,7 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 
     if (showBackgrounds && gameIsRunning)
     {
+        rndAllClearToBlack();
         btgRender();
     }
 

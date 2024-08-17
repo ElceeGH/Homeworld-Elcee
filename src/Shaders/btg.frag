@@ -1,6 +1,6 @@
 /*=============================================================================
-    Name    : dither.frag
-    Purpose : Temporal dithering to remove banding artifacts.
+    Name    : btg.frag
+    Purpose : BTG blending and dithering.
     
     The interpolated colours are very high precision. This gets lost on the way to
     the display and the result is ugly banding which is visually distracting.
@@ -11,6 +11,11 @@
     The default values target these 6-bit monitors. Those fortunate enough to have
     better monitors will not notice the difference. :)
 
+    NOTE:
+    - BTG uses alpha premultiplied colour.
+    - BTG vertices have five channels originally: RGBA and brightness.
+    - Brightness is expected to be premultiplied into t.
+
     Created 04/09/2021 by Elcee
 =============================================================================*/
 
@@ -19,6 +24,9 @@
 #version 120
 
 // Uniforms
+uniform float uFade              = 1.0;        // Brightness modulation
+uniform vec4  uBackground        = vec4(1.0);  // Background base colour
+uniform int   uDitherEnable      = 1;          // Dithering enable/disable
 uniform float uDitherScale       = 63.0;       // Derived from output bit depth.      Value = power( 2, bits ) - 1
 uniform int   uDitherTemporal    = 0;          // Temporal variation in bayer dither. Value = frameindex & 0x3F
 uniform float uDitherPattern[64] = float[64](  // Ordered dither pattern. 8x8 bayer is the default.
@@ -50,7 +58,48 @@ vec4 bayerDither( vec4 col ) {
     return sel / uDitherScale;
 }
 
-void main() {
-    gl_FragColor = bayerDither( gl_Color );
+// Precisely replicate the software colour blending.
+vec4 btgBlend( vec4 vert, vec4 bg ) {
+    float alpha  = vert.a   * uFade;
+    vec3  colour = vert.rgb * alpha;
+    
+    if (alpha < 1.0f / 252.0f)
+        colour = max( colour, bg.rgb );
+    
+    return vec4( colour, 1.0 );
 }
+
+void main() {
+    vec4 blended  = btgBlend( gl_Color, uBackground );
+    vec4 dithered = bayerDither( blended );
+    gl_FragColor  = mix( blended, dithered, float(uDitherEnable) );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
