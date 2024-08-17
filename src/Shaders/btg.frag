@@ -14,7 +14,7 @@
     NOTE:
     - BTG uses alpha premultiplied colour.
     - BTG vertices have five channels originally: RGBA and brightness.
-    - Brightness is expected to be premultiplied into t.
+    - Brightness is expected to be premultiplied into alpha too.
 
     Created 04/09/2021 by Elcee
 =============================================================================*/
