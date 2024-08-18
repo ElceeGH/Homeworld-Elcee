@@ -533,8 +533,11 @@ static void btgSortStarsAndGenerateLists() {
 
     // Skip to first one with non-zero texture, if any
     udword base = 0;
-    while ( ! btgStars[base].glhandle)
-        base++;
+    for (udword i=0; i<count; i++) {
+        if ( ! btgStars[base].glhandle)
+             base++;
+        else break;
+    }
 
     // Generate lists
     btgStarList* list = btgStarLists;
@@ -1382,7 +1385,7 @@ void btgRender(void)
     rndAdditiveBlends(addOn);
     rndLightingEnable(lightOn);
 
-    if (texOn)   glEnable(GL_TEXTURE_2D);
+    if (!texOn)  glDisable(GL_TEXTURE_2D);
     if (blendOn) glEnable(GL_BLEND);
     if (depthOn) glEnable(GL_DEPTH_TEST);
 }
