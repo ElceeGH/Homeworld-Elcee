@@ -771,8 +771,8 @@ udword partRenderBillSystem(udword n, particle* p, udword flags,
             }
             partFilter(TRUE);
 
-            cosTheta = (real32)cos((real64)p->rot);
-            sinTheta = (real32)sin((real64)p->rot);
+            cosTheta = cosf(p->rot);
+            sinTheta = sinf(p->rot);
 
             sx = sy = p->scale * 0.5f;
 
@@ -1528,17 +1528,18 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
         if (p->waitspan > 0.0f)
             continue;
 
+        handleIllum(p);
+        rndAdditiveBlends( bitTest(p->flags,PART_ADDITIVE) );
+
+        // Get the endpoints of the line and get its length
         vector posA, posB;
         partRenderLineGetPositions( p, flags, &posA, &posB );
         real32 nativeLength = sqrtf(vecDistanceSquared( posA, posB ));
 
-        handleIllum(p);
-        rndAdditiveBlends( bitTest(p->flags,PART_ADDITIVE) );
-
         // Give lines resolution scaling, but also thin them out when they get too short, so it doens't look like hellcrap.
         // This all relates to screenspace, not worldspace.
         real32 lineWidthMin     = 0.75f;             // Minimum allowed width, for maintaining good visibility
-        real32 lineAspectMax    = 12.0f;             // Start fading when width exceeds length by a factor of this
+        real32 lineAspectMax    = 12.0f;             // Start shrinking width when width exceeds length by a factor of this
         real32 lineLengthMin    = 2.5f * resScaling; // Absolute screenspace length where width reduction begins no matter what
         real32 lineWidth        = max( lineWidthMin, resScaling );
         real32 lineLengthThresh = max( lineLengthMin, lineWidth * lineAspectMax );
@@ -1573,8 +1574,8 @@ udword partRenderLineSystem(udword n, particle *p, udword flags)
                  glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], alphaMul * p->icolor[3]);
             else glColor4f(p->icolor[0], p->icolor[1], p->icolor[2], alphaMul);
         
-            glVertex3f(posA.x, posA.y, posA.z);
-            glVertex3f(posB.x, posB.y, posB.z);
+            glVertex3fv(&posA.x);
+            glVertex3fv(&posB.x);
         glEnd();
     }
 

@@ -1492,8 +1492,8 @@ void battlePingEvaluate(void *voidPing, battleping *battlePing)
         lossValue = battlePing->friendlyValueRecentlyLost;
         if (timeSinceLoss != 0.0f)
         {
-            lossPower /= (real32)pow((double)timeSinceLoss, (double)batExpLossDevalue);
-            lossValue /= (real32)pow((double)timeSinceLoss, (double)batExpLossDevalue);
+            lossPower /= powf(timeSinceLoss, batExpLossDevalue);
+            lossValue /= powf(timeSinceLoss, batExpLossDevalue);
         }
         if (friendlyValue != 0.0f)
         {
@@ -1514,8 +1514,8 @@ void battlePingEvaluate(void *voidPing, battleping *battlePing)
         lossValue = battlePing->enemyValueRecentlyLost;
         if (timeSinceLoss != 0.0f)
         {
-            lossPower /= (real32)pow((double)timeSinceLoss, (double)batExpLossDevalue);
-            lossValue /= (real32)pow((double)timeSinceLoss, (double)batExpLossDevalue);
+            lossPower /= powf(timeSinceLoss, batExpLossDevalue);
+            lossValue /= powf(timeSinceLoss, batExpLossDevalue);
         }
         if (enemyValue != 0.0f)
         {
