@@ -8,18 +8,12 @@
 
 #include "BTG.h"
 
-#include "Camera.h"
-#include "Clipper.h"
 #include "Debug.h"
 #include "FastMath.h"
 #include "File.h"
-#include "glinc.h"
 #include "main.h"
-#include "mainrgn.h"
 #include "Memory.h"
 #include "Options.h"
-#include "render.h"
-#include "rglu.h"
 #include "texreg.h"
 #include "Universe.h"
 #include "Vector.h"
@@ -136,6 +130,15 @@ void btgStartup(void)
     btgReset();
 }
 
+// Helper to reduce crap
+static void btgMemFree( void** buffer ) {
+    if (*buffer != NULL)
+    {
+        memFree(*buffer);
+        *buffer = NULL;
+    }
+}
+
 /*-----------------------------------------------------------------------------
     Name        : btgReset
     Description : reset the btg subsystem
@@ -145,10 +148,9 @@ void btgStartup(void)
 ----------------------------------------------------------------------------*/
 void btgReset(void)
 {
-    btgFade = 1.0f;
-
+    btgFade        = 1.0f;
     btgThetaOffset = 0.0f;
-    btgPhiOffset = 0.0f;
+    btgPhiOffset   = 0.0f;
 
     if (btgGpuBuffersInited) {
         btgGpuBuffersInited = FALSE;
@@ -185,47 +187,14 @@ void btgReset(void)
         texList = NULL;
     }
 
-    if (btgHead != NULL)
-    {
-        memFree(btgHead);
-        btgHead = NULL;
-    }
-    if (btgVerts != NULL)
-    {
-        memFree(btgVerts);
-        btgVerts = NULL;
-    }
-    if (btgStars != NULL)
-    {
-        memFree(btgStars);
-        btgStars = NULL;
-    }
-    if (btgStarLists != NULL)
-    {
-        memFree(btgStarLists);
-        btgStarLists = NULL;
-    }
-
-    if (btgPolys != NULL)
-    {
-        memFree(btgPolys);
-        btgPolys = NULL;
-    }
-    if (btgTransVerts != NULL)
-    {
-        memFree(btgTransVerts);
-        btgTransVerts = NULL;
-    }
-    if (btgTransStars != NULL)
-    {
-        memFree(btgTransStars);
-        btgTransStars = NULL;
-    }
-    if (btgIndices != NULL)
-    {
-        memFree(btgIndices);
-        btgIndices = NULL;
-    }
+    btgMemFree( &btgHead       );
+    btgMemFree( &btgVerts      );
+    btgMemFree( &btgStars      );
+    btgMemFree( &btgStarLists  );
+    btgMemFree( &btgPolys      );
+    btgMemFree( &btgTransVerts );
+    btgMemFree( &btgTransStars );
+    btgMemFree( &btgIndices    );
 }
 
 /*-----------------------------------------------------------------------------
@@ -588,7 +557,7 @@ void btgLoad(char* filename)
 
 
     fileLoadAlloc(filename, (void**)&btgData, 0);
-    btgDataOffset=btgData;
+    btgDataOffset = btgData;
 
     memStrncpy(btgLastBackground, filename, 127);
 
@@ -614,70 +583,32 @@ void btgLoad(char* filename)
 // This allows us to align variables. It replaces 
 //  memcpy(btgHead, btgData, headSize);
 
-    memset(btgHead,0,sizeof(*btgHead));
 
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,btgFileVersion), btgDataOffset, 4 );
-    btgDataOffset += 4;
+    memset(btgHead, 0, sizeof(*btgHead));
 
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,numVerts      ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,numStars      ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,numPolys      ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,xScroll       ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,yScroll       ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,zoomVal       ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,pageWidth     ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,pageHeight    ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mRed          ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mGreen        ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mBlue         ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mBGRed        ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mBGGreen      ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,mBGBlue       ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,bVerts        ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,bPolys        ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,bStars        ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,bOutlines     ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,bBlends       ), btgDataOffset, 4 );
-    btgDataOffset += 4;
-
-    memcpy( (ubyte*)btgHead+offsetof(btgHeader,renderMode    ), btgDataOffset, 4 );
-    btgDataOffset += 4;
+    #define READ_HEADER(field,bytes) { memcpy( (ubyte*)btgHead+offsetof(btgHeader,field), btgDataOffset, bytes );  btgDataOffset += bytes; }
+    READ_HEADER(btgFileVersion, 4 );
+    READ_HEADER(numVerts      , 4 );
+    READ_HEADER(numStars      , 4 );
+    READ_HEADER(numPolys      , 4 );
+    READ_HEADER(xScroll       , 4 );
+    READ_HEADER(yScroll       , 4 );
+    READ_HEADER(zoomVal       , 4 );
+    READ_HEADER(pageWidth     , 4 );
+    READ_HEADER(pageHeight    , 4 );
+    READ_HEADER(mRed          , 4 );
+    READ_HEADER(mGreen        , 4 );
+    READ_HEADER(mBlue         , 4 );
+    READ_HEADER(mBGRed        , 4 );
+    READ_HEADER(mBGGreen      , 4 );
+    READ_HEADER(mBGBlue       , 4 );
+    READ_HEADER(bVerts        , 4 );
+    READ_HEADER(bPolys        , 4 );
+    READ_HEADER(bStars        , 4 );
+    READ_HEADER(bOutlines     , 4 );
+    READ_HEADER(bBlends       , 4 );
+    READ_HEADER(renderMode    , 4 );
+    #undef READ_HEADER
         
 //    memcpy(btgHead, btgData, headSize);  //See above.
 
@@ -711,8 +642,7 @@ void btgLoad(char* filename)
     //version check
     dbgAssertOrIgnore(btgHead->btgFileVersion == BTG_FILE_VERSION);
 
-    vertSize = btgHead->numVerts * sizeof(btgVertex);  //Machine Specific size
-
+    vertSize     = btgHead->numVerts * sizeof(btgVertex);  //Machine Specific size
     vertSizeFile = btgHead->numVerts * (4 + (2* 8) + (5*4));  //Actual size from file. (No Alignment)
 
     if (vertSize)
@@ -720,31 +650,20 @@ void btgLoad(char* filename)
 
         btgVerts = (btgVertex*)memAlloc(vertSize, "btg verts", 0);
 
+        
+
         for( i=0; i<btgHead->numVerts; i++ )
         {
-            memcpy( (ubyte*)btgVerts+ ( i * sizeof(btgVertex)) +offsetof(btgVertex,flags     ), btgDataOffset, 4 );
-            btgDataOffset += 4;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,x          ), btgDataOffset, 8 );
-            btgDataOffset += 8;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,y          ), btgDataOffset, 8 );
-            btgDataOffset += 8;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,red        ), btgDataOffset, 4 );
-            btgDataOffset += 4;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,green      ), btgDataOffset, 4 );
-            btgDataOffset += 4;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,blue       ), btgDataOffset, 4 );
-            btgDataOffset += 4;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,alpha      ), btgDataOffset, 4 );
-            btgDataOffset += 4;
-
-            memcpy( (ubyte*)btgVerts+( i * sizeof(btgVertex)) +offsetof(btgVertex,brightness ), btgDataOffset, 4 );
-            btgDataOffset += 4;
+            #define READ_VERTEX(field,bytes) { memcpy( (ubyte*)btgVerts+ ( i * sizeof(btgVertex)) +offsetof(btgVertex,field), btgDataOffset, bytes );  btgDataOffset += bytes; }
+            READ_VERTEX( flags     , 4 );
+            READ_VERTEX( x         , 8 );
+            READ_VERTEX( y         , 8 );
+            READ_VERTEX( red       , 4 );
+            READ_VERTEX( green     , 4 );
+            READ_VERTEX( blue      , 4 );
+            READ_VERTEX( alpha     , 4 );
+            READ_VERTEX( brightness, 4 );
+            #undef READ_VERTEX
         }
 
 //        memcpy(btgVerts, btgData + headSize, vertSize);  //Replaced by above.
@@ -798,26 +717,16 @@ void btgLoad(char* filename)
             //extract constant-sized header
 //            tempSize = sizeof(udword) + 2*sizeof(real64) + 4*sizeof(sdword);
             tempSize = 4 + 2*8 + 4*4;
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,flags), instarp, 4);
-            instarp += 4;
 
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,x),     instarp, 8);
-            instarp += 8;
-
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,y),     instarp, 8);
-            instarp += 8;
-
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,red),   instarp, 4);
-            instarp += 4;
-
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,green), instarp, 4);
-            instarp += 4;
-
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,blue),  instarp, 4);
-            instarp += 4;
-
-            memcpy( (ubyte*)outstarp+offsetof(btgStar,alpha), instarp, 4);
-            instarp += 4;
+            #define READ_STAR(field,bytes) { memcpy( (ubyte*)outstarp+offsetof(btgStar,field), instarp, bytes);  instarp+=bytes; }
+            READ_STAR(flags, 4);
+            READ_STAR(x    , 8);
+            READ_STAR(y    , 8);
+            READ_STAR(red  , 4);
+            READ_STAR(green, 4);
+            READ_STAR(blue , 4);
+            READ_STAR(alpha, 4);
+            #undef READ_STAR
 
 //            memcpy(outstarp, instarp, tempSize); //Replaced by Above.
 #if BTG_VERBOSE_LEVEL >= 3
@@ -895,17 +804,10 @@ void btgLoad(char* filename)
 
 	for( i=0; i<btgHead->numPolys; i++, polyOut++ )
 	{
-            memcpy((ubyte*)polyOut+offsetof(btgPolygon,flags), instarp, 4);
-            instarp += 4;
-
-            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v0), instarp, 4);
-            instarp += 4;
-
-            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v1), instarp, 4);
-            instarp += 4;
-
-            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v2), instarp, 4);
-            instarp += 4;
+            memcpy((ubyte*)polyOut+offsetof(btgPolygon,flags), instarp, 4); instarp += 4;
+            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v0   ), instarp, 4); instarp += 4;
+            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v1   ), instarp, 4); instarp += 4;
+            memcpy((ubyte*)polyOut+offsetof(btgPolygon,v2   ), instarp, 4); instarp += 4;
 
 	}
 		
@@ -1124,12 +1026,6 @@ static void btgConvertVert(btgTransVertex* out, udword nVert)
 ----------------------------------------------------------------------------*/
 static void btgConvertStar(btgTransStar* out, udword nVert)
 {
-    btgStar* in = btgStars + nVert;
-
-    real32 halfWidth, halfHeight;
-    halfWidth   = (real32)in->width  / 2.0f;
-    halfHeight  = (real32)in->height / 2.0f;
-
     // Texture coord corners
     static const real32 tx[4] = {0.0f, 1.0f, 1.0f, 0.0f};
     static const real32 ty[4] = {0.0f, 0.0f, 1.0f, 1.0f};
@@ -1137,6 +1033,10 @@ static void btgConvertStar(btgTransStar* out, udword nVert)
     // Pos offset signs
     static const real32 sx[4] = {-1.0f, +1.0f, +1.0f, -1.0f};
     static const real32 sy[4] = {+1.0f, +1.0f, -1.0f, -1.0f};
+
+    btgStar* in         = btgStars + nVert;
+    real32   halfWidth  = (real32)in->width  / 2.0f;
+    real32   halfHeight = (real32)in->height / 2.0f;
     
     for (udword v=0; v<4; v++) {
         btgTransStarVertex* vert = &out->vert[ v ];
