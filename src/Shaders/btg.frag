@@ -14,7 +14,7 @@
     NOTE:
     - BTG uses alpha premultiplied colour.
     - BTG vertices have five channels originally: RGBA and brightness.
-    - Brightness is expected to be premultiplied into alpha too.
+    - Brightness is expected to be premultiplied into alpha in the vertex data.
 
     Created 04/09/2021 by Elcee
 =============================================================================*/
@@ -58,10 +58,10 @@ vec4 bayerDither( vec4 col ) {
     return sel / uDitherScale;
 }
 
-// Precisely replicate the software colour blending.
+// Replicate the software colour blending.
 vec4 btgBlend( vec4 vert, vec4 bg ) {
-    float alpha  = vert.a   * uFade;
-    vec3  colour = vert.rgb * alpha;
+    float alpha  = vert.a * uFade;
+    vec3  colour = bg.rgb + vert.rgb * alpha;
     
     if (alpha < 1.0f / 252.0f)
         colour = max( colour, bg.rgb );

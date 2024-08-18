@@ -1244,11 +1244,15 @@ void btgRender(void)
     glDisable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
 
+    // Get the background colour for blending into
+    real32 bgCol[4] = { (real32) btgHead->mBGRed   / 255.0f, 
+                        (real32) btgHead->mBGGreen / 255.0f, 
+                        (real32) btgHead->mBGBlue  / 255.0f,
+                        1.0f };
 
-
-    // Get the background colour for blending into.
-    real32 bgCol[4] = {0};
-    glGetFloatv( GL_COLOR_CLEAR_VALUE, bgCol );
+    // Clear the screen. (Not all BTGs have full coverage of the sphere)
+    glClearColor( bgCol[0], bgCol[1], bgCol[2], bgCol[3] );
+    glClear( GL_COLOR_BUFFER_BIT );
 
 
 
@@ -1296,6 +1300,7 @@ void btgRender(void)
     const udword starVertCount   = vertsPerStar * btgHead->numStars;
     const udword starVertStride  = sizeof(btgTransStarVertex);
     const udword starVertexBytes = starVertCount * starVertStride;
+
 
 
     // Create the buffer handles if we didn't already

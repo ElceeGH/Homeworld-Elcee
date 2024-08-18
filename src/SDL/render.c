@@ -1317,7 +1317,6 @@ void rndBackgroundRender(real32 radius, Camera* camera, bool bDrawStars)
 
     if (showBackgrounds && gameIsRunning)
     {
-        rndAllClearToBlack();
         btgRender();
     }
 
