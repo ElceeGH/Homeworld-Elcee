@@ -67,10 +67,6 @@
 #include "Vector.h"
 #include "rStateCache.h"
 
-//located in mainrg.c
-//falko's fault...not mine..long story
-void toFieldSphereDraw(ShipPtr ship,real32 radius, real32 scale);
-
 void (*smHoldLeft)(void);
 void (*smHoldRight)(void);
 

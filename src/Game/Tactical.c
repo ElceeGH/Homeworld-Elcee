@@ -38,7 +38,7 @@ extern fonthandle selGroupFont2;
 
 //located in mainrgn.c
 void toMoveLineDraw(ShipPtr ship, real32 scale);
-void toFieldSphereDraw(ShipPtr ship,real32 radius, real32 scale,color passedColour);
+void toFieldSphereDraw(struct Ship* ship,real32 radius, color passedColour);
 void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color passedColour);
 void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color passedColour);
 void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color passedColour);
@@ -351,8 +351,8 @@ void toAllShipsDraw(void)
 
                 primLineLoopEnd2();
 
-                     // mark class as used for this player (for legend)
-                     toClassUsed[((ShipStaticInfo *)ship->staticinfo)->shipclass][ship->playerowner->playerIndex] = 1;
+                // mark class as used for this player (for legend)
+                toClassUsed[((ShipStaticInfo *)ship->staticinfo)->shipclass][ship->playerowner->playerIndex] = TRUE;
             }
 
             //for moving ships that belong to the current player, draw the moveline
@@ -364,34 +364,33 @@ void toAllShipsDraw(void)
             //Draw Special TO's for Special Ships
             if(ship->playerowner == universe.curPlayerPtr)
             {
-                switch(ship->shiptype)
+                switch (ship->shiptype)
                 {
                     case CloakGenerator:
                         if( ((CloakGeneratorSpec *)ship->ShipSpecifics)->CloakOn)
                         {
-                            toFieldSphereDraw(ship,((CloakGeneratorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->CloakingRadius, scale,TW_CLOAKGENERATOR_SPHERE_COLOUR);
+                            toFieldSphereDraw(ship,((CloakGeneratorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->CloakingRadius, TW_CLOAKGENERATOR_SPHERE_COLOUR);
                         }
                         break;
                     case DFGFrigate:
-                        toFieldSphereDraw(ship,((DFGFrigateStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->DFGFrigateFieldRadius, scale,TW_DFGF_SPHERE_COLOUR);
+                        toFieldSphereDraw(ship,((DFGFrigateStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->DFGFrigateFieldRadius, TW_DFGF_SPHERE_COLOUR);
                         break;
                     case GravWellGenerator:
                         if (((GravWellGeneratorSpec *)ship->ShipSpecifics)->GravFieldOn)
                         {
-                            toFieldSphereDraw(ship,((GravWellGeneratorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->GravWellRadius, scale,TW_GRAVWELL_SPHERE_COLOUR);
+                            toFieldSphereDraw(ship,((GravWellGeneratorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->GravWellRadius, TW_GRAVWELL_SPHERE_COLOUR);
                         }
                         break;
                     case ProximitySensor:
-                        //toFieldSphereDraw(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, scale);
                         if( ((ProximitySensorSpec *)ship->ShipSpecifics)->sensorState == SENSOR_SENSED
-                        || ((ProximitySensorSpec *)ship->ShipSpecifics)->sensorState == SENSOR_SENSED2)
+                        ||  ((ProximitySensorSpec *)ship->ShipSpecifics)->sensorState == SENSOR_SENSED2)
                         {
-                            toDrawRadialIndicator4(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, scale,TW_PROXIMITY_RING_COLOUR);
-                            toFieldSphereDraw(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, scale,TW_PROXIMITY_SPHERE_COLOUR_FOUND);
+                            toDrawRadialIndicator4(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, scale, TW_PROXIMITY_RING_COLOUR);
+                            toFieldSphereDraw(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, TW_PROXIMITY_SPHERE_COLOUR_FOUND);
                         }
                         else
                         {
-                            toFieldSphereDraw(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, scale,TW_PROXIMITY_SPHERE_COLOUR);
+                            toFieldSphereDraw(ship,((ProximitySensorStatics *) ((ShipStaticInfo *)(ship->staticinfo))->custstatinfo)->SearchRadius, TW_PROXIMITY_SPHERE_COLOUR);
                         }
                         break;
                     default:
@@ -472,8 +471,8 @@ void toLegendDraw(void)
 
             for (index = icon->nPoints - 1; index >= 0; index--)
             {
-               primLineLoopPoint3F(primScreenToGLX(rowHeight*1.5) + icon->loc[index].x * radius,
-                                          primScreenToGLY(y + rowHeight/2) + icon->loc[index].y * radius);
+               primLineLoopPoint3F(primScreenToGLX(rowHeight*1.5)   + icon->loc[index].x * radius,
+                                   primScreenToGLY(y + rowHeight/2) + icon->loc[index].y * radius);
             }
             primLineLoopEnd2();
 

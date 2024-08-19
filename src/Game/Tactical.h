@@ -11,6 +11,7 @@
 #include "ClassDefs.h"
 #include "Color.h"
 #include "Types.h"
+#include "Vector.h"
 
 /*=============================================================================
     Switches:
@@ -86,6 +87,8 @@ void toAllShipsDraw(void);
 
 //draw legend for overlay
 void toLegendDraw(void);
+
+void toFieldSphereDraw(struct Ship* ship, real32 radius, color colour);
 
 
 #endif

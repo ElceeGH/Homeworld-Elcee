@@ -4591,82 +4591,16 @@ void toMoveLineDraw(ShipPtr ship, real32 scale)
     }
 }
 
-void toFieldSphereDraw(ShipPtr ship, real32 radius, real32 scale,color passedColour)
+void toFieldSphereDraw(struct Ship* ship, real32 radius, color colour)
 {
-    hmatrix rotmat;
-    vector origin = {0.0, 0.0, 0.0};
-    vector up =    {1.0, 0.0, 0.0};
-    vector right = {0.0, 1.0, 0.0};
-    vector head =  {0.0, 0.0, 1.0};
-    matrix tmpmat;
-
     //Turn off 2D primmode
     primModeClear2();
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
 
-    //Draw the circles
-    matPutVectIntoMatrixCol1(up,tmpmat);
-    matPutVectIntoMatrixCol2(right,tmpmat);
-    matPutVectIntoMatrixCol3(head,tmpmat);
-
-    hmatMakeHMatFromMat(&rotmat, &tmpmat);
-    hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
-
-
-    glPushMatrix();
-        glMultMatrixf((GLfloat *)&rotmat);
-
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, Z_AXIS);
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, X_AXIS);
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, Y_AXIS);
-
-    glPopMatrix();
-    //stop drawing circles
-
-
-    //Turn on 2D primmode
-    primModeSet2();
-}
-
-void toFieldSphereDrawGeneral(vector position, real32 radius,color passedColour)
-{
-    hmatrix rotmat;
-    vector origin = {0.0, 0.0, 0.0};
-    vector up =    {1.0, 0.0, 0.0};
-    vector right = {0.0, 1.0, 0.0};
-    vector head =  {0.0, 0.0, 1.0};
-    matrix tmpmat;
-
-    //Turn off 2D primmode
-    primModeClear2();
-    rndLightingEnable(FALSE);
-    rndTextureEnable(FALSE);
-
-    //Draw the circles
-    //    hmatMakeHMatFromMat(&rotmat, &ship->rotinfo.coordsys);
-        //hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, rotmat);
-    //     hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
-
-
-    matPutVectIntoMatrixCol1(up,tmpmat);
-    matPutVectIntoMatrixCol2(right,tmpmat);
-    matPutVectIntoMatrixCol3(head,tmpmat);
-
-    hmatMakeHMatFromMat(&rotmat, &tmpmat);
-    hmatPutVectIntoHMatrixCol4(position, rotmat);
-
-
-    glPushMatrix();
-        glMultMatrixf((GLfloat *)&rotmat);
-
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, Z_AXIS);
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, X_AXIS);
-        primCircleOutline3(&origin, radius, 32, 4, passedColour, Y_AXIS);
-
-        glPopMatrix();
-    //stop drawing circles
-
+    udword axes[3] = { X_AXIS, Y_AXIS, Z_AXIS };
+    for (udword i=0; i<3; i++)
+        primCircleOutline3( &ship->posinfo.position, radius, 32, 4, colour, axes[i] );
 
     //Turn on 2D primmode
     primModeSet2();
