@@ -196,16 +196,6 @@ typedef struct c4ub_v3f_s
 } c4ub_v3f;
 c4ub_v3f* stararray = NULL;
 
-//asteroid0 stuff
-typedef struct asteroid0data
-{
-    color c;
-    vector* position;
-} asteroid0data;
-
-#define ASTEROID0DATA_SIZE 80
-asteroid0data asteroid0Data[ASTEROID0DATA_SIZE];
-
 
 //frame counter
 udword rndFrameCount;
@@ -1833,26 +1823,50 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
 
 /*-----------------------------------------------------------------------------
     Name        : rndDrawAsteroid0
-    Description : renders asteroid0's (small asteroids that provide visible
-                  structure to a level)
-    Inputs      : n - number of points to render
-    Outputs     : displays the asteroid0Data list
+    Description : renders asteroid0's (small asteroids that provide visible structure to a level)
+    Inputs      : camera - number of points to render
+    Outputs     : renders all small asteroids in view, with fading
     Return      :
 ----------------------------------------------------------------------------*/
-void rndDrawAsteroid0(sdword n)
+void rndDrawAsteroid0( Camera* camera )
 {
-    const real32 size = sqrtf( getResDensity() * 0.0058f );
+    bool wasTex   = rndTextureEnable(FALSE);
+    bool wasLight = rndLightingEnable(FALSE);
+    bool wasBlend = glIsEnabled( GL_BLEND );
+    glEnable( GL_BLEND );
+    g_WireframeHack = FALSE;
+
+    const real32 rangeLow  = sqrtf( RENDER_VIEWABLE_DISTANCE_SQR );
+    const real32 rangeHigh = sqrtf( RENDER_MAXVIEWABLE_DISTANCE_SQR );
+    const real32 range     = rangeHigh - rangeLow;
+    const real32 size      = 2.0f * sqrtf( getResDensityRelative() ); // Quite chunky boys in the original
     glPointSize( size );
-    glBegin(GL_POINTS);
-    for (sdword index = 0; index < n; index++)
-    {
-        color   c = asteroid0Data[index].c;
-        vector* v = asteroid0Data[index].position;
-        glColor3ub(colRed(c), colGreen(c), colBlue(c));
-        glVertex3fv((GLfloat*)v);
-    }
+    glBegin( GL_POINTS );
+
+        Node *objnode = universe.MinorRenderList.head;
+        while (objnode != NULL) {
+            SpaceObj* obj = (SpaceObj*)listGetStructOfNode(objnode);
+            dbgAssertOrIgnore( obj->objtype == OBJ_AsteroidType );
+            
+            real32 dist  = sqrtf( vecDistanceSquared( camera->eyeposition, obj->posinfo.position) );
+            real32 delta = max( 0.0f, dist - rangeLow );
+            real32 frac  = min( 1.0f, delta / range );
+            real32 alpha = 1.0f - frac;
+
+            color c = obj->staticinfo->staticheader.LOD->pointColor;
+            glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (alpha*255.0f) );
+            glVertex3fv( &obj->posinfo.position.x );
+
+            objnode = objnode->next;
+        }
+
     glEnd();
-    glPointSize(1.0f);
+    glPointSize( 1.0f );
+
+    rndTextureEnable( wasTex );
+    rndLightingEnable( wasLight );
+    if ( ! wasBlend)
+        glDisable( GL_BLEND );
 }
 
 /*-----------------------------------------------------------------------------
@@ -2319,8 +2333,6 @@ void rndMainViewRenderFunction(Camera *camera)
     extern sdword trailsRendered;
     sdword colorScheme;
     bool displayEffect = FALSE;
-
-    sdword asteroid0Count;
 
     real32 scaledOffset[3];
     static real32 cameraOffset[3] = {0.0f, 0.0f, 0.0f};
@@ -3116,44 +3128,9 @@ renderDefault:
         objnode = objnode->next;
     }
 
-    //
     // minor renderlist (asteroid0 list)
-    //
-    rndTextureEnable(FALSE);
-    rndLightingEnable(FALSE);
-    g_WireframeHack = FALSE;
-    glPointSize(1.0f);
+    rndDrawAsteroid0( camera );
 
-    asteroid0Count = 0;
-
-    objnode = universe.MinorRenderList.head;
-    while (objnode != NULL)
-    {
-        spaceobj = (SpaceObj*)listGetStructOfNode(objnode);
-
-        switch (spaceobj->objtype)
-        {
-        case OBJ_AsteroidType:
-            asteroid0Data[asteroid0Count].c = spaceobj->staticinfo->staticheader.LOD->pointColor;
-            asteroid0Data[asteroid0Count].position = &spaceobj->posinfo.position;
-            asteroid0Count++;
-            if (asteroid0Count == ASTEROID0DATA_SIZE)
-            {
-                rndDrawAsteroid0(asteroid0Count);
-                asteroid0Count = 0;
-            }
-            break;
-
-        default:
-            dbgFatalf(DBG_Loc, "MinorRenderList contains invalid object type %d", spaceobj->objtype);
-        }
-
-        objnode = objnode->next;
-    }
-    if (asteroid0Count != 0)
-    {
-        rndDrawAsteroid0(asteroid0Count);
-    }
     rndLightingEnable(TRUE);
 
     //hyperspace
@@ -3171,6 +3148,7 @@ renderDefault:
     rndPostRenderDebug2DStuff(camera);
 
     glDisable( GL_MULTISAMPLE );
+    glPointSize(1.0f);
 }
 
 GLuint plug_handle = 0;
