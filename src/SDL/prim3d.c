@@ -68,7 +68,9 @@ void primLine3(vector *p1, vector *p2, color c)
 }
 
 
-void primLine3Stipple(vector *p1, vector *p2, color c, real32 step)
+// Draw a stippled line. Created for movement UI.
+// You can animate the stipple along its length using the 'animate' param in [0:1] range.
+void primLine3Stipple(vector *p1, vector *p2, color c, real32 step, real32 animate)
 {
     bool blendon = glIsEnabled(GL_BLEND);
     if (!blendon) glEnable(GL_BLEND);
@@ -86,11 +88,13 @@ void primLine3Stipple(vector *p1, vector *p2, color c, real32 step)
     glBegin(GL_LINES);
         glColor3ub(colRed(c), colGreen(c), colBlue(c));
 
+        // Offset initially to animate the stipple
+        real32 cur = animate * step;
         vector pos = *p1;
-        real32 d   = 0.0f;
+        vecAddToScalarMultiply( pos, delta, animate*2.0f );
 
         // Render every other segment
-        for (; d<limit; d+=step) {
+        for (; cur<limit; cur+=step) {
             glVertex3fv( &pos.x );
             vecAddTo( pos, delta );
             glVertex3fv( &pos.x );
@@ -98,7 +102,7 @@ void primLine3Stipple(vector *p1, vector *p2, color c, real32 step)
         }
 
         // Complete the last partial segment
-        if (d < distance) {
+        if (cur < distance) {
             glVertex3fv( &pos.x );
             glVertex3fv( &p2->x );
         }
