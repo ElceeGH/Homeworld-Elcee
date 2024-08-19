@@ -171,14 +171,6 @@
 /*=============================================================================
     Typedefs:
 =============================================================================*/
-//for logging objects to render as blurry
-typedef struct
-{
-    sdword x, y;
-    color c;
-}
-smblurry;
-
 
 typedef struct smticktext {
     sdword x;

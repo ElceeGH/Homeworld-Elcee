@@ -106,13 +106,7 @@ sdword smClicking = FALSE;
 
 //table of functions to draw a mission sphere at varying levels of visibility
 void smSelectHold(void);
-//point specification stuffs
-/*
-sdword smPointSpecMode = SPM_Idle;
-sdword smCrosshairSize = SM_CrosshairSize;
-sdword smMousePauseX;
-sdword smMousePauseY;
-*/
+
 //colors for differing sphere statuses
 color spcNormal   = SPC_Normal;
 color spcSelected = SPC_Selected;
@@ -219,6 +213,17 @@ udword   smSensorWeirdness=0;
 
 //region for hyperspace button
 regionhandle smHyperspaceRegion = NULL;
+
+// Tactical overlay list items
+typedef struct ShipTOItem {
+    real32 x, y;
+    real32 radius;
+    color c;
+    ShipClass shipClass;
+} ShipTOItem;
+
+ShipTOItem shipTOList[SM_NumberTOs];
+static udword shipTOCount;
 
 //what ships have a TO in the SM
 ubyte smShipTypeRenderFlags[TOTAL_NUM_SHIPS] =
@@ -344,8 +349,6 @@ ubyte smDerelictTypeMesh[NUM_DERELICTTYPES] =
     0,                                          //HyperspaceGate
 
 };
-
-GLboolean smBigPoints;
 
 /*-----------------------------------------------------------------------------
     tweakables for the sensors manager from sensors.script
@@ -834,6 +837,338 @@ void smTickTextDraw(void)
     fontMakeCurrent(oldFont);
 }
 
+
+
+
+// Callback type for mesh drawing
+typedef void TypeSpecificDrawFunction( SpaceObjRotImp* obj, lod* level );
+
+// General purpose mesh draw
+static void drawMesh( SpaceObjRotImp* obj, bool selectFlash, lod* level, Camera* camera, TypeSpecificDrawFunction draw ) {
+    // Flash by not drawing it
+    if (selectFlash)
+        return;
+
+    // Make total transform matrix including rotation and position
+    hmatrix matPosRot;
+    hmatMakeHMatFromMat(&matPosRot, &obj->rotinfo.coordsys);
+    hmatPutVectIntoHMatrixCol4( obj->posinfo.position, matPosRot );
+
+    // Get in there
+    glPushMatrix();
+    glMultMatrixf( &matPosRot.m11 );
+
+    rndLightingEnable(TRUE);
+    shPushLightMatrix(&matPosRot);
+
+    if (rndShipVisible( (SpaceObj*)obj, camera )) {
+        extern bool8 g_WireframeHack; /// TODO gross... 
+        bool wireOn = g_WireframeHack;
+        g_WireframeHack = FALSE;
+        draw( obj, level );
+        g_WireframeHack = (ubyte)wireOn;
+    }
+        
+    shPopLightMatrix();
+    glDisable(GL_BLEND);
+    glDisable(GL_ALPHA_TEST);
+    rndLightingEnable(FALSE);
+    rndTextureEnable(FALSE);
+    glPopMatrix();
+}
+
+
+
+// Normal dot size on sensors for ships
+static real32 shipDotSize( void ) {
+    // Scale sensor dots for modern resolutions, keeping original look where they bunch up a little
+    return max( 1.0f, 1.28f * getResDensityRelative() );
+}
+
+static bool shipBelongsToPlayer( Ship* ship ) {
+    return ship->playerowner == universe.curPlayerPtr;
+}
+
+static bool shipRenderFlagIsSet( Ship* ship, udword flag ) {
+    return bitTest(smShipTypeRenderFlags[ship->shiptype], flag);
+}
+
+
+
+static void shipDrawMesh( SpaceObjRotImp* obj, lod* level ) {
+    Ship* ship = (Ship*) obj;
+
+    if (ship->bindings)
+         meshRenderShipHierarchy( ship->bindings, ship->currentLOD, level->pData, ship->colorScheme );
+    else meshRender( level->pData, ship->colorScheme );
+}
+
+
+
+static color shipDotColor( Ship* ship ) {
+    // Special colour overrides
+    bool forceAlly     = (ship->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorYellow;
+    bool forceFriendly = (ship->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorGreen;
+
+    if (forceFriendly || shipBelongsToPlayer(ship))
+        return teFriendlyColor;
+
+    if (forceAlly || allianceIsShipAlly(ship, universe.curPlayerPtr))
+        return teAlliedColor;
+    
+    // By process of elimination, a bad egg! >:[
+    return teHostileColor;
+}
+
+static void drawShipAsDot( Ship* ship, bool selectFlash, color background ) {
+    color baseCol  = shipDotColor( ship );
+    color pointCol = selectFlash ? background : baseCol;
+    primPointSize3( &ship->posinfo.position, shipDotSize(), pointCol );
+}
+
+
+
+static void drawShipAsMesh( Ship* ship, bool selectFlash, lod* level, Camera* camera ) {
+    drawMesh( (SpaceObjRotImp*) ship, selectFlash, level, camera, shipDrawMesh );
+}
+
+static bool shipIsActiveGravWellGen( const Ship* ship ) {
+    if (ship->shiptype == GravWellGenerator)
+         return ((GravWellGeneratorSpec *)ship->ShipSpecifics)->GravFieldOn;
+    else return FALSE;
+}
+
+static void shipAddToTacticalOverlayDrawList( Ship* ship, bool selectFlash, color background ) {
+    if (shipTOCount > SM_NumberTOs)
+        return;
+
+    color colBase  = selectFlash ? background : shipDotColor(ship);
+    color colFaded = colRGB( colRed(colBase)  / TO_IconColorFade,
+                             colGreen(colBase)/ TO_IconColorFade,
+                             colBlue(colBase) / TO_IconColorFade );
+
+    ShipTOItem* item = &shipTOList[ shipTOCount ];
+    item->shipClass = ship->staticinfo->shipclass;
+    item->radius    = ship->collInfo.selCircleRadius;
+    item->x         = ship->collInfo.selCircleX;
+    item->y         = ship->collInfo.selCircleY;
+    item->c         = colFaded;
+
+    shipTOCount++;
+}
+
+// Don't draw cloaked ships unless they belong to the player, and don't draw invisible things or things marked as do-not-render
+static bool shipIsHidden( Ship* ship, bool isPlayer ) {
+    bool isInvisible = (ship->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorInvisible;
+    bool isCloaked   = bitTest( ship->flags, SOF_Cloaked );
+    bool isHidden    = bitTest( ship->flags, SOF_Hide );
+
+    return isInvisible || isHidden || (isCloaked && !isPlayer);
+}
+
+
+
+static void shipDraw( Ship* ship, Camera *camera, bool bFlashOn, color background ) {
+    if ( ! smNonResources) // not drawing ships right now
+        return;
+
+    // Flash when ships are selected and it lines up with the flash timing
+    bool selectFlash = bFlashOn && (ship->flags & SOF_Selected);
+    bool isPlayer    = shipBelongsToPlayer( ship );
+
+    // Tactical overlay stuff
+    if (smTacticalOverlay && isPlayer) {
+        if (shipRenderFlagIsSet(ship, SM_TO)) // Drawn all at once later in 2D phase
+            shipAddToTacticalOverlayDrawList( ship, selectFlash, background );
+        
+        if (shipIsActiveGravWellGen( ship )) // @todo Move into the tactical overlay drawing, this is dumb
+            toFieldSphereDraw(ship,((GravWellGeneratorStatics *) ship->staticinfo->custstatinfo)->GravWellRadius, 1.0f);
+    }
+
+    // To draw something, you have to be able to see it, believe it or not
+    if (shipIsHidden( ship, isPlayer ))
+        return;
+
+    // If it's a ship type to render as a mesh (e.g cruiser, mothership, big stuff) then do that
+    // Otherwise just draw as a point
+    // @todo The meshes could use something 'extra' for visbility at very long ranges, like colourisation via fog or something
+    if (shipRenderFlagIsSet(ship, SM_Mesh)) { 
+        lod* level     = lodLevelGet( ship, &camera->eyeposition, &ship->posinfo.position );
+        bool isLodMesh = (level->flags & LM_LODType) == LT_Mesh;
+
+        if (isLodMesh)
+             drawShipAsMesh( ship, selectFlash, level, camera );
+        else drawShipAsDot ( ship, selectFlash, background );
+    } else {
+        drawShipAsDot( ship, selectFlash, background );
+    }
+}
+
+
+
+static bool derelictRenderFlagIsSet( Derelict* zoolander, udword flag ) {
+    return bitTest( smDerelictTypeMesh[zoolander->derelicttype], flag );
+}
+
+static lod* derelictTryGetMeshLod( Derelict* derek, Camera* camera ) {
+    if (derek->derelicttype == HyperspaceGate)
+        return NULL; // Has no LODs, would crash
+
+    lod* level  = lodLevelGet( derek, &camera->eyeposition, &derek->posinfo.position );
+    bool isMesh = (level->flags & LM_LODType) == LT_Mesh;
+
+    if (isMesh)
+         return level;
+    else return NULL;
+}
+
+static bool derelictIsFriendly( Derelict* derek ) {
+    return derek != NULL
+        && singlePlayerGame
+        && derek->derelicttype   == PrisonShipOld
+        && spGetCurrentMission() == MISSION_8_THE_CATHEDRAL_OF_KADESH;
+}
+
+static color derelictDotColour( Derelict* derek ) {
+    if (derek->derelicttype == Crate)
+        return teCrateColor;
+
+    if (derelictIsFriendly( derek ))
+        return teFriendlyColor;
+
+    return teNeutralColor;
+}
+
+static real32 derelictDotSize( Derelict* derek ) {
+    // Treat this one more like a ship, given its nature
+    if (derelictIsFriendly( derek ))
+        return shipDotSize();
+
+    // In general though, don't crowd the sensor view too badly, or it gets ugly
+    return max( 1.0f, shipDotSize() * 0.5f );
+}
+
+static void derelcitDrawMesh( SpaceObjRotImp* obj, lod* level ) {
+    Derelict* der = (Derelict*) obj;
+    meshRender( level->pData, der->colorScheme );
+}
+
+// Derelict meshes don't get drawn in cloudy blobs.
+static void derelictDraw( Derelict* derek, Camera* camera, bool meshAllowed ) {
+    bool wantMesh = derelictRenderFlagIsSet( derek, SM_Mesh );
+    lod* level    = derelictTryGetMeshLod( derek, camera );
+    bool hasMesh  = level != NULL;
+
+    if (hasMesh && wantMesh && meshAllowed) {
+        drawMesh( (SpaceObjRotImp*)derek, FALSE, level, camera, derelcitDrawMesh );
+    } else {
+        color  col  = derelictDotColour( derek );
+        real32 size = derelictDotSize( derek );
+        primPointSize3( &derek->posinfo.position, size, col );
+    }
+}
+
+
+
+static void nebGasDustDraw( SpaceObj* obj, Camera* camera ) {
+    if (smResources == FALSE)
+        return;
+
+    // This is a bit hacky, but it lines up well with 1999 Homeworld.
+    // The method of drawing used originally can't scale easily (2D array of alphas drawn with GL_POINT in screenspace).
+    // Because of this, at high resolutions it was much more difficult to see them than intended.
+    real32 distCur    = sqrtf(vecDistanceSquared( camera->eyeposition, obj->posinfo.position ));
+    real32 distThresh = 175'000.0f;
+    real32 distCloser = max( 0.0f, distThresh - distCur );
+    real32 distScale  = 1.0f - (distCloser / distThresh);
+    real32 baseSize   = 500.0f * 1.15f * sqrtf( getResDensityRelative() );
+    real32 size       = baseSize * distScale;
+    color  col        = obj->staticinfo->staticheader.LOD->pointColor;
+
+    primBlurryPoint3Fade( &obj->posinfo.position, size, col, 1.0f );
+}
+
+static void asteroidDraw( Asteroid* ast ) {
+    if (smResources == FALSE)
+        return;
+    
+    real32 radius = ast->staticinfo->staticheader.staticCollInfo.collspheresize;
+    color  col    = ast->staticinfo->staticheader.LOD->pointColor;
+    real32 size   = 1.5f * sqrtf( getResDensityRelative() );
+
+    if (radius > SM_LargeResourceSize)
+        size *= 1.5f;
+    
+    primPointSize3( &ast->posinfo.position, size, col );
+}
+
+
+
+static void clearDrawNebulaTendrils( void ) {
+    //display the nebulae tendrils as strings
+    rndTextureEnable(FALSE);
+    rndLightingEnable(FALSE);
+    rndAdditiveBlends(FALSE);
+
+    glLineWidth( sqrtf(getResDensityRelative()) );
+    glEnable(GL_BLEND);
+    glShadeModel(GL_FLAT); // 2024: Guess they're not supposed to be interpolated. Or is for ye olde speed? Might look cool to lerp the colour.
+
+    // @todo It would be cool to render them as fuzzy lines
+    glBegin(GL_LINES);
+    for (udword i=0; i<numNebulae; i++) {
+        nebulae_t* neb = &nebNebulae[i];
+
+        for (udword t=0; t<neb->numTendrils; t++) {
+            color c = neb->tendrilTable[t].colour;
+            glColor4ub(colRed(c), colGreen(c), colBlue(c), 192);
+            glVertex3fv((GLfloat*)&neb->tendrilTable[t].a->position);
+            glVertex3fv((GLfloat*)&neb->tendrilTable[t].b->position);
+        }
+    }
+    glEnd();
+
+    glDisable(GL_BLEND);
+    glLineWidth(1.0f);
+}
+
+
+
+static void clearDrawShipTacticalOverlays( void ) {
+    if (shipTOCount == 0)
+        return;
+
+    primModeSet2();
+
+    for (udword ti=0; ti<shipTOCount; ti++) {
+        ShipTOItem* to   = &shipTOList[ ti ];
+        toicon*     icon = toClassIcon[ to->shipClass ];
+
+        // Mark usage for tactical overlay legend
+        toClassUsed[to->shipClass][0] = TRUE; // @todo Player index hardcoded, check
+
+        if (to->radius > 0.0f) {
+            color  col       = to->c;
+            real32 radius    = max( to->radius, smTORadius ); // @todo Maybe can allow it be a little smaller on modern displays?
+            real32 thickness = max( 0.75f, 0.65f * sqrtf(getResDensityRelative()) );
+
+            primLineLoopStart2( thickness, col );
+
+            for (sdword i=icon->nPoints-1; i>= 0; i--)
+                primLineLoopPoint3F(to->x + icon->loc[i].x * radius,
+                                    to->y + icon->loc[i].y * radius);
+
+            primLineLoopEnd2();
+        }
+    }
+
+    primModeClear2();
+    rndLightingEnable(FALSE);
+    rndTextureEnable(FALSE);
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : smBlobDrawClear
     Description : Render all the ships inside a blob.  This would be for blobs
@@ -845,413 +1180,56 @@ void smTickTextDraw(void)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-//render utility functions
-//bool8 rndShipVisible(SpaceObj* spaceobj, Camera* camera);
-//string of ship types to be rendered as meshes
 void smBlobDrawClear(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix *projection, color background)
 {
-    sdword index, i;
-    SpaceObj **objPtr, *obj;
-    color c = colBlack;
-    lod *level;
-    hmatrix coordMatrixForGL;
-    ShipStaticInfo *shipStaticInfo;
-    bool bFlashOn;
-    SpaceObjSelection *blobObjects = thisBlob->blobObjects;
-    real32 radius;
-    hvector objectPos, cameraSpace, screenSpace;
-    smblurry *blurry;
-    sdword nShipTOs = 0;
-    struct
-    {
-        real32 x, y;
-        real32 radius;
-        color c;
-        ShipClass shipClass;
-    }
-    shipTO[SM_NumberTOs];
-    sdword nBigDots = 0;
-    struct
-    {
-        real32 x, y;
-        color c;
-    }
-    bigDot[SM_NumberBigDots];
-    real32 pointSize = 0.0;
-    rectangle rect;
+    // Clear some stuff per-frame
+    shipTOCount = 0;
 
-    //flash the selected ships
-    if (fmod((double)universe.totaltimeelapsed, (double)smSelectedFlashSpeed) > smSelectedFlashSpeed / 2.0)
-    {
-        bFlashOn = TRUE;
-    }
-    else
-    {
-        bFlashOn = FALSE;
-    }
-    //draw all objects in the sphere
-    for (index = 0, objPtr = blobObjects->SpaceObjPtr; index < blobObjects->numSpaceObjs; index++, objPtr++)
-    {
-        obj = *objPtr;
-//#ifdef DEBUG_COLLBLOBS
+    // Selection flashing
+    real32 flashRate  = smSelectedFlashSpeed;
+    bool   flashState = fmodf(universe.totaltimeelapsed, flashRate) > flashRate/2.0f;
+
+    // Draw all objects in the sphere
+    udword     count   = thisBlob->blobObjects->numSpaceObjs;
+    SpaceObj** objIter = thisBlob->blobObjects->SpaceObjPtr;
+
+    for (udword i=0; i<count; i++) {
+        // We might even render it
+        SpaceObj* obj = *objIter++;
+
+        // Compute selection circle
         if (obj->flags & SOF_Targetable)
-//#endif
-        {
-            selCircleCompute(modelView, projection, (SpaceObjRotImpTarg *)obj);//compute selection circle
-        }
-        switch (obj->objtype)
-        {
+            selCircleCompute( modelView, projection, (SpaceObjRotImpTarg*)obj ); 
+
+        // Clear any leftover state
+        rndTextureEnable(FALSE);
+        rndLightingEnable(FALSE);
+        rndAdditiveBlends(FALSE);
+        
+        // Draw
+        switch (obj->objtype) {
             case OBJ_ShipType:
-                if (smNonResources == FALSE)
-                {
-                    break;
-                }
-                if (bitTest(((Ship *)obj)->flags, SOF_Hide))
-                {                                           //don't show hidden ships
-                    break;
-                }
-                if (smTacticalOverlay)
-                {
-                    if (((Ship *)obj)->playerowner == universe.curPlayerPtr &&
-                        bitTest(smShipTypeRenderFlags[((Ship *)obj)->shiptype], SM_TO))
-                    {
-                        if (nShipTOs < SM_NumberTOs)
-                        {
-                            shipTO[nShipTOs].x = ((Ship *)obj)->collInfo.selCircleX;
-                            shipTO[nShipTOs].y = ((Ship *)obj)->collInfo.selCircleY;
-                            shipTO[nShipTOs].radius = ((Ship *)obj)->collInfo.selCircleRadius;
-                            shipTO[nShipTOs].c = colRGB(colRed(c)/TO_IconColorFade, colGreen(c)/TO_IconColorFade, colBlue(c)/TO_IconColorFade);
-                            shipTO[nShipTOs].shipClass = ((Ship *)obj)->staticinfo->shipclass;
-                            nShipTOs++;
-                        }
-                    }
-                    if(((Ship *)obj)->playerowner == universe.curPlayerPtr)
-                    {
-                        if(((Ship *)obj)->shiptype == GravWellGenerator)
-                        {
-                            if (((GravWellGeneratorSpec *)((Ship *)obj)->ShipSpecifics)->GravFieldOn)
-                            {
-                                toFieldSphereDraw(((Ship *)obj),((GravWellGeneratorStatics *) ((ShipStaticInfo *)(((Ship *)obj)->staticinfo))->custstatinfo)->GravWellRadius, 1.0f);
-                            }
-                        }
-                    }
-                }
-                if (bitTest(smShipTypeRenderFlags[((Ship *)obj)->shiptype], SM_Mesh))
-                {                                           //if it's a ship type to render as a mesh
-                    level = lodLevelGet((void *)obj, &camera->eyeposition, &obj->posinfo.position);
-                    if ((level->flags & LM_LODType) == LT_Mesh)
-                    {
-                        if (!(bFlashOn && (((Ship *)obj)->flags & SOF_Selected)))
-                        {
-                            if(!bitTest(obj->flags,SOF_Cloaked) || ((Ship *)obj)->playerowner == universe.curPlayerPtr)
-                            {       //if ship isn't cloaked, draw, or if ship is players, draw
-                                glPushMatrix();
-                                shipStaticInfo = (ShipStaticInfo *)obj->staticinfo;
-                                hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)obj)->rotinfo.coordsys);
-                                hmatPutVectIntoHMatrixCol4(obj->posinfo.position,coordMatrixForGL);
-                                glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
-                                rndLightingEnable(TRUE);
-                                shPushLightMatrix(&coordMatrixForGL);
-                                i = ((Ship *)obj)->colorScheme;
-
-                                if (rndShipVisible(obj, camera))
-                                {
-                                    bool wireOn;
-                                    extern bool8 g_WireframeHack;
-
-                                    wireOn = g_WireframeHack;
-                                    g_WireframeHack = FALSE;
-                                    if (((Ship *)obj)->bindings != NULL)
-                                    {
-                                        meshRenderShipHierarchy(((Ship *)obj)->bindings,
-                                                ((Ship *)obj)->currentLOD,
-                                                (meshdata *)level->pData, i);
-                                    }
-                                    else
-                                    {
-                                        meshRender((meshdata *)level->pData, i);
-                                    }
-                                    g_WireframeHack = (ubyte)wireOn;
-                                }
-                                shPopLightMatrix();
-                                glDisable(GL_BLEND);
-                                glDisable(GL_ALPHA_TEST);
-                                rndLightingEnable(FALSE);
-                                rndTextureEnable(FALSE);
-                                glPopMatrix();
-                            }
-                        }
-                    }
-                    else
-                    {                                       //else no LOD at this level
-                        goto justRenderAsDot;
-                    }
-                }                                           //else draw it as a pixel
-                else if ( (!bitTest(obj->flags,SOF_Cloaked) || allianceIsShipAlly((Ship *)obj, universe.curPlayerPtr)) &&
-                          ((obj->attributes & ATTRIBUTES_SMColorField) != ATTRIBUTES_SMColorInvisible) )
-                {       //if ship isn't cloaked, draw, or if ship is players, draw
-justRenderAsDot:
-#if TO_STANDARD_COLORS
-                    if (((Ship *)obj)->playerowner == universe.curPlayerPtr)
-                    {
-                        c = teFriendlyColor;
-                    }
-                    else if (allianceIsShipAlly((Ship *)obj, universe.curPlayerPtr))
-                    {
-                        c = teAlliedColor;
-                    }
-                    else
-                    {
-                        c = teHostileColor;
-                    }
-                    if (obj->attributes & ATTRIBUTES_SMColorField)  // overide with special colors
-                    {
-                        if ((obj->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorYellow)
-                        {
-                            c = teAlliedColor;
-                        }
-                        else if ((obj->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorGreen)
-                        {
-                            c = teFriendlyColor;
-                        }
-                    }
-#else //SM_STANDARD_COLORS
-                    c = teColorSchemes[((Ship *)obj)->colorScheme].tacticalColor;
-#endif //SM_STANDARD_COLORS
-                    if (smTacticalOverlay)
-                    {
-                        if (((Ship *)obj)->playerowner == universe.curPlayerPtr &&
-                            bitTest(smShipTypeRenderFlags[((Ship *)obj)->shiptype], SM_TO))
-                        //if (((Ship *)obj)->shiptype == ResourceCollector)
-                        {
-                            if (nShipTOs < SM_NumberTOs)
-                            {
-                                shipTO[nShipTOs].x = ((Ship *)obj)->collInfo.selCircleX;
-                                shipTO[nShipTOs].y = ((Ship *)obj)->collInfo.selCircleY;
-                                shipTO[nShipTOs].radius = ((Ship *)obj)->collInfo.selCircleRadius;
-                                shipTO[nShipTOs].c = colRGB(colRed(c)/TO_IconColorFade, colGreen(c)/TO_IconColorFade, colBlue(c)/TO_IconColorFade);
-                                shipTO[nShipTOs].shipClass = ((Ship *)obj)->staticinfo->shipclass;
-                                nShipTOs++;
-                            }
-                        }
-                    }
-                    if (((Ship *)obj)->flags & SOF_Selected)
-                    {
-                        if (bFlashOn)
-                        {
-                            c = background;
-                        }
-                    }
-
-                    // Scale sensor dots for modern resolutions, keeping original look where they bunch up a little
-                    const float pointSizeRaw = sqrtf( getResDensity() * 0.004f );
-                    const float pointSize    = max( 2.0f, pointSizeRaw );
-                    rndTextureEnable(FALSE);
-                    if (!smBigPoints && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
-                    {
-                        dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
-                        bigDot[nBigDots].x = ((Ship *)obj)->collInfo.selCircleX;
-                        bigDot[nBigDots].y = ((Ship *)obj)->collInfo.selCircleY;
-                        bigDot[nBigDots].c = c;
-                        nBigDots++;
-                    }
-                    else
-                    {
-                        glPointSize(pointSize);
-                        primPoint3(&obj->posinfo.position, c);  //everything is rendered as a point
-                        glPointSize(1.0f);
-                    }
-                }
+                shipDraw( (Ship*)obj, camera, flashState, background );
                 break;
+
             case OBJ_AsteroidType:
-                if (smResources == FALSE)
-                {
-                    break;
-                }
-                radius = obj->staticinfo->staticheader.staticCollInfo.collspheresize;
-
-                if (radius > SM_LargeResourceSize)
-                {
-                    pointSize = 2.0f;
-                    //glPointSize(2.0f);
-                }
-                rndTextureEnable(FALSE);
-#if TO_STANDARD_COLORS
-                c = teResourceColor;
-#else
-                c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                if ((!smBigPoints) && pointSize != 1.0f && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
-                {
-                    dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
-                    bigDot[nBigDots].x = ((Ship *)obj)->collInfo.selCircleX;
-                    bigDot[nBigDots].y = ((Ship *)obj)->collInfo.selCircleY;
-                    bigDot[nBigDots].c = c;
-                    nBigDots++;
-                }
-                else
-                {
-                    glPointSize(pointSize);
-                    primPoint3(&obj->posinfo.position, c);     //everything is rendered as a point
-                    glPointSize(1.0f);
-                }
-                pointSize = 1.0f;
+                asteroidDraw( (Asteroid*)obj );
                 break;
+
             case OBJ_NebulaType:
             case OBJ_GasType:
             case OBJ_DustType:
-                if (smResources == FALSE)
-                {
-                    break;
-                }
-                memcpy(&objectPos, &obj->posinfo.position, sizeof(vector));
-                objectPos.w = 1.0f;
-//                c = obj->staticinfo->staticheader.LOD->pointColor;
-//                c = colWhite;
-                hmatMultiplyHMatByHVec(&cameraSpace, modelView, &objectPos);//in camera space
-                hmatMultiplyHMatByHVec(&screenSpace, projection, &cameraSpace);//in screen space
-//                primBlurryPoint22(primGLToScreenX(screenSpace.x / screenSpace.w),    //everything is rendered as a blurry point
-//                                 primGLToScreenY(screenSpace.y / screenSpace.w), c);
-                if (screenSpace.z > 0.0f && smBlurryIndex < SM_BlurryArraySize)
-                {
-#if TO_STANDARD_COLORS
-                    smBlurryArray[smBlurryIndex].c = teResourceColor;
-#else
-                    smBlurryArray[smBlurryIndex].c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                    smBlurryArray[smBlurryIndex].x = primGLToScreenX(screenSpace.x / screenSpace.w);
-                    smBlurryArray[smBlurryIndex].y = primGLToScreenY(screenSpace.y / screenSpace.w);
-                    smBlurryIndex++;
-                }
+                nebGasDustDraw( obj, camera );
                 break;
+
             case OBJ_DerelictType:
-                if (((Derelict *)obj)->derelicttype == HyperspaceGate)
-                {
-                    goto renderDerelictAsDot;
-                }
-                level = lodLevelGet((void *)obj, &camera->eyeposition, &obj->posinfo.position);
-                if (bitTest(smDerelictTypeMesh[((Derelict *)obj)->derelicttype], SM_Mesh) && (level->flags & LM_LODType) == LT_Mesh)
-                {
-                    if ( (!bitTest(obj->flags,SOF_Cloaked)) &&
-                         ((obj->attributes & ATTRIBUTES_SMColorField) != ATTRIBUTES_SMColorInvisible) )
-                    {       //if it isn't cloaked, draw
-                        glPushMatrix();
-                        shipStaticInfo = (ShipStaticInfo *)obj->staticinfo;
-                        hmatMakeHMatFromMat(&coordMatrixForGL,&((SpaceObjRot *)obj)->rotinfo.coordsys);
-                        hmatPutVectIntoHMatrixCol4(obj->posinfo.position,coordMatrixForGL);
-                        glMultMatrixf((float *)&coordMatrixForGL);//ship's rotation matrix
-                        rndLightingEnable(TRUE);
-                        shPushLightMatrix(&coordMatrixForGL);
-                        i = ((Derelict *)obj)->colorScheme;
-
-                        if (rndShipVisible(obj, camera))
-                        {
-                            bool wireOn;
-                            extern bool8 g_WireframeHack;
-
-                            wireOn = g_WireframeHack;
-                            g_WireframeHack = FALSE;
-                            meshRender((meshdata *)level->pData, i);
-                            g_WireframeHack = (ubyte)wireOn;
-                        }
-                        shPopLightMatrix();
-                        glDisable(GL_BLEND);
-                        glDisable(GL_ALPHA_TEST);
-                        rndLightingEnable(FALSE);
-                        rndTextureEnable(FALSE);
-                        glPopMatrix();
-                    }
-                }
-                else
-                {
-renderDerelictAsDot:
-#if TO_STANDARD_COLORS
-                        c = teNeutralColor;
-#else
-                        c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                    if (singlePlayerGame && (((Derelict *)obj)->derelicttype == PrisonShipOld))
-                    {
-                        c = teFriendlyColor;
-                    }
-
-                    rndTextureEnable(FALSE);
-                    primPoint3(&obj->posinfo.position,c);   //everything is rendered as a point
-                }
-                break;
-
-            default:
-                break;
+                derelictDraw( (Derelict*)obj, camera, TRUE );
         }
     }
 
-    //display the nebulae tendrils as strings
-    rndTextureEnable(FALSE);
-    rndLightingEnable(FALSE);
-    rndAdditiveBlends(FALSE);
-    glEnable(GL_BLEND);
-    glShadeModel(GL_FLAT);
-    for (index = 0; index < numNebulae; index++)
-    {
-        sdword t;
-        nebulae_t* neb = &nebNebulae[index];
-
-        glBegin(GL_LINES);
-        for (t = 0; t < neb->numTendrils; t++)
-        {
-            color c = neb->tendrilTable[t].colour;
-            glColor4ub(colRed(c), colGreen(c), colBlue(c), 192);
-            glVertex3fv((GLfloat*)&neb->tendrilTable[t].a->position);
-            glVertex3fv((GLfloat*)&neb->tendrilTable[t].b->position);
-        }
-        glEnd();
-    }
-    glDisable(GL_BLEND);
-
-    if (smBlurryIndex > 0 || nShipTOs > 0 || nBigDots > 0)
-    {
-        toicon *icon;
-        color col;
-        real32 radius;
-
-        primModeSet2();
-        for (blurry = smBlurryArray; smBlurryIndex > 0; smBlurryIndex--, blurry++)
-        {
-            primBlurryPoint22(blurry->x, blurry->y, blurry->c);
-        }
-
-        for (index = 0; index < nShipTOs; index++)
-        {
-            icon = toClassIcon[shipTO[index].shipClass];
-            toClassUsed[shipTO[index].shipClass][0] = TRUE;
-
-            if (shipTO[index].radius > 0.0f)
-            {
-                radius = max(shipTO[index].radius, smTORadius);
-                col = shipTO[index].c;
-                primLineLoopStart2(1, col);
-
-                for (i = icon->nPoints - 1; i >= 0; i--)
-                {
-                        primLineLoopPoint3F(shipTO[index].x + icon->loc[i].x * radius,
-                                       shipTO[index].y + icon->loc[i].y * radius);
-                }
-
-                primLineLoopEnd2();
-            }
-        }
-        for (index = 0; index < nBigDots; index++)
-        {
-            rect.x0 = primGLToScreenX(bigDot[index].x);
-            rect.y0 = primGLToScreenY(bigDot[index].y);
-            rect.x1 = rect.x0 + 2;
-            rect.y1 = rect.y0 + 2;
-            primRectSolid2(&rect, bigDot[index].c);
-        }
-        primModeClear2();
-        rndLightingEnable(FALSE);
-        rndTextureEnable(FALSE);
-    }
+    // Draw non-object stuff
+    clearDrawNebulaTendrils();
+    clearDrawShipTacticalOverlays();
 }
 
 /*-----------------------------------------------------------------------------
@@ -1470,6 +1448,17 @@ bool smEnemyFogOfWarBlobCallback(blob *superBlob, SpaceObj *obj)
     return(FALSE);
 }
 
+
+
+#define SM_VISUALIZE_SUBBLOBS   0
+#if SM_VISUALIZE_SUBBLOBS == 1
+    #define smVisSubBlob primCircleOutlineZ
+#else 
+    #define smVisSubBlob
+#endif 
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : smBlobDrawCloudy
     Description : Draw a cloudy sensors blob, such as one in the shroud.
@@ -1477,31 +1466,8 @@ bool smEnemyFogOfWarBlobCallback(blob *superBlob, SpaceObj *obj)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-#define SM_VISUALIZE_SUBBLOBS   0
 void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix *projection, color background)
 {
-    sdword index;
-    SpaceObj **objPtr, *obj;
-    color c = colBlack;
-    hvector objectPos, cameraSpace, screenSpace;
-    SpaceObjSelection *blobObjects = thisBlob->blobObjects;
-    Node *subBlobNode;
-    blob *subBlob;
-    sdword nShips;
-    smblurry *blurry;
-    sdword nBigDots = 0;
-    struct
-    {
-        real32 x, y;
-        color c;
-    }
-    bigDot[SM_NumberBigDots];
-    rectangle rect;
-    real32 radius;
-    real32 pointSize;
-    real32 screenX, screenY;
-
-    glPointSize(2.0f);
     //compute a list of sub-blobs for the enemies.  It will be deleted with the parent blob.
     if (thisBlob->subBlobs.num == BIT31)
     {                                                       //if list not yet created
@@ -1520,47 +1486,40 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
 
     //go through all sub-blobs and remove any that are hidden due to too many resources
     thisBlob->nHiddenShips = 0;
-    for (subBlobNode = thisBlob->subBlobs.head; subBlobNode != NULL; subBlobNode = subBlobNode->next)
+    for (Node* subBlobNode = thisBlob->subBlobs.head; subBlobNode != NULL; subBlobNode = subBlobNode->next)
     {
-        subBlob = (blob *)listGetStructOfNode(subBlobNode);
+        blob* subBlob = (blob *)listGetStructOfNode(subBlobNode);
         if (subBlob->shipMass == 0.0f)
         {                                                   //if no ships in blob
             continue;                                       //skip it
         }
+
         // if ((k1 * #rocks + k2 * #rockRUs) / (k3 * #ships + k4 * shipMass) > 1.0)
-        nShips = subBlob->nCapitalShips + subBlob->nAttackShips + subBlob->nNonCombat;
+        sdword nShips = subBlob->nCapitalShips + subBlob->nAttackShips + subBlob->nNonCombat;
         if ((smFOW_AsteroidK1 * (real32)subBlob->nRocks + smFOW_AsteroidK2 * subBlob->nRockRUs) /
             (smFOW_AsteroidK3 * (nShips) + smFOW_AsteroidK4 * subBlob->shipMass) > 1.0f)
         {                                                   //if there are too many asteroids to see these ships
-#if SM_VISUALIZE_SUBBLOBS
-           primCircleOutlineZ(&subBlob->centre, subBlob->radius, 16, colRGB(0, 255, 0));
-#endif
+            smVisSubBlob(&subBlob->centre, subBlob->radius, 16, colRGB(0, 255, 0));
             thisBlob->nHiddenShips += nShips;
             continue;                                       //don't draw them
         }
+
         // if (k2 * #dustRUs / (k3 * #ships + k4 * shipMass) > 1.0)
         if ((smFOW_DustGasK2 * subBlob->nDustRUs) /
             (smFOW_DustGasK3 * nShips + smFOW_DustGasK4 * subBlob->shipMass) > 1.0f)
         {                                                   //if there's too much dust
-#if SM_VISUALIZE_SUBBLOBS
-//           selCircleComputeGeneral(modelView, projection, &subBlob->centre, subBlob->radius, &subBlob->screenX, &subBlob->screenY, &subBlob->screenRadius);
-           primCircleOutlineZ(&subBlob->centre, subBlob->radius, 16, colRGB(255, 255, 0));
-#endif
+            smVisSubBlob(&subBlob->centre, subBlob->radius, 16, colRGB(255, 255, 0));
             thisBlob->nHiddenShips += nShips;
             continue;                                       //don't draw the ships
         }
+
         //there's not too many resources, draw them as normal
-#if SM_VISUALIZE_SUBBLOBS
-        primCircleOutlineZ(&subBlob->centre, subBlob->radius, 16, colWhite);
-#endif
-        c = teHostileColor;
-        dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
-//        bigDot[nBigDots].x = ((Ship *)obj)->collInfo->selCircleX;
-//        bigDot[nBigDots].y = ((Ship *)obj)->collInfo->selCircleY;
+        smVisSubBlob(&subBlob->centre, subBlob->radius, 16, colWhite);
+        real32 radius, screenX, screenY;
         selCircleComputeGeneral(modelView, projection, &subBlob->centre, 1.0f, &screenX, &screenY, &radius);
-        for (index = subBlob->blobObjects->numSpaceObjs - 1; index >= 0 ; index--)
+        for (sdword index = subBlob->blobObjects->numSpaceObjs - 1; index >= 0 ; index--)
         {                                                   //all ships in sub-blob get selection circle of sub-blob
-            obj = subBlob->blobObjects->SpaceObjPtr[index];
+            SpaceObj* obj = subBlob->blobObjects->SpaceObjPtr[index];
             if (obj->objtype == OBJ_ShipType)
             {
                 ((Ship *)obj)->collInfo.selCircleX = screenX;
@@ -1568,146 +1527,52 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
                 ((Ship *)obj)->collInfo.selCircleRadius = radius;
             }
         }
-        if ((!smBigPoints) && radius > 0.0f)
-        {
-            bigDot[nBigDots].c = c;
-            bigDot[nBigDots].x = screenX;
-            bigDot[nBigDots].y = screenY;
-            nBigDots++;
-        }
-        else
-        {
-            primPoint3(&subBlob->centre, c);
-        }
+        
+        // The nasty is visible
+        primPointSize3( &subBlob->centre, shipDotSize(), teHostileColor );
     }
-    glPointSize(1.0f);
-    //draw all objects in the sphere
-    for (index = 0, objPtr = blobObjects->SpaceObjPtr; index < blobObjects->numSpaceObjs; index++, objPtr++)
-    {
-        obj = *objPtr;
-//#ifdef DEBUG_COLLBLOBS
+
+    // Draw all objects in the sphere
+    udword     count   = thisBlob->blobObjects->numSpaceObjs;
+    SpaceObj** objIter = thisBlob->blobObjects->SpaceObjPtr;
+
+    for (udword i=0; i<count; i++) {
+        SpaceObj* obj = *objIter++;
+
+        // Compute selection circle
         if (obj->flags & SOF_Targetable)
-//#endif
-        {
-            selCircleCompute(modelView, projection, (SpaceObjRotImpTarg *)obj);//compute selection circle
-        }
-        switch (obj->objtype)
-        {
-            case OBJ_ShipType:
-                if (((obj->flags & (SOF_Cloaked | SOF_Hide))) ||  //if hidden or cloaked
-                    ((obj->attributes & ATTRIBUTES_SMColorField) == ATTRIBUTES_SMColorInvisible))
-                {
-                    thisBlob->nHiddenShips++;
-                }
-                continue;                                   //ships were drawn from sub-blobs
-            case OBJ_NebulaType:
-                continue;                                   //don't even draw nebulae
+            selCircleCompute( modelView, projection, (SpaceObjRotImpTarg*)obj ); 
+
+        // Clear any leftover state
+        rndTextureEnable(FALSE);
+        rndLightingEnable(FALSE);
+        rndAdditiveBlends(FALSE);
+
+        switch (obj->objtype) {
+            case OBJ_ShipType: //ships were drawn from sub-blobs already, just count up hidden ones
+                thisBlob->nHiddenShips += (udword) shipIsHidden( (Ship*)obj, FALSE );
+                break;                        
+
             case OBJ_GasType:
-            case OBJ_DustType:
-                if (smResources == FALSE)
-                {
-                    goto dontRenderThisResource;
-                }
-                memcpy(&objectPos, &obj->posinfo.position, sizeof(vector));
-                objectPos.w = 1.0f;
-                hmatMultiplyHMatByHVec(&cameraSpace, modelView, &objectPos);//in camera space
-                hmatMultiplyHMatByHVec(&screenSpace, projection, &cameraSpace);//in screen space
-                if (screenSpace.z > 0.0f && smBlurryIndex < SM_BlurryArraySize)
-                {
-#if TO_STANDARD_COLORS
-                    smBlurryArray[smBlurryIndex].c = teResourceColor;
-#else
-                    smBlurryArray[smBlurryIndex].c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                    smBlurryArray[smBlurryIndex].x = primGLToScreenX(screenSpace.x / screenSpace.w);
-                    smBlurryArray[smBlurryIndex].y = primGLToScreenY(screenSpace.y / screenSpace.w);
-                    smBlurryIndex++;
-                }
+            case OBJ_DustType: 
+                nebGasDustDraw( obj, camera ); // Nebulae omitted intentionally here
                 break;
+
             case OBJ_AsteroidType:
-#if TO_STANDARD_COLORS
-                c = teResourceColor;
-#else
-                c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                radius = obj->staticinfo->staticheader.staticCollInfo.collspheresize;
-
-                if (radius > SM_LargeResourceSize)
-                {
-                    pointSize = 2.0f;
-                }
-                else
-                {
-                    pointSize = 1.0f;
-                }
-                if ((!smBigPoints) && pointSize != 1.0f && ((Ship *)obj)->collInfo.selCircleRadius > 0.0f)
-                {
-                    dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
-                    bigDot[nBigDots].x = ((Ship *)obj)->collInfo.selCircleX;
-                    bigDot[nBigDots].y = ((Ship *)obj)->collInfo.selCircleY;
-                    bigDot[nBigDots].c = c;
-                    nBigDots++;
-                }
-                else
-                {
-                    glPointSize(pointSize);
-                    primPoint3(&obj->posinfo.position, c);
-                    glPointSize(1.0f);
-                }
+                asteroidDraw( (Asteroid*)obj );
                 break;
+
             case OBJ_DerelictType:
-                if (((Derelict *)obj)->derelicttype == Crate)
-                {                                           //crates are draw as grey dots
-                    c = teCrateColor;
-                }
-                else if ((((Derelict *)obj)->derelicttype == PrisonShipOld) &&
-                         spGetCurrentMission() == MISSION_8_THE_CATHEDRAL_OF_KADESH)
-                {   //!!!  Single Player game mission specific Code
-                    //In Mission 8, the PrisonShipOld derelict shows up
-                    //as a friendly ship
-                    dbgAssertOrIgnore(nBigDots < SM_NumberBigDots);
-                    bigDot[nBigDots].x = ((Derelict *)obj)->collInfo.selCircleX;
-                    bigDot[nBigDots].y = ((Derelict *)obj)->collInfo.selCircleY;
-                    bigDot[nBigDots].c = teFriendlyColor;
-                    nBigDots++;
-                }
-                else
-                {
-#if TO_STANDARD_COLORS
-                    c = teNeutralColor;
-#else
-                    c = obj->staticinfo->staticheader.LOD->pointColor;
-#endif
-                }
-                primPoint3(&obj->posinfo.position, c);
-                break;
-            default:
+                derelictDraw( (Derelict*)obj, camera, FALSE );
                 break;
         }
-
-dontRenderThisResource:;
     }
 
-    if (smBlurryIndex > 0 || nBigDots > 0)
-    {
-        primModeSet2();
-        for (blurry = smBlurryArray; smBlurryIndex > 0; smBlurryIndex--, blurry++)
-        {
-            primBlurryPoint22(blurry->x, blurry->y, blurry->c);
-        }
-        for (index = 0; index < nBigDots; index++)
-        {
-            rect.x0 = primGLToScreenX(bigDot[index].x);
-            rect.y0 = primGLToScreenY(bigDot[index].y);
-            rect.x1 = rect.x0 + 2;
-            rect.y1 = rect.y0 + 2;
-            primRectSolid2(&rect, bigDot[index].c);
-        }
-        primModeClear2();
-    }
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
 }
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : smBlobListSort
@@ -1818,8 +1683,6 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     fonthandle oldFont = 0;
 
     mouseCursorObjPtr  = NULL;               //Falko: got an obscure crash where mouseCursorObjPtr was mangled, will this work?
-
-    smBigPoints = TRUE;
 
     memset(toClassUsed, 0, sizeof(toClassUsed));
     closestBlob = NULL;
@@ -1969,9 +1832,9 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     primModeSet2();
     smTickTextDraw();
     primModeClear2();
-
     rndLightingEnable(FALSE);
     rndTextureEnable(FALSE);
+
     //another pass through all the blobs to render the objects in the blobs
 //    node = list->head;
 //    while (node != NULL)
@@ -1986,6 +1849,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
         carrierHalfWidth = fontWidth(carrier) / 2;
         mothershipHalfWidth = fontWidth(mothership) / 2;
     }
+
     for (blobIndex = 0; blobIndex < smNumberBlobsSorted; blobIndex++)
     {
         thisBlob = smBlobSortList[blobIndex];
@@ -2037,31 +1901,33 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     rndLightingEnable(FALSE);
 
     {
-        Node *node;
-        Asteroid *thisAsteroid;
-
-        rndGLStateLog("Minor asteroids");
-        for (node = universe.MinorSpaceObjList.head; node != NULL; node = node->next)
-        {
-            thisAsteroid = (Asteroid *)listGetStructOfNode(node);
-            dbgAssertOrIgnore(thisAsteroid->objtype == OBJ_AsteroidType && thisAsteroid->asteroidtype == Asteroid0);
 #if TO_STANDARD_COLORS
             c = teResourceColor;
 #else
             c = thisAsteroid->staticinfo->staticheader.LOD->pointColor;
 #endif
-            primPoint3(&thisAsteroid->posinfo.position, c);
+
+
+        rndGLStateLog("Minor asteroids");
+
+        const real32 ast0Size = max( 0.5f, 0.91f * sqrtf(getResDensityRelative()) );
+        glPointSize( ast0Size );
+        glBegin( GL_POINTS );
+        glColor3ub(colRed(c), colGreen(c), colBlue(c));
+
+        for (Node* node = universe.MinorSpaceObjList.head;  node != NULL;  node = node->next) {
+            Asteroid* thisAsteroid = (Asteroid *)listGetStructOfNode(node);
+            dbgAssertOrIgnore(thisAsteroid->objtype == OBJ_AsteroidType && thisAsteroid->asteroidtype == Asteroid0);
+            glVertex3fv( &thisAsteroid->posinfo.position.x );
         }
+
+        glEnd();
+        glPointSize( 1.0f );
     }
 
     //do a pass through the blobs to draw the drop-down lines and blob circles
     if (piePointSpecMode != PSM_Idle)
     {                                                   //if we're in movement mode
-//        node = list->head;
-//        while (node != NULL)
-//        {
-//            thisBlob = (blob *)listGetStructOfNode(node);
-//            node = node->next;
         for (blobIndex = 0; blobIndex < smNumberBlobsSorted; blobIndex++)
         {
             thisBlob = smBlobSortList[blobIndex];
@@ -2111,7 +1977,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
                     selCircleComputeGeneral(modelView, projection, &p1, smBlobCircleSize, &x, &y, &screenRadius);
                     nSegments = pieCircleSegmentsCompute(screenRadius);
                     primCircleOutlineZ(&p1, smBlobCircleSize, nSegments, c);//draw the circle on plane
-                    primPointSize3( &p1, 2.0f*sqrtf(getResDensityRelative()), c ); // cap the line, using smaller cap than non-sensor view (uses 3x)
+                    primPointSize3( &p1, 2.0f*sqrtf(getResDensityRelative()), c ); // cap the line, using smaller cap than non-sensor view (uses 3x root)
                 }
             }
         }
@@ -2138,45 +2004,10 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     primModeClear2();
 
     glDisable( GL_MULTISAMPLE );
-    glLineWidth(1.0f);
+    glLineWidth( 1.0f );
 
     return(closestBlob);
 }
-
-/*-----------------------------------------------------------------------------
-    Name        : smBlobRenderSelected
-    Description : Renders the specifed blob as though it was selected, using a colored outline.
-    Inputs      : b - blob to render
-                  c - color of outline to draw
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-/*
-void smBlobRenderSelected(blob *b, color c)
-{
-    oval o;
-    sdword index;
-    SpaceObj **obj;
-    SpaceObjSelection *blobObjects = b->blobObjects;
-
-    primModeSet2();
-    o.centreX = primGLToScreenX(b->screenX);
-    o.centreY = primGLToScreenY(b->screenY);
-    o.radiusX = o.radiusY = primGLToScreenScaleX(b->screenRadius);
-    primOvalArcOutline2(&o, 0.0f, TWOPI, 1, 16, c);
-    primModeClear2();
-    rndTextureEnable(FALSE);
-    rndLightingEnable(FALSE);
-
-    for (index = 0, obj = blobObjects->SpaceObjPtr; index < blobObjects->numSpaceObjs; index++, obj++)
-    {
-        rndTextureEnable(FALSE);
-        primPoint3(&(*obj)->posinfo.position, c);           //everything is rendered as a point
-//            (*obj)->staticinfo->staticheader.staticCollInfo.collspheresize,
-
-    }
-}
-*/
 
 /*-----------------------------------------------------------------------------
     Name        : smXXXFactorGet
