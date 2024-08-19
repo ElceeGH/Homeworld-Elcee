@@ -258,6 +258,10 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
 
     currentfont = fontMakeCurrent(playernamefont);
 
+    rndAdditiveBlends( FALSE );
+    rndTextureEnable ( FALSE );
+    rndLightingEnable( FALSE );
+
     if (multiPlayerGame)
     {
         dbgAssertOrIgnore(sigsNumPlayers == tpGameCreated.numPlayers);
