@@ -1166,10 +1166,10 @@ void selDrawBoxes(SpaceObjRotImpTarg *target)
                   location - position of the sphere to project.
                   worldRadius - radius of sphere to project.
     Outputs     : destX,Y - screen location of projected circle.
-                  destRadius - screen size of the projected circle.
-    Return      : bool - whether point is in front of the camera (true) or behind (false)
+                  destRadius - screen size of the projected circle. Negative if point is behind the camera.
+    Return      : none
 ----------------------------------------------------------------------------*/
-bool selCircleComputeGeneral(hmatrix *modelView, hmatrix *projection, vector *location, real32 worldRadius, real32 *destX, real32 *destY, real32 *destRadius)
+void selCircleComputeGeneral(hmatrix *modelView, hmatrix *projection, vector *location, real32 worldRadius, real32 *destX, real32 *destY, real32 *destRadius)
 {
     hvector centre, screenSpace, radius, radiusProjected;
     centre.x = location->x;                                 //vector at centre of ship
@@ -1185,7 +1185,6 @@ bool selCircleComputeGeneral(hmatrix *modelView, hmatrix *projection, vector *lo
     *destRadius = (radiusProjected.x - screenSpace.x) / screenSpace.w;
     *destX      = screenSpace.x / screenSpace.w;
     *destY      = screenSpace.y / screenSpace.w;
-    return screenSpace.z > 0.0f;
 }
 
 #if DEBUG_COLLISION_SPHERES

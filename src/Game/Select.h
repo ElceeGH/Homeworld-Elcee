@@ -163,7 +163,7 @@ void selShutdown(void);
 void selReset(void);
 
 //compute screen size/location of selection circle for selected ship or mission sphere
-bool selCircleComputeGeneral(hmatrix *modelView, hmatrix *projection, vector *location, real32 radius, real32 *destX, real32 *destY, real32 *destRadius);
+void selCircleComputeGeneral(hmatrix *modelView, hmatrix *projection, vector *location, real32 radius, real32 *destX, real32 *destY, real32 *destRadius);
 void selCircleCompute(hmatrix *modelView, hmatrix *projection, SpaceObjRotImpTarg *target);
 
 //explicit selections
