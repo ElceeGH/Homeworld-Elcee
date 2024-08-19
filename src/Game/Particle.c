@@ -1423,8 +1423,7 @@ udword partRenderMeshSystem(udword n, particle *p, udword flags, trhandle tex, m
 
 
 // This comically heavy for a particle render function, but lol to hell with it
-// There aren't that many particles compared to a modern game so there's a huge
-// amount of headroom!
+// There aren't that many particles compared to a modern game so there's a huge amount of headroom!
 static real32 getScreenSpaceLineLength( hmatrix* matProj, hmatrix* matMV, vector* pos, real32 length ) {
     // Project origin into camera space
     hvector hWorld, hCam;
