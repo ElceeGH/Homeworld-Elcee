@@ -3853,15 +3853,8 @@ processtextures:
             {
                 if (!universe.dontUpdateRenderList)
                 {
-                    if ((universe.univUpdateCounter == 1) || ((universeUpdateCounter & REFRESH_RENDERLIST_RATE) == REFRESH_RENDERLIST_FRAME))
-                    {
-                        univUpdateRenderList();
-                    }
-
-                    if ((universe.univUpdateCounter == 1) || ((universeUpdateCounter & REFRESH_MINORRENDERLIST_RATE) == REFRESH_MINORRENDERLIST_FRAME))        // make it 3 to mix things up a bit
-                    {
-                        univUpdateMinorRenderList();
-                    }
+                    univUpdateRenderList();
+                    univUpdateMinorRenderList();                    
                 }
 
                 if (!(playPackets|recordFakeSendPackets))
@@ -3946,15 +3939,9 @@ processtextures:
             {
                 if (!universe.dontUpdateRenderList)
                 {
-                    if ((universe.univUpdateCounter == 1) || ((universeUpdateCounter & REFRESH_RENDERLIST_RATE) == REFRESH_RENDERLIST_FRAME))
-                    {
-                        univUpdateRenderList();
-                    }
-
-                    if ((universe.univUpdateCounter == 1) || ((universeUpdateCounter & REFRESH_MINORRENDERLIST_RATE) == REFRESH_MINORRENDERLIST_FRAME))        // make it 3 to mix things up a bit
-                    {
-                        univUpdateMinorRenderList();
-                    }
+                    univUpdateRenderList();
+                    univUpdateMinorRenderList();
+                    
                 }
 
                 if (universePause)
