@@ -403,9 +403,10 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetai
     real32 dist = magSqr;
 
     if (maxDetail) {
-        // Increase detail for we are now in the far off year of 2021.
+        // Increase detail for we are now in the far off year AD 202x.
         // LOD popping is ugly and the lower detail LODs are extremely obvious at higher resolutions.
         // LOD is still necessary sometimes, otherwise certain objects will not turn into green dots on the sensor view and will be almost invisible.
+        // There are also some mission scripting peculiarities associated.
         // With that in mind, offset the LOD by the typical max viewing distance for the regular non-sensor view.
         dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR * 1.2f;
         dist = max( 0.0f, dist );
