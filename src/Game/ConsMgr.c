@@ -2178,19 +2178,16 @@ bool cmIncrement(shipsinprogress *factory, uword index)
 {
     shipinprogress *progress;
     bool flag = FALSE;
-/*
-    bool disabled;
 
     //ctrl = add 5?
 
-    disabled = cmShipDisabled(cmShipsAvailable[index].type);
-*/
+    //bool disabled = cmShipDisabled(cmShipsAvailable[index].type);
+
     progress = &factory->progress[cmShipsAvailable[index].info->shiptype];
-/*
-    if (unitCapCanCreateShip((uword)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable) && !disabled)
-*/
-    if (unitCapCanCreateShip((uword)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable) &&
-        cmClassCapCanCreateShip((ShipType)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable))
+
+    if (unitCapCanCreateShip((uword)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable))
+//    if (unitCapCanCreateShip((uword)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable) &&
+//        cmClassCapCanCreateShip((ShipType)cmShipsAvailable[index].info->shiptype,factory,cmShipsAvailable))
     {
         flag = TRUE;
         if (progress->nJobsTotal > 0)
