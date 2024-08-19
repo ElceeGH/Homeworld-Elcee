@@ -5336,16 +5336,14 @@ void mrRegionDraw(regionhandle reg)
         mouseCursorTextDraw();
 
     rndTextureEnable(FALSE);
-    glDisable(GL_TEXTURE_2D);
     glEnable( GL_MULTISAMPLE );
     if (!thisNisPlaying)
     {
         mrTacticalOverlayState(utyCapsLockToggleState());   //make sure we have the right TO state
     }
+
     if (mrDrawTactical)
     {                                                       //need better key mechanism
-        rndTextureEnable(FALSE);
-        glDisable(GL_TEXTURE_2D);
         toAllShipsDraw();                                   //draw tactical overlays
         toLegendDraw();                                     //draw legend for overlays
     }
