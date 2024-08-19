@@ -6954,39 +6954,25 @@ doneRegular:
 void univUpdateMinorRenderList(void)
 {
     Node *objnode = universe.MinorSpaceObjList.head;
-    SpaceObj *obj;
-    vector distvec;
-    vector lookatposition;
-    vector eyeposition;
-    real32 distsqr;
 
     if (mrCamera == NULL)
     {
         return;     // don't update render list if no mrCamera
     }
 
-    lookatposition = mrCamera->lookatpoint;
-    eyeposition = mrCamera->eyeposition;
-
     listVerify(&universe.RenderList);
     listRemoveAll(&universe.MinorRenderList);
 
     while (objnode != NULL)
     {
-        obj = (SpaceObj *)listGetStructOfNode(objnode);
+        SpaceObj* obj     = (SpaceObj *)listGetStructOfNode(objnode);
+        real32    distsqr = vecDistanceSquared( mrCamera->eyeposition, obj->posinfo.position );
+        bool      visible = (obj->flags & SOF_Hide) == 0;
 
-        vecSub(distvec,lookatposition,obj->posinfo.position);
-        distsqr = vecMagnitudeSquared(distvec);
-
-        if (distsqr < RENDER_VIEWABLE_DISTANCE_SQR)
+        if (visible && distsqr < RENDER_MAXVIEWABLE_DISTANCE_SQR)
         {
-            if ((obj->flags & SOF_Hide) == 0)   // don't add hidden objects
-            {
-                vecSub(obj->cameraDistanceVector,eyeposition,obj->posinfo.position);
-                obj->cameraDistanceSquared = vecMagnitudeSquared(obj->cameraDistanceVector);
-
-                listAddNode(&universe.MinorRenderList,&obj->renderlink,obj);
-            }
+            obj->cameraDistanceSquared = distsqr;
+            listAddNode(&universe.MinorRenderList,&obj->renderlink,obj);
         }
 
         objnode = objnode->next;
