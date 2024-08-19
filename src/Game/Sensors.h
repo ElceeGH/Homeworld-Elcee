@@ -120,7 +120,7 @@
 
 #define SM_BlobClosenessFactor      2.0f
 
-#define SM_NumberTOs                64
+#define SM_NumberTOs                256
 
 //for world plane
 #define SM_WorldPlaneColor          colRGB(223, 115, 25)

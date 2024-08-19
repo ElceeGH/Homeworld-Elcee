@@ -212,10 +212,14 @@ regionhandle smHyperspaceRegion = NULL;
 
 // Tactical overlay list items
 typedef struct ShipTOItem {
-    real32 x, y;
-    real32 radius;
-    color c;
     ShipClass shipClass;
+    real32    x, y;
+    real32    radius;
+    color     col;
+    bool      sphereDraw;
+    Ship*     sphereShip;
+    real32    sphereRadius;
+    color     sphereCol;
 } ShipTOItem;
 
 ShipTOItem shipTOList[SM_NumberTOs];
@@ -881,16 +885,20 @@ static real32 shipDotSize( Ship* ship ) {
     real32 size = max( 1.0f, 1.28f * getResDensityRelative() );
 
     // Make drones a little smaller so they don't cramp things overly much
-    if (ship)
-    if (ship->shiptype == Drone)
+    // This wasn't in the original game, but this fine a distinction couldn't be made back then, now it can
+    if (ship && ship->shiptype == Drone)
         size *= 0.80f;
 
     return size;
 }
 
+
+
 static bool shipBelongsToPlayer( Ship* ship ) {
     return ship->playerowner == universe.curPlayerPtr;
 }
+
+
 
 static bool shipRenderFlagIsSet( Ship* ship, udword flag ) {
     return bitTest(smShipTypeRenderFlags[ship->shiptype], flag);
@@ -923,6 +931,8 @@ static color shipDotColor( Ship* ship ) {
     return teHostileColor;
 }
 
+
+
 static void shipDrawAsDot( Ship* ship, bool selectFlash, color background ) {
     color baseCol  = shipDotColor( ship );
     color pointCol = selectFlash ? background : baseCol;
@@ -935,11 +945,20 @@ static void shipDrawAsMesh( Ship* ship, bool selectFlash, lod* level, Camera* ca
     drawMesh( (SpaceObjRotImp*) ship, selectFlash, level, camera, shipDrawMesh );
 }
 
-static bool shipIsActiveGravWellGen( const Ship* ship ) {
+
+
+// Special TO sphere stuff. I may have been slightly overdescriptive with the function name...
+static void shipSetGravWellGenTacticalOverlayDrawListSphereInfo( Ship* ship, ShipTOItem* item ) {
     if (ship->shiptype == GravWellGenerator)
-         return ((GravWellGeneratorSpec *)ship->ShipSpecifics)->GravFieldOn;
-    else return FALSE;
+    if (((GravWellGeneratorSpec *) ship->ShipSpecifics)->GravFieldOn) {
+        item->sphereDraw   = TRUE;
+        item->sphereShip   = ship;
+        item->sphereRadius = ((GravWellGeneratorStatics*) ship->staticinfo->custstatinfo)->GravWellRadius;
+        item->sphereCol    = TW_GRAVWELL_SPHERE_COLOUR;
+    }
 }
+
+
 
 static void shipAddToTacticalOverlayDrawList( Ship* ship, bool selectFlash, color background ) {
     if (shipTOCount > SM_NumberTOs)
@@ -951,14 +970,19 @@ static void shipAddToTacticalOverlayDrawList( Ship* ship, bool selectFlash, colo
                              colBlue(colBase) / TO_IconColorFade );
 
     ShipTOItem* item = &shipTOList[ shipTOCount ];
-    item->shipClass = ship->staticinfo->shipclass;
-    item->radius    = ship->collInfo.selCircleRadius;
-    item->x         = ship->collInfo.selCircleX;
-    item->y         = ship->collInfo.selCircleY;
-    item->c         = colFaded;
+    memset( item, 0x00, sizeof(*item) );
+    item->shipClass    = ship->staticinfo->shipclass;
+    item->radius       = ship->collInfo.selCircleRadius;
+    item->x            = ship->collInfo.selCircleX;
+    item->y            = ship->collInfo.selCircleY;
+    item->col          = colFaded;
+    
+    shipSetGravWellGenTacticalOverlayDrawListSphereInfo( ship, item );
 
     shipTOCount++;
 }
+
+
 
 // Don't draw cloaked ships unless they belong to the player, and don't draw invisible things or things marked as do-not-render
 static bool shipIsHidden( Ship* ship, bool isPlayer ) {
@@ -978,17 +1002,13 @@ static void shipDraw( Ship* ship, Camera *camera, bool bFlashOn, color backgroun
     // Flash when ships are selected and it lines up with the flash timing
     bool selectFlash = bFlashOn && (ship->flags & SOF_Selected);
     bool isPlayer    = shipBelongsToPlayer( ship );
+    bool toFlagSet   = shipRenderFlagIsSet( ship, SM_TO );
 
-    // Tactical overlay stuff
-    if (smTacticalOverlay && isPlayer) {
-        if (shipRenderFlagIsSet(ship, SM_TO)) // Drawn all at once later in 2D phase
-            shipAddToTacticalOverlayDrawList( ship, selectFlash, background );
-        
-        if (shipIsActiveGravWellGen( ship )) // @todo Move into the tactical overlay drawing, this is dumb
-            toFieldSphereDraw(ship,((GravWellGeneratorStatics *) ship->staticinfo->custstatinfo)->GravWellRadius, 1.0f);
-    }
+    // Tactical overlay stuff. Drawn all at once later in 2D phase
+    if (smTacticalOverlay && isPlayer && toFlagSet)
+        shipAddToTacticalOverlayDrawList( ship, selectFlash, background );
 
-    // To draw something, you have to be able to see it, believe it or not
+    // To draw something you have to be able to see it, believe it or not
     if (shipIsHidden( ship, isPlayer ))
         return;
 
@@ -1013,6 +1033,8 @@ static bool derelictRenderFlagIsSet( Derelict* zoolander, udword flag ) {
     return bitTest( smDerelictTypeMesh[zoolander->derelicttype], flag );
 }
 
+
+
 static lod* derelictTryGetMeshLod( Derelict* derek, Camera* camera ) {
     if (derek->derelicttype == HyperspaceGate)
         return NULL; // Has no LODs, would crash
@@ -1025,12 +1047,16 @@ static lod* derelictTryGetMeshLod( Derelict* derek, Camera* camera ) {
     else return NULL;
 }
 
+
+
 static bool derelictIsFriendly( Derelict* derek ) {
     return derek != NULL
         && singlePlayerGame
         && derek->derelicttype   == PrisonShipOld
         && spGetCurrentMission() == MISSION_8_THE_CATHEDRAL_OF_KADESH;
 }
+
+
 
 static color derelictDotColour( Derelict* derek ) {
     if (derek->derelicttype == Crate)
@@ -1041,6 +1067,8 @@ static color derelictDotColour( Derelict* derek ) {
 
     return teNeutralColor;
 }
+
+
 
 static real32 derelictDotSize( Derelict* derek ) {
     real32 refSize = shipDotSize( NULL );
@@ -1053,10 +1081,14 @@ static real32 derelictDotSize( Derelict* derek ) {
     return max( 1.0f, refSize * 0.5f );
 }
 
+
+
 static void derelictDrawMesh( SpaceObjRotImp* obj, lod* level ) {
     Derelict* der = (Derelict*) obj;
     meshRender( level->pData, der->colorScheme );
 }
+
+
 
 // Derelict meshes don't get drawn in cloudy blobs.
 static void derelictDraw( Derelict* derek, Camera* camera, bool meshAllowed ) {
@@ -1155,7 +1187,7 @@ static void drawShipTacticalOverlays( void ) {
         toClassUsed[to->shipClass][0] = TRUE; // @todo Player index hardcoded, check
 
         if (to->radius > 0.0f) {
-            color  col       = to->c;
+            color  col       = to->col;
             real32 radius    = max( to->radius, smTORadius ); // @todo Maybe can allow it be a little smaller on modern displays?
             real32 thickness = max( 0.75f, 0.65f * sqrtf(getResDensityRelative()) );
 
@@ -1166,6 +1198,9 @@ static void drawShipTacticalOverlays( void ) {
                                     to->y + icon->loc[i].y * radius);
 
             primLineLoopEnd2();
+
+            if (to->sphereDraw)
+                toFieldSphereDraw( to->sphereShip, to->sphereRadius, to->sphereCol );
         }
     }
 
