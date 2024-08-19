@@ -175,9 +175,6 @@ bool ioSaveState;
 //option for fuzzy sensors blobs
 sdword smFuzzyBlobs = TRUE;
 
-smblurry smBlurryArray[SM_BlurryArraySize];
-sdword smBlurryIndex = 0;
-
 //cursor text font, from mouse.c
 extern fonthandle mouseCursorFont;
 color smCurrentWorldPlaneColor;
@@ -677,6 +674,36 @@ static real32 getHorizonEdgeFactor( real32 angle, real32 angleLow, real32 angleH
     else                             return 0.0f;
 }
 
+// Helper for queuing up tick text to draw
+static void addTickToList( real32 x, real32 y, real32 rads, bool camEyeAboveLookZ ) {
+    if (smTickTextIndex >= SM_MaxTicksOnScreen)
+        return;
+
+    smticktext* smt = &smTickText[smTickTextIndex];
+    smt->x = primGLToScreenX(x);
+    smt->y = primGLToScreenY(y);
+
+    real32 degrees = -RAD_TO_DEG(rads - smHorizTickAngle);
+    if (degrees < 0.0f)   degrees += 360.0f;
+    if (degrees > 360.0f) degrees -= 360.0f;
+    
+    const char* format;
+         if (degrees < 10)  format = "00%.0f";
+    else if (degrees < 100) format = "0%.0f";
+    else                    format = "%.0f";
+    
+    memset(smt->text, '\0', sizeof(smt->text));
+    snprintf(smt->text, sizeof(smt->text), format, degrees);
+
+    if (camEyeAboveLookZ)
+         smt->y -= fontHeight(" ") + smTickTextSpacing;
+    else smt->y += smTickTextSpacing;
+
+    smt->x -= fontWidth(smt->text) / 2;
+
+    smTickTextIndex++;
+}
+
 /*-----------------------------------------------------------------------------
     Name        : smHorizonLineDraw
     Description : Draw the horizon line with compass tick marks
@@ -730,29 +757,10 @@ void smHorizonLineDraw(void *voidCam, hmatrix *modelView, hmatrix *projection, r
         //figure out where to draw the tick text
         real32 x, y, radius;
         selCircleComputeGeneral(modelView, projection, &horizPoint, 1.0f, &x, &y, &radius);
-        dbgAssertOrIgnore(smTickTextIndex < SM_MaxTicksOnScreen);
-        smTickText[smTickTextIndex].x = primGLToScreenX(x);
-        smTickText[smTickTextIndex].y = primGLToScreenY(y);
-
-        real32 degAngle = -RAD_TO_DEG(angle - smHorizTickAngle);
-        if (degAngle < 0.0f)
-            degAngle += 360.0f;
-
-        if (degAngle > 360.0f)
-            degAngle -= 360.0f;
-        
-        sdword nPrintfed = 0;
-        if      (degAngle < 10)  nPrintfed = sprintf(smTickText[smTickTextIndex].text, "00%.0f", degAngle);
-        else if (degAngle < 100) nPrintfed = sprintf(smTickText[smTickTextIndex].text, "0%.0f",  degAngle);
-        else                     nPrintfed = sprintf(smTickText[smTickTextIndex].text, "%.0f",   degAngle);
-        dbgAssertOrIgnore(nPrintfed < SM_TickTextChars);
-
-        if (cam->eyeposition.z > cam->lookatpoint.z)
-             smTickText[smTickTextIndex].y -= fontHeight(" ") + smTickTextSpacing;
-        else smTickText[smTickTextIndex].y += smTickTextSpacing;
-
-        smTickText[smTickTextIndex].x -= fontWidth(smTickText[smTickTextIndex].text) / 2;
-        smTickTextIndex++;
+        if (radius > 0.0f) { // If in front of the camera
+            const bool eyeAboveLookZ = cam->eyeposition.z > cam->lookatpoint.z;
+            addTickToList( x, y, angle, eyeAboveLookZ );
+        }
 
         // Vertical tick lower
         const real32 edgeiness       = getHorizonEdgeFactor( angle, startRefAngle, endRefAngle );
@@ -820,8 +828,8 @@ void smTickTextDraw(void)
 
     for (smTickTextIndex--; smTickTextIndex >= 0; smTickTextIndex--)
     {
-        fontPrint(smTickText[smTickTextIndex].x, smTickText[smTickTextIndex].y,
-                  smCurrentWorldPlaneColor, smTickText[smTickTextIndex].text);
+        smticktext* smt = &smTickText[smTickTextIndex];
+        fontPrint(smt->x, smt->y, smCurrentWorldPlaneColor, smt->text);
     }
     fontMakeCurrent(oldFont);
 }

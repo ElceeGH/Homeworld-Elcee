@@ -179,13 +179,12 @@ typedef struct
 }
 smblurry;
 
-typedef struct
-{
+
+typedef struct smticktext {
     sdword x;
     sdword y;
     char text[SM_TickTextChars];
-}
-smticktext;
+} smticktext;
 
 /*=============================================================================
     Data:
