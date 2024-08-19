@@ -1205,8 +1205,6 @@ static void drawShipTacticalOverlays( void ) {
     }
 
     primModeClear2();
-    rndLightingEnable(FALSE);
-    rndTextureEnable(FALSE);
 }
 
 
@@ -1826,8 +1824,6 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 
     lightPositionSet();
     primModeClear2();
-    rndLightingEnable(FALSE);
-    rndTextureEnable(FALSE);
     //draw the world plane
     //!!! always where the camera is pointing !!!
     if (smCentreWorldPlane)
@@ -1847,8 +1843,6 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
     primModeSet2();
     smTickTextDraw();
     primModeClear2();
-    rndLightingEnable(FALSE);
-    rndTextureEnable(FALSE);
 
     //another pass through all the blobs to render the objects in the blobs
 //    node = list->head;
@@ -1881,16 +1875,12 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
                         primModeSet2();
                         fontPrint(primGLToScreenX(thisBlob->screenX) - mothershipHalfWidth, primGLToScreenY(thisBlob->screenY) + primGLToScreenScaleX(thisBlob->screenRadius), smTOColor, mothership);
                         primModeClear2();
-                        rndLightingEnable(FALSE);           //mouse is self-illuminated
-                        rndTextureEnable(FALSE);
                     }
                     else if (bitTest(thisBlob->flags, BTF_Carrier))
                     {
                         primModeSet2();
                         fontPrint(primGLToScreenX(thisBlob->screenX) - carrierHalfWidth, primGLToScreenY(thisBlob->screenY) + primGLToScreenScaleX(thisBlob->screenRadius), smTOColor, carrier);
                         primModeClear2();
-                        rndLightingEnable(FALSE);           //mouse is self-illuminated
-                        rndTextureEnable(FALSE);
                     }
                 }
             }
@@ -2787,7 +2777,6 @@ void smViewportRender(featom *atom, regionhandle region)
     cameraSetEyePosition(&smCamera);
 
     primModeClear2();
-    rndLightingEnable(FALSE);
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
     rgluPerspective(smCamera.fieldofview, rndAspectRatio,    //set projection matrix

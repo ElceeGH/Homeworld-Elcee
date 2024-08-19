@@ -4536,8 +4536,6 @@ void toMoveLineDraw(ShipPtr ship, real32 scale)
         {
             primModeClear2();
         }
-        rndLightingEnable(FALSE);
-        rndTextureEnable(FALSE);
 
         //setup color: attack moves different from normal moves
         if ((ship->command != NULL) && (ship->command->ordertype.order == COMMAND_ATTACK))
@@ -4595,8 +4593,6 @@ void toFieldSphereDraw(struct Ship* ship, real32 radius, color colour)
 {
     //Turn off 2D primmode
     primModeClear2();
-    rndLightingEnable(FALSE);
-    rndTextureEnable(FALSE);
 
     udword axes[3] = { X_AXIS, Y_AXIS, Z_AXIS };
     for (udword i=0; i<3; i++)
@@ -4635,8 +4631,6 @@ void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color pass
 
    //Turn off 2D primmode
    primModeClear2();
-   rndLightingEnable(FALSE);
-   rndTextureEnable(FALSE);
 
    matPutVectIntoMatrixCol1(up,tmpmat);
    matPutVectIntoMatrixCol2(right,tmpmat);
@@ -4850,8 +4844,6 @@ void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color pass
 
    //Turn off 2D primmode
    primModeClear2();
-   rndLightingEnable(FALSE);
-   rndTextureEnable(FALSE);
 
    matPutVectIntoMatrixCol1(up,tmpmat);
    matPutVectIntoMatrixCol2(right,tmpmat);
@@ -5104,8 +5096,6 @@ void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color pass
 
        //Turn off 2D primmode
        primModeClear2();
-       rndLightingEnable(FALSE);
-       rndTextureEnable(FALSE);
 
        matPutVectIntoMatrixCol1(up,tmpmat);
        matPutVectIntoMatrixCol2(right,tmpmat);
@@ -5209,8 +5199,6 @@ void toDrawRadialIndicator4(ShipPtr ship, real32 radius, real32 scale,color pass
 
        //Turn off 2D primmode
        primModeClear2();
-       rndLightingEnable(FALSE);
-       rndTextureEnable(FALSE);
 
        matPutVectIntoMatrixCol1(up,tmpmat);
        matPutVectIntoMatrixCol2(right,tmpmat);

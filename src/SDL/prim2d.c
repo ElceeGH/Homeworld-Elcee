@@ -46,10 +46,10 @@ void primModeSetFunction2(void)
     glPushMatrix();                                         //perform no transformations on the 2D primitives
     glLoadIdentity();
     glMatrixMode(GL_MODELVIEW);
-    rndLightingEnable(FALSE);                               //mouse is self-illuminated
-    rndTextureEnable(FALSE);
     glDisable(GL_DEPTH_TEST);
 
+    rndLightingEnable(FALSE);             //mouse is self-illuminated
+    rndTextureEnable(FALSE);
     primModeEnabled = TRUE;
 }
 
@@ -64,13 +64,11 @@ void primModeClearFunction2(void)
 {
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-    rndLightingEnable(TRUE);                                //and lighting
-    rndTextureEnable(TRUE);
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-
+    
     primModeEnabled = FALSE;
 }
 

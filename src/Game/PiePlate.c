@@ -1263,7 +1263,6 @@ void piePointSpecDraw(void)
         smCurrentWorldPlaneColor = colMultiplyClamped(smWorldPlaneColor, smMovementWorldPlaneDim);
         smHorizonLineDraw(mrCamera, &rndCameraMatrix, &rndProjectionMatrix, mrCamera->clipPlaneFar - mrCamera->farthestZoom);
     }
-    rndLightingEnable(FALSE);
     primModeSet2();
 
 #if PIE_MOVE_NEARTO

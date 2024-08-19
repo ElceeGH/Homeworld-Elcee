@@ -1035,8 +1035,6 @@ void kasDebugDraw(void)
     if (mrKASDebugDrawVolumes)
     {
         primModeClear2();
-        rndLightingEnable(FALSE);
-        rndTextureEnable(FALSE);
         glDisable(GL_DEPTH_TEST);
 
         glMatrixMode(GL_PROJECTION);
