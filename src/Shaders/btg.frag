@@ -62,10 +62,6 @@ vec4 bayerDither( vec4 col ) {
 vec4 btgBlend( vec4 vert, vec4 bg ) {
     float alpha  = vert.a * uFade;
     vec3  colour = bg.rgb + vert.rgb * alpha;
-    
-    if (alpha < 1.0f / 252.0f)
-        colour = max( colour, bg.rgb );
-    
     return vec4( colour, 1.0 );
 }
 

@@ -1145,7 +1145,7 @@ void btgRender(void)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND); // Shader does the blending
 
     // Get the background colour for blending into
     real32 bgCol[4] = { (real32) btgHead->mBGRed   / 255.0f, 
@@ -1254,6 +1254,7 @@ void btgRender(void)
     // Draw the stars. Typically >50 textured quads
     trClearCurrent();
     glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
     rndAdditiveBlends(TRUE);
     rndTextureEnvironment(RTE_Modulate);
 
