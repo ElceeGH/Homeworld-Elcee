@@ -4591,16 +4591,6 @@ void toMoveLineDraw(ShipPtr ship, real32 scale)
     }
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : toMoveLineDraw
-    Description : Draws a line with a cool pulse from the ship's current position to
-                  it's moveTo position.  Also draws a circle around the moving ship
-    Inputs      : ship - the ship
-                  scale - the tactical overlay color scale factor to fade in the move
-                          circle (not used at the moment)
-    Outputs     : See "description"
-    Return      : void
-----------------------------------------------------------------------------*/
 void toFieldSphereDraw(ShipPtr ship, real32 radius, real32 scale,color passedColour)
 {
     hmatrix rotmat;
@@ -4616,11 +4606,6 @@ void toFieldSphereDraw(ShipPtr ship, real32 radius, real32 scale,color passedCol
     rndTextureEnable(FALSE);
 
     //Draw the circles
-    //    hmatMakeHMatFromMat(&rotmat, &ship->rotinfo.coordsys);
-        //hmatPutVectIntoHMatrixCol4(ship->collInfo.collPosition, rotmat);
-    //     hmatPutVectIntoHMatrixCol4(ship->posinfo.position, rotmat);
-
-
     matPutVectIntoMatrixCol1(up,tmpmat);
     matPutVectIntoMatrixCol2(right,tmpmat);
     matPutVectIntoMatrixCol3(head,tmpmat);
@@ -4636,7 +4621,7 @@ void toFieldSphereDraw(ShipPtr ship, real32 radius, real32 scale,color passedCol
         primCircleOutline3(&origin, radius, 32, 4, passedColour, X_AXIS);
         primCircleOutline3(&origin, radius, 32, 4, passedColour, Y_AXIS);
 
-        glPopMatrix();
+    glPopMatrix();
     //stop drawing circles
 
 
