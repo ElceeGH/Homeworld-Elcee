@@ -152,7 +152,7 @@ static vector slerp( vector from, vector to, real32 f ) {
     const real32 dot = dotProductClamped( from, to );
 
     // If they're almost exactly the same, just lerp.
-    if (fabsf(dot) > 0.99f)
+    if (ABS(dot) > 0.99f)
         return lerpv( from, to, f );
 
     vector rel = {
