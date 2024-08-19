@@ -478,11 +478,11 @@ void primBlurryPoint3Fade( vector* centre, real32 size, color col, real32 fade )
 void primEllipseOutlineZ(vector *centre, real32 rx, real32 ry, sdword nSegments, color c)
 {
     GLfloat rim[3];
-    double theta, thetaDelta;
+    real32 theta, thetaDelta;
     real32 x, y;
 
     theta = 0.0f;
-    thetaDelta = 2.0 * PI / (double)nSegments;
+    thetaDelta = 2.0f * PI / (real32)nSegments;
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     x = centre->x;
     y = centre->y;
@@ -490,8 +490,8 @@ void primEllipseOutlineZ(vector *centre, real32 rx, real32 ry, sdword nSegments,
     glBegin(GL_LINE_STRIP);
     for (; nSegments >= 0; nSegments--)
     {
-        rim[0] = x + (real32)sin(theta) * rx;
-        rim[1] = y + (real32)cos(theta) * ry;
+        rim[0] = x + sinf(theta) * rx;
+        rim[1] = y + cosf(theta) * ry;
         glVertex3fv(rim);
         theta += thetaDelta;
     }
