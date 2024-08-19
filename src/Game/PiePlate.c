@@ -36,6 +36,7 @@
 #include "Universe.h"
 #include "rResScaling.h"
 #include "rStateCache.h"
+#include "rInterpolate.h"
 
 /*=============================================================================
     Data:
@@ -715,34 +716,34 @@ bool pieNeedSpecialAttackAndMoveColor()
 ----------------------------------------------------------------------------*/
 void pieMovementCursorDraw(real32 distance)
 {
+    const color  c               = moveLineColor;
+    const real32 stippleStep     = smSensorsActive ? 250.0f : 96.0f; // Make stipples more readable when the camera is far away
+    const real32 stippleAnimRate = 0.25f;
+    const real32 stippleAnim     = fmodf(rintUniverseElapsedTime(), stippleAnimRate) / stippleAnimRate;
+    const real32 thickness       = sqrtf(getResDensityRelative());
+    const real32 capSizeMul      = smSensorsActive ? 1.25f : 3.0f;
+
     GLfloat lineWidthPrev, pointSizePrev;
     glGetFloatv( GL_LINE_WIDTH, &lineWidthPrev );
     glGetFloatv( GL_POINT_SIZE, &pointSizePrev );
-
-    const GLfloat thickness  = sqrtf(getResDensityRelative());
-    const GLfloat capSizeMul = smSensorsActive ? 1.25f : 3.0f;
     glLineWidth( thickness );
     glPointSize( thickness * capSizeMul );
 
-    const color c = moveLineColor;
-
-    // Make stipples more readable when the camera is far away.
-    real32 stippleStep = smSensorsActive ? 160.0f : 96.0f;
-
     if (ABS(piePointSpecZ) < pieDottedDistance) // point on standard Z-plane?
     {
-        primLine3Stipple(&selCentrePoint, &piePlanePoint, c, stippleStep);//draw line from centre to mouse point on x/y plane
+        primLine3Stipple(&selCentrePoint, &piePlanePoint, c, stippleStep, stippleAnim);//draw line from centre to mouse point on x/y plane
         primPoint3(&piePlanePoint, c); // Cap off
     }
     else
     {
-        primLine3Stipple(&selCentrePoint, &pieHeightPoint, c,stippleStep);//draw from centre of dish to height point
+        primLine3Stipple(&selCentrePoint, &pieHeightPoint, c,stippleStep, stippleAnim);//draw from centre of dish to height point
         primLine3(&piePlanePoint, &selCentrePoint, c);//draw line from centre to mouse point on x/y plane
 
         // Elcee: In OG Homeworld, the movement line was originally stippled.
         // I've gone and stippled the inter-plane height line here too, misremembering, but it looks good.
+        // It provides a nice point of reference since it's in world space. It's like a ruler.
         // Always have the stipple grow from the reference plane (don't want movement on the fixed part)
-        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c, stippleStep);
+        primLine3Stipple(&piePlanePoint, &pieHeightPoint, c, stippleStep, 0.0f);
 
         //destination circle
         sdword nSegments;
