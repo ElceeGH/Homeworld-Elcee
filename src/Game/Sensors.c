@@ -880,9 +880,16 @@ static void drawMesh( SpaceObjRotImp* obj, bool selectFlash, lod* level, Camera*
 
 
 // Normal dot size on sensors for ships
-static real32 shipDotSize( void ) {
+static real32 shipDotSize( Ship* ship ) {
     // Scale sensor dots for modern resolutions, keeping original look where they bunch up a little
-    return max( 1.0f, 1.28f * getResDensityRelative() );
+    real32 size = max( 1.0f, 1.28f * getResDensityRelative() );
+
+    // Make drones a little smaller so they don't cramp things overly much
+    if (ship)
+    if (ship->shiptype == Drone)
+        size *= 0.80f;
+
+    return size;
 }
 
 static bool shipBelongsToPlayer( Ship* ship ) {
@@ -920,15 +927,15 @@ static color shipDotColor( Ship* ship ) {
     return teHostileColor;
 }
 
-static void drawShipAsDot( Ship* ship, bool selectFlash, color background ) {
+static void shipDrawAsDot( Ship* ship, bool selectFlash, color background ) {
     color baseCol  = shipDotColor( ship );
     color pointCol = selectFlash ? background : baseCol;
-    primPointSize3( &ship->posinfo.position, shipDotSize(), pointCol );
+    primPointSize3( &ship->posinfo.position, shipDotSize(ship), pointCol );
 }
 
 
 
-static void drawShipAsMesh( Ship* ship, bool selectFlash, lod* level, Camera* camera ) {
+static void shipDrawAsMesh( Ship* ship, bool selectFlash, lod* level, Camera* camera ) {
     drawMesh( (SpaceObjRotImp*) ship, selectFlash, level, camera, shipDrawMesh );
 }
 
@@ -991,16 +998,16 @@ static void shipDraw( Ship* ship, Camera *camera, bool bFlashOn, color backgroun
 
     // If it's a ship type to render as a mesh (e.g cruiser, mothership, big stuff) then do that
     // Otherwise just draw as a point
-    // @todo The meshes could use something 'extra' for visbility at very long ranges, like colourisation via fog or something
+    // @todo The meshes could use something 'extra' for visibility at very long ranges, like colourisation via fog, grow into a dot, something
     if (shipRenderFlagIsSet(ship, SM_Mesh)) { 
         lod* level     = lodLevelGet( ship, &camera->eyeposition, &ship->posinfo.position );
         bool isLodMesh = (level->flags & LM_LODType) == LT_Mesh;
 
         if (isLodMesh)
-             drawShipAsMesh( ship, selectFlash, level, camera );
-        else drawShipAsDot ( ship, selectFlash, background );
+             shipDrawAsMesh( ship, selectFlash, level, camera );
+        else shipDrawAsDot ( ship, selectFlash, background );
     } else {
-        drawShipAsDot( ship, selectFlash, background );
+        shipDrawAsDot( ship, selectFlash, background );
     }
 }
 
@@ -1040,15 +1047,17 @@ static color derelictDotColour( Derelict* derek ) {
 }
 
 static real32 derelictDotSize( Derelict* derek ) {
+    real32 refSize = shipDotSize( NULL );
+
     // Treat this one more like a ship, given its nature
     if (derelictIsFriendly( derek ))
-        return shipDotSize();
+        return refSize;
 
-    // In general though, don't crowd the sensor view too badly, or it gets ugly
-    return max( 1.0f, shipDotSize() * 0.5f );
+    // In general though, don't crowd the sensor view too badly, or it gets ugly and fits poorly with asteroids
+    return max( 1.0f, refSize * 0.5f );
 }
 
-static void derelcitDrawMesh( SpaceObjRotImp* obj, lod* level ) {
+static void derelictDrawMesh( SpaceObjRotImp* obj, lod* level ) {
     Derelict* der = (Derelict*) obj;
     meshRender( level->pData, der->colorScheme );
 }
@@ -1060,7 +1069,7 @@ static void derelictDraw( Derelict* derek, Camera* camera, bool meshAllowed ) {
     bool hasMesh  = level != NULL;
 
     if (hasMesh && wantMesh && meshAllowed) {
-        drawMesh( (SpaceObjRotImp*)derek, FALSE, level, camera, derelcitDrawMesh );
+        drawMesh( (SpaceObjRotImp*)derek, FALSE, level, camera, derelictDrawMesh );
     } else {
         color  col  = derelictDotColour( derek );
         real32 size = derelictDotSize( derek );
@@ -1088,6 +1097,8 @@ static void nebGasDustDraw( SpaceObj* obj, Camera* camera ) {
     primBlurryPoint3Fade( &obj->posinfo.position, size, col, 1.0f );
 }
 
+
+
 static void asteroidDraw( Asteroid* ast ) {
     if (smResources == FALSE)
         return;
@@ -1104,7 +1115,7 @@ static void asteroidDraw( Asteroid* ast ) {
 
 
 
-static void clearDrawNebulaTendrils( void ) {
+static void drawNebulaTendrils( void ) {
     //display the nebulae tendrils as strings
     rndTextureEnable(FALSE);
     rndLightingEnable(FALSE);
@@ -1134,7 +1145,7 @@ static void clearDrawNebulaTendrils( void ) {
 
 
 
-static void clearDrawShipTacticalOverlays( void ) {
+static void drawShipTacticalOverlays( void ) {
     if (shipTOCount == 0)
         return;
 
@@ -1228,8 +1239,8 @@ void smBlobDrawClear(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix
     }
 
     // Draw non-object stuff
-    clearDrawNebulaTendrils();
-    clearDrawShipTacticalOverlays();
+    drawNebulaTendrils();
+    drawShipTacticalOverlays();
 }
 
 /*-----------------------------------------------------------------------------
@@ -1266,7 +1277,7 @@ real32 smwGenerateRandomSize(void)
         case 5:
         case 6:
         default:
-            return shipDotSize();
+            return shipDotSize( NULL );
     }
 }
 
@@ -1502,7 +1513,7 @@ void smBlobDrawCloudy(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatri
         }
         
         // The nasty is visible
-        primPointSize3( &subBlob->centre, shipDotSize(), teHostileColor );
+        primPointSize3( &subBlob->centre, shipDotSize(NULL), teHostileColor );
     }
 
     // Draw all objects in the sphere
