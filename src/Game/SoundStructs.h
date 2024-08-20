@@ -12,7 +12,7 @@
 #include "Types.h"
 
 
-typedef struct
+typedef struct SOUNDEVENT
 {
 	sdword	engineHandle;
 	sdword	engineState;
@@ -42,7 +42,7 @@ typedef struct
 } SOUNDEVENT;
 
 
-typedef struct
+typedef struct SFXLUT
 {
 	sdword	ID;
 	udword	checksum;
@@ -53,7 +53,7 @@ typedef struct
 } SFXLUT;
 
 
-typedef struct
+typedef struct SENTENCELUT
 {
 	sdword	ID;				// version identification
 	udword	checksum;		// checksum of this generate
@@ -75,7 +75,7 @@ typedef struct
 } SENTENCELUT;
 
 
-typedef struct
+typedef struct PHRASELUT
 {
 	sdword	ID;				// version identification
 	udword	checksum;		// checksum of this generate
@@ -102,7 +102,7 @@ typedef struct
     of the probability and numOffsets above.  As such, it is useful to represent
     the above phrase LUT's entries in the following structure.
 -----------------------------------------------------------------------------*/
-typedef struct
+typedef struct lookupinterp
 {
     sdword duration;                            //duration of sentence, in milliseconds
     ubyte probability;                          //sentence variation, 0..100
@@ -114,7 +114,7 @@ typedef struct
 }
 lookupinterp;
 
-typedef struct
+typedef struct TABLELUT
 {
 	sdword	ID;
 	sword	columns;
@@ -122,7 +122,7 @@ typedef struct
 	sdword	lookup[];
 } TABLELUT;
 
-typedef struct
+typedef struct TABLELUTFLOAT
 {
 	sdword	ID;
 	sword	columns;
@@ -131,7 +131,7 @@ typedef struct
 } TABLELUTFLOAT;
 
 
-typedef struct
+typedef struct FREQUENCYLUT
 {
 	sdword	ID;
 	sword	columns;
