@@ -389,12 +389,30 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
     color col;
     real32 realMargin;
     ShipClass shipClass;
-    static real32 lastProximityPing = REALlyBig;
-    static real32 lastAnomolyPing = REALlyBig;
-    static real32 lastBattlePing = REALlyBig;
-    static real32 lastHyperspacePing = REALlyBig;
-    static real32 lastNewshipPing = REALlyBig;
-    bool pingset;
+
+    enum PingEnum {
+        NoPing,
+        Proximity,
+        Anomoly,
+        Battle,
+        Hyperspace,
+        Newships
+    };
+
+    struct PingInfo {
+        udword sound;
+        real32 lastSize;
+    };
+
+    static struct PingInfo pingInfo[] = {
+        [ Proximity  ] = { .lastSize=REALlyBig, .sound=UI_PingProximity  },
+        [ Anomoly    ] = { .lastSize=REALlyBig, .sound=UI_SensorsPing    },
+        [ Battle     ] = { .lastSize=REALlyBig, .sound=UI_PingBattle     },
+        [ Hyperspace ] = { .lastSize=REALlyBig, .sound=UI_PingHyperspace },
+        [ Newships   ] = { .lastSize=REALlyBig, .sound=UI_PingNewShips   }
+    };
+
+    
 
     //start by sorting the ping list from farthest to nearest
     thisNode = pingList.head;
@@ -419,21 +437,29 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
     //now the list is sorted; proceed to draw all the pings
     thisNode = pingList.head;
 
-    pingset = FALSE;
+    bool pingset = FALSE;
+
+    // Only allow evaluate whether to play sounds at the same rate as the original game.
+    const  real32 soundEvalNow     = universe.totaltimeelapsed; // Note: NOT the interpolated time!
+    const  real32 soundEvalRate    = 1.0f / 60.0f; // As if we're running at 60Hz max
+    static real32 soundEvalTime    = 0.0f;
+    const  bool   soundEvalAllowed = (soundEvalNow - soundEvalTime) >= soundEvalRate;
+
+    if (soundEvalAllowed)
+        soundEvalTime = soundEvalNow;
 
     while (thisNode != NULL)
     {                                                       //scan all pings
-        nextNode = thisNode->next;
-        thisPing = listGetStructOfNode(thisNode);
-
+        nextNode  = thisNode->next;
+        thisPing  = listGetStructOfNode(thisNode);
         pingCycle = thisPing->pingDuration + thisPing->interPingPause;
-        pingAge = rintUniverseElapsedTime() - thisPing->creationTime;
-        pingMod = fmodf(pingAge, pingCycle);
+        pingAge   = rintUniverseElapsedTime() - thisPing->creationTime;
+        pingMod   = fmodf(pingAge, pingCycle);
         if (pingMod <= thisPing->pingDuration)
         {
             pingSize = (thisPing->size - thisPing->minSize) * pingMod / thisPing->pingDuration + thisPing->minSize;
             selCircleComputeGeneral(modelView, projection, &thisPing->centre, max(thisPing->size,thisPing->minSize), &x, &y, &radius);
-            if (radius > 0.0f)
+            if (radius > 0.0f) // In front of camera
             {
                 radius = max(radius, thisPing->minScreenSize);
                 radius *= pingSize / max(thisPing->size,thisPing->minSize);
@@ -444,52 +470,25 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 primOvalArcOutline2(&o, 0.0f, 2*PI, sqrtf(getResDensityRelative()), nSegments, thisPing->c);
 
                 /* starting to draw a new ping so play the sound */
-                if (!smZoomingIn && !smZoomingOut && !pingset)
+                enum PingEnum type = NoPing;
+                if (!smZoomingIn && !smZoomingOut && !pingset && soundEvalAllowed)
                 {
-                    switch (thisPing->TOMask)
-                    {
-                        case PTOM_Anomaly:
-                            if (pingSize <=lastAnomolyPing)
-                            {
-                                soundEvent(NULL, UI_SensorsPing);
-                                pingset = TRUE;
-                                lastAnomolyPing = pingSize;
-                            }
-                            break;
-                        case PTOM_Battle:
-                            if (pingSize <= lastBattlePing)
-                            {
-                                soundEvent(NULL, UI_PingBattle);
-                                pingset = TRUE;
-                                lastBattlePing = pingSize;
-                            }
-                            break;
-                        case PTOM_Hyperspace:
-                            if (pingSize <=  lastHyperspacePing)
-                            {
-                                soundEvent(NULL, UI_PingHyperspace);
-                                pingset = TRUE;
-                                lastHyperspacePing = pingSize;
-                            }
-                            break;
-                        case PTOM_Proximity:
-                            if (pingSize <= lastProximityPing)
-                            {
-                                soundEvent(NULL, UI_PingProximity);
-                                pingset = TRUE;
-                                lastProximityPing = pingSize;
-                            }
-                            break;
-                        case PTOM_NewShips:
-                            if (pingSize <= lastNewshipPing)
-                            {
-                                soundEvent(NULL, UI_PingNewShips);
-                                pingset = TRUE;
-                                lastNewshipPing = pingSize;
-                            }
-                            break;
-                        default:
-                            break;
+                    switch (thisPing->TOMask) {
+                        case PTOM_Anomaly:    type = Anomoly;    break;
+                        case PTOM_Battle:     type = Battle;     break;
+                        case PTOM_Hyperspace: type = Hyperspace; break;
+                        case PTOM_Proximity:  type = Proximity;  break;
+                        case PTOM_NewShips:   type = Newships;   break;
+                    }
+
+                    if (type != NoPing) {
+                        struct PingInfo* info = &pingInfo[type];
+
+                        if (pingSize <= info->lastSize) {
+                            info->lastSize = pingSize;
+                            soundEvent( NULL, info->sound );
+                            pingset = TRUE;
+                        }
                     }
                 }
             }
