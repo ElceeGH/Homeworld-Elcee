@@ -10,6 +10,7 @@
 
 #include "ClassDefs.h"
 #include "Color.h"
+#include "SpaceObj.h"
 #include "Types.h"
 #include "Vector.h"
 
@@ -88,7 +89,12 @@ void toAllShipsDraw(void);
 //draw legend for overlay
 void toLegendDraw(void);
 
-void toFieldSphereDraw(struct Ship* ship, real32 radius, color colour);
+void toMoveLineDraw(ShipPtr ship, real32 scale);
+void toFieldSphereDraw(ShipPtr ship,real32 radius, color passedColour);
+void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color passedColour);
+void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color passedColour);
+void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color passedColour);
+void toDrawRadialIndicator4(ShipPtr ship, real32 radius, real32 scale,color passedColour);
 
 
 #endif
