@@ -646,7 +646,7 @@ sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lo
         return SOUND_OK;
     }
     
-    if (pchan->heading != handle) {
+    if (pchan->handle != handle) {
         return SOUND_ERR;
     }
     
