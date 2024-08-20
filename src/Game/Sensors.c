@@ -2169,6 +2169,7 @@ void smSensorsCloseForGood(void)
     if (smScrollListBottom) memFree(smScrollListBottom);
     universe.mainCameraCommand.actualcamera.ignoreZoom = FALSE;
     mouseCursorShow();
+    mouseCaptureStop();
     mrHoldLeft = mrHoldRight = mrNULL;
     if (ioSaveState)
     {
@@ -3969,6 +3970,7 @@ void smSensorsBegin(char *name, featom *atom)
         regKeyChildAlloc(smViewportRegion, index, RPE_KeyUp | RPE_KeyDown, (regionfunction) smViewportProcess, 1, index);
     }
     mouseCursorShow();
+    mouseCaptureStop();
     cameraCopyPositionInfo(&smCamera, mrCamera);
     if (smFleetIntel)
     {                                                       //if we are in the fleet intel screen, no movement mechanism!

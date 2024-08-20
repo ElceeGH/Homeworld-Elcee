@@ -1792,7 +1792,6 @@ void mouseCaptureStart( void ) {
 /// Start capturing the mouse, and keep it in a specific absolute position.
 /// As opposed to the screen centre which is the default.
 /// It sometimes matters since UI regions only get events if the mouse is over them.
-/// Zero isn't a valid option here.
 void mouseCaptureStartCustomPos( sdword cx, sdword cy ) {
     mouseCaptureEnabled = TRUE;
     mouseCapturePosX    = cx;
@@ -1802,6 +1801,7 @@ void mouseCaptureStartCustomPos( sdword cx, sdword cy ) {
 
 
 /// Stop capturing the mouse.
+/// It doesn't matter if it was already captured. It's always safe to call this.
 /// Resets the hold position automatically.
 void mouseCaptureStop( void ) {
     mouseCaptureEnabled = FALSE;

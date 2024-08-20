@@ -5558,6 +5558,7 @@ void mrReset(void)
 {
     mrHoldRight = mrHoldLeft = mrNULL;                      //in case player was band-boxing or rotating
     mouseCursorShow();
+    mouseCaptureStop();
     piePointSpecMode = PSM_Idle;                             //in case player was moving
 }
 
