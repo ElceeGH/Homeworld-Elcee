@@ -152,19 +152,9 @@ static const char *gl_extensions = 0;
 static bool useVBO = FALSE;
 static GLuint vboStars;
 
-/* Should remove this stuff after cleaning up rgl functions. */
-/*
-HGLRC hGLRenderContext;
-HDC hGLDeviceContext;
-HWND hGLWindow;
-*/
-udword hGLRenderContext;
-udword hGLDeviceContext;
-udword hGLWindow;
-
 udword meshRenders;
 
-real32 rndAspectRatio;                                      //aspect ratio of rendering context
+real32 rndAspectRatio; //aspect ratio of rendering context
 
 static sdword rndFillCounter = 0;
 static color rndFillColour = 0;
@@ -173,7 +163,6 @@ static color rndFillColour = 0;
 rendercallback rndPreObjectCallback = NULL, rndPostObjectCallback = NULL;
 
 udword rndTextureEnviron = RTE_Modulate;
-
 bool rndAdditiveBlending   = FALSE;
 bool rndLightingEnabled    = TRUE;
 bool rndNormalization      = FALSE;
@@ -1172,9 +1161,7 @@ sdword rndInit(void)
     glEnable(GL_CULL_FACE);
 
     rndPreObjectCallback = rndPostObjectCallback = NULL;    //no render callbacks yet
-
-    rndAspectRatio = (float)MAIN_WindowWidth / (float)MAIN_WindowHeight;
-
+    rndAspectRatio       = (real32)MAIN_WindowWidth / (real32)MAIN_WindowHeight;
     rndFrameCount = 0;
 
 #if RND_FRAME_RATE
