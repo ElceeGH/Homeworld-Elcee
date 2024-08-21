@@ -91,10 +91,7 @@ void toLegendDraw(void);
 
 void toMoveLineDraw(ShipPtr ship, real32 scale);
 void toFieldSphereDraw(ShipPtr ship,real32 radius, color passedColour);
-void toDrawRadialIndicator1(ShipPtr ship, real32 radius, real32 scale,color passedColour);
-void toDrawRadialIndicator2(ShipPtr ship, real32 radius, real32 scale,color passedColour);
-void toDrawRadialIndicator3(ShipPtr ship, real32 radius, real32 scale,color passedColour);
-void toDrawRadialIndicator4(ShipPtr ship, real32 radius, real32 scale,color passedColour);
+void toActiveProxSensorDraw( ShipPtr ship, real32 sphereRadius, color col );
 
 
 #endif
