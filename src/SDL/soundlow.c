@@ -176,6 +176,9 @@ void soundpause(bool bPause, bool bExiting)
     // Not inited? Can't do anything
     if ( ! soundinited)
         return;
+
+    // Update internal state. NOTE: This is used by the mixer to decide things, so it always has to come BEFORE the wait-for-status phase here.
+    bSoundPaused = bPause;
     
     // Check if we were paused before and we're now unpausing
     // If we were paused before, make sure we don't unpause until the mixer is actually stopped
@@ -183,7 +186,7 @@ void soundpause(bool bPause, bool bExiting)
         blockUntilMixerInState( SOUND_STOPPED );
 
     // If pausing, begin to fadeout the mixer.
-    // Unless we're exiting the game, allow it to happen asynchronously.
+    // Allow it to happen asynchronously unless we're exiting the game.
     // Previously this would make loading really slow to start.
     if (bPause) {
         mixer   .timeout = mixerticks + SOUND_FADE_MIXER;
@@ -198,9 +201,6 @@ void soundpause(bool bPause, bool bExiting)
     // Unpause audio. If paused, the mixer itself does the pausing when it completes its fadeout.
     if ( ! bPause)
         SDL_PauseAudio( FALSE );
-
-    // Update internal state
-    bSoundPaused = bPause;
     
 }
 
