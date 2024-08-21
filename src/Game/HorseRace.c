@@ -860,6 +860,12 @@ void hrDrawBackground(void)
         v[6] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(640) : feResRepositionCentredX(640));
         v[7] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(480) : feResRepositionCentredY(480));
 
+        if ( ! singlePlayerGame) {
+            real32 bgAspect = hrBackXFrac / hrBackYFrac;
+            glPushMatrix();
+            glScalef( 1.0f, bgAspect, 1.0f );
+        }
+
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glTexCoordPointer(2, GL_FLOAT, 0, t);
@@ -867,6 +873,9 @@ void hrDrawBackground(void)
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+        if ( ! singlePlayerGame)
+            glPopMatrix();
 
         rndTextureEnvironment(oldMode);
         rndTextureEnable(oldTex);
