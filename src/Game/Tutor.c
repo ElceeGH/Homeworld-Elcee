@@ -852,8 +852,8 @@ void tutSetTextDisplayBox(sdword x, sdword y, sdword width, sdword height, bool 
 {
     if(bScale)
     {
-        x = (long)( ((real32)x / 640.0f) * (real32)MAIN_WindowWidth );
-        y = (long)( ((real32)y / 480.0f) * (real32)MAIN_WindowHeight );
+        x = (sdword)( ((real32)x / 640.0f) * (real32)MAIN_WindowWidth  );
+        y = (sdword)( ((real32)y / 480.0f) * (real32)MAIN_WindowHeight );
     }
     else
     {
@@ -1213,6 +1213,89 @@ void tutClipSegToTextBox(sdword *x0, sdword *y0, sdword *x1, sdword *y1)
 
 
 
+static void tutGetScreenSpaceInfoForLineToCircle( tutpointer* tp, real32* sx, real32* sy, real32* sradius ) {
+    switch (tp->pointerType) {
+        case TUT_PointerTypeShip: {
+            *sradius = tp->ship->collInfo.selCircleRadius;
+            *sx      = tp->ship->collInfo.selCircleX;
+            *sy      = tp->ship->collInfo.selCircleY;
+        } break;
+
+        case TUT_PointerTypeShips : {
+            selSelectionDimensions( &rndCameraMatrix, &rndProjectionMatrix, tp->selection, sx, sy, sradius );
+        } break;
+
+        case TUT_PointerTypeAIVolume: {
+            vector wpos    = volFindCenter( tp->volume );
+            real32 wradius = volFindRadius( tp->volume );
+            selCircleComputeGeneral( &rndCameraMatrix, &rndProjectionMatrix, &wpos, wradius, sx, sy, sradius );
+        }
+    }
+}
+
+
+
+// Draw a line from the current text box meeting a circle over the given worldspace position
+static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, real32 thickness, color col ) {
+    // Get the screenspace info
+    real32 sx, sy, sradius;
+    tutGetScreenSpaceInfoForLineToCircle( tp, &sx, &sy, &sradius );
+
+    // Beind the screen? Nope out
+    if (sradius <= 0.0f)
+        return;
+    
+    // We need to render a circle here and it actually needs to be round! God damn it people!
+    // Save projection and make it a bog-standard orthographic one
+    const real32 mrw = (real32) MAIN_WindowWidth;
+    const real32 mrh = (real32) MAIN_WindowHeight;
+    
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho( 0, mrw, mrh, 0, -1, +1 );
+    glMatrixMode( GL_MODELVIEW );
+
+    // Circle params
+    real32 radiusMin    = TUT_ShipCircleSizeMin * getResDensityRelative();
+    real32 radiusScaled = sradius * mrh * 0.5f;
+    real32 radius       = max( radiusScaled, radiusMin );
+    sdword segs         = pieCircleSegmentsCompute( radius/ mrh* 2.0f ); // Takes screenspace arg
+    real32 cx           = (real32) primGLToScreenX( sx );
+    real32 cy           = (real32) primGLToScreenY( sy );
+                    
+    // Text box centre
+    sdword rcx = ((rect->x0 + rect->x1) / 2);
+    sdword rcy = ((rect->y0 + rect->y1) / 2);
+                    
+    // Line params
+    real32 dx     = cx - rcx;
+    real32 dy     = cy - rcy;
+    real32 dMag   = sqrtf(dx*dx + dy*dy);
+    real32 dScale = (dMag - radius) / dMag; // Meet circle edge
+
+    // Line endpoints
+    sdword bx = primGLToScreenX(rcx);
+    sdword by = primGLToScreenY(rcy);
+    sdword ex = primGLToScreenX(rcx + dx * dScale);
+    sdword ey = primGLToScreenY(rcy + dy * dScale);
+
+    // Clip the line to the box it's coming from.
+    tutClipSegToTextBox( &bx, &by, &ex, &ey );
+
+    // Draw!
+    primGLCircleOutline2( cx, cy, radius, segs, col );
+    primLine2( bx, by, ex, ey, col );
+
+    // Restore projection
+    glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    glMatrixMode( GL_MODELVIEW );
+    
+}
+
+
+
 /*-----------------------------------------------------------------------------
     Name        : tutDrawTextPointers
     Description : Draw all active tutorial pointers
@@ -1222,20 +1305,21 @@ void tutClipSegToTextBox(sdword *x0, sdword *y0, sdword *x1, sdword *y1)
 ----------------------------------------------------------------------------*/
 void tutDrawTextPointers(rectangle *pRect)
 {
+    static sdword tutPulse = TUT_PointerPulseMin;
+
     sdword  x0, y0, x1, y1, index;
-    real32  x, y, rad, angle, dx, dy, magnitude;
-    static long tutPulse = TUT_PointerPulseMin;
-    //hmatrix modelview, projection;
-    real32  sx, sy;
     tutpointer *pointer;
-    color c;
-    vector temp;
 
     glEnable( GL_MULTISAMPLE );
-    real32 lineWidth = sqrtf(getResDensityRelative());
+
+    color  pulseWhite = colRGB(tutPulse,   tutPulse, tutPulse  );
+    color  pulseGreen = colRGB(tutPulse/2, tutPulse, tutPulse/2);
+    real32 thickness  = 1.65f * sqrtf(getResDensityRelative());
 
     for (pointer = tutPointer, index = 0; index < TUT_NumberPointers; index++, pointer++)
     {                                                       //for each pointer
+        glLineWidth( thickness );
+
         switch(pointer->pointerType)
         {
             case TUT_PointerTypeNone:
@@ -1248,107 +1332,28 @@ void tutDrawTextPointers(rectangle *pRect)
                 y1 = pointer->y;//tutPointerY;
 
                 tutClipSegToTextBox(&x0, &y0, &x1, &y1);
-                c = colRGB(tutPulse, tutPulse, tutPulse);
-                glLineWidth( lineWidth );
-                primLine2(x0, y0, x1, y1, c);
-                dx = (real32)(x0 - x1);                     //vector from arrowhead to source
-                dy = (real32)(y0 - y1);
+                primLine2(x0, y0, x1, y1, pulseWhite);
+                real32 dx = (real32)(x0 - x1);                     //vector from arrowhead to source
+                real32 dy = (real32)(y0 - y1);
                 if (dx != 0.0f || dy != 0.0f)
                 {                                           //if not zero-length vector
-                    magnitude = sqrtf(dx * dx + dy * dy);   //magnitude of vector
+                    real32 magnitude = sqrtf(dx * dx + dy * dy);   //magnitude of vector
+                    real32 angle     = atan2f( dy, dx );
                     dx /= magnitude;
                     dy /= magnitude;                        //normalize the vector
-                    if (dx == 0.0f)
-                    {                                       //singularity: vertical axis
-                        if (dy > 0.0f)
-                        {
-                            angle = PI / 2.0f;              //90
-                        }
-                        else
-                        {
-                            angle = PI * 3.0f / 2.0f;       //270
-                        }
-                    }
-                    else if (dy > 0.0f)
-                    {                                       //0..180
-                        if (dx > 0.0f)
-                        {                                   //0..90
-                            angle = atanf(dy / dx);
-                        }
-                        else
-                        {                                   //90..180
-                            angle = PI - atanf(dy / -dx);
-                        }
-                    }
-                    else
-                    {                                       //180..360
-                        if (dx < 0.0f)
-                        {                                   //180..270
-                            angle = atanf(dy / dx) + PI;
-                        }
-                        else
-                        {                                   //270..360
-                            angle = 2.0f * PI - atanf(-dy / dx);
-                        }
-                    }
                     //now we have angle of main vector; offset that to get arrowhead vectors
                     x0 = x1 + (sdword)(cosf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
                     y0 = y1 + (sdword)(sinf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    primLine2(x0, y0, x1, y1, c);
+                    primLine2(x0, y0, x1, y1, pulseWhite);
                     x0 = x1 + (sdword)(cosf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
                     y0 = y1 + (sdword)(sinf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    primLine2(x0, y0, x1, y1, c);
-                }
-                break;
-
-            case TUT_PointerTypeShip:
-                rad = pointer->ship->collInfo.selCircleRadius;
-                x = pointer->ship->collInfo.selCircleX;
-                y = pointer->ship->collInfo.selCircleY;
-                goto shipsCase;                             //rest of code is common
-
-            case TUT_PointerTypeShips:
-                selSelectionDimensions(&rndCameraMatrix, &rndProjectionMatrix, pointer->selection, &x, &y, &rad);
-shipsCase:
-                if(rad > 0.0)
-                {                                           //if ship is on-screen
-                    real32 sx, sy, deltx, delty, len;
-
-                    rad = max(rad, TUT_ShipCircleSizeMin);
-                    //x = pointer->ship->collInfo.selCircleX;
-                    //y = pointer->ship->collInfo.selCircleY;
-
-                    glLineWidth( lineWidth );
-                    primGLCircleOutline2(x, y, rad, pieCircleSegmentsCompute(rad), colRGB(tutPulse/2, tutPulse, tutPulse/2));
-
-                    sx = primScreenToGLX((pRect->x0 + pRect->x1) / 2);
-                    sy = primScreenToGLY((pRect->y0 + pRect->y1) / 2);
-
-                    deltx = x-sx;
-                    delty = y-sy;
-
-                    len = (real32)sqrtf(deltx*deltx + delty*delty);
-                    len = (len - rad) / len;
-
-                    if (len > 0.0f)
-                    {
-                        x0 = primGLToScreenX(sx);
-                        y0 = primGLToScreenY(sy);
-
-                        x1 = primGLToScreenX(sx + deltx * len);
-                        y1 = primGLToScreenY(sy + delty * len);
-
-                        tutClipSegToTextBox(&x0, &y0, &x1, &y1);
-                        primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                    }
-
+                    primLine2(x0, y0, x1, y1, pulseWhite);
                 }
                 break;
 
             case TUT_PointerTypeShipHealth:
-                rad = pointer->ship->collInfo.selCircleRadius;
-                if(rad > 0.0)
-                {                                           //if ship on-screen
+                if (pointer->ship->collInfo.selCircleRadius > 0.0)  //if ship on-screen
+                {
                     x0 = (pRect->x0 + pRect->x1) / 2;
                     y0 = (pRect->y0 + pRect->y1) / 2;
 
@@ -1356,16 +1361,14 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &x1, &y0, &y1);
-                    glLineWidth( lineWidth );
-                    primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                    primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
+                    primLine2(x0, y0, x1, y1, pulseGreen);
+                    primRectOutline2(&pointer->rect, thickness, pulseGreen);
                 }
                 break;
 
             case TUT_PointerTypeShipGroup:
-                rad = pointer->ship->collInfo.selCircleRadius;
-                if(rad > 0.0)
-                {                                           //if ship on-screen
+                if (pointer->ship->collInfo.selCircleRadius > 0.0) //if ship on-screen
+                {
                     x0 = (pRect->x0 + pRect->x1) / 2;
                     y0 = (pRect->y0 + pRect->y1) / 2;
 
@@ -1373,51 +1376,19 @@ shipsCase:
                     y1 = pointer->rect.y0;
 
                     tutClipSegToTextBox(&x0, &y0, &x1, &y1);
-                    glLineWidth( lineWidth );
-                    primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                    primRectOutline2(&pointer->rect, lineWidth, colRGB(tutPulse/2, tutPulse, tutPulse/2));
+                    primLine2(x0, y0, x1, y1, pulseGreen);
+                    primRectOutline2(&pointer->rect, thickness, pulseGreen);
                 }
                 break;
 
             case TUT_PointerTypeRegion:
-                primRectOutline2(&pointer->rect, sqrtf(lineWidth*3.0f), colRGB(tutPulse, tutPulse, tutPulse));
+                primRectOutline2(&pointer->rect, sqrtf(thickness*3.0f), pulseWhite);
                 break;
 
+            case TUT_PointerTypeShip:
+            case TUT_PointerTypeShips:
             case TUT_PointerTypeAIVolume:
-                temp = volFindCenter(pointer->volume);
-
-                selCircleComputeGeneral(&rndCameraMatrix, &rndProjectionMatrix,
-                    (vector *)&temp, volFindRadius(pointer->volume),
-                    &sx, &sy, &rad);
-
-                if(rad > 0.0)
-                {
-                    real32 x, y, deltx, delty, len;
-
-                    glLineWidth( lineWidth );
-                    rad = max(rad, TUT_ShipCircleSizeMin);
-                    x = sx;
-                    y = sy;
-                    primGLCircleOutline2(x, y, rad, pieCircleSegmentsCompute(rad), colRGB(tutPulse/2, tutPulse, tutPulse/2));
-
-                    sx = primScreenToGLX((pRect->x0 + pRect->x1) / 2);
-                    sy = primScreenToGLY((pRect->y0 + pRect->y1) / 2);
-
-                    deltx = x-sx;
-                    delty = y-sy;
-
-                    len = (real32)sqrtf(deltx*deltx + delty*delty);
-                    len = (len - rad) / len;
-
-                    x0 = primGLToScreenX(sx);
-                    y0 = primGLToScreenY(sy);
-
-                    x1 = primGLToScreenX(sx + deltx * len);
-                    y1 = primGLToScreenY(sy + delty * len);
-
-                    tutClipSegToTextBox(&x0, &y0, &x1, &y1);
-                    primLine2(x0, y0, x1, y1, colRGB(tutPulse/2, tutPulse, tutPulse/2));
-                }
+                tutDrawTextPointerLineToCircle( pointer, pRect, thickness, pulseGreen );
                 break;
         }
     }

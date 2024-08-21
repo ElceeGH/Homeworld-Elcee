@@ -389,17 +389,15 @@ void primOvalArcOutline2(oval *o, real32 radStart, real32 radEnd, real32 thickne
 void primGLCircleOutline2(real32 x, real32 y, real32 radius, sdword nSegments, color c)
 {
     float  angleInc = 2.0f * PI / (real32)nSegments;
-    real32 radiusY  = radius * MAIN_WindowWidth / MAIN_WindowHeight;
-
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_LINE_STRIP);
-    glVertex2f(x, y + radiusY);
 
     sdword index;
     float angle;;
     for (index=0, angle=angleInc;  index<=nSegments;  index++, angle+=angleInc)
     {
-        glVertex2f(x + sinf(angle) * radius, y + cosf(angle) * radiusY);
+        glVertex2f(x + sinf(angle) * radius,
+                   y + cosf(angle) * radius);
     }
     glEnd();
 }
