@@ -451,6 +451,8 @@ void toLegendDraw(void)
     col = colRGB(colRed(col)/TO_IconColorFade, colGreen(col)/TO_IconColorFade, colBlue(col)/TO_IconColorFade);
 
     // draw legend entries for any classes currently displayed
+    real32 thickness = 0.75f * sqrtf(getResDensityRelative());
+
     for (shipClass = CLASS_Mothership+1; shipClass <= CLASS_NonCombat; ++shipClass)
     {
         for (pl = 0; pl < TO_NumPlayers; ++pl)
@@ -462,7 +464,7 @@ void toLegendDraw(void)
         {
             // icon
             icon = toClassIcon[shipClass];
-            primLineLoopStart2(1, col);
+            primLineLoopStart2(thickness, col);
 
             for (index = icon->nPoints - 1; index >= 0; index--)
             {
@@ -472,9 +474,7 @@ void toLegendDraw(void)
             primLineLoopEnd2();
 
             // text
-            fontPrint(x, y,
-                   TO_TextColor,
-                   ShipClassToNiceStr((ShipClass)shipClass));
+            fontPrint(x, y,  TO_TextColor, ShipClassToNiceStr((ShipClass)shipClass));
             y += rowHeight + 1;
         }
     }

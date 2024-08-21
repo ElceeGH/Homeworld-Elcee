@@ -507,6 +507,7 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
         yScreen = viewPort->y0 + rowHeight;                 //leave some space at the top to start
         radius = primScreenToGLScaleX(rowHeight)/2;
         xScreen = viewPort->x0 + (sdword)(rowHeight * 2.5);
+        real32 thickness = 0.75f * sqrtf(getResDensityRelative());
 
         for (index = 0; index < PTO_NumberTOs; index++)
         {
@@ -519,8 +520,8 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
             {
                 o.centreX = viewPort->x0 + rowHeight * 3 / 2;
                 o.centreY = yScreen + rowHeight / 2;
-                o.radiusX = o.radiusY = rowHeight / 2;
-                primOvalArcOutline2(&o, 0.0f, TWOPI, getResDensityRelative(), pingTONSegments, *pingTOList[index].c);
+                o.radiusX = o.radiusY = (sdword)(rowHeight / 2.5f); // Divide by >2 so they don't touch other things
+                primOvalArcOutline2(&o, 0.0f, TWOPI, thickness, pingTONSegments, *pingTOList[index].c);
                 fontPrint(xScreen, yScreen, TO_TextColor, strGetString(pingTOList[index].stringEnum));
                 yScreen += rowHeight + 1;
             }
@@ -534,14 +535,14 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
                 continue;
             }
             icon = toClassIcon[shipClass];
-            fontPrint(xScreen, yScreen + (rowHeight>>2), TO_TextColor, ShipClassToNiceStr(shipClass));
+            fontPrint(xScreen, yScreen, TO_TextColor, ShipClassToNiceStr(shipClass));
 #if TO_STANDARD_COLORS
             col = teFriendlyColor;
 #else
             col = teColorSchemes[universe.curPlayerIndex].tacticalColor;
 #endif
             col = colRGB(colRed(col)/TO_IconColorFade, colGreen(col)/TO_IconColorFade, colBlue(col)/TO_IconColorFade);
-            primLineLoopStart2(1, col);
+            primLineLoopStart2( thickness, col );
 
             for (index = icon->nPoints - 1; index >= 0; index--)
             {

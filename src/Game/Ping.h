@@ -67,7 +67,7 @@
 #define PTO_NumberTOs               6
 
 #define PING_TOMarginX              3
-#define PING_TONSegments            12
+#define PING_TONSegments            32
 #define PING_TOLingerTime           2.0f
 
 /*=============================================================================
