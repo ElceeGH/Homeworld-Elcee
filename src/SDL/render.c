@@ -1828,7 +1828,7 @@ void rndDrawAsteroid0( Camera* camera )
     glEnable( GL_BLEND );
     g_WireframeHack = FALSE;
 
-    const real32 rangeClose = 1500.0f;
+    const real32 rangeClose = 3500.0f;
     const real32 rangeLow   = sqrtf( RENDER_VIEWABLE_DISTANCE_SQR );
     const real32 rangeHigh  = sqrtf( RENDER_MAXVIEWABLE_DISTANCE_SQR );
     const real32 range      = rangeHigh - rangeLow;

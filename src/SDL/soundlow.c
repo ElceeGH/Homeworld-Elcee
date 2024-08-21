@@ -201,7 +201,6 @@ void soundpause(bool bPause, bool bExiting)
     // Unpause audio. If paused, the mixer itself does the pausing when it completes its fadeout.
     if ( ! bPause)
         SDL_PauseAudio( FALSE );
-    
 }
 
 void soundstopallSFX(real32 fadetime, bool stopStreams)
