@@ -1746,7 +1746,7 @@ real32 rndCameraOffset0(void)
 
     et = t * CAMERA_FLOAT_SCALAR0;
 
-    return (real32)(sin((real64)et) - cos(0.5f * (real64)et));
+    return sinf(et - cosf(0.5f * et));
 }
 
 /*-----------------------------------------------------------------------------
@@ -1766,7 +1766,7 @@ real32 rndCameraOffset1(void)
 
     et = t * CAMERA_FLOAT_SCALAR1;
 
-    return (real32)(sin((real64)et) + cos(0.5f * (real64)et));
+    return sinf(et + cosf(0.5f * et));
 }
 
 /*-----------------------------------------------------------------------------
@@ -1821,6 +1821,11 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
     return 1.0f - dist;
 }
 
+// Basic helper
+static real32 lerpf( real32 a, real32 b, real32 f ) {
+    return a + (b - a) * f;
+}
+
 /*-----------------------------------------------------------------------------
     Name        : rndDrawAsteroid0
     Description : renders asteroid0's (small asteroids that provide visible structure to a level)
@@ -1836,30 +1841,49 @@ void rndDrawAsteroid0( Camera* camera )
     glEnable( GL_BLEND );
     g_WireframeHack = FALSE;
 
-    const real32 rangeLow  = sqrtf( RENDER_VIEWABLE_DISTANCE_SQR );
-    const real32 rangeHigh = sqrtf( RENDER_MAXVIEWABLE_DISTANCE_SQR );
-    const real32 range     = rangeHigh - rangeLow;
-    const real32 size      = 2.0f * sqrtf( getResDensityRelative() ); // Quite chunky boys in the original
+    const real32 rangeClose = 1500.0f;
+    const real32 rangeLow   = sqrtf( RENDER_VIEWABLE_DISTANCE_SQR );
+    const real32 rangeHigh  = sqrtf( RENDER_MAXVIEWABLE_DISTANCE_SQR );
+    const real32 range      = rangeHigh - rangeLow;
+    const real32 size       = 2.0f * sqrtf( getResDensityRelative() ); // Quite chunky boys in the original
+
     glPointSize( size );
     glBegin( GL_POINTS );
-
-        Node *objnode = universe.MinorRenderList.head;
-        while (objnode != NULL) {
+    
+        for (Node *objnode = universe.MinorRenderList.head; objnode != NULL; objnode = objnode->next) {
             SpaceObj* obj = (SpaceObj*)listGetStructOfNode(objnode);
             dbgAssertOrIgnore( obj->objtype == OBJ_AsteroidType );
             
-            real32 dist  = sqrtf( vecDistanceSquared( camera->eyeposition, obj->posinfo.position) );
+            color  c     = obj->staticinfo->staticheader.LOD->pointColor;
+            real32 dist  = sqrtf( obj->cameraDistanceSquared );
             real32 delta = max( 0.0f, dist - rangeLow );
             real32 frac  = min( 1.0f, delta / range );
-            real32 alpha = 1.0f - frac;
+            real32 alpha = (1.0f - frac);
 
-            color c = obj->staticinfo->staticheader.LOD->pointColor;
-            glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (alpha*255.0f) );
-            glVertex3fv( &obj->posinfo.position.x );
+            if (dist >= rangeClose) {
+                glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (alpha*255.0f) );
+                glVertex3fv( &obj->posinfo.position.x );
+            } else {
+                // For points very close to the camera, give them blurry halos like it's camera bokeh, helps sense of depth
+                // Could avoid the primitive restarts using a shader, but it's too small potatos to bother with. The overhead is piffling.
+                real32 bkFrac    = 1.0f - dist / rangeClose;
+                real32 bkAlpha   = bkFrac * bkFrac * 0.15f;
+                real32 bkSize    = size + bkFrac * bkFrac * size * 8.0f;
+                real32 lerpAlpha = lerpf( alpha, bkAlpha,  bkFrac );
+                real32 lerpSize  = lerpf( size,  bkSize,   bkFrac );
 
-            objnode = objnode->next;
+                glEnd();
+                glPointSize( lerpSize );
+                glBegin( GL_POINTS );
+                glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (lerpAlpha * 255.0f) );
+                glVertex3fv( &obj->posinfo.position.x );
+                glEnd();
+                
+                glPointSize( size );
+                glBegin( GL_POINTS );
+            }
         }
-
+    
     glEnd();
     glPointSize( 1.0f );
 
@@ -2283,13 +2307,6 @@ void rndMainViewRenderNothingFunction(Camera *camera)
 void rndMainViewAllButRenderFunction(Camera *camera)
 {
     ;
-}
-
-
-
-
-static real32 lerpf( real32 a, real32 b, real32 f ) {
-    return a + (b - a) * f;
 }
 
 
