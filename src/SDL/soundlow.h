@@ -148,7 +148,7 @@ void soundMixerSetMode(sdword mode);    // mode SOUND_MODE_NORM or SOUND_MODE_AU
 sdword soundinit(void);
 void   soundrestore(void);
 void   soundclose(void);
-void   soundpause(bool bPause);
+void   soundpause(bool bPause, bool bExiting);
 void   sounddeactivate(bool bDeactivate);
 udword soundbankadd(void *bankaddress);
 

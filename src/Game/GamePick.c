@@ -1033,7 +1033,7 @@ void gpLoadGame(char *name, featom *atom)
         feScreenDisappear(NULL, NULL);
 
         soundEventStopTrack(SOUND_EVENT_DEFAULT, 1.0f);
-        soundEventPause(TRUE);
+        soundEventPause(TRUE, FALSE);
         gameEnd();
         if (gpLoadSinglePlayerGame)
         {
@@ -1056,7 +1056,7 @@ void gpLoadGame(char *name, featom *atom)
         {
             universePause = FALSE;      // unpause game
         }
-        soundEventPause(FALSE);
+        soundEventPause(FALSE, FALSE);
     }
 }
 

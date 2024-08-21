@@ -2349,12 +2349,12 @@ void levelInit(char *directory,char *pickedMission)
     }
     else
     {
-        soundEventPlayMusic(SongNumber);
+        //soundEventPlayMusic(SongNumber);
     }
 
     if(tutorial==TUTORIAL_ONLY)
     {
-        soundEventPlayMusic(SongNumber);
+        //soundEventPlayMusic(SongNumber);
         universe.curPlayerPtr->resourceUnits = resourceStartTutorial;
     }
 }

@@ -861,7 +861,7 @@ void soundEventShutdown(void)
     if (enableSFX || enableSpeech) {
 		soundclose();
 	}
-	soundpause(TRUE);
+	soundpause(TRUE,FALSE);
 	sounddeactivate(TRUE);
 }
 
@@ -874,7 +874,7 @@ void soundEventRestart(void)
 	}
 
 	sounddeactivate(FALSE);
-	soundpause(FALSE);
+	soundpause(FALSE,FALSE);
 }
 
 /*-----------------------------------------------------------------------------
@@ -919,7 +919,7 @@ void soundEventStopSFX(real32 fadetime)
 }
 
 
-void soundEventPause(bool bPause)
+void soundEventPause(bool bPause, bool bExiting)
 {
     if (!soundeventinited)
     {
@@ -928,8 +928,7 @@ void soundEventPause(bool bPause)
 
     if (bPause != soundpaused)
     {
-        soundpaused = bPause;
-        soundpause(bPause);
+        soundpause(bPause, bExiting);
 
         if (bPause)
         {
@@ -937,6 +936,8 @@ void soundEventPause(bool bPause)
             speechEventCleanup();
         }
     }
+
+	soundpaused = bPause;
 }
 
 

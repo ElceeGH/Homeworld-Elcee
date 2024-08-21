@@ -60,7 +60,7 @@ void soundEventClose(void);				/* Shuts down the mixer and frees resources, any 
 void soundEventReset(void);				/* Shuts down the mixer but does not free resources, soundevent calls will continue to work */
 void soundEventUpdate(void);			/* Update function that does panning, volume, etc for objects in the universe */
 void soundEventInitStruct(SOUNDEVENT *pseStruct);	/* initializes a SOUNDEVENT structure for use, all ships have a SOUNDEVENT structure */
-void soundEventPause(bool bPause);		/* Shuts down or restore the mixer */
+void soundEventPause(bool bPause, bool bExiting);		/* Shuts down or restore the mixer */
 void soundEventReloadVolumes(void);
 void soundEventShutdown(void);
 void soundEventRestart(void);

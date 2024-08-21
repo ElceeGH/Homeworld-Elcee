@@ -151,43 +151,57 @@ void soundclose(void)
 ----------------------------------------------------------------------------*/
 void soundrestore(void)
 {
-    soundpause(TRUE);
+    soundpause(TRUE, FALSE);
     soundinited = FALSE;
     isoundmixerrestore();
 }
 
+// Wait until the mixer is in the target state.
+// With some emergency foulup handling by mnalis.
+static void blockUntilMixerInState( udword state ) {
+    sdword timeout = SOUND_PAUSE_BREAKOUT;
 
-void soundpause(bool bPause)
-{
-    if (soundinited)
-    {
-        if (bPause)
-        {
-            mixer   .timeout = mixerticks + SOUND_FADE_MIXER;
-            streamer.timeout = mixerticks + SOUND_FADE_MIXER;
-        }
-        /* No SDL_PauseAudio(TRUE) immediately here; that
-           happens in smixer.c after the above timeout */
-
-        bSoundPaused = bPause;
-
-        if (bPause)
-        {
-            int timeout=SOUND_PAUSE_BREAKOUT;
-            soundstopall(SOUND_FADE_STOPALL);
-
-            while ((mixer.status != SOUND_STOPPED) && (--timeout))
-            {
-                musicEventUpdateVolume();
-                SDL_Delay(SOUND_PAUSE_DELAY);
-            }
-            if (!timeout) {
-                dbgMessagef("WARNING: Sound refused to pause in %d*%d ms, forcing exit", SOUND_PAUSE_BREAKOUT, SOUND_PAUSE_DELAY);
-            }
-        } else {
-            SDL_PauseAudio(FALSE);
-        }
+    while ((mixer.status != state) && (--timeout)) {
+        musicEventUpdateVolume();
+        SDL_Delay(SOUND_PAUSE_DELAY);
     }
+
+    if ( ! timeout) {
+        dbgMessagef("WARNING: Mixer failed to pause after %d waits of %d ms. Forcing exit.", SOUND_PAUSE_BREAKOUT, SOUND_PAUSE_DELAY);
+    }
+}
+
+void soundpause(bool bPause, bool bExiting) 
+{
+    // Not inited? Can't do anything
+    if ( ! soundinited)
+        return;
+    
+    // Check if we were paused before and we're now unpausing
+    // If we were paused before, make sure we don't unpause until the mixer is actually stopped
+    if (bSoundPaused && ! bPause)
+        blockUntilMixerInState( SOUND_STOPPED );
+
+    // If pausing, begin to fadeout the mixer.
+    // Unless we're exiting the game, allow it to happen asynchronously.
+    // Previously this would make loading really slow to start.
+    if (bPause) {
+        mixer   .timeout = mixerticks + SOUND_FADE_MIXER;
+        streamer.timeout = mixerticks + SOUND_FADE_MIXER;
+        soundstopall( SOUND_FADE_STOPALL );
+
+        // Sync on exit for a smoother experience
+        if (bExiting)
+            blockUntilMixerInState( SOUND_STOPPED );
+    }
+    
+    // Unpause audio. If paused, the mixer itself does the pausing when it completes its fadeout.
+    if ( ! bPause)
+        SDL_PauseAudio( FALSE );
+
+    // Update internal state
+    bSoundPaused = bPause;
+    
 }
 
 void soundstopallSFX(real32 fadetime, bool stopStreams)

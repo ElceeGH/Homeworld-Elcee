@@ -1685,7 +1685,7 @@ void gameStart(char *loadfilename)
     }
 
     /* pause sound engine */
-    soundEventPause(TRUE);
+    soundEventPause(TRUE,FALSE);
 
     //load in all the ships, register all the textures
     universeStaticInit();
@@ -1877,7 +1877,7 @@ void gameStart(char *loadfilename)
     }
     else
     {
-        soundEventPlayMusic(SongNumber);
+        //soundEventPlayMusic(SongNumber);
     }
 
     if (etgHasBeenStarted)
@@ -1934,12 +1934,12 @@ abortloading:
     }
     
     /* restore sound engine */
-    soundEventPause(FALSE);
+    soundEventPause(FALSE, FALSE);
 
-    if(tutorial==TUTORIAL_ONLY)
-    {
+    //if(tutorial==TUTORIAL_ONLY)
+    //{
         soundEventPlayMusic(SongNumber);
-    }
+    //}
     
     // reset any spurious joystick motion that's been recorded
     cameraJoystickReset();
@@ -3006,7 +3006,7 @@ void utyGameQuitToMain(char *name, featom *atom)
     feAllScreensDelete();
 
     soundEventStopMusic(1.0f);
-    soundEventPause(TRUE);
+    soundEventPause(TRUE, TRUE);
 
     gameEnd();
 
@@ -3051,7 +3051,7 @@ void utyGameQuitToMain(char *name, featom *atom)
     {
         feScreenStart(ghMainRegion, "Main_game_screen");
     }
-    soundEventPause(FALSE);
+    soundEventPause(FALSE, FALSE);
     soundEventUpdate();
 }
 

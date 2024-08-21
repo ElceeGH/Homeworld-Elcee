@@ -2780,7 +2780,7 @@ void singlePlayerLoadNewLevel(void)
     levelPreInit(spMissionsDir,spMissionsFile);                 //see what ships need to be loaded and what ships we can toss
 
     // pause sound engine
-    soundEventPause(TRUE);
+    soundEventPause(TRUE, FALSE);
     //load in all the ships, register all the textures
     universeStaticInit();
 
@@ -2804,7 +2804,7 @@ void singlePlayerLoadNewLevel(void)
 
 abortload:
     //start the sound engine playing again
-    soundEventPause(FALSE);
+    soundEventPause(FALSE, FALSE);
 
     horseRaceShutdown();
     //... end of crazy starting code from utility.c
