@@ -103,6 +103,7 @@ static bool hrScaleMissionLoadingScreens = HR_SCALE_MISSION_LOADING_SCREENS;
 static regionhandle hrDecRegion;
 
 HorseStatus horseracestatus;
+bool          hrRunning=FALSE;
 static udword hrProgressCounter = 0;
 static udword hrLastPacketSendTime;
 
@@ -144,16 +145,25 @@ region horseCrapRegion =
     NULL                       // atom;
 };
 
-bool hrRunning=FALSE;
 
 ChatPacket chathistory[NUM_CHAT_LINES];
+udword     chatline=0;
 
-udword      chatline=0;
+// For hrFileDraw and friends
+static GLuint hsDestCircleTex = 0;
+static GLuint hsDestCircleW   = 0;
+static GLuint hsDestCircleH   = 0;
+static GLuint hsDestArrowTex  = 0;
+static GLuint hsDestArrowW    = 0;
+static GLuint hsDestArrowH    = 0;
+
 
 void horseRaceRender(void);
 void hrDrawPlayersProgress(featom *atom, regionhandle region);
 void hrDrawChatBox(featom *atom, regionhandle region);
-void hrDrawFile(char* filename, sdword x, sdword y);
+void hrDrawFile(GLuint* handle, sdword x, sdword y, sdword w, sdword h);
+void hrInitDrawFile(char* filename, GLuint* handle, sdword* width, sdword* height );
+void hrShutdownDrawFile( GLuint* handle );
 void hrChatTextEntry(char *name, featom *atom);
 void hrAbortLoadingYes(char *name, featom *atom);
 void hrAbortLoadingNo(char *name, featom *atom);
@@ -327,21 +337,20 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
         if (hrProgressCounter > wrapAt / 2) // Blink
         {
             // hyperspace destination circled in first-person view  
-            #define SP_LOADING_HYPERSPACE_DEST_CIRCLE_X  115
-            #define SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y  342
+            const sdword spLoadHsDestCircleX = 115;
+            const sdword spLoadHsDestCircleY = 342;
             
             // hyperspace destination arrowed in "as the bird flies" view 
-            #define SP_LOADING_HYPERSPACE_DEST_ARROWS_X  195
-            #define SP_LOADING_HYPERSPACE_DEST_ARROWS_Y  134
+            const sdword spLoadHsDestArrowsX = 195;
+            const sdword spLoadHsDestArrowsY = 134;
+
+            // Load files if needed
+            hrInitDrawFile( "feman/loadscreen/ring.lif",   &hsDestCircleTex, &hsDestCircleW, &hsDestCircleH );
+            hrInitDrawFile( "feman/loadscreen/arrows.lif", &hsDestArrowTex,  &hsDestArrowW,  &hsDestArrowH  );
         
             // NB: hrDrawFile deals with coordinate mapping
-        
-            hrDrawFile("feman/loadscreen/ring.lif",
-                SP_LOADING_HYPERSPACE_DEST_CIRCLE_X, SP_LOADING_HYPERSPACE_DEST_CIRCLE_Y
-            );
-            hrDrawFile("feman/loadscreen/arrows.lif",
-                SP_LOADING_HYPERSPACE_DEST_ARROWS_X, SP_LOADING_HYPERSPACE_DEST_ARROWS_Y
-            );
+            hrDrawFile( &hsDestCircleTex, spLoadHsDestCircleX, spLoadHsDestCircleY, hsDestCircleW, hsDestCircleH );
+            hrDrawFile( &hsDestArrowTex,  spLoadHsDestArrowsX, spLoadHsDestArrowsY, hsDestArrowW,  hsDestArrowH  );
         }
     }
     else
@@ -539,7 +548,7 @@ void hrChooseRandomBitmap(char *pFilenameBuffer)
                     if(currentFileIndex == chosenFileIndex)
                     {
                         _findclose(hFind);
-                        strcpy(pFilenameBuffer, filePathPrepend("ScreenShots\\", FF_UserSettingsPath));
+                        strcpy(pFilenameBuffer, filePathPrepend("ScreenShots/", FF_UserSettingsPath));
                         strcat(pFilenameBuffer, FindData.name);
                         break;
                     }
@@ -699,7 +708,7 @@ void hrInitBackground(void)
         fileClose(handle);
 
         hrBackXSize = 1; hrBackYSize = 1;
-        while (hrBackXSize < jp.width) hrBackXSize <<= 1;
+        while (hrBackXSize < jp.width) hrBackXSize <<= 1;  // @todo this pow2 nonsense is not needed anymore
         while (hrBackYSize < jp.height) hrBackYSize <<= 1;
         pTempImage = (unsigned char *)memAllocAttempt(hrBackXSize * hrBackYSize * 3, "BackgroundTemp", NonVolatile);
         memset(pTempImage, 0, hrBackXSize * hrBackYSize * 3);
@@ -750,28 +759,50 @@ void hrRectSolidTextured2(rectangle *rect)
     rndTextureEnvironment(RTE_Modulate);
 }
 
+void hrInitDrawFile(char* filename, GLuint* handle, sdword* width, sdword* height ) {
+    // Skip if already loaded
+    if (*handle)
+        return;
+
+    lifheader* lif = trLIFFileLoad(filename, Pyrophoric);
+
+    trClearCurrent();
+    glGenTextures(1, handle);
+    glBindTexture(GL_TEXTURE_2D, *handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lif->width, lif->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, lif->data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    *width  = lif->width;
+    *height = lif->height;
+
+    memFree(lif);
+}
+
+ void hrShutdownDrawFile( GLuint* handle ) {
+    glDeleteTextures( 1, handle );
+    *handle = 0;
+ }
+
+ 
+
 //don't mind if this is inefficient as it only
 //gets called once per image anyway
-void hrDrawFile(char* filename, sdword x, sdword y)
+// Elcee: I mind since I made this operate at infinitely high framerates lol, oops
+void hrDrawFile(GLuint* handle, sdword x, sdword y, sdword w, sdword h)
 {
-    udword handle;
     rectangle rect;
-    lifheader* lif = trLIFFileLoad(filename, Pyrophoric);
 
     rndTextureEnable(TRUE);
     rndAdditiveBlends(FALSE);
     glEnable(GL_BLEND);
 
-    glGenTextures(1, &handle);
     trClearCurrent();
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lif->width, lif->height,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, lif->data);
-    
+    glBindTexture(GL_TEXTURE_2D, *handle);
+
     // FIXME: there's no LiF scaling here, just translation of the image
     x = hrScaleMissionLoadingScreens
       ? feResRepositionScaledX(x)
@@ -781,17 +812,15 @@ void hrDrawFile(char* filename, sdword x, sdword y)
       ? feResRepositionScaledY(y)
       : feResRepositionCentredY(y);
     
-    x -= lif->width  >> 1;
-    y -= lif->height >> 1;
+    x -= w >> 1;
+    y -= h >> 1;
     rect.x0 = x;
     rect.y0 = y;
-    rect.x1 = x + lif->width;
-    rect.y1 = y + lif->height;
+    rect.x1 = x + w;
+    rect.y1 = y + h;
     hrRectSolidTextured2(&rect);
 
-    glDeleteTextures(1, &handle);
-    memFree(lif);
-
+    glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_BLEND);
 }
 
@@ -805,10 +834,10 @@ void hrDrawBackground(void)
         real32 y = -((real32)hrBackYSize / (real32)MAIN_WindowHeight);
         GLfloat v[8], t[8];
 
-        sdword oldTex = rndTextureEnable(TRUE);
+        sdword oldTex  = rndTextureEnable(TRUE);
         udword oldMode = rndTextureEnvironment(RTE_Replace);
-        bool cull = glIsEnabled(GL_CULL_FACE) ? TRUE : FALSE;
-        bool blend = glIsEnabled(GL_BLEND) ? TRUE : FALSE;
+        bool   cull    = glIsEnabled(GL_CULL_FACE);
+        bool   blend   = glIsEnabled(GL_BLEND);
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
 
@@ -820,11 +849,11 @@ void hrDrawBackground(void)
         t[4] = 0.0f;        t[5] = hrBackYFrac;
         t[6] = hrBackXFrac; t[7] = hrBackYFrac;
 
-        v[0] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(0) : feResRepositionCentredX(0));
-        v[1] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(0) : feResRepositionCentredY(0));
+        v[0] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(0)   : feResRepositionCentredX(0));
+        v[1] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(0)   : feResRepositionCentredY(0));
         v[2] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(640) : feResRepositionCentredX(640));
-        v[3] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(0) : feResRepositionCentredY(0));
-        v[4] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(0) : feResRepositionCentredX(0));
+        v[3] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(0)   : feResRepositionCentredY(0));
+        v[4] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(0)   : feResRepositionCentredX(0));
         v[5] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(480) : feResRepositionCentredY(480));
         v[6] = primScreenToGLX(hrScaleMissionLoadingScreens ? feResRepositionScaledX(640) : feResRepositionCentredX(640));
         v[7] = primScreenToGLY(hrScaleMissionLoadingScreens ? feResRepositionScaledY(480) : feResRepositionCentredY(480));
@@ -839,7 +868,7 @@ void hrDrawBackground(void)
 
         rndTextureEnvironment(oldMode);
         rndTextureEnable(oldTex);
-        if (cull) glEnable(GL_CULL_FACE);
+        if (cull)   glEnable(GL_CULL_FACE);
         if (!blend) glDisable(GL_BLEND);
     }
 }
@@ -1063,6 +1092,9 @@ void horseRaceShutdown()
     feScreenDelete(hrBaseRegion);
 
     hrShutdownBackground();
+    hrShutdownDrawFile( &hsDestArrowTex );
+    hrShutdownDrawFile( &hsDestCircleTex );
+
     hrProgressCounter = 0;
     
     hrBaseRegion = NULL;
