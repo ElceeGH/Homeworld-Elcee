@@ -1035,20 +1035,6 @@ static bool derelictRenderFlagIsSet( Derelict* zoolander, udword flag ) {
 
 
 
-static lod* derelictTryGetMeshLod( Derelict* derek, Camera* camera ) {
-    if (derek->derelicttype == HyperspaceGate)
-        return NULL; // Has no LODs, would crash
-
-    lod* level  = lodLevelGet( derek, &camera->eyeposition, &derek->posinfo.position );
-    bool isMesh = (level->flags & LM_LODType) == LT_Mesh;
-
-    if (isMesh)
-         return level;
-    else return NULL;
-}
-
-
-
 static bool derelictIsFriendly( Derelict* derek ) {
     return derek != NULL
         && singlePlayerGame
@@ -1079,6 +1065,20 @@ static real32 derelictDotSize( Derelict* derek ) {
 
     // In general though, don't crowd the sensor view too badly, or it gets ugly and fits poorly with asteroids
     return max( 1.0f, refSize * 0.5f );
+}
+
+
+
+static lod* derelictTryGetMeshLod( Derelict* derek, Camera* camera ) {
+    if (derek->derelicttype == HyperspaceGate)
+        return NULL; // Has no LODs, would crash
+
+    lod* level  = lodLevelGet( derek, &camera->eyeposition, &derek->posinfo.position );
+    bool isMesh = (level->flags & LM_LODType) == LT_Mesh;
+
+    if (isMesh)
+         return level;
+    else return NULL;
 }
 
 
