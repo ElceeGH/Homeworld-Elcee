@@ -954,8 +954,10 @@ static void shipDrawMeshAsDotIfWayTooSmall( Ship* ship, bool selectFlash, color 
     real32 screenSizeNow = ship->collInfo.selCircleRadius * (real32) MAIN_WindowHeight;
 
     if (screenSizeNow < screenSizeMin) {
-        real32 ratio = 1.0f - min( 1.0f, screenSizeNow / screenSizeMin );
-        real32 alpha = sqrtf(ratio);
+        real32 ratioMin = 0.125f;
+        real32 relative = min( 1.0f, screenSizeNow / screenSizeMin );
+        real32 ratio    = max( 1.0f - relative, ratioMin );
+        real32 alpha    = sqrtf( ratio );
         glDisable( GL_DEPTH_TEST ); // Draw over the mesh
         shipDrawAsDotFade( ship, selectFlash, background, alpha );
         glEnable( GL_DEPTH_TEST );
