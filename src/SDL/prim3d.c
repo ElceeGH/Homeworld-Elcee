@@ -14,7 +14,6 @@
 #include "Debug.h"
 #include "devstats.h"
 #include "FastMath.h"
-#include "FastMath.h"
 #include "LinkedList.h"
 #include "Memory.h"
 #include "render.h"
@@ -169,8 +168,8 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
     glVertex3fv(v);                                          //centre vertex
     for (index = 0, theta = 0.0; index < nSlices; index++)
     {
-        v[0] = centre->x + (real32)(sin(theta)) * radius;
-        v[1] = centre->y + (real32)(cos(theta)) * radius;
+        v[0] = centre->x + sinf(theta) * radius;
+        v[1] = centre->y + cosf(theta) * radius;
         theta += 2.0 * PI / (double)nSlices;
         glVertex3fv(v);                                      //vertex on outer rim
     }
@@ -209,21 +208,21 @@ vertice_array *primCreateNewCircleVerticeArray(sdword nSlices, uword axis)
         {
             case X_AXIS:
                 vertices->vertice[i].x = 0.0;
-                vertices->vertice[i].y = (real32)(cos(theta));
-                vertices->vertice[i].z = (real32)(sin(theta));
+                vertices->vertice[i].y = cosf(theta);
+                vertices->vertice[i].z = sinf(theta);
                 break;
             case Y_AXIS:
-                vertices->vertice[i].x = (real32)(sin(theta));
+                vertices->vertice[i].x = sin(theta);
                 vertices->vertice[i].y = 0.0;
-                vertices->vertice[i].z = (real32)(cos(theta));
+                vertices->vertice[i].z = cos(theta);
                 break;
             case Z_AXIS:
-                vertices->vertice[i].x = (real32)(sin(theta));
-                vertices->vertice[i].y = (real32)(cos(theta));
+                vertices->vertice[i].x = sin(theta);
+                vertices->vertice[i].y = cos(theta);
                 vertices->vertice[i].z = 0.0;
                 break;
         }
-        theta += 2.0 * PI / (double)nSlices;
+        theta += 2.0 * PI / (real64)nSlices;
     }
 
     listAddNode(&CircleList, &vertices->node, vertices);
@@ -516,71 +515,6 @@ void primPoint3(vector *p1, color c)
     glBegin(GL_POINTS);
     glVertex3f(p1->x, p1->y, p1->z);                        //!!! no size
     glEnd();
-}
-
-static bool gFastBlends;
-static bool gWasBlending;
-
-/*-----------------------------------------------------------------------------
-    Name        : primBeginPointSize3Fade
-    Description : begin drawing multiple 3D points
-    Inputs      : size - size of point (ie. 1.0f, 2.0f, ...)
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void primBeginPointSize3Fade(real32 size)
-{
-    glPointSize(size);
-    gWasBlending = glIsEnabled(GL_BLEND);
-    if (!gWasBlending)
-    {
-        glEnable(GL_BLEND);
-    }
-    rndAdditiveBlends(FALSE);
-    glBegin(GL_POINTS);
-}
-
-/*-----------------------------------------------------------------------------
-    Name        : primNextPointSize3Fade
-    Description : render a 3D point (call from inside Begin/End block only)
-    Inputs      : p1 - location of point
-                  c - color of point
-                  fade - fadeness of point (1.0f == no fade, 0.0f == faded to black)
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void primNextPointSize3Fade(vector* p1, color c, real32 fade)
-{
-    sdword ifade = (sdword)(fade * 255.0f);
-    if (gFastBlends)
-    {
-        glColor4ub((GLubyte)colRed(c),
-                   (GLubyte)colGreen(c),
-                   (GLubyte)colBlue(c),
-                   (GLubyte)ifade);
-    }
-    else
-    {
-        glColor3ub((GLubyte)(((sdword)colRed(c) * ifade) >> 8),
-                   (GLubyte)(((sdword)colGreen(c) * ifade) >> 8),
-                   (GLubyte)(((sdword)colBlue(c) * ifade) >> 8));
-    }
-}
-
-/*-----------------------------------------------------------------------------
-    Name        : primEndPointSize3Fade
-    Description : end multiple point mode
-    Inputs      :
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void primEndPointSize3Fade(void)
-{
-    glEnd();
-    if (gFastBlends && !gWasBlending)
-    {
-        glDisable(GL_BLEND);
-    }
 }
 
 /*-----------------------------------------------------------------------------

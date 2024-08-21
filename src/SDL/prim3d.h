@@ -27,11 +27,6 @@ void primPoint3(vector *p1, color c);
 void primPointSize3(vector *p1, real32 size, color c);
 void primPointSize3Fade(vector *p1, real32 size, color c, real32 fade);
 
-//efficient multiple 3D points with size & fade
-void primBeginPointSize3Fade(real32 size);
-void primNextPointSize3Fade(vector* p1, color c, real32 fade);
-void primEndPointSize3Fade(void);
-
 //draw 3D lines
 void primLine3(vector *p1, vector *p2, color c);
 void primLine3Fade(vector *p1, vector *p2, color c, real32 fade);
