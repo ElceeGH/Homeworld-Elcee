@@ -73,6 +73,8 @@ extern Uint32 utyTimerLast;
 
 #define HR_PacketRateLimitTime 50   // One packet every N milliseconds, max
 #define HR_MinRenderDelta      10   // One render every N milliseconds, max
+#define HR_MaxRenderDelta      300  // One render every N milliseconds, min
+#define HR_MinDelayTime        10   // Don't delay smaller time than this (the context switch time resolution is not that high, it accumulates error)
 #define HR_MinOverallTime      1600 // Must be at least 1.5 seconds total to work properly with the audio system.
 #define HR_PlayerNameFont      "Arial_12.hff"
 #define MAX_CHAT_TEXT          64
@@ -1324,21 +1326,6 @@ bool HorseRaceNext(real32 percent)
     // Get the overall loading progress
     const real32 overallRatio = horseRaceGetPacketPercent( percent );
 
-    // Don't try to render too fast. It does take some time to render things, and we don't want to slow down /too/ much.
-    const udword lastTimeMin   = HR_MinRenderDelta;
-    const udword lastTimeRef   = SDL_GetTicks();
-    const udword lastTimeDelta = lastRenderTime - lastTimeRef;
-    const bool   isFirstRender = lastRenderTime == 0;
-    const bool   isComplete    = overallRatio >= 0.99f;
-
-    // Render decision
-    if (lastTimeDelta >= lastTimeMin // Render if enough time elapsed
-    || isFirstRender                 // Render if the bar is empty
-    || isComplete) {                 // Render if the bar is full
-        horseRaceRender();
-        lastRenderTime = SDL_GetTicks();
-    }
-
     // Based on overall loading progress, apply a delay to meet the minimum time.
     // For example if we're 75% done, we should also be 75% of the way through the minimum load time.
     // The progress updates are very fine-grained so extrapolating or compensating for gaps in time isn't necessary.
@@ -1349,10 +1336,28 @@ bool HorseRaceNext(real32 percent)
     const real32 timeRatioError = overallRatio - timeRatio;
     const bool   isProgLeading  = timeRatioError > 0.0f;
 
+    // Don't try to render too fast though. It does take some time to render things, and we don't want to slow down /too/ much.
+    // If we're going way too slow then don't render so often.
+    const udword lastTimeMin   = HR_MinRenderDelta;
+    const udword lastTimeMax   = HR_MaxRenderDelta;
+    const udword lastTimeDelta = lastRenderTime - timeNow;
+    const bool   isFirstRender = lastRenderTime == 0;
+    const bool   isLastRender  = overallRatio >= 0.99f;
+
+    // Render decision
+    if ((isProgLeading && lastTimeDelta >= lastTimeMin) // Render if enough time elapsed and we're ahead
+    || lastTimeDelta >= lastTimeMax                     // Render if too much time elapsed
+    || isFirstRender                                    // Render if the bar is empty
+    || isLastRender) {                                  // Render if the bar is full
+        horseRaceRender();
+        lastRenderTime = SDL_GetTicks();
+    }
+
     // If the progress ratio is leading the target time, add a proportional delay to compensate.
     if (isProgLeading) {
         const udword timeDeltaError = (udword) ceilf((real32) timeDeltaMin * timeRatioError);
-        SDL_Delay( timeDeltaError );
+        if (timeDeltaError >= HR_MinDelayTime)
+            SDL_Delay( timeDeltaError );
     }
 
     return TRUE;
