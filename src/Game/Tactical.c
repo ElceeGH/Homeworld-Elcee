@@ -175,8 +175,6 @@ void toVertexAdd(char *directory,char *field,void *dataToFillIn)
     toCurrentPoint++;                                       //next point
 }
 
-void toFieldSphereDrawGeneral(vector position, real32 radius,color passedColour);
-
 /*-----------------------------------------------------------------------------
     Name        : toAllShipsDraw
     Description : Draw tactical overlays for all ships.
