@@ -933,16 +933,40 @@ static color shipDotColor( Ship* ship ) {
 
 
 
-static void shipDrawAsDot( Ship* ship, bool selectFlash, color background ) {
+static void shipDrawAsDotFade( Ship* ship, bool selectFlash, color background, real32 fade ) {
     color baseCol  = shipDotColor( ship );
     color pointCol = selectFlash ? background : baseCol;
-    primPointSize3( &ship->posinfo.position, shipDotSize(ship), pointCol );
+    primPointSize3Fade( &ship->posinfo.position, shipDotSize(ship), pointCol, fade );
 }
 
 
 
-static void shipDrawAsMesh( Ship* ship, bool selectFlash, lod* level, Camera* camera ) {
+static void shipDrawAsDot( Ship* ship, bool selectFlash, color background ) {
+    shipDrawAsDotFade( ship, selectFlash, background, 1.0f );
+}
+
+
+
+// If the ship is extremely far away, it will almost be invisibly tiny.
+// In this case fade in a dot over the mesh.
+static void shipDrawMeshAsDotIfWayTooSmall( Ship* ship, bool selectFlash, color background ) {
+    real32 screenSizeMin = shipDotSize( ship ) * 3.0f;
+    real32 screenSizeNow = ship->collInfo.selCircleRadius * (real32) MAIN_WindowHeight;
+
+    if (screenSizeNow < screenSizeMin) {
+        real32 ratio = 1.0f - min( 1.0f, screenSizeNow / screenSizeMin );
+        real32 alpha = sqrtf(ratio);
+        glDisable( GL_DEPTH_TEST ); // Draw over the mesh
+        shipDrawAsDotFade( ship, selectFlash, background, alpha );
+        glEnable( GL_DEPTH_TEST );
+    }
+}
+
+
+
+static void shipDrawAsMesh( Ship* ship, bool selectFlash, color background, lod* level, Camera* camera ) {
     drawMesh( (SpaceObjRotImp*) ship, selectFlash, level, camera, shipDrawMesh );
+    shipDrawMeshAsDotIfWayTooSmall( ship, selectFlash, background );
 }
 
 
@@ -1003,6 +1027,7 @@ static void shipDraw( Ship* ship, Camera *camera, bool bFlashOn, color backgroun
     bool selectFlash = bFlashOn && (ship->flags & SOF_Selected);
     bool isPlayer    = shipBelongsToPlayer( ship );
     bool toFlagSet   = shipRenderFlagIsSet( ship, SM_TO );
+    bool meshFlagSet = shipRenderFlagIsSet( ship, SM_Mesh );
 
     // Tactical overlay stuff. Drawn all at once later in 2D phase
     if (smTacticalOverlay && isPlayer && toFlagSet)
@@ -1012,15 +1037,14 @@ static void shipDraw( Ship* ship, Camera *camera, bool bFlashOn, color backgroun
     if (shipIsHidden( ship, isPlayer ))
         return;
 
-    // If it's a ship type to render as a mesh (e.g cruiser, mothership, big stuff) then do that
+    // If we want a mesh (e.g cruiser, mothership, big stuff) then do that
     // Otherwise just draw as a point
-    // @todo The meshes could use something 'extra' for visibility at very long ranges, like colourisation via fog, grow into a dot, something
-    if (shipRenderFlagIsSet(ship, SM_Mesh)) { 
+    if (meshFlagSet) { 
         lod* level     = lodLevelGet( ship, &camera->eyeposition, &ship->posinfo.position );
         bool isLodMesh = (level->flags & LM_LODType) == LT_Mesh;
 
         if (isLodMesh)
-             shipDrawAsMesh( ship, selectFlash, level, camera );
+             shipDrawAsMesh( ship, selectFlash, background, level, camera );
         else shipDrawAsDot ( ship, selectFlash, background );
     } else {
         shipDrawAsDot( ship, selectFlash, background );
