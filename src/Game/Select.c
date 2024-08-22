@@ -17,7 +17,6 @@
 #include "UnivUpdate.h"
 #include "FastMath.h"
 #include "mouse.h"
-#include "glinc.h"
 #include "main.h"
 #include "InfoOverlay.h"
 #include "mainrgn.h"
@@ -31,6 +30,7 @@
 #include "Tweak.h"
 #include "Tutor.h"
 #include "mainrgn.h"
+#include "rStateCache.h"
 
 #define DEBUG_COLLISION_SPHERES 0
 

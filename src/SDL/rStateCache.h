@@ -42,4 +42,6 @@ void ccglScissor ( GLint x, GLint y, GLint w, GLint h );
 // Clear col
 void ccglClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a );
 
+// Shade model
+void ccglShadeModel( GLenum mode );
 

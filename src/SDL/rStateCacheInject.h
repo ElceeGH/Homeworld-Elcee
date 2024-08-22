@@ -50,4 +50,7 @@
     // Clear col
     #define glClearColor    ccglClearColor
 
+    // Shade model
+    #define glShadeModel    ccglShadeModel
+
 #endif
