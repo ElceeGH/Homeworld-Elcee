@@ -747,6 +747,13 @@ scriptEntry utyOptionsList[] =
     {"RenderBackgroundDitherColorBits",     scriptSetUdwordCB, &opRenderBtgDitherBits},
     {"RenderInterpolation",                 scriptSetBool,     &opRenderInterpolation},
     {"RenderShaderRealtimeEditEnable",      scriptSetBool,     &opRenderShaderReload},
+    {"OverrideSpTrails",                    scriptSetBool,     &opOverrideSpTrails       },
+    {"OverrideSpTrailsBeginR",              scriptSetUdwordCB, &opOverrideSpTrailsBeginR },
+    {"OverrideSpTrailsBeginG",              scriptSetUdwordCB, &opOverrideSpTrailsBeginG },
+    {"OverrideSpTrailsBeginB",              scriptSetUdwordCB, &opOverrideSpTrailsBeginB },
+    {"OverrideSpTrailsEndR",                scriptSetUdwordCB, &opOverrideSpTrailsEndR   },
+    {"OverrideSpTrailsEndG",                scriptSetUdwordCB, &opOverrideSpTrailsEndG   },
+    {"OverrideSpTrailsEndB",                scriptSetUdwordCB, &opOverrideSpTrailsEndB   },
     {"EffectFrequencyPercent",              scriptSetUdwordCB, &opEffectFreqMult},
     {"LoadingTimeMinimumMillisecs",         scriptSetUdwordCB, &opLoadTimeMinMs},
 

@@ -75,7 +75,6 @@ extern sdword opCPUDiff;
 extern sdword opCPUAttack;
 
 // Homeworld.cfg configurable values
-
 extern udword opPauseOrders;
 extern udword opShipRecoil;
 extern udword opEffectFreqMult;
@@ -85,6 +84,14 @@ extern bool   opRenderBtgDitherTemporal;
 extern udword opRenderBtgDitherBits;
 extern bool   opRenderShaderReload;
 extern udword opLoadTimeMinMs;
+
+extern bool   opOverrideSpTrails;
+extern udword opOverrideSpTrailsBeginR;
+extern udword opOverrideSpTrailsBeginG;
+extern udword opOverrideSpTrailsBeginB;
+extern udword opOverrideSpTrailsEndR;
+extern udword opOverrideSpTrailsEndG;
+extern udword opOverrideSpTrailsEndB;
 
 void opOptionsSaveCustomEffectsSettings(void);
 
