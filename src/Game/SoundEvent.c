@@ -1187,7 +1187,7 @@ void soundEventUpdate(void)
 
         // have we reached the maximum number of sounds for these types of ships?
 		if (((numships >= SFX_MAX_STRIKEENGINES) && ((shipclass == CLASS_Fighter) || (shipclass == CLASS_Corvette))) ||
-            ((numcapships >= SFX_MAX_CAPENGINES) && ((shipclass != CLASS_Fighter) || (shipclass != CLASS_Corvette))))
+            ((numcapships >= SFX_MAX_CAPENGINES) && ((shipclass != CLASS_Fighter) && (shipclass != CLASS_Corvette))))
         {
             if ((shipclass != CLASS_Mothership) || (universe.curPlayerIndex != ship->playerowner->playerIndex))
             {
