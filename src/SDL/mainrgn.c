@@ -4508,8 +4508,8 @@ void mrRegionDraw(regionhandle reg)
 void mrReset(void)
 {
     mrHoldRight = mrHoldLeft = mrNULL;                      //in case player was band-boxing or rotating
-    mouseCursorShow();
     mouseCaptureStop();
+    mouseCursorShow();
     piePointSpecMode = PSM_Idle;                             //in case player was moving
 }
 

@@ -2194,8 +2194,8 @@ void smSensorsCloseForGood(void)
     if (smScrollListTop) memFree(smScrollListTop);
     if (smScrollListBottom) memFree(smScrollListBottom);
     universe.mainCameraCommand.actualcamera.ignoreZoom = FALSE;
-    mouseCursorShow();
     mouseCaptureStop();
+    mouseCursorShow();
     mrHoldLeft = mrHoldRight = mrNULL;
     if (ioSaveState)
     {
@@ -3197,8 +3197,8 @@ udword smViewportProcess(regionhandle region, sdword ID, udword event, udword da
             if (smHoldRight == mrCameraMotion)
             {                                               //if in camera movement mode
                 mousePositionSet(mrOldMouseX, mrOldMouseY); //restore mouse position
-                mouseCursorShow();                          //show mouse cursor
                 mouseCaptureStop();                         //release back into the wild
+                mouseCursorShow();                          //show mouse cursor
                 smHoldRight = smNULL;                       //idle mode
             }
             //region->rect = smViewRectangle;                 //restore origional rectangle
@@ -3995,8 +3995,8 @@ void smSensorsBegin(char *name, featom *atom)
     {
         regKeyChildAlloc(smViewportRegion, index, RPE_KeyUp | RPE_KeyDown, (regionfunction) smViewportProcess, 1, index);
     }
-    mouseCursorShow();
     mouseCaptureStop();
+    mouseCursorShow();
     cameraCopyPositionInfo(&smCamera, mrCamera);
     if (smFleetIntel)
     {                                                       //if we are in the fleet intel screen, no movement mechanism!
