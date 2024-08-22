@@ -2530,13 +2530,14 @@ bool processMpHyperspaceingToDo(CommandToDo *movetodo)
                     ping *newPing;
 
                     movetodo->selection->ShipPtr[j]->hyperspacePing=TRUE;
-                    //create ping HERE!
-                    newPing = pingCreate(NULL, (SpaceObj *)movetodo->selection->ShipPtr[j], (pingeval)hyperspaceOutPingTimeOut, NULL, 0, movetodo->selection->ShipPtr[j]);
-                    newPing->c = TW_HW_PING_COLOUR_OUT;
-                    newPing->size = TW_HW_PING_MAX_SIZE_OUT;
-                    newPing->minScreenSize = primScreenToGLScaleX(2);
-                    newPing->minSize = TW_HW_PING_MIN_SIZE_OUT;
-                    newPing->pingDuration = 1.0f / TW_HW_PING_RATE_OUT;
+                    //create ping HERE!                    
+                    SpaceObj* obj           = (SpaceObj *)movetodo->selection->ShipPtr[j];
+                    newPing                 = pingCreate(NULL, obj, (pingeval)hyperspaceOutPingTimeOut, NULL, 0, obj);
+                    newPing->c              = TW_HW_PING_COLOUR_OUT;
+                    newPing->size           = TW_HW_PING_MAX_SIZE_OUT;
+                    newPing->minScreenSize  = primScreenToGLScaleX(2);
+                    newPing->minSize        = TW_HW_PING_MIN_SIZE_OUT;
+                    newPing->pingDuration   = 1.0f / TW_HW_PING_RATE_OUT;
                     newPing->interPingPause = 0.25;
                     newPing->TOMask         = PTOM_Hyperspace;
 
@@ -2627,7 +2628,8 @@ bool processMpHyperspaceingToDo(CommandToDo *movetodo)
                     ping *newPing;
                     movetodo->selection->ShipPtr[j]->hyperspacePing=TRUE;
                     //create ping HERE!
-                    newPing = pingCreate(NULL, (SpaceObj *)movetodo->selection->ShipPtr[j], (pingeval)hyperspaceInPingTimeOut, NULL, 0, movetodo->selection->ShipPtr[j]);
+                    SpaceObj* obj = (SpaceObj *)movetodo->selection->ShipPtr[j];
+                    newPing = pingCreate(NULL, obj, (pingeval)hyperspaceInPingTimeOut, NULL, 0, obj);
                     newPing->c = TW_HW_PING_COLOUR_IN;
                     newPing->size = TW_HW_PING_MAX_SIZE_IN;
                     newPing->minScreenSize = primScreenToGLScaleX(2);

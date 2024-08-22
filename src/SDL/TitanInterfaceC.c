@@ -116,7 +116,7 @@ unsigned long titanReadyToStartGame(unsigned char *routingaddress)
 }
 
 
-unsigned long titanBehindFirewall(void)
+unsigned char titanBehindFirewall(void)
 {
 	dbgMessagef("titanBehindFirewall");
 	return 0; 

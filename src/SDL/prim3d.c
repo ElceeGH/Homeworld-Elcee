@@ -151,7 +151,7 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
 {
     sdword index;
     GLfloat v[3];
-    double theta;
+    real32 theta;
     GLboolean blend = glIsEnabled(GL_BLEND);
 
     if (!blend)
@@ -166,11 +166,11 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
     v[2] = centre->z;
     glBegin(GL_TRIANGLE_FAN);
     glVertex3fv(v);                                          //centre vertex
-    for (index = 0, theta = 0.0; index < nSlices; index++)
+    for (index = 0, theta = 0.0f; index < nSlices; index++)
     {
         v[0] = centre->x + sinf(theta) * radius;
         v[1] = centre->y + cosf(theta) * radius;
-        theta += 2.0 * PI / (double)nSlices;
+        theta += 2.0f * PI / (real32)nSlices;
         glVertex3fv(v);                                      //vertex on outer rim
     }
     v[0] = centre->x;
@@ -196,7 +196,7 @@ void primCircleSolid3Fade(vector *centre, real32 radius, sdword nSlices, color c
 vertice_array *primCreateNewCircleVerticeArray(sdword nSlices, uword axis)
 {
     udword i;
-    double theta = 0.0;
+    real32 theta = 0.0f;
     vertice_array *vertices = (vertice_array *)memAlloc(sizeofverticearray(nSlices+1), "circle_vertices", NonVolatile);
 
     vertices->num_vertices = nSlices + 1;
@@ -207,22 +207,22 @@ vertice_array *primCreateNewCircleVerticeArray(sdword nSlices, uword axis)
         switch (axis)
         {
             case X_AXIS:
-                vertices->vertice[i].x = 0.0;
+                vertices->vertice[i].x = 0.0f;
                 vertices->vertice[i].y = cosf(theta);
                 vertices->vertice[i].z = sinf(theta);
                 break;
             case Y_AXIS:
-                vertices->vertice[i].x = sin(theta);
-                vertices->vertice[i].y = 0.0;
-                vertices->vertice[i].z = cos(theta);
+                vertices->vertice[i].x = sinf(theta);
+                vertices->vertice[i].y = 0.0f;
+                vertices->vertice[i].z = cosf(theta);
                 break;
             case Z_AXIS:
-                vertices->vertice[i].x = sin(theta);
-                vertices->vertice[i].y = cos(theta);
-                vertices->vertice[i].z = 0.0;
+                vertices->vertice[i].x = sinf(theta);
+                vertices->vertice[i].y = cosf(theta);
+                vertices->vertice[i].z = 0.0f;
                 break;
         }
-        theta += 2.0 * PI / (real64)nSlices;
+        theta += 2.0f * PI / (real32)nSlices;
     }
 
     listAddNode(&CircleList, &vertices->node, vertices);

@@ -263,7 +263,7 @@ void titanShutdown(void);
 void titanRefreshRequest(char* theDir);
 
 unsigned long titanReadyToStartGame(unsigned char *routingaddress);
-unsigned long titanBehindFirewall(void);
+unsigned char titanBehindFirewall(void);
 
 void mgGameStartReceivedCB(const void *blob,unsigned short bloblength);
 
