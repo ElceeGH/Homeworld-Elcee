@@ -21,6 +21,7 @@
 #include "FastMath.h"
 #include "main.h"
 #include "Memory.h"
+#include "Options.h"
 #include "Particle.h"
 #include "prim3d.h"
 #include "Randy.h"
@@ -2115,6 +2116,25 @@ trailstatic *trailStaticInfoParse(char *directory, char *fileName)
 }
 
 /*-----------------------------------------------------------------------------
+    Name        : trailRecolorizeOverride
+    Description : Overrides teColorSchemes player trail key colours
+    Inputs      : trailStatic - static info for trail to override.
+----------------------------------------------------------------------------*/
+static void trailOverrideTeamColours(trailstatic *trailStatic) {
+    // Setup
+    const udword player   = 0;
+    const udword alphaKey = 0;
+    const udword alphaEnd = 1; // Any non-zero
+    color* const cols     = teColorSchemes[player].trailColors;
+
+    // The first colour doesn't get used at all. Might be an ancient bug in the game.
+    // (I tested without modifying trailRecolorize() as well just in case it was me - Elcee)
+    cols[1] = colRGBA( opOverrideSpTrailsBeginR, opOverrideSpTrailsBeginG, opOverrideSpTrailsBeginB, alphaKey );
+    cols[2] = colRGBA( opOverrideSpTrailsEndR,   opOverrideSpTrailsEndG,   opOverrideSpTrailsEndB,   alphaKey );
+    cols[3] = colRGBA( 0, 0, 0, alphaEnd ); // Mark end of list or it's buffer overrun time
+}
+
+/*-----------------------------------------------------------------------------
     Name        : trailRecolorize
     Description : Recolorize the specified trail to reflect a change in team colors.
     Inputs      : trailStatic - static info for trail to recolorize.
@@ -2123,29 +2143,33 @@ trailstatic *trailStaticInfoParse(char *directory, char *fileName)
 ----------------------------------------------------------------------------*/
 void trailRecolorize(trailstatic *trailStatic)
 {
-    sdword teamIndex, index, lastIndex, cpIndex, j;
-    udword red, green, blue;
+    // If player has decided they want custom trail colours, override the colours that were loaded in
+    if (opOverrideSpTrails && singlePlayerGame)
+        trailOverrideTeamColours(trailStatic);
 
-    for (teamIndex = 0; teamIndex < MAX_MULTIPLAYER_PLAYERS; teamIndex++)
-    {                                                       //for each team
-        for (index = lastIndex = cpIndex = 0; index < trailStatic->nSegments; index++)
-        {                                                   //for each trail segment
-            if ((trailStatic->segmentColor[teamIndex][index] & (~TP_KeyColor)) == 0)
-            {                                               //if this color is set
-                trailStatic->segmentColor[teamIndex][index] = //set new control point color
-                         teColorSchemes[teamIndex].trailColors[cpIndex] & TP_KeyColor;
+    // And carry on with the weird-ass interpolation 
+    for (sdword teamIndex = 0; teamIndex < MAX_MULTIPLAYER_PLAYERS; teamIndex++) //for each team
+    {
+        color* cols = trailStatic->segmentColor[teamIndex];
+
+        sdword lastIndex, cpIndex;
+        for (sdword index = lastIndex = cpIndex = 0; index < trailStatic->nSegments; index++) //for each trail segment
+        {                            
+            if ((cols[index] & (~TP_KeyColor)) == 0) //if this color is set
+            {                                               
+                cols[index] = teColorSchemes[teamIndex].trailColors[cpIndex] & TP_KeyColor; //set new control point color
                 cpIndex++;                                  //update control point index
                 dbgAssertOrIgnore(cpIndex <= TE_NumberTrailColors);
                 
-                for (j = lastIndex + 1; j < index; j++)
-                {                                           //between last valid color to this one
-                    red = (colRed(trailStatic->segmentColor[teamIndex][lastIndex]) * (index - j) +
-                        colRed(trailStatic->segmentColor[teamIndex][index]) * (j - lastIndex)) / (index - lastIndex);
-                    green = (colGreen(trailStatic->segmentColor[teamIndex][lastIndex]) * (index - j) +
-                        colGreen(trailStatic->segmentColor[teamIndex][index]) * (j - lastIndex)) / (index - lastIndex);
-                    blue = (colBlue(trailStatic->segmentColor[teamIndex][lastIndex]) * (index - j) +
-                        colBlue(trailStatic->segmentColor[teamIndex][index]) * (j - lastIndex)) / (index - lastIndex);
-                    trailStatic->segmentColor[teamIndex][j] = colRGB(red, green, blue);//interpolate the colors
+                for (sdword j = lastIndex + 1; j < index; j++) //between last valid color to this one
+                {
+                    sdword scale = index - lastIndex;
+                    sdword lastF = index - j;
+                    sdword curF  = j - lastIndex;
+                    udword red   = (colRed(  cols[lastIndex]) * lastF + colRed(  cols[index]) * curF) / scale;
+                    udword green = (colGreen(cols[lastIndex]) * lastF + colGreen(cols[index]) * curF) / scale;
+                    udword blue  = (colBlue( cols[lastIndex]) * lastF + colBlue( cols[index]) * curF) / scale;
+                    cols[j] = colRGB(red, green, blue);//interpolate the colors
                 }
 				
                 lastIndex = index;

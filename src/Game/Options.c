@@ -454,12 +454,23 @@ sdword opSaveNumEffects;
 
 // New option defaults
 udword opEffectFreqMult          = 100 * 2; ///< It's a percentage, 200% by default
-bool   opRenderInterpolation     = TRUE;   ///< So nice
-bool   opRenderBtgDitherEnable   = TRUE;   ///< Pretty much always looks better
-bool   opRenderBtgDitherTemporal = TRUE;   ///< Enable by default, but rarely people get headaches so optional
-udword opRenderBtgDitherBits     = 6;      ///< Target baseline LCD monitor by default
-bool   opRenderShaderReload      = FALSE;  ///< For realtime editing during development
-udword opLoadTimeMinMs           = 3000;   ///< 3 seconds loading time by default
+bool   opRenderInterpolation     = TRUE;    ///< Beautiful so beautiful I'm a genius etc
+bool   opRenderBtgDitherEnable   = TRUE;    ///< Pretty much always looks better
+bool   opRenderBtgDitherTemporal = TRUE;    ///< Enable by default, but rarely people get headaches so optional
+udword opRenderBtgDitherBits     = 6;       ///< Target baseline LCD monitor by default
+bool   opRenderShaderReload      = FALSE;   ///< For realtime editing during development
+udword opLoadTimeMinMs           = 3000;    ///< 3 seconds loading time by default
+
+bool   opOverrideSpTrails       = TRUE; ///< For user customisation so it's off by default
+udword opOverrideSpTrailsBeginR = 255;   ///< Orange
+udword opOverrideSpTrailsBeginG = 175;   ///< -
+udword opOverrideSpTrailsBeginB = 40;    ///< -
+udword opOverrideSpTrailsEndR   = 147;   ///< Purple
+udword opOverrideSpTrailsEndG   = 64;    ///< -
+udword opOverrideSpTrailsEndB   = 224;   ///< -
+
+
+
 
 
 // Game Options - Default Values
