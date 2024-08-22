@@ -915,9 +915,11 @@ void toFieldSphereDraw(ShipPtr ship, real32 radius, color colour)
     //Turn off 2D primmode
     primModeClear2();
 
-    udword axes[3] = { X_AXIS, Y_AXIS, Z_AXIS };
-    for (udword i=0; i<3; i++)
-        primCircleOutline3( &ship->posinfo.position, radius, 32, 4, colour, axes[i] );
+    udword segs   = 32 * 8;
+    udword spokes = 4;
+    primCircleOutline3( &ship->posinfo.position, radius, segs, spokes, colour, X_AXIS );
+    primCircleOutline3( &ship->posinfo.position, radius, segs, spokes, colour, Y_AXIS );
+    primCircleOutline3( &ship->posinfo.position, radius, segs, spokes, colour, Z_AXIS );
 
     //Turn on 2D primmode
     primModeSet2();
