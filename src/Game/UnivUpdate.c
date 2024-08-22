@@ -4997,12 +4997,6 @@ nextnode:
 real32 univGetChecksum(sdword *numShipsInChecksum)
 {
     Node *objnode = universe.ShipList.head;
-    Ship *ship;
-    Derelict *derelict;
-    Resource *resource;
-#if BINNETLOG
-    Bullet   *bullet;
-#endif
     sdword countShips = 0;
 
     real32 x=0.0f;
@@ -5011,7 +5005,7 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
 
     while (objnode != NULL)
     {
-        ship = (Ship *)listGetStructOfNode(objnode);
+        Ship *ship = (Ship *)listGetStructOfNode(objnode);
         if ((ship->flags & SOF_Dead) == 0)
         {
             x += ship->posinfo.position.x;
@@ -5138,7 +5132,7 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
         objnode = universe.BulletList.head;
         while (objnode != NULL)
         {
-            bullet = (Bullet *)listGetStructOfNode(objnode);
+            Bullet* bullet = (Bullet *)listGetStructOfNode(objnode);
 
             if ((!bitTest(bullet->flags, SOF_Dead)))
             {
@@ -5196,11 +5190,11 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
         clChecksum();
     }
 #endif
-
+    
     objnode = universe.DerelictList.head;
     while (objnode != NULL)
     {
-        derelict = (Derelict *)listGetStructOfNode(objnode);
+        Derelict* derelict = (Derelict *)listGetStructOfNode(objnode);
         if ((derelict->flags & SOF_Dead) == 0)
         {
             x += derelict->posinfo.position.x;
@@ -5232,7 +5226,7 @@ real32 univGetChecksum(sdword *numShipsInChecksum)
     objnode = universe.ResourceList.head;
     while (objnode != NULL)
     {
-        resource = (Resource *)listGetStructOfNode(objnode);
+        Resource* resource = (Resource *)listGetStructOfNode(objnode);
 
         x += resource->posinfo.position.x;
         y += resource->posinfo.position.y;
