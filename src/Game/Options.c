@@ -455,6 +455,7 @@ sdword opSaveNumEffects;
 // New option defaults
 udword opEffectFreqMult          = 100 * 2; ///< It's a percentage, 200% by default
 bool   opRenderInterpolation     = TRUE;    ///< Beautiful so beautiful I'm a genius etc
+bool   opRenderFuzzyTendies      = TRUE;    ///< Make tendrils fuzzy, optional since it's a change
 bool   opRenderBtgDitherEnable   = TRUE;    ///< Pretty much always looks better
 bool   opRenderBtgDitherTemporal = TRUE;    ///< Enable by default, but rarely people get headaches so optional
 udword opRenderBtgDitherBits     = 6;       ///< Target baseline LCD monitor by default

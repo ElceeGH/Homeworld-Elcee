@@ -79,6 +79,7 @@ extern udword opPauseOrders;
 extern udword opShipRecoil;
 extern udword opEffectFreqMult;
 extern bool   opRenderInterpolation;
+extern bool   opRenderFuzzyTendies;
 extern bool   opRenderBtgDitherEnable;
 extern bool   opRenderBtgDitherTemporal;
 extern udword opRenderBtgDitherBits;

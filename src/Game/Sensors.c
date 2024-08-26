@@ -35,6 +35,7 @@
 #include "mouse.h"
 #include "MultiplayerGame.h"
 #include "NIS.h"
+#include "Options.h"
 #include "PiePlate.h"
 #include "Ping.h"
 #include "prim2d.h"
@@ -66,6 +67,7 @@
 #include "utility.h"
 #include "Vector.h"
 #include "rStateCache.h"
+#include "rInterpolate.h"
 
 void (*smHoldLeft)(void);
 void (*smHoldRight)(void);
@@ -1179,7 +1181,6 @@ static void drawNebulaTendrils( void ) {
     glEnable(GL_BLEND);
     glShadeModel(GL_FLAT); // 2024: Guess they're not supposed to be interpolated. Or is for ye olde speed? Might look cool to lerp the colour.
 
-    // @todo It would be cool to render them as fuzzy lines
     glBegin(GL_LINES);
     for (udword i=0; i<numNebulae; i++) {
         nebulae_t* neb = &nebNebulae[i];
@@ -1192,6 +1193,54 @@ static void drawNebulaTendrils( void ) {
         }
     }
     glEnd();
+
+    glDisable(GL_BLEND);
+    glLineWidth(1.0f);
+}
+
+
+
+// Draw nebula tendril on the sensor screen with some blurring.
+static void drawNebulaFuzzyTendies( void ) {
+    rndTextureEnable(FALSE);
+    rndLightingEnable(FALSE);
+    rndAdditiveBlends(FALSE);
+
+    glEnable(GL_BLEND);
+    glShadeModel(GL_FLAT); // 2024: Guess they're not supposed to be interpolated. Or is for ye olde speed? Might look cool to lerp the colour.
+    glLineWidth( sqrtf(getResDensityRelative()) );
+
+    // Inputs for the fuzziness
+    real32 widthBase      = sqrtf(getResDensityRelative());
+    real32 widthMults[]   = { 0.5f, 1.0f, 1.5f, 2.5f, 3.5f, 4.0f  }; // Absolute scale of line thickness
+    real32 alphaWeights[] = { 0.8f, 0.7f, 0.6f, 0.5f, 0.4f, 0.3f  }; // Relative distribution of alpha
+    udword count          = sizeof(widthMults) / sizeof(widthMults[0]);
+
+    // Distribute target alpha by weight, maintaining original total value from Homeworld 1999
+    real32 alphaPool = 0.0f;
+    for (udword i=0; i<count; i++)
+        alphaPool += alphaWeights[ i ];
+    real32 alphaBase = 192.0f;
+    real32 alphaMul  = alphaBase / alphaPool;
+
+    // @todo It would be cool to render them as fuzzy lines
+    for (udword r=0; r<count; r++) {
+        glLineWidth( widthBase * widthMults[r] );
+
+        glBegin(GL_LINES);
+        for (udword i=0; i<numNebulae; i++) {
+            nebulae_t* neb   = &nebNebulae[ i ];
+            ubyte      alpha = (ubyte) (alphaWeights[r] * alphaMul);
+
+            for (udword t=0; t<neb->numTendrils; t++) {
+                color c = neb->tendrilTable[t].colour;
+                glColor4ub( colRed(c), colGreen(c), colBlue(c), alpha );
+                glVertex3fv( &neb->tendrilTable[t].a->position.x );
+                glVertex3fv( &neb->tendrilTable[t].b->position.x );
+            }
+        }
+        glEnd();
+    }
 
     glDisable(GL_BLEND);
     glLineWidth(1.0f);
@@ -1294,7 +1343,11 @@ void smBlobDrawClear(Camera *camera, blob *thisBlob, hmatrix *modelView, hmatrix
     }
 
     // Draw non-object stuff
-    drawNebulaTendrils();
+    if (opRenderFuzzyTendies)
+         drawNebulaFuzzyTendies();
+    else drawNebulaTendrils();
+
+
     drawShipTacticalOverlays();
 }
 
