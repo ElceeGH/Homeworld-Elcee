@@ -1146,7 +1146,8 @@ static void nebGasDustDraw( SpaceObj* obj, Camera* camera ) {
     real32 distThresh = 175'000.0f;
     real32 distCloser = max( 0.0f, distThresh - distCur );
     real32 distScale  = 1.0f - (distCloser / distThresh);
-    real32 baseSize   = 500.0f * 1.15f * sqrtf( getResDensityRelative() );
+    real32 resScale   = max(2.0f, sqrtf( getResDensityRelative() )); // They were 2x2 to begin with
+    real32 baseSize   = 350.0f * 1.15f * resScale;
     real32 size       = baseSize * distScale;
     color  col        = obj->staticinfo->staticheader.LOD->pointColor;
 
