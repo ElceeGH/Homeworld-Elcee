@@ -211,7 +211,7 @@ static GLuint loadShaderProgramInternal( const char* name ) {
         dbgFatalf( DBG_Loc, "Failed to load any shader sources for program '%s'.", name );
 
     // Compile whichever ones existed.
-    GLuint shaderVert = compileShader( name, sourceVert, GL_VERTEX_SHADER );
+    GLuint shaderVert = compileShader( name, sourceVert, GL_VERTEX_SHADER   );
     GLuint shaderFrag = compileShader( name, sourceFrag, GL_FRAGMENT_SHADER );
     free( sourceVert );
     free( sourceFrag );

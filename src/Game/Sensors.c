@@ -1223,7 +1223,7 @@ static void drawNebulaFuzzyTendies( void ) {
     real32 alphaBase = 192.0f;
     real32 alphaMul  = alphaBase / alphaPool;
 
-    // @todo It would be cool to render them as fuzzy lines
+    // Render
     for (udword r=0; r<count; r++) {
         glLineWidth( widthBase * widthMults[r] );
 

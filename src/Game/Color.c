@@ -285,7 +285,7 @@ udword colIntensityNTSC(color c)
     red = colRed(c);
     green = colGreen(c);
     blue = colBlue(c);
-    returnValue = Fixed2Int(red * Float2Fixed(0.229f) + green * Float2Fixed(0.587f) + blue * Float2Fixed(0.114));
+    returnValue = Fixed2Int(red * Float2Fixed(0.229f) + green * Float2Fixed(0.587f) + blue * Float2Fixed(0.114f));
     return(returnValue);
 }
 

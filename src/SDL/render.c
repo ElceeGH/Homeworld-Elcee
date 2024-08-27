@@ -2398,7 +2398,7 @@ void rndMainViewRenderFunction(Camera *camera)
 
     rndPreRenderDebugStuff(camera);
 
-    //!!! should this be here?  It does not sound like it.
+    //!!! should this be here?  It does not sound like it. TODO
     if (feRenderEverything)
     {
         glClear(GL_COLOR_BUFFER_BIT);
