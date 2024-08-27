@@ -1047,15 +1047,12 @@ void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real3
         rad = ship->staticinfo->trailSpriteRadius[trail->trailNum];
     }
 
-    rad = (1.0f - GLOW_BASERADIALSCALE) * (GLOW_RADIALADJUST * velratio * rad * trail->ran)
-          + GLOW_BASERADIALSCALE * rad;
+    rad = (1.0f - GLOW_BASERADIALSCALE) * (GLOW_RADIALADJUST * velratio * rad * trail->ran) + GLOW_BASERADIALSCALE * rad;
 
     rndLightingEnable(FALSE);
     glDisable(GL_CULL_FACE);
     glDepthMask(GL_FALSE);
     rndTextureEnvironment(RTE_Modulate);
-
-    glColor4ub(255,255,255,255);
 
     VECCOPY(&pos, seg->position);
     pos.z -= 0.6f*XADJ;
@@ -1063,19 +1060,27 @@ void trailDrawBillboardedSquareThingz(shiptrail* trail, trailsegment* seg, real3
     pos.z -= ship->staticinfo->trailSpriteOffset[trail->trailNum];
     trailInplaceShipToWorld((real32*)&pos, seg->rotation, seg->translation);
 
+    // Add inverse colour so that when the trail is a darker colour the centre of the glow still reaches white.
+    udword cR   = 255 - colRed(c);
+    udword cG   = 255 - colGreen(c);
+    udword cB   = 255 - colBlue(c);
+    color  cInv = colRGB( cR, cG, cB );    
+
     if (g_glowHandle != TR_InvalidHandle)
     {
         trMakeCurrent(g_glowHandle);
         partFilter(TRUE);
 
         rndBillboardEnable(&pos);
-        primSolidTexture3Fade((vector*)&origin, rad, c, g_glowHandle, alpha);
+        primSolidTexture3Fade((vector*)&origin, rad*2.0f, c,    g_glowHandle, alpha);
+        primSolidTexture3Fade((vector*)&origin, rad*1.0f, cInv, g_glowHandle, alpha);
         rndBillboardDisable();
     }
     else
     {
         rndBillboardEnable(&pos);
-        primCircleSolid3Fade((vector*)&origin, rad, 16, c, alpha);
+        primCircleSolid3Fade((vector*)&origin, rad*2.0f, 16, c,    alpha);
+        primCircleSolid3Fade((vector*)&origin, rad*1.0f, 16, cInv, alpha);
         rndBillboardDisable();
     }
 
