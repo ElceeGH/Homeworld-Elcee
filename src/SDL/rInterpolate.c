@@ -130,14 +130,14 @@ static real32 dotProductClamped( vector a, vector b ) {
 
 
 /// Interpolate a scalar.
-static real32 lerpf( real32 from, real32 to, real32 f ) {
+real32 lerpf( real32 from, real32 to, real32 f ) {
     return from + (to - from) * f;
 }
 
 
 
 /// Interpolate a position.
-static vector lerpv( vector from, vector to, real32 f ) {
+vector lerpv( vector from, vector to, real32 f ) {
     return (vector) {
         from.x + (to.x - from.x) * f,
         from.y + (to.y - from.y) * f,
@@ -148,7 +148,7 @@ static vector lerpv( vector from, vector to, real32 f ) {
 
 
 /// Interpolate an orientation. Vectors must be unit length.
-static vector slerp( vector from, vector to, real32 f ) {
+vector slerp( vector from, vector to, real32 f ) {
     const real32 dot = dotProductClamped( from, to );
 
     // If they're almost exactly the same, just lerp.
@@ -176,7 +176,7 @@ static vector slerp( vector from, vector to, real32 f ) {
 
 
 /// Interpolate an orientation matrix.
-static void lerpm( matrix* out, const matrix* from, const matrix* to, real32 f ) {
+void slerpm( matrix* out, const matrix* from, const matrix* to, real32 f ) {
     vector upA, upB, rightA, rightB, headA, headB;
     matGetVectFromMatrixCol1( upA,    *from );
     matGetVectFromMatrixCol1( upB,    *to   );
@@ -552,7 +552,7 @@ static void interpolateObject( const Interp* interp ) {
         SpaceObjRot*  sor = (SpaceObjRot*) obj;
         const matrix* ha  = &interp->hprev;
         const matrix* hb  = &interp->hcurr;
-        lerpm( &sor->rotinfo.coordsys, ha, hb, f );
+        slerpm( &sor->rotinfo.coordsys, ha, hb, f );
     }
 
     if (obj->objtype == OBJ_ShipType) {
