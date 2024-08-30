@@ -60,7 +60,7 @@ real32 getResFrequencyRelative( void ) {
 
 
 /// Get the height of the letterboxes when doing cutscenes.
-/// No matter how wide the aspect, there's still a minimum height just so you can see a cutscene is happening.
+/// No matter how wide the native aspect, there's still a minimum height just so you can see a cutscene is happening.
  udword getResLetterboxHeight( void ) {
     const real32 cinema = 2.35f; // How cinematic.
     const real32 minH   = 32.0f; // Need to know cutscenes are happening though.
