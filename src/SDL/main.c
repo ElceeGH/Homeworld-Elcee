@@ -98,28 +98,7 @@ extern bool IgnoreBigfiles;
 extern bool LogFileLoads;
 
 //command-line switches and parameters
-bool mainSafeGL         = FALSE;
-bool mainNoPerspective  = FALSE;
-bool mainNoDrawPixels = FALSE;
-bool mainNoPalettes = TRUE;
-bool mainSoftwareDirectDraw = FALSE;
-bool mainDirectDraw = FALSE;
-bool mainRasterSkip = FALSE;
-bool mainDoubleIsTriple = FALSE;
-#ifdef __GNUC__
-bool mainFastFrontend = FALSE;
-#else
-bool mainFastFrontend = TRUE;
-#endif
-bool mainForceSoftware = FALSE;
 bool mainAutoRenderer = TRUE;
-bool mainForceKatmai = FALSE;
-#ifdef _WINDOWS
-bool mainAllowKatmai = TRUE;
-#else
-bool mainAllowKatmai = FALSE;
-#endif
-bool mainAllow3DNow = FALSE;
 bool enableAVI = TRUE;
 bool mainAllowPacking = TRUE;
 bool mainOnlyPacking = FALSE;
@@ -284,24 +263,6 @@ bool SelectMSGL(char* string)
     return TRUE;
 }
 
-bool EnableRasterSkip(char* string)
-{
-    mainRasterSkip = TRUE;
-    return TRUE;
-}
-
-bool EnableDoubleIsTriple(char* string)
-{
-    mainDoubleIsTriple = TRUE;
-    return TRUE;
-}
-
-bool DisableFastFrontend(char* string)
-{
-    mainFastFrontend = FALSE;
-    return TRUE;
-}
-
 bool EnableGatherStats(char *string)
 {
     noDefaultComputerPlayer = TRUE;
@@ -434,75 +395,6 @@ bool EnableAutoSaveDebug(char *string)
     return TRUE;
 }
 
-bool EnableMiniRes(char* string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 320;
-    mainWindowHeight = 240;
-    return TRUE;
-}
-
-bool EnableLoRes(char *string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 640;
-    mainWindowHeight = 480;
-    return TRUE;
-}
-
-bool EnableHiRes(char *string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 800;
-    mainWindowHeight = 600;
-    return TRUE;
-}
-
-bool EnableMegaRes(char *string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 1024;
-    mainWindowHeight = 768;
-    return TRUE;
-}
-
-bool EnableUltraRes(char* string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 1280;
-    mainWindowHeight = 1024;
-    return TRUE;
-}
-
-bool EnableInsaneRes(char* string)
-{
-    selectedRES = TRUE;
-    mainWindowWidth  = 1600;
-    mainWindowHeight = 1200;
-    return TRUE;
-}
-
-bool Enable32Bit(char* string)
-{
-    selectedRES = TRUE;
-    MAIN_WindowDepth = 32;
-    return TRUE;
-}
-
-bool Enable16Bit(char* string)
-{
-    selectedRES = TRUE;
-    MAIN_WindowDepth = 16;
-    return TRUE;
-}
-
-bool Enable24Bit(char* string)
-{
-    selectedRES = TRUE;
-    MAIN_WindowDepth = 24;
-    return TRUE;
-}
-
 #ifdef GOD_LIKE_SYNC_CHECKING
 
 #define GUESS_NUM_SHIPS     400
@@ -574,11 +466,6 @@ commandoption commandOptions[] =
     entryFV("/logFileLoads",        EnableFileLoadLog,LogFileLoads,TRUE," - create log of data files loaded"),
 #endif
 
-    entryComment("PROCESSOR OPTIONS"),//-----------------------------------------------------
-    entryVr("/enableSSE",           mainAllowKatmai, TRUE,              " - allow use of SSE if support is detected."),
-    entryVr("/forceSSE",            mainForceKatmai, TRUE,              " - force usage of SSE even if determined to be unavailable."),
-    entryVr("/enable3DNow",         mainAllow3DNow, TRUE,               " - allow use of 3DNow! if support is detected."),
-
     entryComment("SOUND OPTIONS"),  //-----------------------------------------------------
 #if SE_DEBUG
     entryVr("/noSound",             enableSFX, FALSE,                   " - turn all sound effects off."),
@@ -587,7 +474,6 @@ commandoption commandOptions[] =
     entryVr("/reverseStereo",       reverseStereo, TRUE,                " - swap the left and right audio channels."),
 
     entryComment("DETAIL OPTIONS"), //-----------------------------------------------------
-    entryFn("/rasterSkip",          EnableRasterSkip,                   " - enable interlaced display with software renderer."),
     entryVr("/noBG",                showBackgrounds, FALSE,             " - disable display of galaxy backgrounds."),
     entryVr("/noFilter",            texLinearFiltering,FALSE,           " - disable bi-linear filtering of textures."),
     entryVr("/noSmooth",            enableSmoothing, FALSE,             " - do not use polygon smoothing."),
@@ -604,34 +490,34 @@ commandoption commandOptions[] =
     entryVr("/noShowDamage",        gShowDamage, FALSE,                 " - Disables showing ship damage effects."),
 
     entryComment("VIDEO MODE OPTIONS"),//-----------------------------------------------------
-    entryVr("/safeGL",              mainSafeGL, TRUE,                   " - don't use possibly buggy optimized features of OpenGL for rendering."),
-    entryFn("/triple",              EnableDoubleIsTriple,               " - use when frontend menus are flickering madly."),
-    entryVr("/nodrawpixels",        mainNoDrawPixels, TRUE,             " - use when background images don't appear while loading."),
-    entryVr("/noswddraw",           mainSoftwareDirectDraw, FALSE,      " - don't use DirectDraw for the software renderer."),
-    entryVr("/noglddraw",           mainDirectDraw, FALSE,              " - don't use DirectDraw to setup OpenGL renderers."),
-    entryVr("/sw",                  mainForceSoftware, TRUE,            " - reset rendering system to defaults at startup."),
+    //entryVr("/safeGL",              mainSafeGL, TRUE,                   " - don't use possibly buggy optimized features of OpenGL for rendering."),
+    //entryFn("/triple",              EnableDoubleIsTriple,               " - use when frontend menus are flickering madly."),
+    //entryVr("/nodrawpixels",        mainNoDrawPixels, TRUE,             " - use when background images don't appear while loading."),
+    //entryVr("/noswddraw",           mainSoftwareDirectDraw, FALSE,      " - don't use DirectDraw for the software renderer."),
+    //entryVr("/noglddraw",           mainDirectDraw, FALSE,              " - don't use DirectDraw to setup OpenGL renderers."),
+    //entryVr("/sw",                  mainForceSoftware, TRUE,            " - reset rendering system to defaults at startup."),
     entryVrHidden("/noSavedMode",   mainAutoRenderer, FALSE,            " - disable recovery of previous display mode."),
-    entryFn("/noFastFE",            DisableFastFrontend,                " - disable fast frontend rendering."),
+    //entryFn("/noFastFE",            DisableFastFrontend,                " - disable fast frontend rendering."),
     entryVr("/fullscreen",          fullScreen, TRUE,                   " - display fullscreen with software renderer (default)."),
     entryFnParam("/displayNum",     SetDisplayNum,                      " <0-?> - Choose display, 0 is First Display."),
     entryVr("/window",              fullScreen, FALSE,                  " - display in a window."),
-    entryVr("/noBorder",            showBorder, FALSE,                  " - no border on window."),
-    entryFnHidden("/minny",           EnableMiniRes,                      " - run at 320x240 resolution."),
-    entryFn("/640",                 EnableLoRes,                        " - run at 640x480 resolution (default)."),
-    entryFn("/800",                 EnableHiRes,                        " - run at 800x600 resolution."),
-    entryFn("/1024",                EnableMegaRes,                      " - run at 1024x768 resolution."),
-    entryFn("/1280",                EnableUltraRes,                     " - run at 1280x1024 resolution."),
-    entryFn("/1600",                EnableInsaneRes,                    " - run at 1600x1200 resolution."),
+//    entryVr("/noBorder",            showBorder, FALSE,                  " - no border on window."),
+//    entryFnHidden("/minny",           EnableMiniRes,                      " - run at 320x240 resolution."),
+//    entryFn("/640",                 EnableLoRes,                        " - run at 640x480 resolution (default)."),
+//    entryFn("/800",                 EnableHiRes,                        " - run at 800x600 resolution."),
+//    entryFn("/1024",                EnableMegaRes,                      " - run at 1024x768 resolution."),
+//    entryFn("/1280",                EnableUltraRes,                     " - run at 1280x1024 resolution."),
+//    entryFn("/1600",                EnableInsaneRes,                    " - run at 1600x1200 resolution."),
 //    entryFn("/d16",                 Enable16Bit,                        " - run in 16 bits of colour."),
 //    entryFn("/d24",                 Enable24Bit,                        " - run in 24 bits of colour."),
 //    entryFn("/d32",                 Enable32Bit,                        " - run in 32 bits of colour."),
 //    entryVr("/truecolor",           trueColor, TRUE,                    " - try 24bit modes before 15/16bit."),
 //    entryVr("/slowBlits",           slowBlits, TRUE,                    " - use slow screen blits if the default is buggy."),
-    entryFnParam("/device",         SelectDevice,                       " <dev> - select an rGL device by name, eg. sw, fx."),
+//    entryFnParam("/device",         SelectDevice,                       " <dev> - select an rGL device by name, eg. sw, fx."),
 //    entryFV("/gl",                  SelectMSGL, selectedGL, TRUE,       " - select default OpenGL as renderer."),
-    entryVr("/nohint",              mainNoPerspective, TRUE,            " - disable usage of OpenGL perspective correction hints."),
+//    entryVr("/nohint",              mainNoPerspective, TRUE,            " - disable usage of OpenGL perspective correction hints."),
     entryVrHidden("/noPause",             noPauseAltTab, TRUE,                " - don't pause when you alt-tab."),
-    entryVrHidden("/noMinimize",          noMinimizeAltTab, TRUE,             " - don't minimize when you alt-tab."),
+//    entryVrHidden("/noMinimize",          noMinimizeAltTab, TRUE,             " - don't minimize when you alt-tab."),
 
 #ifdef HW_BUILD_FOR_DEBUGGING
     entryComment("CHEATS AND SHORTCUTS"),         //-----------------------------------------------------
@@ -755,14 +641,6 @@ commandoption commandOptions[] =
 #endif
 
     entryComment("TEXTURES"),       //-----------------------------------------------------
-    entryVr("/nopal",               mainNoPalettes, TRUE,               " - disable paletted texture support."),
-/*
-    entryVrHidden("/allowPacking",  mainAllowPacking, TRUE,             " - use the packed textures if available (default)."),
-    entryVr("/disablePacking",      mainAllowPacking, FALSE,            " - don't use the packed textures if available."),
-#ifdef HW_BUILD_FOR_DEBUGGING
-    entryVr("/onlyPacking",         mainOnlyPacking, TRUE,              " - only display packed textures."),
-#endif
-*/
 
     entryComment("MISC OPTIONS"),   //-----------------------------------------------------
     entryVrHidden("/smCentreCamera",      smCentreWorldPlane, FALSE,          " - centres the SM world plane about 0,0,0 rather than the camera."),
