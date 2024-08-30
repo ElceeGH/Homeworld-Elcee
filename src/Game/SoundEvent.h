@@ -36,12 +36,10 @@
 
 
 #define SOUND_NOTINITED             -1
-
 #define SOUND_EVENT_DEFAULT			-1
-
 #define SOUND_FRONTEND_TRACK		AMB12_FrontEnd
-
 #define SPEECH_HYPERSPACE_DELAY		2.5f
+#define CARDIOD_POINTS		        180
 
 /*=============================================================================
     Tweaks

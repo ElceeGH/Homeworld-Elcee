@@ -42,8 +42,6 @@
 
 #define MAX_CHATTERS        2
 
-#define CARDIOD_POINTS		180
-
 #define PI_UNDER_180  57.29577f
 
 #define SOUND_NOTINITED             -1
