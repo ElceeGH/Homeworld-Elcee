@@ -26,6 +26,7 @@
 
 #include "rInterpolate.h"
 #include "rResScaling.h"
+#include "rShaderProgram.h"
 #include "rStateCache.h"
 #include <stdio.h>
 
@@ -35,7 +36,7 @@
 static real32 levelDensity[] = {
     [MISSION_1_KHARAK_SYSTEM             ] = 0.3f, // Clean fresh space
     [MISSION_2_OUTSKIRTS_OF_KHARAK_SYSTEM] = 0.8f,
-    [MISSION_3_RETURN_TO_KHARAK          ] = 2.3f, // Post-battle. TODO don't do dust when NIS is running since it's recounting events
+    [MISSION_3_RETURN_TO_KHARAK          ] = 2.5f, // Post-battle. TODO don't do dust when NIS is running since it's recounting events
     [MISSION_4_GREAT_WASTELANDS_TRADERS  ] = 1.0f,
     [MISSION_5_GREAT_WASTELANDS_REVENGE  ] = 1.0f,
     [MISSION_6_DIAMOND_SHOALS            ] = 4.0f, // Absolute filth-zone
@@ -145,37 +146,46 @@ static vector rngNextPointInSphere( PRNG* prng, vector centre, real32 radius ) {
 
 
 
-// Motes don't move. Their motion is only apparent motion to the camera.
-// They do get wrapped around the volume edges, but this fact is hidden 
-// by fading the particles in and out at the edges.
-typedef struct Mote {
-    vector pos;   ///< World position
-    vector lrss;  ///< Last rendered screenspace position
-    real32 alpha; ///< Brightness variation       [0:1]
-    real32 vis;   ///< Visibility range variation [0:1]
-    bool   first; ///< Motes don't get rendered on the first frame or when they wrap around.
-} Mote;
+// Inverse of linear interpolation clamped to [0:1]
+static real32 boxStepf( real32 value, real32 low, real32 high ) {
+    real32 range = high  - low;
+    real32 delta = value - low;
+    real32 ratio = delta / range;
+    return max( 0.0f, min(ratio,1.0f) );
+}
 
-/// Mote vertex. Basic stuff
-typedef struct MoteVert {
-    vector pos;
-    real32 r,g,b,a;
-} MoteVert;
+
+
+/// Dust mote.
+/// All attributes are duplicated for technical GPU-particle reasons.
+/// Also used as a vertex format.
+typedef struct Mote {
+    vector pos;    ///< World position
+    real32 alpha;  ///< Brightness variation       [0:1]
+    real32 vis;    ///< Visibility range variation [0:1]
+    vector dpos;   ///< Duplicated
+    real32 dalpha; ///< Duplicated
+    real32 dvis;   ///< Duplicated
+} Mote;
 
 /// Dust volume which follows the camera.
 typedef struct DustVolume {
-    vector    centre;        ///< Centre of the cube
-    real32    radius;        ///< Half length of cube sides
-    real32    radiusVis;     ///< Visible range inside
-    real32    radiusVisSqr;  ///< Visible range inside, squared
-    Mote*     motes;         ///< Motes allocated memory
-    udword    moteCount;     ///< Motes count in allocation
-    MoteVert* verts;         ///< Mote vertexes
-    udword    vertCount;     ///< Mote vertex count
-    udword    vertBytes;     ///< Mote vertex bytes
-    GLuint    vertVBO;       ///< GPU vertex buffer
-    udword    vertPointBase; ///< Where points begin in the vertex array
-    udword    vertLineBase;  ///< Where lines begin in the vertex array
+    vector  centre;         ///< Centre of the cube
+    real32  radius;         ///< Half-length of cube sides
+    real32  fadeNear;       ///< Mote distance from camera where alpha reaches 1
+    real32  fadeFar;        ///< Mote distance from camera where alpha reaches 0
+    real32  camRefNear;     ///< Camerica distance from lookat poiint where nearness scaling factor is 0 (lerps to min values)
+    real32  camRefFar;      ///< Camerica distance from lookat poiint where nearness scaling factor is 1 (lerps to max values)
+    real32  closeNearMin;   ///< Mote distance to camera where alpha reaches 0 (min)
+    real32  closeNearMax;   ///< Mote distance to camera where alpha reaches 0 (max)
+    real32  closeFarMin;    ///< Mote distance to camera where alpha reaches 1 (min)
+    real32  closeFarMax;    ///< Mote distance to camera where alpha reaches 1 (max)
+    hmatrix matCurr;        ///< Camera * projection matrix, current frame
+    hmatrix matPrev;        ///< Camera * projection matrix, previous frame
+    Mote*   motes;          ///< Motes allocated memory (these are also the vertexes)
+    udword  moteCount;      ///< Motes count in allocation
+    udword  moteBytes;      ///< Motes total bytes
+    GLuint  moteVBO;        ///< GPU vertex buffer
 } DustVolume;
 
 
@@ -195,29 +205,42 @@ static vector screenSpacePos( vector world ) {
 
 
 
-static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
-    const vector centre           = cam->eyeposition;
-    const real32 radiusVisSqr     = 6000*6000; // todo doesn't need to be that big...
-    const real32 radiusVis        = sqrtf( radiusVisSqr );
-    const real32 radius           = radiusVis;
-    const real32 area             = 6.0f * radius * radius;
-    const real32 motesPerUnitArea = 1.0f / 350'000.0f; // Average density TODO tune
-    const real32 moteDensityScale = 8.0f;//getLevelDensity();
+static void getCamProjMatrix( hmatrix* out ) {
+    // Same result as the points first being multiplied by camera, then perspective
+    hmatMultiplyHMatByHMat( out, &rndProjectionMatrix, &rndCameraMatrix );
+}
 
-    const udword moteCount = (udword) (area * motesPerUnitArea * moteDensityScale);
-    const udword vertCount = moteCount * (1 + 2); // Points and lines, worst case one of each per mote
+
+
+static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
+    // Basic position/scale of the volume
+    const vector centre = cam->eyeposition;
+    const real32 radius = 6000.0f;
+
+    // Long distance fadeout ranges
+    const real32 fadeNear = radius * 0.80f;
+    const real32 fadeFar  = radius * 1.00f;
+
+    // Near-camera fading parameters. These relate to typical view distances of the camera in absolute terms
+    const real32 camRefNear   =  3500.0f; // Camera distance where nearness factor is 0 (lerps to min values)
+    const real32 camRefFar    = 12000.0f; // Camera distance where nearness factor is 1 (lerps to max values)
+    const real32 closeNearMin =    50.0f; // Near-camera fade zero-point is right on top of the camera when camera is very close to the target object.
+    const real32 closeNearMax =  3500.0f; // But gets quite far away when at a long distance, so the dust isn't distractingly flying right over the camera plane.
+    const real32 closeFarMin  =   150.0f; // Fade start point is also very close to the camera initially so motes can flyby the camera and look cool.
+    const real32 closeFarMax  =  5000.0f; // But it gets very wide as the camera goes further out so the fadeoff is more gradual.
+
+    // Area and density
+    const real32 area             = 6.0f * sqr(radius);
+    const real32 motesPerUnitArea = 1.0f / 200'000.0f; // Average density, area-independent
+    const real32 moteDensityScale = getLevelDensity();
+
+    // Count and storage
+    const udword moteCount = (udword)(area * motesPerUnitArea * moteDensityScale); 
     const udword moteBytes = moteCount * sizeof(Mote);
-    const udword vertBytes = vertCount * sizeof(MoteVert);
 
     // Allocate memory for motes
-    //Mote* const motes = memAlloc( moteBytes, "Dust motes", NonVolatile );
-    Mote* const motes = malloc( moteBytes );
+    Mote* const motes = memAlloc( moteBytes, "Dust motes", NonVolatile );
     memset( motes, 0x00, moteBytes );
-
-    // Allocate memory for vertexes
-    //MoteVert* const verts = memAlloc( vertBytes, "Dust verts", NonVolatile );
-    MoteVert* const verts = malloc( vertBytes );
-    memset( verts, 0x00, vertBytes );
 
     printf( "Motes count = %u\n", moteCount );
 
@@ -228,47 +251,48 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     // Generate motes
     for (udword i=0; i<moteCount; i++) {
         Mote* mote  = &motes[ i ];
+
         mote->pos   = rngNextPointInCube( &prng, centre, radius );
-        mote->vis   = rngNextRange( &prng, 1.00f, 1.50f );
-        mote->alpha = rngNextRange( &prng, 0.25f, 1.00f );
-        mote->first = TRUE;
-        mote++;
+        mote->vis   = rngNextRange( &prng, 0.00f, 0.50f );
+        mote->alpha = rngNextRange( &prng, 0.35f, 1.00f );
+
+        mote->dpos   = mote->pos;
+        mote->dvis   = mote->vis;
+        mote->dalpha = mote->alpha;
     }
 
-    // Colourise vertexes // TODO can introduce some random variation here, per-level colour, etc
-    for (udword i=0; i<vertCount; i++) {
-        verts[i].r = 1.0f;
-        verts[i].g = 1.0f;
-        verts[i].b = 1.0f;
-        verts[i].a = 1.0f;
-    }
+    // Initial matrix
+    hmatrix matCamProj;
+    getCamProjMatrix( &matCamProj );
 
     // Write vars
     *vol = (DustVolume) {
-        .centre         = centre,
-        .radius         = radius,
-        .radiusVis      = radiusVis,
-        .radiusVisSqr   = radiusVisSqr,
-        .motes          = motes,
-        .moteCount      = moteCount,
-        .verts          = verts,
-        .vertBytes      = vertBytes,
-        .vertCount      = vertCount,
-        .vertPointBase  = 0,
-        .vertLineBase   = moteCount
+        .centre       = centre,
+        .radius       = radius,
+        .fadeNear     = fadeNear,
+        .fadeFar      = fadeFar,
+        .camRefNear   = camRefNear,
+        .camRefFar    = camRefFar,
+        .closeNearMin = closeNearMin,
+        .closeNearMax = closeNearMax,
+        .closeFarMin  = closeFarMin,
+        .closeFarMax  = closeFarMax,
+        .motes        = motes,
+        .moteCount    = moteCount,
+        .moteBytes    = moteBytes,
+        .matCurr      = matCamProj,
+        .matPrev      = matCamProj
     };
 }
 
 
 
 static void spaceDustShutdown( DustVolume* vol ) {
-    if (vol->vertVBO) glDeleteBuffers( 1, &vol->vertVBO );
+    if (vol->moteVBO) glDeleteBuffers( 1, &vol->moteVBO );
     if (vol->motes)   memFree( vol->motes );
-    if (vol->verts)   memFree( vol->verts );
 
-    vol->vertVBO = 0;
+    vol->moteVBO = 0;
     vol->motes   = NULL;
-    vol->verts   = NULL;
 }
 
 
@@ -276,6 +300,10 @@ static void spaceDustShutdown( DustVolume* vol ) {
 static void spaceDustUpdateVolume( DustVolume* vol, Camera* camera ) {
     // Update the centre position
     vol->centre = camera->eyeposition;
+
+    // Update our matrix pair
+    vol->matPrev = vol->matCurr;
+    getCamProjMatrix( &vol->matCurr );
 
     // Generate cube extents
     vector cradius = { vol->radius, vol->radius, vol->radius };
@@ -286,149 +314,38 @@ static void spaceDustUpdateVolume( DustVolume* vol, Camera* camera ) {
     // Wrap the motes on each axis so they repeat infinitely within the cube.
     // While loops just in case the camera moves incredibly fast.
     const real32 offs = vol->radius * 2.0f;
-
     for (udword i=0; i<vol->moteCount; i++) {
-        Mote* mote  = &vol->motes[ i ];
-        while (mote->pos.x > cmax.x) { mote->pos.x -= offs;  mote->first = TRUE; }
-        while (mote->pos.x < cmin.x) { mote->pos.x += offs;  mote->first = TRUE; }
-        while (mote->pos.y < cmin.y) { mote->pos.y += offs;  mote->first = TRUE; }
-        while (mote->pos.y > cmax.y) { mote->pos.y -= offs;  mote->first = TRUE; }
-        while (mote->pos.z < cmin.z) { mote->pos.z += offs;  mote->first = TRUE; }
-        while (mote->pos.z > cmax.z) { mote->pos.z -= offs;  mote->first = TRUE; }
-    }
-}
-
-
-
-// TODO this entire thing can be done in a shader IF:
-// - Keep the previous camera / perspective matrix around
-// - For lines, select camera matrix for vertices using gl_VertexID mod 2
-// - Transform POS to both, do the length calcs based on that, set the alpha etc
-// - For points, make the stride double to skip every second point and give modulo = 1
-// - The positions DO need to be duplicated. Indexing would not work for this since we need the mod 2 on the index.
-// - Colour doesn't need to go in the vertexes at all. Shader uniform. The vert colour can be used for the other attributes (vis, alpha, etc that are unique to each)
-// - Teleport flag not needed. Just give a threshold where the distance is so large that the alpha is zero. (Happens anyway, don't even need to do anything)
-// - This way ALL the calculations can be done in the vertex shader, and the code here need only wrap the world positions and upload the buffer. No need for separate points and lines vertexes either, just execute twice with different uniforms and ranges. Pretty damn sweet
-
-// Generate the vertexes.
-// Note: the centre of the volume is the camera eye position.
-// TODO the line length fadeout should be normalised somehow, it would vary with resolution as it is...
-static void spaceDustGenerateVertexes( DustVolume* vol, Camera* camera, real32 masterAlpha, udword* outPointVertCount, udword* outLineVertCount ) {
-    const real32 hResW = 0.5f * (real32) MAIN_WindowWidth;
-    const real32 hResH = 0.5f * (real32) MAIN_WindowHeight;
-
-    const real32 threshAlpha   = 1.0f / 256.0f; // Can't see motes when they get this faded
-    const real32 mbScale       = 0.125f;  // Rate of division proportional to length (should be resolution varying) OR DOES IT need to be based on the NDC coord length for this? IT's not for fading into a point!
-
-    const real32 closeRange    = 3500.0f; // From camera eye. TODO adjust 
-    const real32 closeRangeRcp = 1.0f / closeRange;
-
-    const real32 fadeRangeHigh = vol->radiusVis;
-    const real32 fadeRangeLow  = fadeRangeHigh * 0.75f;
-    const real32 fadeRange     = fadeRangeHigh - fadeRangeLow;
-    const real32 fadeRangeRcp  = 1.0f / fadeRange;
-
-    MoteVert* const motePoints = &vol->verts[ vol->vertPointBase ];
-    MoteVert* const moteLines  = &vol->verts[ vol->vertLineBase  ];
-    MoteVert*       motePoint  = motePoints;
-    MoteVert*       moteLine   = moteLines;
-
-    for (udword i=0; i<vol->moteCount; i++) {
-        Mote* const mote = &vol->motes[ i ];
-
-        // Screenspace calc/update
-        const vector curr = screenSpacePos( mote->pos );
-        const vector prev = mote->lrss;
-        mote->lrss = curr;
-
-        // Don't render motes that just wrapped around.
-        if (mote->first) {
-            mote->first = FALSE;
-            continue;
-        }
-
-        // Discard motes behind the camera. That's fully half of them on average!
-        if (curr.z < 0.0f || prev.z < 0.0f)
-            continue;
-
-        // Don't render motes outside the visibility range.
-        const real32 distSqr = vecDistanceSquared( vol->centre, mote->pos );
-        if (distSqr > vol->radiusVisSqr)
-            continue;
-
-        // Fade in from max range. With per-mote variation.
-        const real32 dist      = sqrtf( distSqr );
-        const real32 fadeDist  = dist * mote->vis;
-        const real32 fadeDelta = max( 0.0f, fadeDist - fadeRangeLow );
-        const real32 fadeRatio = min( 1.0f, fadeDelta * fadeRangeRcp );
-        const real32 fadeAlpha = 1.0f - fadeRatio;
-
-        // Fade when too close to the camera.
-        const real32 closeRatio = min( 1.0f, dist * closeRangeRcp );
-        const real32 closeAlpha = 1.0f - closeRatio;
-
-        // Merge all the alphas
-        const real32 baseAlpha = mote->alpha * fadeAlpha * closeAlpha * masterAlpha;
-
-        if (baseAlpha < threshAlpha)
-            continue;
-
-        // Compute apparent length in pixels in 2D.
-        const real32 dx  = (prev.x - curr.x) * hResW;
-        const real32 dy  = (prev.y - curr.y) * hResH;
-        const real32 dot = sqr(dx) + sqr(dy);
-        const real32 len = sqrtf( dot );
+        Mote* mote = &vol->motes[ i ];
+        while (mote->pos.x < cmin.x) { mote->pos.x += offs; }
+        while (mote->pos.x > cmax.x) { mote->pos.x -= offs; }
+        while (mote->pos.y < cmin.y) { mote->pos.y += offs; }
+        while (mote->pos.y > cmax.y) { mote->pos.y -= offs; }
+        while (mote->pos.z < cmin.z) { mote->pos.z += offs; }
+        while (mote->pos.z > cmax.z) { mote->pos.z -= offs; }
         
-        // When there's no apparent motion, render a point. A zero length line has zero pixels.
-        // Become a point gradually to avoid popping. Lines and points can exist simultaneously.
-        if (len < 1.0f) {
-            motePoint->pos = curr;
-            motePoint->a   = baseAlpha * (1.0f - len);
-            motePoint++;
-        }
-
-        // Lines fade out as they go from length 1 -> 0, while points fade in.
-        // Lines fade out with length to simulate motion blur.
-        if (len > 0.0f) {
-            real32 alpha;
-            if (len >= 1.0f)
-                 alpha = baseAlpha / max( 1.0f, len*mbScale); // Motion blur fade
-            else alpha = baseAlpha * len; // Fade out as point fades in
-
-            moteLine[0].pos = curr;
-            moteLine[1].pos = prev;
-            moteLine[0].a   = alpha;
-            moteLine[1].a   = alpha;
-            moteLine += 2;
-        }
+        mote->dpos = mote->pos;
     }
-
-    // Write counts for drawing
-    *outPointVertCount = motePoint - motePoints;
-    *outLineVertCount  = moteLine  - moteLines;
-
-    printf( "Rendering %u points, %u lines\n", *outPointVertCount, *outLineVertCount );
 }
 
 
 
-// Show all the dust motes in worldspace as green points ignoring all fading.
+// Show all the dust motes in worldspace as purple points ignoring everything but their position.
 void spaceDustRenderDebug( DustVolume* vol ) {
     sdword add = rndAdditiveBlends( FALSE );
     sdword tex = rndTextureEnable( FALSE );
+    sdword lit = rndLightingEnable( FALSE );
     sdword bln = glIsEnabled( GL_BLEND );
     glDisable( GL_BLEND );
 
     glBegin( GL_POINTS );
-        for (udword i=0; i<vol->moteCount; i++) {
-            glColor4f( 0,1,0,1 );
+        glColor4f( 1,0,1,1 );
+        for (udword i=0; i<vol->moteCount; i++)
             glVertex3fv( &vol->motes[i].pos.x );
-        }
     glEnd();
 
-    glDisable( GL_BLEND );
     rndAdditiveBlends( add );
     rndTextureEnable( tex );
+    rndLightingEnable( lit );
 }
 
 
@@ -439,22 +356,90 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     // Update volume
     spaceDustUpdateVolume( vol, camera );
 
-    //spaceDustRenderDebug( vol );
-    //return;
+    // Don't call this when no game is running, since it will render over menus and stuff lol
+    if ( ! gameIsRunning)
+        return;
 
 
-    // Update vertexes
-    udword pointVertCount, lineVertCount;
-    spaceDustGenerateVertexes( vol, camera, alpha, &pointVertCount, &lineVertCount );
 
-    // Save state
-    glMatrixMode( GL_PROJECTION );
-    glPushMatrix();
-    glLoadIdentity();
+    // Shader setup
+    static GLuint* prog         = NULL;
+    static GLint   locMatCurr   = -1;
+    static GLint   locMatPrev   = -1;
+    static GLint   locMode      = -1;
+    static GLint   locCentre    = -1;
+    static GLint   locRes       = -1;
+    static GLint   locCol       = -1;
+    static GLint   locAlpha     = -1;
+    static GLint   locCloseNear = -1;
+    static GLint   locCloseFar  = -1;
+    static GLint   locFadeNear  = -1;
+    static GLint   locFadeFar   = -1;
+    static GLint   locResScale  = -1;
+    static GLint   locMbScale   = -1;
 
-    glMatrixMode( GL_MODELVIEW );
-    glPushMatrix();
-    glLoadIdentity();
+    if ( ! prog)
+        prog = shaderProgramLoad( "spacedust" );
+
+    if (shaderProgramWasJustLoaded( prog )) {
+        locMatCurr   = glGetUniformLocation( *prog, "uMatCurr"   );
+        locMatPrev   = glGetUniformLocation( *prog, "uMatPrev"   );
+        locMode      = glGetUniformLocation( *prog, "uMode"      );
+        locCentre    = glGetUniformLocation( *prog, "uCentre"    );
+        locRes       = glGetUniformLocation( *prog, "uRes"       );
+        locCol       = glGetUniformLocation( *prog, "uCol"       );
+        locAlpha     = glGetUniformLocation( *prog, "uAlpha"     );
+        locCloseNear = glGetUniformLocation( *prog, "uCloseNear" );
+        locCloseFar  = glGetUniformLocation( *prog, "uCloseFar"  );
+        locFadeNear  = glGetUniformLocation( *prog, "uFadeNear"  );
+        locFadeFar   = glGetUniformLocation( *prog, "uFadeFar"   );
+        locResScale  = glGetUniformLocation( *prog, "uResScale"  );
+        locMbScale   = glGetUniformLocation( *prog, "uMbScale"   );
+    }
+
+    // Calculate various uniform inputs.
+    // uMode is set later when drawing since it varies per primitive type.
+    const real32 res[2] = { (real32)MAIN_WindowWidth, (real32)MAIN_WindowHeight };
+    const real32 col[3] = { 1.0f, 1.0f, 1.0f };
+
+    const real32 resScale = 0.5f * sqrtf(getResDensityRelative());
+    const real32 primSize = max( 1.0f, min(2.0f, resScale) );
+
+    const real32 camDist     = sqrtf( vecDistanceSquared(camera->eyeposition, camera->lookatpoint) );
+    const real32 closeFactor = boxStepf( camDist, vol->camRefNear, vol->camRefFar );
+    const real32 closeNear   = lerpf( vol->closeNearMin, vol->closeNearMax, closeFactor );
+    const real32 closeFar    = lerpf( vol->closeFarMin,  vol->closeFarMax,  closeFactor );
+
+    // Use the shader and set uniforms
+    glUseProgram( *prog );
+    glUniformMatrix4fv( locMatCurr, 1, FALSE, &vol->matCurr.m11 );
+    glUniformMatrix4fv( locMatPrev, 1, FALSE, &vol->matPrev.m11 );
+    glUniform3fv      ( locCentre,  1,        &vol->centre.x    );
+    glUniform2fv      ( locRes,     1,         res              );
+    glUniform3fv      ( locCol,     1,         col              );
+    glUniform1f       ( locAlpha,              alpha            );
+    glUniform1f       ( locCloseNear,          closeNear        );
+    glUniform1f       ( locCloseFar,           closeFar         );
+    glUniform1f       ( locFadeNear,           vol->fadeNear    );
+    glUniform1f       ( locFadeFar,            vol->fadeFar     );
+    glUniform1f       ( locResScale,           primSize         );
+    glUniform1f       ( locMbScale,            0.125f           );
+
+
+
+    // Work out some vertex things
+    // Lines have two vertexes per mote so they use the duplicated values
+    // Points only have one vertex so they skip over the dupes
+    const udword  lineStride     = sizeof(Mote)   / 2;
+    const udword  lineVertCount  = vol->moteCount * 2;
+    const udword  lineModulo     = 2;
+    const udword  pointStride    = sizeof(Mote);
+    const udword  pointVertCount = vol->moteCount;
+    const udword  pointModulo    = 1;
+    GLvoid* const posOffs        = (GLvoid*) offsetof( Mote, pos   );
+    GLvoid* const colOffs        = (GLvoid*) offsetof( Mote, alpha );
+
+
 
     // Set render params
     const bool wasAdd   = rndAdditiveBlends( TRUE  );
@@ -463,46 +448,49 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     const bool wasBlend = glIsEnabled( GL_BLEND );
     glEnable( GL_BLEND );
     glDepthMask( FALSE );
-
-    const real32 primSize = max( 1.0f, 0.5f * sqrtf(getResDensityRelative()) );
     glLineWidth( primSize );
     glPointSize( primSize );
 
-    // Bind and create/update GPU vertex buffers
-    if ( ! vol->vertVBO) {
-        glGenBuffers( 1, &vol->vertVBO );
-        glBindBuffer( GL_ARRAY_BUFFER, vol->vertVBO );
-        glBufferData( GL_ARRAY_BUFFER, vol->vertBytes, vol->verts, GL_STREAM_DRAW );
+    // Bind and create/update GPU vertex buffer
+    if ( ! vol->moteVBO) {
+        glGenBuffers( 1, &vol->moteVBO );
+        glBindBuffer( GL_ARRAY_BUFFER, vol->moteVBO );
+        glBufferData( GL_ARRAY_BUFFER, vol->moteBytes, vol->motes, GL_STREAM_DRAW );
     } else {
-        glBindBuffer   ( GL_ARRAY_BUFFER, vol->vertVBO );
-        glBufferSubData( GL_ARRAY_BUFFER, 0, vol->vertBytes, vol->verts );
+        glBindBuffer   ( GL_ARRAY_BUFFER, vol->moteVBO );
+        glBufferSubData( GL_ARRAY_BUFFER, 0, vol->moteBytes, vol->motes );
     }
 
-    // Draw baby draw
+    // Enable position and colour attribs. (It's not really colour though!  They're per-mote alpha variances)
     glEnableClientState( GL_VERTEX_ARRAY );
     glEnableClientState( GL_COLOR_ARRAY  );
-    glVertexPointer( 3, GL_FLOAT, sizeof(MoteVert), (GLvoid*) offsetof(MoteVert,pos) );
-    glColorPointer ( 4, GL_FLOAT, sizeof(MoteVert), (GLvoid*) offsetof(MoteVert,r)   );
-
-    glDrawArrays( GL_LINES,  vol->vertLineBase,  lineVertCount  );
-    glDrawArrays( GL_POINTS, vol->vertPointBase, pointVertCount );
-
+    
+    // Draw lines
+    glUniform1i( locMode, lineModulo );
+    glVertexPointer( 3, GL_FLOAT, lineStride, posOffs );
+    glColorPointer ( 2, GL_FLOAT, lineStride, colOffs );
+    glDrawArrays( GL_LINES, 0, lineVertCount );
+    
+    // Draw points
+    glUniform1i( locMode, pointModulo );
+    glVertexPointer( 3, GL_FLOAT, pointStride, posOffs );
+    glColorPointer ( 2, GL_FLOAT, pointStride, colOffs );
+    glDrawArrays( GL_POINTS, 0, pointVertCount );
+    
     glDisableClientState( GL_VERTEX_ARRAY );
     glDisableClientState( GL_COLOR_ARRAY  );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
     // Restore state
+    glUseProgram( 0 );
     glPointSize( 1.0f );
     glLineWidth( 1.0f );
     glDepthMask( TRUE );
-    if (!wasBlend) glDisable( GL_BLEND );
+
+    if ( ! wasBlend) glDisable( GL_BLEND );
     rndLightingEnable( wasLit );
     rndTextureEnable ( wasTex );
     rndAdditiveBlends( wasAdd );
-    glMatrixMode( GL_PROJECTION );
-    glPopMatrix();
-    glMatrixMode( GL_MODELVIEW );
-    glPopMatrix();
 }
 
 
