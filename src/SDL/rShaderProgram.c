@@ -31,6 +31,7 @@
 /// Mapping of filename to GL handle
 typedef struct ProgramMap {
     GLuint program;        ///< Handle of shader program. Zero if no program is allocated.
+    bool   isJustLoaded;   ///< Flag that clears when it's checked, to help with setting uniforms.
     char   name[MAX_PATH]; ///< Name of shader program excluding the path etc.
 } ProgramMap;
 
@@ -127,7 +128,8 @@ void loadShaderFunctions() {
 static ProgramMap* mapConstruct( const char* name, GLuint program ) {
     ProgramMap* map = mapFind( 0 );
     snprintf( map->name, sizeof(map->name), "%s", name );
-    map->program = program;
+    map->program      = program;
+    map->isJustLoaded = TRUE;
     return map;
 }
 
@@ -135,7 +137,8 @@ static ProgramMap* mapConstruct( const char* name, GLuint program ) {
 static void mapDestruct( GLuint handle ) {
     ProgramMap* map = mapFind( handle );
     snprintf( map->name, sizeof(map->name), "%s", "<undefined>" );
-    map->program = 0;
+    map->program      = 0;
+    map->isJustLoaded = FALSE;
 }
 
 /// Find mapping by its program handle.
@@ -154,8 +157,8 @@ static ProgramMap* mapFind( GLuint program ) {
 
 
 
-/// Recompile all extant shader programs.
-/// This should be done in a fixed point in the rendering sequence.
+/// Reload and recompile all extant shader programs from source.
+/// This should be done at a fixed point in the rendering sequence.
 /// Beginning or end of the frame is good.
 void reloadAllShaderPrograms( void ) {
     for (size_t i=0; i<SHADER_MAX_COUNT; i++) {
@@ -163,7 +166,8 @@ void reloadAllShaderPrograms( void ) {
 
         if (map->program) {
             unloadShaderProgramInternal( map->program );
-            map->program = loadShaderProgramInternal( map->name );
+            map->program      = loadShaderProgramInternal( map->name );
+            map->isJustLoaded = TRUE;
         }
     }
 }
@@ -179,6 +183,22 @@ static void unloadAllShaderPrograms( void ) {
 
 
 
+/// Check if a shader was freshly loaded since this function was last called.
+/// In other words, it's a self-clearing flag that gets set again whenever the shader program is reloaded.
+/// Useful for checking whether to remap uniform locations when shader autoreloading is enabled.
+/// If the pointer is NULL it returns false.
+bool wasShaderProgramJustLoaded( GLuint* program ) {
+    if (program == NULL)
+        return FALSE;
+
+    ProgramMap* map = mapFind( *program );
+    bool        ijl = map->isJustLoaded;
+    map->isJustLoaded = FALSE;
+    return ijl;
+}
+
+
+
 /// Load a shader program. Returns a pointer to the handle.
 /// The name doesn't include the file extension. It will look for .vert and .frag and deal with both.
 /// If there's only .frag, or only .vert, that's fine too.
@@ -186,14 +206,9 @@ static void unloadAllShaderPrograms( void ) {
 /// Do not store the dereferenced handle anywhere across multiple frames.
 /// This allows the shader to be dynamically reloaded which makes shader development much easier.
 GLuint* loadShaderProgram( const char* name ) {
-    // Create the program
-    GLuint program = loadShaderProgramInternal( name );
-
-    // Record name/handle mapping
-    ProgramMap* map = mapConstruct( name, program );
-
-    // Give pointer to the mapped handle
-    return &map->program;
+    GLuint      program = loadShaderProgramInternal( name ); // Create the program
+    ProgramMap* map     = mapConstruct( name, program );     // Record name/handle mapping
+    return &map->program;                                    // Give pointer to the mapped handle
 }
 
 

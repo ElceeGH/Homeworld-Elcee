@@ -3,6 +3,7 @@
 
 #pragma once
 #include "SDL_opengl.h"
+#include "Types.h"
 
 
 
@@ -21,4 +22,5 @@ extern PFNGLUNIFORMMATRIX4FVPROC   glUniformMatrix4fv;
 void    loadShaderFunctions( void );
 GLuint* loadShaderProgram( const char* name );
 void    unloadShaderProgram( GLuint* program );
+bool    wasShaderProgramJustLoaded( GLuint* program );
 void    reloadAllShaderPrograms( void );
