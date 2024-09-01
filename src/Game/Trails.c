@@ -946,9 +946,9 @@ void trailDrawCapitalGlow(shiptrail* trail, sdword LOD)
     static GLint   glowFadeLoc  = -1;
 
     if ( ! glowProg)
-        glowProg = loadShaderProgram( "capitalglow" );
+        glowProg = shaderProgramLoad( "capitalglow" );
 
-    if (wasShaderProgramJustLoaded( glowProg )) {
+    if (shaderProgramWasJustLoaded( glowProg )) {
         glowLightLoc = glGetUniformLocation( *glowProg, "uLightVec" );
         glowSpecLoc  = glGetUniformLocation( *glowProg, "uSpecExp" );
         glowFadeLoc  = glGetUniformLocation( *glowProg, "uFade" );

@@ -92,7 +92,7 @@ static void   checkLink         ( const char* name, GLuint handle );
 
 
 /// Initialise the OpenGL function pointers.
-void loadShaderFunctions() {
+void shaderProgramLoadGLFunctions() {
     // This can be called multiple times, so don't be leakin'
     unloadAllShaderPrograms();
 
@@ -160,7 +160,7 @@ static ProgramMap* mapFind( GLuint program ) {
 /// Reload and recompile all extant shader programs from source.
 /// This should be done at a fixed point in the rendering sequence.
 /// Beginning or end of the frame is good.
-void reloadAllShaderPrograms( void ) {
+void shaderProgramReloadAll( void ) {
     for (size_t i=0; i<SHADER_MAX_COUNT; i++) {
         ProgramMap* map = &programMap[i];
 
@@ -178,7 +178,7 @@ void reloadAllShaderPrograms( void ) {
 static void unloadAllShaderPrograms( void ) {
     for (size_t i=0; i<SHADER_MAX_COUNT; i++)
         if (programMap[i].program)
-            unloadShaderProgram( &programMap[i].program );
+            shaderProgramUnload( &programMap[i].program );
 }
 
 
@@ -187,7 +187,7 @@ static void unloadAllShaderPrograms( void ) {
 /// In other words, it's a self-clearing flag that gets set again whenever the shader program is reloaded.
 /// Useful for checking whether to remap uniform locations when shader autoreloading is enabled.
 /// If the pointer is NULL it returns false.
-bool wasShaderProgramJustLoaded( GLuint* program ) {
+bool shaderProgramWasJustLoaded( GLuint* program ) {
     if (program == NULL)
         return FALSE;
 
@@ -205,7 +205,7 @@ bool wasShaderProgramJustLoaded( GLuint* program ) {
 /// The pointer is valid until the program is unloaded.
 /// Do not store the dereferenced handle anywhere across multiple frames.
 /// This allows the shader to be dynamically reloaded which makes shader development much easier.
-GLuint* loadShaderProgram( const char* name ) {
+GLuint* shaderProgramLoad( const char* name ) {
     GLuint      program = loadShaderProgramInternal( name ); // Create the program
     ProgramMap* map     = mapConstruct( name, program );     // Record name/handle mapping
     return &map->program;                                    // Give pointer to the mapped handle
@@ -238,7 +238,7 @@ static GLuint loadShaderProgramInternal( const char* name ) {
 
 
 /// Unload shader and free resources used by it.
-void unloadShaderProgram( GLuint* handle ) {
+void shaderProgramUnload( GLuint* handle ) {
     unloadShaderProgramInternal( *handle );
     mapDestruct( *handle );
 }

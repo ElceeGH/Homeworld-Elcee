@@ -7,7 +7,7 @@
 
 
 
-// Functions loaded by loadShaderFunctions()
+// Functions loaded by shaderProgramLoadGLFunctions()
 extern PFNGLUSEPROGRAMPROC         glUseProgram;
 extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 extern PFNGLUNIFORM1IPROC          glUniform1i;
@@ -19,8 +19,8 @@ extern PFNGLUNIFORMMATRIX4FVPROC   glUniformMatrix4fv;
 
 
 // Prototypes
-void    loadShaderFunctions( void );
-GLuint* loadShaderProgram( const char* name );
-void    unloadShaderProgram( GLuint* program );
-bool    wasShaderProgramJustLoaded( GLuint* program );
-void    reloadAllShaderPrograms( void );
+void    shaderProgramLoadGLFunctions( void );
+GLuint* shaderProgramLoad( const char* name );
+void    shaderProgramUnload( GLuint* program );
+bool    shaderProgramWasJustLoaded( GLuint* program );
+void    shaderProgramReloadAll( void );
