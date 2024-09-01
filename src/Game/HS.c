@@ -87,8 +87,10 @@ void hsProgramUpdate( void ) {
         return;
 
     // Initialise if needed
-    if ( ! hsp.program) {
-        hsp.program      = loadShaderProgram( "hyperspace" );
+    if ( ! hsp.program)
+        hsp.program = loadShaderProgram( "hyperspace" );
+
+    if (wasShaderProgramJustLoaded( hsp.program )) {
         hsp.locTex       = glGetUniformLocation( *hsp.program, "uTex"       );
         hsp.locTexMode   = glGetUniformLocation( *hsp.program, "uTexMode"   );
         hsp.locTexEnable = glGetUniformLocation( *hsp.program, "uTexEnable" );

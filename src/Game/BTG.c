@@ -1169,8 +1169,10 @@ void btgRender(void)
     static GLint   btgLocDitherTemporal = -1;
     static udword  btgDitherCounter     =  0;
 
-    if ( ! btgProg) {
-        btgProg              = loadShaderProgram( "btg" );
+    if ( ! btgProg)
+        btgProg = loadShaderProgram( "btg" );
+
+    if (wasShaderProgramJustLoaded( btgProg )) {
         btgLocFade           = glGetUniformLocation( *btgProg, "uFade"           );
         btgLocBackground     = glGetUniformLocation( *btgProg, "uBackground"     );
         btgLocDitherEnable   = glGetUniformLocation( *btgProg, "uDitherEnable"   );
