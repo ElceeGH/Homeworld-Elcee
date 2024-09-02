@@ -15,9 +15,11 @@
     - Lines select the curr/prev transformed pos by mod 2 of vertex index.
     - Points select curr by mod 1 and skip every second vertex using stride.
     
-    * They do move, but only to wrap around the edges of their volume as the
-      camera moves. You can't see this happening though because the alpha of
-      either endpoint will be zero that far away due to the fading.
+    * Mostly. The vertex positions are constant, but their position is moved
+      into the cube centred at the camera and wrapped around at its edges.
+      You can't see it, even without alpha fading, because the worldspace
+      position is conjured using the curr/prev camproj matrixes as if it were
+      continuous motion.
     
     Created 30/08/2024 by Elcee
 =============================================================================*/
@@ -27,11 +29,12 @@
 #version 130 // Needed for gl_VertexID
 
 // Uniforms
-uniform mat4  uMatCurr;   // camera * perspective, current frame
-uniform mat4  uMatPrev;   // Camera * perspective, previous frame
-uniform int   uMode;      // 1 = points, 2 = lines
+uniform mat4  uMatCurr;   // CamProj matrix, current frame
+uniform mat4  uMatPrev;   // CamProj matrix, previous frame
+uniform int   uMode;      // Primitive/modulo. 1 = points, 2 = lines
 
 uniform vec3  uCentre;    // Camera position / centre of volume
+uniform float uRadius;    // Cube side half-length
 uniform vec2  uRes;       // Screen dimensions
 
 uniform vec3  uCol;       // Dust mote colour
@@ -55,9 +58,21 @@ float boxStep( float value, float low, float high ) {
 
 
 
+// Move mote to the [camera eye / volume centre] accounting for wrapping.
+// Pos is a position in the cube in [-radius, +radius].
+// Cen is the camera eye.
+vec4 wrapPosition( vec3 pos, vec3 cen ) {
+    float hstep   = uRadius;
+    float step    = hstep * 2.0;
+    vec3  wrapped = floor((pos + cen + step) / step) * step - pos - hstep;
+    return vec4( wrapped, 1.0 );
+}
+
+
+
 void main() {
     // Vertex attribs
-    vec4  motePos   = gl_Vertex;
+    vec4  motePos   = wrapPosition( gl_Vertex.xyz, uCentre );
     float moteAlpha = gl_Color.r;
     float moteVis   = gl_Color.g;
 

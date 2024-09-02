@@ -304,27 +304,6 @@ static void spaceDustUpdateVolume( DustVolume* vol, Camera* camera ) {
     // Update our matrix pair
     vol->matPrev = vol->matCurr;
     getCamProjMatrix( &vol->matCurr );
-
-    // Generate cube extents
-    vector cradius = { vol->radius, vol->radius, vol->radius };
-    vector cmin, cmax;
-    vecSub( cmin, vol->centre, cradius );
-    vecAdd( cmax, vol->centre, cradius );
-
-    // Wrap the motes on each axis so they repeat infinitely within the cube.
-    // While loops just in case the camera moves incredibly fast.
-    const real32 offs = vol->radius * 2.0f;
-    for (udword i=0; i<vol->moteCount; i++) {
-        Mote* mote = &vol->motes[ i ];
-        while (mote->pos.x < cmin.x) { mote->pos.x += offs; }
-        while (mote->pos.x > cmax.x) { mote->pos.x -= offs; }
-        while (mote->pos.y < cmin.y) { mote->pos.y += offs; }
-        while (mote->pos.y > cmax.y) { mote->pos.y -= offs; }
-        while (mote->pos.z < cmin.z) { mote->pos.z += offs; }
-        while (mote->pos.z > cmax.z) { mote->pos.z -= offs; }
-        
-        mote->dpos = mote->pos;
-    }
 }
 
 
@@ -368,6 +347,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     static GLint   locMatPrev   = -1;
     static GLint   locMode      = -1;
     static GLint   locCentre    = -1;
+    static GLint   locRadius    = -1;
     static GLint   locRes       = -1;
     static GLint   locCol       = -1;
     static GLint   locAlpha     = -1;
@@ -386,6 +366,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
         locMatPrev   = glGetUniformLocation( *prog, "uMatPrev"   );
         locMode      = glGetUniformLocation( *prog, "uMode"      );
         locCentre    = glGetUniformLocation( *prog, "uCentre"    );
+        locRadius    = glGetUniformLocation( *prog, "uRadius"    );
         locRes       = glGetUniformLocation( *prog, "uRes"       );
         locCol       = glGetUniformLocation( *prog, "uCol"       );
         locAlpha     = glGetUniformLocation( *prog, "uAlpha"     );
@@ -415,6 +396,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     glUniformMatrix4fv( locMatCurr, 1, FALSE, &vol->matCurr.m11 );
     glUniformMatrix4fv( locMatPrev, 1, FALSE, &vol->matPrev.m11 );
     glUniform3fv      ( locCentre,  1,        &vol->centre.x    );
+    glUniform1f       ( locRadius,             vol->radius      );
     glUniform2fv      ( locRes,     1,         res              );
     glUniform3fv      ( locCol,     1,         col              );
     glUniform1f       ( locAlpha,              alpha            );
@@ -451,14 +433,13 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     glLineWidth( primSize );
     glPointSize( primSize );
 
-    // Bind and create/update GPU vertex buffer
+    // Bind and create GPU vertex buffer if needed
     if ( ! vol->moteVBO) {
         glGenBuffers( 1, &vol->moteVBO );
         glBindBuffer( GL_ARRAY_BUFFER, vol->moteVBO );
         glBufferData( GL_ARRAY_BUFFER, vol->moteBytes, vol->motes, GL_STREAM_DRAW );
     } else {
-        glBindBuffer   ( GL_ARRAY_BUFFER, vol->moteVBO );
-        glBufferSubData( GL_ARRAY_BUFFER, 0, vol->moteBytes, vol->motes );
+        glBindBuffer( GL_ARRAY_BUFFER, vol->moteVBO );
     }
 
     // Enable position and colour attribs. (It's not really colour though!  They're per-mote alpha variances)
