@@ -365,7 +365,7 @@ void SEinitcardiod(void)
 
     for (i = 0; i < CARDIOD_POINTS; i++)
     {
-        cardiod[i] = (1.0f + (real32)cos((CARDIOD_POINTS - i) / PI_UNDER_180)) * SFX_CARDIOD_FACTOR;
+        cardiod[i] = (1.0f + cosf((CARDIOD_POINTS - i) / PI_UNDER_180)) * SFX_CARDIOD_FACTOR;
         if (cardiod[i] < SFX_CARDIOD_MIN)
         {
             cardiod[i] = SFX_CARDIOD_MIN;

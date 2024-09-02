@@ -1207,6 +1207,7 @@ static void drawNebulaFuzzyTendies( void ) {
     rndLightingEnable(FALSE);
     rndAdditiveBlends(FALSE);
 
+    glDepthMask(FALSE);
     glEnable(GL_BLEND);
     glShadeModel(GL_FLAT); // 2024: Guess they're not supposed to be interpolated. Or is for ye olde speed? Might look cool to lerp the colour.
     glLineWidth( sqrtf(getResDensityRelative()) );
@@ -1243,6 +1244,7 @@ static void drawNebulaFuzzyTendies( void ) {
         glEnd();
     }
 
+    glDepthMask(TRUE);
     glDisable(GL_BLEND);
     glLineWidth(1.0f);
 }

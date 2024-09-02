@@ -1260,7 +1260,7 @@ static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, rea
     real32 radiusMin    = TUT_ShipCircleSizeMin * getResDensityRelative();
     real32 radiusScaled = sradius * mrh * 0.5f;
     real32 radius       = max( radiusScaled, radiusMin );
-    sdword segs         = pieCircleSegmentsCompute( radius/ mrh* 2.0f ); // Takes screenspace arg
+    sdword segs         = pieCircleSegmentsCompute( radius / mrh * 2.0f ); // Takes screenspace arg
     real32 cx           = (real32) primGLToScreenX( sx );
     real32 cy           = (real32) primGLToScreenY( sy );
                     
@@ -1291,7 +1291,6 @@ static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, rea
     glMatrixMode( GL_PROJECTION );
     glPopMatrix();
     glMatrixMode( GL_MODELVIEW );
-    
 }
 
 

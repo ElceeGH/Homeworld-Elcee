@@ -94,12 +94,6 @@ udword initialSensorLevel;
 extern sdword enableTrails;
 extern sdword showBackgrounds;
 
-extern bool mainRasterSkip;
-
-extern bool mainSafeGL;
-
-extern bool mainForceKatmai;
-extern bool mainAllowKatmai;
 extern bool mainAllowPacking;
 extern bool mainOnlyPacking;
 
@@ -120,10 +114,6 @@ extern sdword mainWindowWidth;
 extern sdword mainWindowHeight;
 extern sdword mainWindowDepth;
 
-extern char mainDeviceToSelect[];
-extern char mainGLToSelect[];
-
-extern bool mainNoPerspective;
 extern bool systemActive;
 
 /*=============================================================================

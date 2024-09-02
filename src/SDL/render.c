@@ -1020,7 +1020,7 @@ static bool setupPixelFormat( void )
     glGenBuffers    = SDL_GL_GetProcAddress("glGenBuffers");
     glBufferData    = SDL_GL_GetProcAddress("glBufferData");
     glBufferSubData = SDL_GL_GetProcAddress("glBufferSubData");
-    loadShaderFunctions();
+    shaderProgramLoadGLFunctions();
 #endif
 
     useVBO = glCheckExtension("GL_ARB_vertex_buffer_object");

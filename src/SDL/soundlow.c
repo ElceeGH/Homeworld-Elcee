@@ -12,6 +12,7 @@
 #include "Switches.h"
 #include "Debug.h"
 #include "soundlow.h"
+#include "SoundEvent.h"
 #include "File.h"
 #include "soundcmn.h"
 #include "main.h"
@@ -645,44 +646,40 @@ sdword soundequalize(sdword handle, real32 *eq)
 ----------------------------------------------------------------------------*/	
 sdword soundshipheading(sdword handle, sword heading, sdword highband, sdword lowband, real32 velfactor, real32 shipfactor)
 {
-    if (!soundinited) {
+    if ( ! soundinited)
         return SOUND_ERR;
-    }
     
     const sdword channel = SNDchannel(handle);
-    if (channel < SOUND_OK) {
+    if (channel < SOUND_OK)
         return SOUND_ERR;
-    }
 
     CHANNEL* const pchan = &channels[channel];
-    if (pchan == NULL) {
+    if (pchan == NULL)
         return SOUND_OK;
-    }
     
-    if (pchan->handle != handle) {
+    if (pchan->handle != handle)
         return SOUND_ERR;
-    }
     
+    heading = max( heading, 0 );
+    heading = min( heading, CARDIOD_POINTS - 1 );
     pchan->heading = heading;
 
-    const real32 factor        = ((cardiod[heading]       - 1.0f) * velfactor * shipfactor + 1.0f);
-    const real32 inversefactor = ((cardiod[180 - heading] - 1.0f) * velfactor * shipfactor + 1.0f);
+    const sdword headingInv    = CARDIOD_POINTS - 1 - heading;
+    const real32 factor        = ((cardiod[heading   ] - 1.0f) * velfactor * shipfactor + 1.0f);
+    const real32 inversefactor = ((cardiod[headingInv] - 1.0f) * velfactor * shipfactor + 1.0f);
 
-    for (sdword i = 0; i < lowband; i++) {
+    for (sdword i = 0; i < lowband; i++)
         pchan->cardiodfilter[i] = factor;
-    }
 
     const real32 diff = (inversefactor - factor) / (highband - lowband);
-
-    for (sdword i = lowband; i < highband; i++) {
+    for (sdword i = lowband; i < highband; i++)
         pchan->cardiodfilter[i] = factor + (diff * (i - lowband));
-    }
 
-    for (sdword i = highband; i < SOUND_EQ_SIZE; i++) {
+    for (sdword i = highband; i < SOUND_EQ_SIZE; i++)
         pchan->cardiodfilter[i] = inversefactor;
-    }
     
     pchan->usecardiod = TRUE;
+
     return SOUND_OK;
 }
 
