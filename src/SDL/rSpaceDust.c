@@ -56,7 +56,7 @@ static real32 levelDensity[] = {
 
 // Get level-specific density scaling factor.
 // Defaults to 1 for any non-specified cases.
-static real32 getLevelDensity(void) {
+static real32 getLevelDensity( void ) {
     const udword level = spGetCurrentMission();
     const udword count = sizeof(levelDensity) / sizeof(levelDensity[0]);
 
@@ -69,7 +69,7 @@ static real32 getLevelDensity(void) {
 
 // Get level-specific seed.
 // Why? To make the space dust always look the same for any given level.
-static udword getLevelSeed(void) {
+static udword getLevelSeed( void ) {
     if (singlePlayerGame)
          return 1 + spGetCurrentMission();
     else return 1;
@@ -119,7 +119,7 @@ static real32 rngNextRange( PRNG* prng, real32 a, real32 b ) {
 
 
 // Random point inside a cube.
-static vector rngNextPointInUnitCube( PRNG* prng, real32 radius ) {
+static vector rngNextPointInCube( PRNG* prng, real32 radius ) {
     return (vector) { rngNextRange( prng, -radius, +radius ),
                       rngNextRange( prng, -radius, +radius ),
                       rngNextRange( prng, -radius, +radius ) };
@@ -216,7 +216,7 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     const real32 visVarMin  = 0.00f; // Mote visibility offset min. Used as (distance*(1+vis)) in distance fadeout calc.
     const real32 visVarMax  = 0.30f; // Mote visibility offset max.
     const real32 alphaMin   = 0.35f; // Mote alpha min. Simple modulation.
-    const real32 alphaMax   = 1.00f; // Mote alpha max.
+    const real32 alphaMax   = 0.85f; // Mote alpha max.
 
     // Area and density
     const real32 area             = 6.0f * sqr(radius); // Cube actual area
@@ -239,7 +239,7 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     for (udword i=0; i<moteCount; i++) {
         Mote* mote  = &motes[ i ];
 
-        mote->pos   = rngNextPointInUnitCube( &prng, radius );
+        mote->pos   = rngNextPointInCube( &prng, radius );
         mote->vis   = rngNextRange( &prng, visVarMin, visVarMax );
         mote->alpha = rngNextRange( &prng, alphaMin,  alphaMax  );
 
@@ -284,22 +284,15 @@ static void spaceDustShutdown( DustVolume* vol ) {
 
 
 
-static void spaceDustUpdateVolume( DustVolume* vol, Camera* camera ) {
+// Draw lines from previous to current position in screenspace.
+// Space dust is supposed to be tiny so the lines are always thin.
+void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     // Update the centre position
     vol->centre = camera->eyeposition;
 
     // Update our matrix pair
     vol->matPrev = vol->matCurr;
     getCamProjMatrix( &vol->matCurr );
-}
-
-
-
-// Draw lines from previous to current position in screenspace.
-// Space dust is supposed to be tiny so the lines are always thin.
-void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
-    // Update volume
-    spaceDustUpdateVolume( vol, camera );
 
     // Don't call this when no game is running, since it will render over menus and stuff lol
     if ( ! gameIsRunning)

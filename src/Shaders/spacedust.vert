@@ -60,11 +60,14 @@ float boxStep( float value, float low, float high ) {
 
 // Move mote to the [camera eye / volume centre] accounting for wrapping.
 // Pos is a position in the cube in [-radius, +radius].
-// Cen is the camera eye.
+// This looks complicated. The basic idea is to snap the cube to the
+// camera, adding the mote position in the process, and then cancel out
+// the position so it is only snapped within the volume and not moved.
+// Finally the cube is offset by half its size to fully centre it.
 vec4 wrapPosition( vec3 pos, vec3 cen ) {
     float hstep   = uRadius;
     float step    = hstep * 2.0;
-    vec3  wrapped = floor((pos + cen + step) / step) * step - pos - hstep;
+    vec3  wrapped = floor((pos + cen) / step) * step - pos + hstep;
     return vec4( wrapped, 1.0 );
 }
 

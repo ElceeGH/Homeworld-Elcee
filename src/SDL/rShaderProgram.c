@@ -143,7 +143,7 @@ static void mapDestruct( GLuint handle ) {
 
 /// Find mapping by its program handle.
 /// A zero handle represents an unused slot.
-/// If no free slot exists, it kills the game via dbgFatalf.
+/// If the search fails it kills the game via dbgFatalf.
 static ProgramMap* mapFind( GLuint program ) {
     for (size_t i=0; i<SHADER_MAX_COUNT; i++) {
         ProgramMap* map = &programMap[i];
