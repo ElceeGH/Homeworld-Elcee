@@ -1854,8 +1854,8 @@ void rndDrawAsteroid0( Camera* camera )
                 // For points very close to the camera, give them blurry halos like it's camera bokeh, helps sense of depth
                 // Could avoid the primitive restarts using a shader, but it's too small potatos to bother with. The overhead is piffling.
                 real32 bkFrac    = 1.0f - dist / rangeClose;
-                real32 bkAlpha   = bkFrac * bkFrac * 0.15f;
-                real32 bkSize    = size + bkFrac * bkFrac * size * 8.0f;
+                real32 bkAlpha   = sqr(bkFrac) * 0.15f;
+                real32 bkSize    = size + sqr(bkFrac) * size * 8.0f;
                 real32 lerpAlpha = lerpf( alpha, bkAlpha,  bkFrac );
                 real32 lerpSize  = lerpf( size,  bkSize,   bkFrac );
 
