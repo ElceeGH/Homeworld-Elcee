@@ -2589,7 +2589,8 @@ dontdraw2:;
 #endif
 
                         glPushMatrix();
-                        level = lodLevelGet((void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
+                        level              = lodLevelGet(            (void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
+                        ubyte levelDefault = lodLevelComputeDefault( (void *)spaceobj, &camera->eyeposition );
 
                         if (taskTimeElapsed-((Ship *)spaceobj)->flashtimer < FLASH_TIMER)
                         {
@@ -2812,7 +2813,11 @@ dontdraw2:;
                                                 }
 #endif
                                             }
-                                            spaceobj->renderedLODs |= (1 << spaceobj->currentLOD);
+
+                                            // Calculate this without the LOD distance overriding.
+                                            // It's used for some decision purposes in the game KAS scripts, and mouse cursor hover text too (like giving "Enemy Ship" until you look closely).
+                                            // It's not used by the renderer or for memory management or anything like that, so it not being technically correct is not a big deal.
+                                            spaceobj->renderedLODs |= 1 << levelDefault;
 
                                             //navlights
                                             if (!bitTest(spaceobj->flags, SOF_Cloaked))
