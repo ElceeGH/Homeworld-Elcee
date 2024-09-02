@@ -48,7 +48,7 @@ uniform float uMbScale;   // Relative length for line motion blurring
 
 
 
-// Inverse linear interpolation clamped to [0:1]
+// Inverse linear interpolation, clamped to [0:1]
 float boxStep( float value, float low, float high ) {
     float range = high  - low;
     float delta = value - low;

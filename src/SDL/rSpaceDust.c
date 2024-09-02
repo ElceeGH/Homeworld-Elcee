@@ -141,12 +141,14 @@ static real32 boxStepf( real32 value, real32 low, real32 high ) {
 /// All attributes are duplicated for technical GPU-particle reasons.
 /// Also used as a vertex format.
 typedef struct Mote {
-    vector pos;    ///< World position
-    real32 alpha;  ///< Brightness variation       [0:1]
-    real32 vis;    ///< Visibility range variation [0:1]
-    vector dpos;   ///< Duplicated
-    real32 dalpha; ///< Duplicated
-    real32 dvis;   ///< Duplicated
+    vector pos;      ///< World position
+    real32 alpha;    ///< Brightness variation       [0:1]
+    real32 vis;      ///< Visibility range variation [0:1]
+    real32 padding;  ///< Must have at least 3 colours for glColourPointer, so here you go
+    vector dpos;     ///< Duplicated
+    real32 dalpha;   ///< Duplicated
+    real32 dvis;     ///< Duplicated
+    real32 dpadding; ///< Padding
 } Mote;
 
 /// Dust volume which follows the camera.
@@ -213,12 +215,12 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     // Variation ranges. Limited to [0:1] range.
     const real32 visVarMin  = 0.00f; // Mote visibility offset min. Used as (distance*(1+vis)) in distance fadeout calc.
     const real32 visVarMax  = 0.30f; // Mote visibility offset max.
-    const real32 alphaMin   = 0.65f; // Mote alpha min. Simple modulation.
+    const real32 alphaMin   = 0.35f; // Mote alpha min. Simple modulation.
     const real32 alphaMax   = 1.00f; // Mote alpha max.
 
     // Area and density
-    const real32 area             = 6.0f * sqr(radius);
-    const real32 motesPerUnitArea = 1.0f / 200'000.0f; // Average density, area-independent
+    const real32 area             = 6.0f * sqr(radius); // Cube actual area
+    const real32 motesPerUnitArea = 1.0f / 300'000.0f; // Average density, area-independent
     const real32 moteDensityScale = getLevelDensity();
 
     // Count and storage
@@ -228,8 +230,6 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     // Allocate memory for motes
     Mote* const motes = memAlloc( moteBytes, "Dust motes", NonVolatile );
     memset( motes, 0x00, moteBytes );
-
-    printf( "Motes count = %u\n", moteCount );
 
     // Get our PRNG ready
     PRNG prng;
@@ -291,27 +291,6 @@ static void spaceDustUpdateVolume( DustVolume* vol, Camera* camera ) {
     // Update our matrix pair
     vol->matPrev = vol->matCurr;
     getCamProjMatrix( &vol->matCurr );
-}
-
-
-
-// Show all the dust motes in worldspace as purple points ignoring everything but their position.
-void spaceDustRenderDebug( DustVolume* vol ) {
-    sdword add = rndAdditiveBlends( FALSE );
-    sdword tex = rndTextureEnable( FALSE );
-    sdword lit = rndLightingEnable( FALSE );
-    sdword bln = glIsEnabled( GL_BLEND );
-    glDisable( GL_BLEND );
-
-    glBegin( GL_POINTS );
-        glColor4f( 1,0,1,1 );
-        for (udword i=0; i<vol->moteCount; i++)
-            glVertex3fv( &vol->motes[i].pos.x );
-    glEnd();
-
-    rndAdditiveBlends( add );
-    rndTextureEnable( tex );
-    rndLightingEnable( lit );
 }
 
 
@@ -436,13 +415,13 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     // Draw lines
     glUniform1i( locMode, lineModulo );
     glVertexPointer( 3, GL_FLOAT, lineStride, posOffs );
-    glColorPointer ( 2, GL_FLOAT, lineStride, colOffs );
+    glColorPointer ( 3, GL_FLOAT, lineStride, colOffs );
     glDrawArrays( GL_LINES, 0, lineVertCount );
     
     // Draw points
     glUniform1i( locMode, pointModulo );
     glVertexPointer( 3, GL_FLOAT, pointStride, posOffs );
-    glColorPointer ( 2, GL_FLOAT, pointStride, colOffs );
+    glColorPointer ( 3, GL_FLOAT, pointStride, colOffs );
     glDrawArrays( GL_POINTS, 0, pointVertCount );
     
     glDisableClientState( GL_VERTEX_ARRAY );
