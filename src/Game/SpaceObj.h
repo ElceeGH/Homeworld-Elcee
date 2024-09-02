@@ -982,7 +982,7 @@ typedef struct
     StaticInfo *staticinfo; // pointer to static info
     Node renderlink;        // link for rendering list
     ubyte currentLOD;       // current level of detail
-    ubyte renderedLODs;     //what LODs have been rendered already
+    ubyte renderedLODs;     //what LODs have been rendered already (NOTE: it's actually what *WOULD HAVE* been rendered in the original game)
     uword attributes;               // settable attributes from mission editor
     sword attributesParam;           // parameter for attributes, set from mission editor
     ubyte attributesPad[2];          // leftover, free space
