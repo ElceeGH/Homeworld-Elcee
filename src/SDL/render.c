@@ -3808,7 +3808,7 @@ DEFINE_TASK(rndRenderTask)
         primErrorMessagePrint();
 
         if (opRenderShaderReload)
-            reloadAllShaderPrograms();
+            shaderProgramReloadAll();
 
         subTitlesUpdate();
 
