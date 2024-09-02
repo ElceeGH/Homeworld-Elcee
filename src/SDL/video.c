@@ -340,12 +340,11 @@ static void videoRender( const Video* vid ) {
     const real32 winHalfW = winW / 2.0f;
     const real32 winHalfH = winH / 2.0f;
 
-    // Save matrices
-    glMatrixMode( GL_MODELVIEW  ); glPushMatrix();
-    glMatrixMode( GL_PROJECTION ); glPushMatrix();
+    // Save/reset matrices
+    glMatrixMode( GL_MODELVIEW  ); glPushMatrix(); glLoadIdentity();
+    glMatrixMode( GL_PROJECTION ); glPushMatrix(); glLoadIdentity();
 
     // Set transform.
-    glLoadIdentity();
     glOrtho     ( 0.0f, winW, winH, 0.0f, -1.0f, +1.0f );
     glTranslatef(  winHalfW,  winHalfH, 0.0f );
     glScalef    (  scale,     scale,    1.0f );
@@ -356,6 +355,7 @@ static void videoRender( const Video* vid ) {
     glEnable ( GL_TEXTURE_2D );
     glDisable( GL_BLEND      );
     glDisable( GL_DEPTH_TEST );
+    glDisable( GL_LIGHTING   );
     glBindTexture( GL_TEXTURE_2D, vid->texture );
     
     // Draw the textured video rectangle.
@@ -415,7 +415,6 @@ void videoPlay( char* filename, VideoCallback* cbUpdate, VideoCallback* cbRender
     // Video working data
     Video video   = { 0 }; // Video state
     bool  more    = TRUE;  // Whether to continue playing
-    bool  skipped = FALSE; // Whether player skipped the video
 
     // Open the video
     if ( ! videoOpen( &video, path, params )) {
