@@ -437,7 +437,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     if ( ! vol->moteVBO) {
         glGenBuffers( 1, &vol->moteVBO );
         glBindBuffer( GL_ARRAY_BUFFER, vol->moteVBO );
-        glBufferData( GL_ARRAY_BUFFER, vol->moteBytes, vol->motes, GL_STREAM_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, vol->moteBytes, vol->motes, GL_STATIC_DRAW );
     } else {
         glBindBuffer( GL_ARRAY_BUFFER, vol->moteVBO );
     }
