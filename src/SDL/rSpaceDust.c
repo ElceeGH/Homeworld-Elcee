@@ -119,7 +119,7 @@ static real32 rngNextRange( PRNG* prng, real32 a, real32 b ) {
 
 
 // Random point inside a cube.
-static vector rngNextPointInCube( PRNG* prng, vector centre, real32 radius ) {
+static vector rngNextPointInUnitCube( PRNG* prng, real32 radius ) {
     return (vector) { rngNextRange( prng, -radius, +radius ),
                       rngNextRange( prng, -radius, +radius ),
                       rngNextRange( prng, -radius, +radius ) };
@@ -127,26 +127,7 @@ static vector rngNextPointInCube( PRNG* prng, vector centre, real32 radius ) {
 
 
 
-// Random point inside a sphere. Uniform distribution.
-// Based on Karthik Karanth's great post: https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
-static vector rngNextPointInSphere( PRNG* prng, vector centre, real32 radius ) {
-    // Create a random point on the unit cube and normalise it into an orientation vector
-    vector vec = { rngNext(prng), rngNext(prng), rngNext(prng) };
-    vecNormalize( &vec );
-
-    // Scale by the cube root of another independent random number to create point inside unit sphere
-    const real32 rcr = cbrtf( rngNext(prng) );
-    vecMultiplyByScalar( vec, rcr );
-
-    // Scale up radius, offset to centre
-    vecMultiplyByScalar( vec, radius );
-    vecAddTo( vec, centre );
-    return vec;
-}
-
-
-
-// Inverse of linear interpolation clamped to [0:1]
+// Inverse of linear interpolation, clamped to [0:1]
 static real32 boxStepf( real32 value, real32 low, real32 high ) {
     real32 range = high  - low;
     real32 delta = value - low;
@@ -229,6 +210,12 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     const real32 closeFarMin  =   150.0f; // Fade start point is also very close to the camera initially so motes can flyby the camera and look cool.
     const real32 closeFarMax  =  5000.0f; // But it gets very wide as the camera goes further out so the fadeoff is more gradual.
 
+    // Variation ranges. Limited to [0:1] range.
+    const real32 visVarMin  = 0.00f; // Mote visibility offset min. Used as (distance*(1+vis)) in distance fadeout calc.
+    const real32 visVarMax  = 0.30f; // Mote visibility offset max.
+    const real32 alphaMin   = 0.65f; // Mote alpha min. Simple modulation.
+    const real32 alphaMax   = 1.00f; // Mote alpha max.
+
     // Area and density
     const real32 area             = 6.0f * sqr(radius);
     const real32 motesPerUnitArea = 1.0f / 200'000.0f; // Average density, area-independent
@@ -252,9 +239,9 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     for (udword i=0; i<moteCount; i++) {
         Mote* mote  = &motes[ i ];
 
-        mote->pos   = rngNextPointInCube( &prng, centre, radius );
-        mote->vis   = rngNextRange( &prng, 0.00f, 0.50f );
-        mote->alpha = rngNextRange( &prng, 0.35f, 1.00f );
+        mote->pos   = rngNextPointInUnitCube( &prng, radius );
+        mote->vis   = rngNextRange( &prng, visVarMin, visVarMax );
+        mote->alpha = rngNextRange( &prng, alphaMin,  alphaMax  );
 
         mote->dpos   = mote->pos;
         mote->dvis   = mote->vis;
