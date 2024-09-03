@@ -37,7 +37,7 @@ uniform vec3  uCentre;    // Camera position / centre of volume
 uniform float uRadius;    // Cube side half-length
 uniform vec2  uRes;       // Screen dimensions
 
-uniform vec3  uCol;       // Dust mote colour (A)
+uniform vec3  uCol;       // Dust mote colour
 uniform float uAlpha;     // Dust mote overall alpha
 uniform float uCloseNear; // Fade in when this close to camera (begin)
 uniform float uCloseFar;  // Fade in when this close to camera (end)
