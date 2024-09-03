@@ -38,6 +38,9 @@
     <Filter Include="Source Files\Game\no-optimize">
       <UniqueIdentifier>{333b6822-90a8-482c-9b35-37775914c33b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\SDL\Hell">
+      <UniqueIdentifier>{afe54a00-a489-43fe-adb0-2a5b89cfbaae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Game\ETG.c">
@@ -700,9 +703,6 @@
     <ClCompile Include="..\..\src\SDL\mainrgn.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL\mixfft.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SDL\mouse.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
@@ -728,15 +728,6 @@
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\screenshot.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SDL\smixer.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SDL\soundlow.c">
-      <Filter>Source Files\SDL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SDL\sstream.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\texreg.c">
@@ -957,6 +948,18 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SDL\rSpaceDust.c">
       <Filter>Source Files\SDL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\smixer.c">
+      <Filter>Source Files\SDL\Hell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\soundlow.c">
+      <Filter>Source Files\SDL\Hell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\sstream.c">
+      <Filter>Source Files\SDL\Hell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL\mixfft.c">
+      <Filter>Source Files\SDL\Hell</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
