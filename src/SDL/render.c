@@ -1811,17 +1811,16 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
 /*-----------------------------------------------------------------------------
     Name        : rndDrawAsteroid0
     Description : renders asteroid0's (small asteroids that provide visible structure to a level)
-    Inputs      : camera - number of points to render
+    Inputs      : camera
     Outputs     : renders all small asteroids in view, with fading
-    Return      :
+    Return      : 
 ----------------------------------------------------------------------------*/
-void rndDrawAsteroid0( Camera* camera )
+static void rndDrawAsteroid0( void )
 {
     bool wasTex   = rndTextureEnable(FALSE);
     bool wasLight = rndLightingEnable(FALSE);
     bool wasBlend = glIsEnabled( GL_BLEND );
     glEnable( GL_BLEND );
-    g_WireframeHack = FALSE;
 
     const real32 rangeClose = 3500.0f;
     const real32 rangeLow   = sqrtf( RENDER_VIEWABLE_DISTANCE_SQR );
@@ -1856,11 +1855,14 @@ void rndDrawAsteroid0( Camera* camera )
 
                 glEnd();
                 glPointSize( lerpSize );
+                glDepthMask( FALSE );
+
                 glBegin( GL_POINTS );
-                glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (lerpAlpha * 255.0f) );
-                glVertex3fv( &obj->posinfo.position.x );
+                    glColor4ub( colRed(c), colGreen(c), colBlue(c), (ubyte) (lerpAlpha * 255.0f) );
+                    glVertex3fv( &obj->posinfo.position.x );
                 glEnd();
                 
+                glDepthMask( TRUE );
                 glPointSize( size );
                 glBegin( GL_POINTS );
             }
@@ -3153,12 +3155,12 @@ renderDefault:
         objnode = objnode->next;
     }
 
+    g_WireframeHack = FALSE;
+
     // minor renderlist (asteroid0 list)
-    rndDrawAsteroid0( camera );
+    rndDrawAsteroid0();
 
-    rndLightingEnable(TRUE);
-
-    //hyperspace
+    // Big transparent things
     hsStaticRender();
     alodAdjustScaleFactor();
     nebRender();
