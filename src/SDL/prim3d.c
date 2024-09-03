@@ -531,7 +531,7 @@ void primPointSize3(vector *p1, real32 size, color c)
     glPointSize(size);
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_POINTS);
-    glVertex3f(p1->x, p1->y, p1->z);                        //!!! no size
+    glVertex3f(p1->x, p1->y, p1->z);
     glEnd();
     glPointSize(1.0f);
 }
@@ -548,7 +548,7 @@ void primPointSize3Fade(vector *p1, real32 size, color c, real32 fade)
     glPointSize(size);
     glColor4ub(colRed(c), colGreen(c), colBlue(c), (ubyte)(fade * 255.0f));
     glBegin(GL_POINTS);
-    glVertex3f(p1->x, p1->y, p1->z);                        //!!! no size
+    glVertex3f(p1->x, p1->y, p1->z);
     glEnd();
     glPointSize(1.0f);
 
