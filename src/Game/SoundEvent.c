@@ -2864,7 +2864,7 @@ void soundEventPlayMusic(sdword tracknum)
 
 void soundEventStopMusic(real32 fadetime)
 {
-    musicEventStop(-1, fadetime);
+    musicEventStop(SOUND_DEFAULT, fadetime);
 }
 
 
