@@ -1808,11 +1808,6 @@ real32 rndDockScalar(Ship* ship, Ship* dockship, real32 nearVal, real32 farVal)
     return 1.0f - dist;
 }
 
-// Basic helper
-static real32 lerpf( real32 a, real32 b, real32 f ) {
-    return a + (b - a) * f;
-}
-
 /*-----------------------------------------------------------------------------
     Name        : rndDrawAsteroid0
     Description : renders asteroid0's (small asteroids that provide visible structure to a level)
