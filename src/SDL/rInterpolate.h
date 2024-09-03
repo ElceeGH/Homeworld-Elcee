@@ -25,3 +25,5 @@ real32 lerpf( real32 from, real32 to, real32 f );
 vector lerpv( vector from, vector to, real32 f );
 vector slerp( vector from, vector to, real32 f );
 void   slerpm( matrix* out, const matrix* from, const matrix* to, real32 f );
+
+real32 boxStepf( real32 value, real32 low, real32 high );

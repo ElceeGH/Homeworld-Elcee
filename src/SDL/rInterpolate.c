@@ -196,6 +196,16 @@ void slerpm( matrix* out, const matrix* from, const matrix* to, real32 f ) {
 
 
 
+// Inverse of linear interpolation, clamped to [0:1]
+real32 boxStepf( real32 value, real32 low, real32 high ) {
+    real32 range = high  - low;
+    real32 delta = value - low;
+    real32 ratio = delta / range;
+    return max( 0.0f, min(ratio,1.0f) );
+}
+
+
+
 /// Ship-specific interpolation info.
 typedef struct ShipInterp {
     real32 hsClipT; ///< Hyperspace clipping parameter value (Note: discontinuous!)
