@@ -656,7 +656,7 @@ void rintMarkHsDiscontinuity( SpaceObj* obj, real32 clipT ) {
     if (interp == NULL)
         return;
 
-    // Make the ccurr/prev values equal
+    // Make the curr/prev values equal
     interp->sprev.hsClipT = clipT;
     interp->scurr.hsClipT = clipT;
 }
@@ -676,7 +676,7 @@ void rintRenderClearAndDisableTemporarily( void ) {
 
 /// Enable interpolation (call in renderer before render begin/end function pair)
 /// The enable doesn't take effect instantly, as doing the interpolation trickery on the very first frame will crash the game.
-/// Also, even if you enable it here, nothing will happen if interpolated isn't turned on.
+/// Also, even if you enable it here, nothing will happen if interpolation isn't turned on.
 void rintRenderEnableDeferred( void ) {
     if (renderTimer != 0)
          renderTimer--;
