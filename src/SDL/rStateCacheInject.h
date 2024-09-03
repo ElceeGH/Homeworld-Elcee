@@ -53,4 +53,7 @@
     // Shade model
     #define glShadeModel    ccglShadeModel
 
+    // Blend mode
+    #define glBlendFunc     ccglBlendFunc
+
 #endif

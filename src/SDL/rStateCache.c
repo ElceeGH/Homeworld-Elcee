@@ -40,6 +40,8 @@ enum CacheEntry {
     CacheViewport,
     CacheScissorBox,
     CacheShadeModel,
+    CacheBlendModeSrc,
+    CacheBlendModeDst,
 
     CacheDepthTest,
     CacheAlphaTest,
@@ -80,6 +82,8 @@ typedef struct Cache {
     GLint     viewport[4];
     GLint     scissorBox[4];
     GLenum    shadeModel;
+    GLenum    blendModeSrc;
+    GLenum    blendModeDst;
 
     // glIsEnabled
     GLboolean depthTest;
@@ -95,7 +99,8 @@ typedef struct Cache {
     GLboolean rescaleNormals;
 
     // Cache stats
-    udword hits[ CacheEntryCount ];
+    uqword hits  [ CacheEntryCount ];
+    uqword misses[ CacheEntryCount ];
 } Cache;
 
 
@@ -106,7 +111,7 @@ static Cache cache;
 
 
 /// Map ID to cache data. Not all IDs are mapped, just the ones Homeworld actually uses.
-static struct CacheMap cacheMap( GLenum id ) {
+static CacheMap cacheMap( GLenum id ) {
     switch (id) {
         case GL_MATRIX_MODE       : return (CacheMap) { &cache.matrixMode        , sizeof(cache.matrixMode      ) , 1<<CacheMatrixMode     };
         case GL_PROJECTION_MATRIX : return (CacheMap) { &cache.projectionMatrix  , sizeof(cache.projectionMatrix) , 1<<CacheProjMatrix     };
@@ -120,7 +125,9 @@ static struct CacheMap cacheMap( GLenum id ) {
         case GL_ALPHA_TEST        : return (CacheMap) { &cache.alphaTest         , sizeof(cache.alphaTest       ) , 1<<CacheAlphaTest      };
         case GL_STENCIL_TEST      : return (CacheMap) { &cache.stencilTest       , sizeof(cache.stencilTest     ) , 1<<CacheStencilTest    };
         case GL_SCISSOR_TEST      : return (CacheMap) { &cache.scissorTest       , sizeof(cache.scissorTest     ) , 1<<CacheScissorTest    };
-        case GL_SHADE_MODEL       : return (CacheMap) { &cache.shadeModel        , sizeof(cache.shadeModel)       , 1<<CacheShadeModel     };
+        case GL_SHADE_MODEL       : return (CacheMap) { &cache.shadeModel        , sizeof(cache.shadeModel      ) , 1<<CacheShadeModel     };
+        case GL_BLEND_SRC         : return (CacheMap) { &cache.blendModeSrc      , sizeof(cache.blendModeSrc    ) , 1<<CacheBlendModeSrc   };
+        case GL_BLEND_DST         : return (CacheMap) { &cache.blendModeDst      , sizeof(cache.blendModeDst    ) , 1<<CacheBlendModeDst   };
         case GL_TEXTURE_2D        : return (CacheMap) { &cache.texture2D         , sizeof(cache.texture2D       ) , 1<<CacheTexture2D      };
         case GL_BLEND             : return (CacheMap) { &cache.blend             , sizeof(cache.blend           ) , 1<<CacheBlend          };
         case GL_LIGHTING          : return (CacheMap) { &cache.lighting          , sizeof(cache.lighting        ) , 1<<CacheLighting       };
@@ -148,6 +155,8 @@ static const char* idToName( GLenum id ) {
         case GL_ALPHA_TEST        : return "GL_ALPHA_TEST"       ;
         case GL_STENCIL_TEST      : return "GL_STENCIL_TEST"     ;
         case GL_SHADE_MODEL       : return "GL_SHADE_MODEL"      ;
+        case GL_BLEND_SRC         : return "GL_BLEND_SRC"        ;
+        case GL_BLEND_DST         : return "GL_BLEND_DST"        ;
         case GL_SCISSOR_TEST      : return "GL_SCISSOR_TEST"     ;
         case GL_TEXTURE_2D        : return "GL_TEXTURE_2D"       ;
         case GL_BLEND             : return "GL_BLEND"            ;
@@ -288,13 +297,21 @@ void ccglClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a ) {
 
 
 void ccglShadeModel( GLenum mode ) {
-    GLenum current; // Cull redundant calls for this too, called thousands of times per frame redundantly
+    GLenum current; // Cull redundant calls for this too, happens many thousands of times per frame
     if (cacheRead( GL_SHADE_MODEL, &current ))
     if (current == mode)
         return;
 
     cacheWrite( GL_SHADE_MODEL, &mode );
     glShadeModel( mode );
+}
+
+
+
+void ccglBlendFunc( GLenum sfactor, GLenum dfactor ) {
+    cacheWrite( GL_BLEND_SRC, &sfactor );
+    cacheWrite( GL_BLEND_DST, &dfactor );
+    glBlendFunc( sfactor, dfactor );
 }
 
 

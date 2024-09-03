@@ -45,3 +45,5 @@ void ccglClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a );
 // Shade model
 void ccglShadeModel( GLenum mode );
 
+// Blend func
+void ccglBlendFunc( GLenum sfactor, GLenum dfactor );
