@@ -455,6 +455,7 @@ sdword opSaveNumEffects;
 // New option defaults
 udword opEffectFreqMult          = 100 * 2; ///< It's a percentage, 200% by default
 bool   opRenderInterpolation     = TRUE;    ///< Beautiful so beautiful I'm a genius etc
+bool   opRenderMaxDetail         = TRUE;    ///< Use the best LODs (except in cases where it looks worse and causes bugs)
 bool   opRenderFuzzyTendies      = TRUE;    ///< Make tendrils fuzzy, optional since it's a change
 bool   opRenderBtgDitherEnable   = TRUE;    ///< Pretty much always looks better
 bool   opRenderBtgDitherTemporal = TRUE;    ///< Enable by default, but rarely people get headaches so optional

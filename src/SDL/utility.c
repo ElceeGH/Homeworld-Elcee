@@ -746,6 +746,7 @@ scriptEntry utyOptionsList[] =
     {"RenderBackgroundDitherTemporal",      scriptSetBool,     &opRenderBtgDitherTemporal},
     {"RenderBackgroundDitherColorBits",     scriptSetUdwordCB, &opRenderBtgDitherBits},
     {"RenderInterpolation",                 scriptSetBool,     &opRenderInterpolation},
+    {"RenderMaxDetail",                     scriptSetBool,     &opRenderMaxDetail},
     {"RenderFuzzyTendrils",                 scriptSetBool,     &opRenderFuzzyTendies},
     {"RenderShaderRealtimeEditEnable",      scriptSetBool,     &opRenderShaderReload},
     {"OverrideSpTrails",                    scriptSetBool,     &opOverrideSpTrails       },

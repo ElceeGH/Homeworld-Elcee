@@ -12,14 +12,15 @@
 #include <ctype.h>
 #include <limits.h>
 
-#include "StatScript.h"
-#include "Memory.h"
-#include "SpaceObj.h"
 #include "Debug.h"
 #include "File.h"
 #include "Key.h"
-#include "texreg.h"
 #include "LOD.h"
+#include "Memory.h"
+#include "Options.h"
+#include "SpaceObj.h"
+#include "StatScript.h"
+#include "texreg.h"
 #include "Tweak.h"
 
 extern meshdata *defaultmesh;          // hack for now.  remove later when defaults no longer needed
@@ -287,7 +288,7 @@ lod *lodLevelGet(void *spaceObj, const vector *camera, const vector *ship)
 
     vecSub(obj->cameraDistanceVector,*camera,*ship);
     obj->cameraDistanceSquared = vecMagnitudeSquared(obj->cameraDistanceVector);    
-    obj->currentLOD            = lodLevelCompute( spaceObj, camera, TRUE );
+    obj->currentLOD            = lodLevelCompute( spaceObj, camera, opRenderMaxDetail );
 
     dbgAssertOrIgnore(obj->currentLOD >= 0);
     dbgAssertOrIgnore(obj->currentLOD < info->nLevels);             //verify we are within the available levels of detail
