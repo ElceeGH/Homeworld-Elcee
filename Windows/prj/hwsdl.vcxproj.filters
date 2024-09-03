@@ -949,6 +949,9 @@
     <ClCompile Include="..\..\src\SDL\rSpaceDust.c">
       <Filter>Source Files\SDL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\SDL\rPRNG.c">
+      <Filter>Source Files\SDL</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\SDL\smixer.c">
       <Filter>Source Files\SDL\Hell</Filter>
     </ClCompile>

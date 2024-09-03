@@ -435,6 +435,7 @@
     <ClCompile Include="..\..\src\SDL\render.c" />
     <ClCompile Include="..\..\src\SDL\rInterpolate.c" />
     <ClCompile Include="..\..\src\SDL\rMatrixStack.c" />
+    <ClCompile Include="..\..\src\SDL\rPRNG.c" />
     <ClCompile Include="..\..\src\SDL\rResScaling.c" />
     <ClCompile Include="..\..\src\SDL\rglu.c" />
     <ClCompile Include="..\..\src\SDL\rinit.c" />

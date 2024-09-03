@@ -44,31 +44,38 @@ real32 rngNext( RNG* rng ) {
 
 
 /// Random float in given exclusive range.
-real32 rngNextRange( RNG* rng, real32 a, real32 b ) {
+real32 rngRange( RNG* rng, real32 a, real32 b ) {
     return lerpf( a, b, rngNext(rng) );
 }
 
 
 
-/// Returns true with uniform probability 1/n
-bool rngNextChance( RNG* rng, real32 n ) {
+/// Returns true/false with uniform probability 1/n
+bool rngChance( RNG* rng, real32 n ) {
     return 0 == (sdword)( rngNext(rng) * n );
 }
 
 
 
+/// Returns 1 or 0 with uniform probability 1/n
+real32 rngChancef( RNG* rng, real32 n ) {
+    return (real32) rngChance( rng, n );
+}
+
+
+
 /// Random point uniformly distributed inside a cube.
-vector rngNextPointInCube( RNG* rng, vector centre, real32 radius ) {
-    return (vector) { centre.x + rngNextRange( rng, -radius, +radius ),
-                      centre.y + rngNextRange( rng, -radius, +radius ),
-                      centre.z + rngNextRange( rng, -radius, +radius ) };
+vector rngPointInCube( RNG* rng, vector centre, real32 radius ) {
+    return (vector) { centre.x + rngRange( rng, -radius, +radius ),
+                      centre.y + rngRange( rng, -radius, +radius ),
+                      centre.z + rngRange( rng, -radius, +radius ) };
 }
 
 
 
 /// Random point uniformly distributed inside a sphere.
 /// Based on Karthik Karanth's great post: https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
-vector rngNextPointInSphere( RNG* rng, vector centre, real32 radius ) {
+vector rngPointInSphere( RNG* rng, vector centre, real32 radius ) {
     // Create a random point on the unit cube and normalise it into an orientation vector
     vector vec = { rngNext(rng), rngNext(rng), rngNext(rng) };
     vecNormalize( &vec );
