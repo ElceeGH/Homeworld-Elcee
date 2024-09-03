@@ -325,18 +325,6 @@ ubyte lodLevelComputeDefault( const void* spaceObj, const vector* camera )
 
 
 
-/// Check if an object is a mine.
-static bool isObjectAMine( const SpaceObj* obj ) {
-    if (obj->objtype == OBJ_MissileType) {
-        const Missile* missile = (const Missile*) obj;
-        return missile->missileType == MISSILE_Mine;
-    } else {
-        return FALSE;
-    }
-}
-
-
-
 static ubyte lodSelectFromStaticInfo( const lodinfo* info, const real32 dist ) {
     ubyte lod = 0;
 
@@ -395,8 +383,7 @@ static bool isBiggerBadderBoy( const SpaceObj* obj ) {
 /// Does not modify the object.
 ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetail )
 {
-    const SpaceObj* obj     = spaceObj;
-    const bool      isAMine = isObjectAMine( obj );
+    const SpaceObj* obj = spaceObj;
     
     vector vec;
     vecSub( vec, *camera, obj->posinfo.position );
@@ -412,10 +399,6 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetai
         dist -= RENDER_MAXVIEWABLE_DISTANCE_SQR * 1.2f;
         dist = max( 0.0f, dist );
 
-        // For mines, use existing scaling but scale it out a bit. Empirically chosen for minimal LOD pop.
-        if (isAMine)
-            dist = magSqr * 0.22f;
-
         // Always render the big boys in their glorious full detail.
         if (isBiggerBadderBoy( obj ))
             dist = 0.0f;
@@ -429,12 +412,6 @@ ubyte lodLevelCompute( const void* spaceObj, const vector* camera, bool maxDetai
     // Pick the LOD
     const lodinfo* info = obj->staticinfo->staticheader.LOD;
     ubyte          lod  = lodSelectFromStaticInfo( info, dist );
-
-    // Mines are a special case with special visibility needs, override LOD for these.
-    if (maxDetail && isAMine)
-    if (lod != info->nLevels - 1) {
-        lod = 0;
-    }
 
     //verify we are within the available levels of detail
     dbgAssertOrIgnore(lod >= 0);

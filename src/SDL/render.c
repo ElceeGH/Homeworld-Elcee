@@ -3053,6 +3053,29 @@ renderDefault:
                                     {
                                         RenderNAVLights((Ship*)spaceobj);
                                     }
+
+                                    if (spaceobj->objtype == OBJ_MissileType)
+                                    {
+                                        Missile* missile = (Missile*) spaceobj;
+                                        if (missile->missileType == MISSILE_Mine) {
+                                            real32 screenSizeMin = getResDensityRelative() * 1.5f;
+                                            real32 screenSizeNow = missile->collInfo.selCircleRadius * (real32) MAIN_WindowHeight;
+
+                                            if (screenSizeNow < screenSizeMin) {
+                                                real32 relative = min( 1.0f, screenSizeNow / screenSizeMin );
+                                                real32 ratio    = 1.0f - relative;
+                                                real32 alpha    = sqrtf( ratio );
+                                                bool   wasLit   = rndLightingEnable( FALSE );
+                                                bool   wasTex   = rndTextureEnable( FALSE );
+                                                vector zero     = {0};
+                                                glDisable( GL_DEPTH_TEST ); // Draw over the mesh
+                                                primPointSize3Fade( &zero, getResDensityRelative() * 0.75f, missile->staticinfo->staticheader.LOD->pointColor, alpha );
+                                                glEnable( GL_DEPTH_TEST );
+                                                rndLightingEnable( wasLit );
+                                                rndTextureEnable( wasTex );
+                                            }
+                                        }
+                                    }
 #if DEBUG_VERBOSE_SHIP_STATS
                                     if (rndDisplayFrameRate)
                                     {
