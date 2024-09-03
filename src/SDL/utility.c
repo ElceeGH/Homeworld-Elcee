@@ -100,6 +100,7 @@
 #include "Universe.h"
 #include "UnivUpdate.h"
 #include "video.h"
+#include "rSpaceDust.h"
 
 #include "main.h"
 
@@ -1949,6 +1950,8 @@ abortloading:
     //{
         soundEventPlayMusic(SongNumber);
     //}
+
+    spaceDustStartup();
     
     // reset any spurious joystick motion that's been recorded
     cameraJoystickReset();

@@ -79,6 +79,7 @@
 #include "rResScaling.h"
 #include "rShaderProgram.h"
 #include "rInterpolate.h"
+#include "rSpaceDust.h"
 #include "rStateCache.h"
 
 
@@ -3164,6 +3165,9 @@ renderDefault:
     hsStaticRender();
     alodAdjustScaleFactor();
     nebRender();
+
+    // Space dust
+    spaceDustRender( camera, 1.0f );
 
     if (rndPostObjectCallback != NULL)
     {                                                       //render the post-object callback if needed

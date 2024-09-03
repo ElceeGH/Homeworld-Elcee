@@ -55,6 +55,7 @@
 #include "UnivUpdate.h"
 #include "utility.h"
 #include "rInterpolate.h"
+#include "rSpaceDust.h"
 
 #ifdef _MSC_VER
     #define strcasecmp _stricmp
@@ -3581,6 +3582,8 @@ void universeReset(void)
     {
         universe.world[index] = NULL;
     }
+
+    spaceDustShutdown();
 }
 
 /*-----------------------------------------------------------------------------
