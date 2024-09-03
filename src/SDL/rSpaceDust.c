@@ -53,8 +53,11 @@ typedef struct Mote {
     real32 dblend;   ///< Duplicated
 } Mote;
 
+
+
 /// Dust volume which follows the camera.
 typedef struct DustVolume {
+    bool    inited;         ///< Whether volume is initialised.
     vector  centre;         ///< Centre of the cube
     real32  radius;         ///< Half-length of cube sides
     real32  fadeNear;       ///< Mote distance from camera where alpha reaches 1
@@ -75,35 +78,28 @@ typedef struct DustVolume {
 
 
 
-// Transform world-space position to screenspace: xyz in range [-1:+1].
-static vector screenSpacePos( vector world ) {
-    // Project into homogenous clip space
-    hvector ws, cs, ss;
-    vecMakeHVecFromVec( ws, world );
-    hmatMultiplyHMatByHVec( &cs, &rndCameraMatrix,     &ws );
-    hmatMultiplyHMatByHVec( &ss, &rndProjectionMatrix, &cs );
-
-    // Perspective divide to get screen space
-    const real32 pd = 1.0f / ss.w;
-    return (vector) { ss.x*pd, ss.y*pd, ss.z*pd };
-}
+/// Global state
+static DustVolume spaceDustVolume;
 
 
 
+
+
+/// Same result as the points first being multiplied by camera, then perspective
 static void getCamProjMatrix( hmatrix* out ) {
-    // Same result as the points first being multiplied by camera, then perspective
     hmatMultiplyHMatByHMat( out, &rndProjectionMatrix, &rndCameraMatrix );
 }
 
 
 
-static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
-    // Basic position/scale of the volume
-    const vector centre = cam->eyeposition;
+/// Set up the volume
+static void spaceDustStartupInternal( DustVolume* vol ) {
+    // Basic pos/size of the volume
+    const vector centre = { 0 };
     const real32 radius = 6000.0f;
 
     // Long distance fadeout ranges
-    const real32 fadeNear = radius * 0.80f;
+    const real32 fadeNear = radius * 0.75f;
     const real32 fadeFar  = radius * 1.00f;
 
     // Near-camera fading parameters. These relate to typical view distances of the camera in absolute terms
@@ -115,10 +111,11 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     const real32 closeFarMax  =  5000.0f; // But it gets very wide as the camera goes further out so the fadeoff is more gradual.
 
     // Variation ranges. Limited to [0:1] range.
-    const real32 visVarMin  = 0.00f; // Mote visibility offset min. Used as (distance*(1+vis)) in distance fadeout calc.
-    const real32 visVarMax  = 0.30f; // Mote visibility offset max.
-    const real32 alphaMin   = 0.35f; // Mote alpha min. Simple modulation.
-    const real32 alphaMax   = 0.85f; // Mote alpha max.
+    const real32 visVarMin   = 0.00f; // Mote visibility offset min. Used as (distance*(1+vis)) in distance fadeout calc.
+    const real32 visVarMax   = 0.30f; // Mote visibility offset max.
+    const real32 alphaMin    = 0.35f; // Mote alpha min. Simple modulation.
+    const real32 alphaMax    = 0.85f; // Mote alpha max.
+    const real32 blendChance = 2.0f;  // 50% opaque black, 50% additive colour
 
     // Area and density
     const real32 area             = 6.0f * sqr(radius); // Cube actual area
@@ -141,10 +138,10 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     for (udword i=0; i<moteCount; i++) {
         Mote* mote  = &motes[ i ];
 
-        mote->pos   = rngNextPointInCube( &rng, (vector){0}, radius );
-        mote->vis   = rngNextRange( &rng, visVarMin, visVarMax );
-        mote->alpha = rngNextRange( &rng, alphaMin,  alphaMax  );
-        mote->blend = (real32) rngNextChance( &rng, 2.0f ); // 50% chance
+        mote->pos   = rngPointInCube( &rng, centre, radius );
+        mote->vis   = rngRange      ( &rng, visVarMin, visVarMax );
+        mote->alpha = rngRange      ( &rng, alphaMin,  alphaMax  );
+        mote->blend = rngChancef    ( &rng, blendChance );
 
         mote->dpos   = mote->pos;
         mote->dvis   = mote->vis;
@@ -158,6 +155,7 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
 
     // Write vars
     *vol = (DustVolume) {
+        .inited       = TRUE,
         .centre       = centre,
         .radius       = radius,
         .fadeNear     = fadeNear,
@@ -178,29 +176,28 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
 
 
 
-static void spaceDustShutdown( DustVolume* vol ) {
+/// Free memory used by the volume and clear it.
+static void spaceDustShutdownInternal( DustVolume* vol ) {
     if (vol->moteVBO) glDeleteBuffers( 1, &vol->moteVBO );
     if (vol->motes)   memFree( vol->motes );
-
-    vol->moteVBO = 0;
-    vol->motes   = NULL;
+    memset( vol, 0x00, sizeof(*vol) );
 }
 
 
 
-// Draw lines from previous to current position in screenspace.
-// Space dust is supposed to be tiny so the lines are always thin.
-void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
+/// Draw lines from previous to current position in screenspace with fading etc.
+/// Space dust is supposed to be tiny so the lines are always thin.
+void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alpha ) {
+    // Don't do anything until the volume is actually defined
+    if ( ! vol->inited)
+        return;
+
     // Update the centre position
     vol->centre = camera->eyeposition;
 
     // Update our matrix pair
     vol->matPrev = vol->matCurr;
     getCamProjMatrix( &vol->matCurr );
-
-    // Don't call this when no game is running, since it will render over menus and stuff lol
-    if ( ! gameIsRunning)
-        return;
 
 
 
@@ -245,7 +242,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     const real32 res[2] = { (real32)MAIN_WindowWidth, (real32)MAIN_WindowHeight };
     const real32 col[3] = { 1.0f, 1.0f, 1.0f };
 
-    const real32 resScale = 0.5f * sqrtf(getResDensityRelative());
+    const real32 resScale = 0.75f * getResDensityRelative();
     const real32 primSize = max( 1.0f, min(2.0f, resScale) );
 
     const real32 camDist     = sqrtf( vecDistanceSquared(camera->eyeposition, camera->lookatpoint) );
@@ -342,16 +339,21 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
 
 
 
-void spaceDustTest( Camera* camera ) {
-    static DustVolume vol;
-    static bool       inited = FALSE;
+//////////////////////////////////
+// Public API ////////////////////
+//////////////////////////////////
 
-    if ( ! inited) {
-        inited = TRUE;
-        spaceDustInit( &vol, camera );
-    }
-    
-    spaceDustRender( &vol, camera, 1.0f );
+void spaceDustStartup( void ) {
+    spaceDustShutdownInternal( &spaceDustVolume );
+    spaceDustStartupInternal( &spaceDustVolume );
+}
+
+void spaceDustShutdown( void ) {
+    spaceDustShutdownInternal( &spaceDustVolume );
+}
+
+void spaceDustRender( const Camera* camera, real32 alpha ) {
+    spaceDustRenderInternal( &spaceDustVolume, camera, alpha );
 }
 
 
@@ -360,8 +362,7 @@ void spaceDustTest( Camera* camera ) {
 // Level-specific stuff //////////
 //////////////////////////////////
 
-
-// Anything not in this table gets density == 1.
+/// Anything not in this table gets density == 1.
 static const real32 levelDensity[] = {
     [MISSION_1_KHARAK_SYSTEM             ] = 0.3f, // Clean fresh space
     [MISSION_2_OUTSKIRTS_OF_KHARAK_SYSTEM] = 0.8f,
@@ -383,8 +384,8 @@ static const real32 levelDensity[] = {
 
 
 
-// Get level-specific density scaling factor.
-// Defaults to 1 for any non-specified cases.
+/// Get level-specific density scaling factor.
+/// Defaults to 1 for any non-specified cases.
 static real32 getLevelDensity( void ) {
     const udword level = spGetCurrentMission();
     const udword count = sizeof(levelDensity) / sizeof(levelDensity[0]);
@@ -396,10 +397,11 @@ static real32 getLevelDensity( void ) {
 
 
 
-// Get level-specific seed.
-// Why? To make the space dust always look the same for any given level.
+/// Get level-specific seed for singleplayer.
+/// Why? To make the space dust always look the same for a given level.
+/// For other levels it's randomised, better to have variety in multiplayer/LAN/skirmish.
 static udword getLevelSeed( void ) {
     if (singlePlayerGame)
-         return 1 + spGetCurrentMission();
-    else return 1;
+         return spGetCurrentMission();
+    else return SDL_GetTicks();
 }
