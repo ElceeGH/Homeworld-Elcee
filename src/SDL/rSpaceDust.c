@@ -213,10 +213,10 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
 
     // Near-camera fading parameters. These relate to typical view distances of the camera in absolute terms
     const real32 camRefNear   =  3500.0f; // Camera distance where nearness factor is 0 (lerps to min values)
-    const real32 camRefFar    = 12000.0f; // Camera distance where nearness factor is 1 (lerps to max values)
+    const real32 camRefFar    = 10000.0f; // Camera distance where nearness factor is 1 (lerps to max values)
     const real32 closeNearMin =    50.0f; // Near-camera fade zero-point is right on top of the camera when camera is very close to the target object.
     const real32 closeNearMax =  3500.0f; // But gets quite far away when at a long distance, so the dust isn't distractingly flying right over the camera plane.
-    const real32 closeFarMin  =   150.0f; // Fade start point is also very close to the camera initially so motes can flyby the camera and look cool.
+    const real32 closeFarMin  =    75.0f; // Fade start point is also very close to the camera initially so motes can flyby the camera and look cool.
     const real32 closeFarMax  =  5000.0f; // But it gets very wide as the camera goes further out so the fadeoff is more gradual.
 
     // Variation ranges. Limited to [0:1] range.
@@ -249,7 +249,7 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
         mote->pos   = rngNextPointInCube( &prng, radius );
         mote->vis   = rngNextRange( &prng, visVarMin, visVarMax );
         mote->alpha = rngNextRange( &prng, alphaMin,  alphaMax  );
-        mote->blend = (real32) rngNextChance( &prng, 2.0f );
+        mote->blend = (real32) rngNextChance( &prng, 2.0f ); // 50% chance
 
         mote->dpos   = mote->pos;
         mote->dvis   = mote->vis;
