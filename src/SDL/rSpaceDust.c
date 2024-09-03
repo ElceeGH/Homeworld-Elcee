@@ -25,6 +25,7 @@
 #include "Vector.h"
 
 #include "rInterpolate.h"
+#include "rPRNG.h"
 #include "rResScaling.h"
 #include "rShaderProgram.h"
 #include "rStateCache.h"
@@ -32,115 +33,9 @@
 
 
 
-// Anything not in this table gets density == 1.
-static real32 levelDensity[] = {
-    [MISSION_1_KHARAK_SYSTEM             ] = 0.3f, // Clean fresh space
-    [MISSION_2_OUTSKIRTS_OF_KHARAK_SYSTEM] = 0.8f,
-    [MISSION_3_RETURN_TO_KHARAK          ] = 2.5f, // Post-battle. TODO don't do dust when NIS is running since it's recounting events
-    [MISSION_4_GREAT_WASTELANDS_TRADERS  ] = 1.0f,
-    [MISSION_5_GREAT_WASTELANDS_REVENGE  ] = 1.0f,
-    [MISSION_6_DIAMOND_SHOALS            ] = 4.0f, // Absolute filth-zone
-    [MISSION_7_THE_GARDENS_OF_KADESH     ] = 2.0f, // Dense, but not dirty
-    [MISSION_8_THE_CATHEDRAL_OF_KADESH   ] = 2.0f,
-    [MISSION_9_SEA_OF_LOST_SOULS         ] = 1.0f, // Normal space
-    [MISSION_10_SUPER_NOVA_STATION       ] = 8.0f, // Intense density. TODO make density dynamically lower outside the dusty areas
-    [MISSION_11_TENHAUSER_GATE           ] = 1.0f,
-    [MISSION_12_GALACTIC_CORE            ] = 1.0f,
-    [MISSION_13_THE_KAROS_GRAVEYARD      ] = 7.0f, // So messy even the stars are obscured
-    [MISSION_14_BRIDGE_OF_SIGHS          ] = 0.7f, // Wide open space, middle of nowhere
-    [MISSION_15_CHAPEL_PERILOUS          ] = 1.0f,
-    [MISSION_16_HIIGARA                  ] = 0.8f,
-};
-
-
-
-// Get level-specific density scaling factor.
-// Defaults to 1 for any non-specified cases.
-static real32 getLevelDensity( void ) {
-    const udword level = spGetCurrentMission();
-    const udword count = sizeof(levelDensity) / sizeof(levelDensity[0]);
-
-    if (singlePlayerGame && level < count)
-         return levelDensity[ level ];
-    else return 1.0f;
-}
-
-
-
-// Get level-specific seed.
-// Why? To make the space dust always look the same for any given level.
-static udword getLevelSeed( void ) {
-    if (singlePlayerGame)
-         return 1 + spGetCurrentMission();
-    else return 1;
-}
-
-
-
-// Deterministic RNG state
-typedef struct PRNG {
-    udword seed;
-    udword state;
-} PRNG;
-
-
-
-// Init PRNG.
-static void rngInit( PRNG* prng, udword seed ) {
-    prng->seed  = max( 1, seed );
-    prng->state = prng->seed;
-}
-
-
-
-// Random float in range [0:1] exclusive.
-static real32 rngNext( PRNG* prng ) {
-    // RNG update
-    const udword prime = 16807; // Prime to multiply state with
-    prng->state *= prime;
-
-    // The ole' hackaroo
-    union { udword i; real32 f; } fu;
-    
-    // Generate float
-    const udword oneF  = 0x3F800000;      // Binary32 1.0f
-    const udword shift = 8 + 1;           // Binary32 bits in exponent + sign
-    fu.i = (prng->state >> shift) | oneF; // Range [1:2] exclusive
-    return fu.f - 1.0f;                   // Range [0:1] exclusive
-}
-
-
-
-// Random float in given exclusive range.
-static real32 rngNextRange( PRNG* prng, real32 a, real32 b ) {
-    return lerpf( a, b, rngNext(prng) );
-}
-
-
-
-// Random point inside a cube.
-static vector rngNextPointInCube( PRNG* prng, real32 radius ) {
-    return (vector) { rngNextRange( prng, -radius, +radius ),
-                      rngNextRange( prng, -radius, +radius ),
-                      rngNextRange( prng, -radius, +radius ) };
-}
-
-
-
-// Returns true with uniform probability 1/n
-static bool rngNextChance( PRNG* prng, real32 n ) {
-    return 0 == (sdword)( rngNext(prng) * n );
-}
-
-
-
-// Inverse of linear interpolation, clamped to [0:1]
-static real32 boxStepf( real32 value, real32 low, real32 high ) {
-    real32 range = high  - low;
-    real32 delta = value - low;
-    real32 ratio = delta / range;
-    return max( 0.0f, min(ratio,1.0f) );
-}
+// Forward decl
+static real32 getLevelDensity( void );
+static udword getLevelSeed   ( void );
 
 
 
@@ -239,17 +134,17 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
     memset( motes, 0x00, moteBytes );
 
     // Get our PRNG ready
-    PRNG prng;
-    rngInit( &prng, getLevelSeed() );
+    RNG rng;
+    rngInit( &rng, getLevelSeed() );
 
     // Generate motes
     for (udword i=0; i<moteCount; i++) {
         Mote* mote  = &motes[ i ];
 
-        mote->pos   = rngNextPointInCube( &prng, radius );
-        mote->vis   = rngNextRange( &prng, visVarMin, visVarMax );
-        mote->alpha = rngNextRange( &prng, alphaMin,  alphaMax  );
-        mote->blend = (real32) rngNextChance( &prng, 2.0f ); // 50% chance
+        mote->pos   = rngNextPointInCube( &rng, (vector){0}, radius );
+        mote->vis   = rngNextRange( &rng, visVarMin, visVarMax );
+        mote->alpha = rngNextRange( &rng, alphaMin,  alphaMax  );
+        mote->blend = (real32) rngNextChance( &rng, 2.0f ); // 50% chance
 
         mote->dpos   = mote->pos;
         mote->dvis   = mote->vis;
@@ -347,7 +242,6 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     }
 
     // Calculate various uniform inputs.
-    // uMode is set later when drawing since it varies per primitive type.
     const real32 res[2] = { (real32)MAIN_WindowWidth, (real32)MAIN_WindowHeight };
     const real32 col[3] = { 1.0f, 1.0f, 1.0f };
 
@@ -359,7 +253,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     const real32 closeNear   = lerpf( vol->closeNearMin, vol->closeNearMax, closeFactor );
     const real32 closeFar    = lerpf( vol->closeFarMin,  vol->closeFarMax,  closeFactor );
 
-    // Use the shader and set uniforms
+    // Use the shader and set uniforms (uMode is set later)
     glUseProgram( *prog );
     glUniformMatrix4fv( locMatCurr, 1, FALSE, &vol->matCurr.m11 );
     glUniformMatrix4fv( locMatPrev, 1, FALSE, &vol->matPrev.m11 );
@@ -380,12 +274,12 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     // Work out some vertex things
     // Lines have two vertexes per mote so they use the duplicated values
     // Points only have one vertex so they skip over the dupes
-    const udword  lineStride     = sizeof(Mote)   / 2;
-    const udword  lineVertCount  = vol->moteCount * 2;
     const udword  lineModulo     = 2;
-    const udword  pointStride    = sizeof(Mote);
-    const udword  pointVertCount = vol->moteCount;
+    const udword  lineStride     = sizeof(Mote)   / lineModulo;
+    const udword  lineVertCount  = vol->moteCount * lineModulo;
     const udword  pointModulo    = 1;
+    const udword  pointStride    = sizeof(Mote)   / pointModulo;
+    const udword  pointVertCount = vol->moteCount * pointModulo;
     GLvoid* const posOffs        = (GLvoid*) offsetof( Mote, pos   );
     GLvoid* const colOffs        = (GLvoid*) offsetof( Mote, alpha );
 
@@ -461,3 +355,51 @@ void spaceDustTest( Camera* camera ) {
 }
 
 
+
+//////////////////////////////////
+// Level-specific stuff //////////
+//////////////////////////////////
+
+
+// Anything not in this table gets density == 1.
+static const real32 levelDensity[] = {
+    [MISSION_1_KHARAK_SYSTEM             ] = 0.3f, // Clean fresh space
+    [MISSION_2_OUTSKIRTS_OF_KHARAK_SYSTEM] = 0.8f,
+    [MISSION_3_RETURN_TO_KHARAK          ] = 2.5f, // Post-battle. TODO don't do dust when NIS is running since it's recounting events
+    [MISSION_4_GREAT_WASTELANDS_TRADERS  ] = 1.0f,
+    [MISSION_5_GREAT_WASTELANDS_REVENGE  ] = 1.0f,
+    [MISSION_6_DIAMOND_SHOALS            ] = 4.0f, // Absolute filth-zone
+    [MISSION_7_THE_GARDENS_OF_KADESH     ] = 2.0f, // Dense, but not dirty
+    [MISSION_8_THE_CATHEDRAL_OF_KADESH   ] = 2.0f,
+    [MISSION_9_SEA_OF_LOST_SOULS         ] = 1.0f, // Normal space
+    [MISSION_10_SUPER_NOVA_STATION       ] = 8.0f, // Intense density. TODO make density dynamically lower outside the dusty areas
+    [MISSION_11_TENHAUSER_GATE           ] = 1.0f,
+    [MISSION_12_GALACTIC_CORE            ] = 1.0f,
+    [MISSION_13_THE_KAROS_GRAVEYARD      ] = 7.0f, // So messy even the stars are obscured
+    [MISSION_14_BRIDGE_OF_SIGHS          ] = 0.7f, // Wide open space, middle of nowhere
+    [MISSION_15_CHAPEL_PERILOUS          ] = 1.0f,
+    [MISSION_16_HIIGARA                  ] = 0.8f,
+};
+
+
+
+// Get level-specific density scaling factor.
+// Defaults to 1 for any non-specified cases.
+static real32 getLevelDensity( void ) {
+    const udword level = spGetCurrentMission();
+    const udword count = sizeof(levelDensity) / sizeof(levelDensity[0]);
+
+    if (singlePlayerGame && level < count)
+         return levelDensity[ level ];
+    else return 1.0f;
+}
+
+
+
+// Get level-specific seed.
+// Why? To make the space dust always look the same for any given level.
+static udword getLevelSeed( void ) {
+    if (singlePlayerGame)
+         return 1 + spGetCurrentMission();
+    else return 1;
+}
