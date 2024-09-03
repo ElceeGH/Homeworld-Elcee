@@ -2987,7 +2987,8 @@ dontdraw2:;
 #endif
 
                     glPushMatrix();
-                    level = lodLevelGet((void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
+                    level              = lodLevelGet(            (void *)spaceobj, &camera->eyeposition, &((SpaceObjRotImp *)spaceobj)->collInfo.collPosition);
+                    ubyte levelDefault = lodLevelComputeDefault( (void *)spaceobj, &camera->eyeposition );
 
                     if (taskTimeElapsed-((Ship *)spaceobj)->flashtimer < FLASH_TIMER)
                     {
@@ -3031,7 +3032,6 @@ dontdraw2:;
                                 rndFade(spaceobj, camera);
                                 meshRenders++;
                                 cloudRenderSystem(((DustCloud*)spaceobj)->stub, spaceobj->currentLOD);
-//                                shipsAtLOD[spaceobj->currentLOD]++;
                                 rndUnFade();
                                 break;
                             case OBJ_MissileType:
@@ -3045,11 +3045,9 @@ renderDefault:
                                 if (rndShipVisible(spaceobj, camera))
                                 {
                                     rndFade(spaceobj, camera);
-                                    rndGLStateLog("Before Derelict");
                                     meshRenders++;
                                     meshRender((meshdata *)level->pData,colorScheme);
-                                    spaceobj->renderedLODs |= (1 << spaceobj->currentLOD);
-                                    rndGLStateLog("After Derelict");
+                                    spaceobj->renderedLODs |= (1 << levelDefault);
                                     //navlights
                                     if (spaceobj->objtype == OBJ_DerelictType && !bitTest(spaceobj->flags, SOF_Cloaked))
                                     {
