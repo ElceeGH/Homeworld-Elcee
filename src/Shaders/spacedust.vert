@@ -58,12 +58,24 @@ float boxStep( float value, float low, float high ) {
 
 
 
+// Make colour either:
+// - Regular semitransparent black
+// - Additive semitransparent colour
+// Output is an alpha-premultiplied colour for APM blending.
+vec4 colourise( vec3 rgb, float alpha, float blend ) {
+    vec4 black = vec4( vec3(0.0),   alpha );
+    vec4 col   = vec4( rgb * alpha, 0.0   );
+    return mix( black, col, blend );
+}
+
+
+
 // Move mote to the [camera eye / volume centre] accounting for wrapping.
 // Pos is a position in the cube in [-radius, +radius].
 // This looks complicated. The basic idea is to snap the cube to the
 // camera, adding the mote position in the process, and then cancel out
 // the position so it is only snapped within the volume and not moved.
-// Finally the cube is offset by half its size to fully centre it.
+// Finally the cube is offset by half its side-length to fully centre it.
 vec4 wrapPosition( vec3 pos, vec3 cen ) {
     float hstep   = uRadius;
     float step    = hstep * 2.0;
@@ -76,8 +88,9 @@ vec4 wrapPosition( vec3 pos, vec3 cen ) {
 void main() {
     // Vertex attribs
     vec4  motePos   = wrapPosition( gl_Vertex.xyz, uCentre );
-    float moteAlpha = gl_Color.r;
-    float moteVis   = gl_Color.g;
+    float moteAlpha = gl_Color.r; // [0:1]
+    float moteVis   = gl_Color.g; // [0:1]
+    float moteBlend = gl_Color.b; // 0 or 1
 
     // Distance from camera
     float dist = distance( uCentre, motePos.xyz );    
@@ -117,7 +130,7 @@ void main() {
     float alpha = (uMode == 1) ? pointAlpha : lineAlpha;
     
     // Set colour
-    gl_FrontColor = vec4( uCol, alpha );
+    gl_FrontColor = colourise( uCol, alpha, moteBlend );
     gl_BackColor  = gl_FrontColor;
 
     // Select the line end to use. For points this always selects csCurr.

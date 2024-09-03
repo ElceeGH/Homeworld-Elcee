@@ -127,6 +127,13 @@ static vector rngNextPointInCube( PRNG* prng, real32 radius ) {
 
 
 
+// Returns true with uniform probability 1/n
+static bool rngNextChance( PRNG* prng, real32 n ) {
+    return 0 == (sdword)( rngNext(prng) * n );
+}
+
+
+
 // Inverse of linear interpolation, clamped to [0:1]
 static real32 boxStepf( real32 value, real32 low, real32 high ) {
     real32 range = high  - low;
@@ -141,14 +148,14 @@ static real32 boxStepf( real32 value, real32 low, real32 high ) {
 /// All attributes are duplicated for technical GPU-particle reasons.
 /// Also used as a vertex format.
 typedef struct Mote {
-    vector pos;      ///< World position
+    vector pos;      ///< Relative position in cube  [-radius,+radius] per axis
     real32 alpha;    ///< Brightness variation       [0:1]
     real32 vis;      ///< Visibility range variation [0:1]
-    real32 padding;  ///< Must have at least 3 colours for glColourPointer, so here you go
+    real32 blend;    ///< Dark/light variation       [0 or 1]
     vector dpos;     ///< Duplicated
     real32 dalpha;   ///< Duplicated
     real32 dvis;     ///< Duplicated
-    real32 dpadding; ///< Padding
+    real32 dblend;   ///< Duplicated
 } Mote;
 
 /// Dust volume which follows the camera.
@@ -220,7 +227,7 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
 
     // Area and density
     const real32 area             = 6.0f * sqr(radius); // Cube actual area
-    const real32 motesPerUnitArea = 1.0f / 300'000.0f; // Average density, area-independent
+    const real32 motesPerUnitArea = 1.0f / 200'000.0f; // Average density, area-independent
     const real32 moteDensityScale = getLevelDensity();
 
     // Count and storage
@@ -242,10 +249,12 @@ static void spaceDustInit( DustVolume* vol, const Camera* cam ) {
         mote->pos   = rngNextPointInCube( &prng, radius );
         mote->vis   = rngNextRange( &prng, visVarMin, visVarMax );
         mote->alpha = rngNextRange( &prng, alphaMin,  alphaMax  );
+        mote->blend = (real32) rngNextChance( &prng, 2.0f );
 
         mote->dpos   = mote->pos;
         mote->dvis   = mote->vis;
         mote->dalpha = mote->alpha;
+        mote->dblend = mote->blend;
     }
 
     // Initial matrix
@@ -383,12 +392,16 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
 
 
     // Set render params
-    const bool wasAdd   = rndAdditiveBlends( TRUE  );
+    GLenum blendSrc, blendDst;
+    glGetIntegerv( GL_BLEND_SRC, &blendSrc );
+    glGetIntegerv( GL_BLEND_DST, &blendDst );
+    glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA ); // For alpha-premultiplied colour blending
+
     const bool wasTex   = rndTextureEnable ( FALSE );
     const bool wasLit   = rndLightingEnable( FALSE );
     const bool wasBlend = glIsEnabled( GL_BLEND );
-    glEnable( GL_BLEND );
     glDepthMask( FALSE );
+    glEnable( GL_BLEND );
     glLineWidth( primSize );
     glPointSize( primSize );
 
@@ -426,11 +439,11 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     glPointSize( 1.0f );
     glLineWidth( 1.0f );
     glDepthMask( TRUE );
+    glBlendFunc( blendSrc, blendDst );
 
     if ( ! wasBlend) glDisable( GL_BLEND );
     rndLightingEnable( wasLit );
     rndTextureEnable ( wasTex );
-    rndAdditiveBlends( wasAdd );
 }
 
 
