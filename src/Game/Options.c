@@ -453,15 +453,18 @@ sdword opNumEffects;
 sdword opSaveNumEffects;
 
 // New option defaults
-udword opEffectFreqMult          = 100 * 2; ///< It's a percentage, 200% by default
-bool   opRenderInterpolation     = TRUE;    ///< Beautiful so beautiful I'm a genius etc
-bool   opRenderMaxDetail         = TRUE;    ///< Use the best LODs (except in cases where it looks worse and causes bugs)
-bool   opRenderFuzzyTendies      = TRUE;    ///< Make tendrils fuzzy, optional since it's a change
-bool   opRenderBtgDitherEnable   = TRUE;    ///< Pretty much always looks better
-bool   opRenderBtgDitherTemporal = TRUE;    ///< Enable by default, but rarely people get headaches so optional
-udword opRenderBtgDitherBits     = 6;       ///< Target baseline LCD monitor by default
-bool   opRenderShaderReload      = FALSE;   ///< For realtime editing during development
-udword opLoadTimeMinMs           = 3000;    ///< 3 seconds loading time by default
+udword opEffectFreqMult           = 100 * 2; ///< It's a percentage, 200% by default
+bool   opRenderInterpolation      = TRUE;    ///< Beautiful so beautiful I'm a genius etc
+bool   opRenderMaxDetail          = TRUE;    ///< Use the best LODs (except in cases where it looks worse and causes bugs)
+bool   opRenderFuzzyTendies       = TRUE;    ///< Make tendrils fuzzy, optional since it's a change
+bool   opRenderSpaceDustEnable    = TRUE;    ///< On by default due to beauty, optional since it's a change
+udword opRenderSpaceDustDensity   = 100;     ///< Percentage so you can adjust dust level relatively to your taste
+bool   opRenderBtgDitherEnable    = TRUE;    ///< Pretty much always looks better
+bool   opRenderBtgDitherTemporal  = TRUE;    ///< Enable by default, but rarely people get headaches so optional
+udword opRenderBtgDitherBits      = 6;       ///< Target baseline LCD monitor by default
+bool   opRenderShaderReload       = FALSE;   ///< For realtime editing: reload and recompile each frame
+bool   opRenderShaderReloadNoWarn = FALSE;   ///< For realtime editing: don't log warnings, only errors
+udword opLoadTimeMinMs            = 3000;    ///< 3 seconds loading time by default
 
 bool   opOverrideSpTrails       = TRUE; ///< For user customisation so it's off by default
 udword opOverrideSpTrailsBeginR = 255;   ///< Orange

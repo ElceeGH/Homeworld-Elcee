@@ -81,10 +81,13 @@ extern udword opEffectFreqMult;
 extern bool   opRenderInterpolation;
 extern bool   opRenderMaxDetail;
 extern bool   opRenderFuzzyTendies;
+extern bool   opRenderSpaceDustEnable;
+extern udword opRenderSpaceDustDensity;
 extern bool   opRenderBtgDitherEnable;
 extern bool   opRenderBtgDitherTemporal;
 extern udword opRenderBtgDitherBits;
 extern bool   opRenderShaderReload;
+extern bool   opRenderShaderReloadNoWarn;
 extern udword opLoadTimeMinMs;
 
 extern bool   opOverrideSpTrails;

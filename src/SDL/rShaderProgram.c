@@ -9,6 +9,7 @@
 
 #include "rShaderProgram.h"
 #include "Debug.h"
+#include "Options.h"
 #include "SDL.h"
 #include <stdio.h>
 
@@ -338,6 +339,15 @@ static GLuint linkProgram( const char* name, GLuint shaderVert, GLuint shaderFra
 
 
 
+/// Skip warnings in realtime edit mode to prevent log mega-spam.
+static bool shouldShowMessage( bool isGood, bool hasLog ) {
+    const bool showMessages = ! (opRenderShaderReload && opRenderShaderReloadNoWarn);
+    const bool isBad        = ! isGood;
+    return isBad || (hasLog && showMessages);
+}
+
+
+
 /// Check the results of shader compilation.
 static void checkCompile( const char* name, GLuint handle ) {
     // Check if everything went well, and if there's any log output.
@@ -346,7 +356,7 @@ static void checkCompile( const char* name, GLuint handle ) {
     glGetShaderiv( handle, GL_INFO_LOG_LENGTH, &logLen   );
 
     // If present, output log.
-    if ( ! compileGood  ||  logLen > 1) { // +1 for null terminator
+    if (shouldShowMessage(compileGood, logLen > 1)) { // +1 for null terminator
         const char* what = compileGood ? "message" : "error";
         printf( "Shader compile %s for shader '%s'. Log:\n", what, name );
 
@@ -367,7 +377,7 @@ static void checkLink( const char* name, GLuint handle ) {
     glGetProgramiv( handle, GL_INFO_LOG_LENGTH, &logLen   );
 
     // Output log.
-    if ( ! linkGood  || logLen > 1) {
+    if (shouldShowMessage(linkGood, logLen > 1)) {
         const char* what = linkGood ? "message" : "error";
         printf( "Program link %s for program '%s'. Log:\n", what, name );
 

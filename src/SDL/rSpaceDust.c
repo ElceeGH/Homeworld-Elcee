@@ -118,12 +118,13 @@ static void spaceDustStartupInternal( DustVolume* vol ) {
     const real32 blendChance = 2.0f;  // 50% opaque black, 50% additive colour
 
     // Area and density
-    const real32 area             = 6.0f * sqr(radius); // Cube actual area
-    const real32 motesPerUnitArea = 1.0f / 200'000.0f; // Average density, area-independent
-    const real32 moteDensityScale = getLevelDensity();
+    const real32 volumeArea               = 6.0f * sqr(radius); // Cube actual area
+    const real32 motesPerUnitArea         = 1.0f / 200'000.0f;  // Area-independent average density
+    const real32 moteDensityScaleOpt      = (real32)opRenderSpaceDustDensity / 100.0f;
+    const real32 moteDensityScaleForLevel = getLevelDensity();
 
     // Count and storage
-    const udword moteCount = (udword)(area * motesPerUnitArea * moteDensityScale); 
+    const udword moteCount = (udword)(volumeArea * motesPerUnitArea * moteDensityScaleOpt * moteDensityScaleForLevel); 
     const udword moteBytes = moteCount * sizeof(Mote);
 
     // Allocate memory for motes
@@ -344,16 +345,20 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
 //////////////////////////////////
 
 void spaceDustStartup( void ) {
-    spaceDustShutdownInternal( &spaceDustVolume );
-    spaceDustStartupInternal( &spaceDustVolume );
+    if (opRenderSpaceDustEnable) {
+        spaceDustShutdownInternal( &spaceDustVolume );
+        spaceDustStartupInternal ( &spaceDustVolume );
+    }
 }
 
 void spaceDustShutdown( void ) {
-    spaceDustShutdownInternal( &spaceDustVolume );
+    if (opRenderSpaceDustEnable)
+        spaceDustShutdownInternal( &spaceDustVolume );
 }
 
 void spaceDustRender( const Camera* camera, real32 alpha ) {
-    spaceDustRenderInternal( &spaceDustVolume, camera, alpha );
+    if (opRenderSpaceDustEnable)
+        spaceDustRenderInternal( &spaceDustVolume, camera, alpha );
 }
 
 
