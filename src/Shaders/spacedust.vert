@@ -37,14 +37,14 @@ uniform vec3  uCentre;    // Camera position / centre of volume
 uniform float uRadius;    // Cube side half-length
 uniform vec2  uRes;       // Screen dimensions
 
-uniform vec3  uCol;       // Dust mote colour
+uniform vec3  uCol;       // Dust mote colour (A)
 uniform float uAlpha;     // Dust mote overall alpha
 uniform float uCloseNear; // Fade in when this close to camera (begin)
 uniform float uCloseFar;  // Fade in when this close to camera (end)
 uniform float uFadeNear;  // Fade out when this far from camera (begin)
 uniform float uFadeFar;   // Fade out when this far from camera (end)
 uniform float uResScale;  // Thickness in [1:2] range
-uniform float uMbScale;   // Relative length for line motion blurring
+uniform float uMbDivLimit;// Motion blur max alpha division rate
 
 
 
@@ -91,20 +91,20 @@ void main() {
     float moteAlpha = gl_Color.r; // [0:1]
     float moteVis   = gl_Color.g; // [0:1]
     float moteBlend = gl_Color.b; // 0 or 1
-
+    
     // Distance from camera
     float dist = distance( uCentre, motePos.xyz );    
-
+    
     // Fade in from max range. With per-mote variation.  
     float fadeDist  = dist * (1.0 + moteVis);
     float fadeAlpha = 1.0 - boxStep( fadeDist, uFadeNear, uFadeFar );
-
+    
     // Fade when too close to the camera.
     float closeAlpha = boxStep( dist, uCloseNear, uCloseFar );
-
+    
     // Merge all the basic alphas
     float baseAlpha = moteAlpha * fadeAlpha * closeAlpha * uAlpha;
-
+    
     // Transform to current and previous positions in clip space
     vec4 csCurr = uMatCurr * motePos;
     vec4 csPrev = uMatPrev * motePos;
@@ -114,25 +114,25 @@ void main() {
     vec2  ssPrev  = csPrev.xy / csPrev.w;
     vec2  ssDelta = (ssCurr - ssPrev) * uRes * 0.5;
     float ssLen   = length( ssDelta );
-
+    
     // Lines fade in as length goes from 0 -> thickness.
     float lineRatio = boxStep( ssLen, 0.0, uResScale );
     float lineAlpha = baseAlpha * lineRatio;
-
+    
     // Points fade in as length goes from thickness -> 0
     float pointRatio = 1.0 - lineRatio;
     float pointAlpha = baseAlpha * pointRatio;
-
-    // Line motion blur. TODO room for improvement to reduce popping.
-    lineAlpha /= max( 1.0, ssLen * uMbScale );
-
+    
+    // Line motion blur. Smear the brightness across the line.
+    lineAlpha *= max( 1.0 / ssLen, uMbDivLimit );
+    
     // Select the point/line alpha
     float alpha = (uMode == 1) ? pointAlpha : lineAlpha;
     
     // Set colour
     gl_FrontColor = colourise( uCol, alpha, moteBlend );
     gl_BackColor  = gl_FrontColor;
-
+    
     // Select the line end to use. For points this always selects csCurr.
     int vertexSelect = gl_VertexID % uMode;
     gl_Position = (vertexSelect == 0) ? csCurr : csPrev;

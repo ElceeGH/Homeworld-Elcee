@@ -324,7 +324,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     static GLint   locFadeNear  = -1;
     static GLint   locFadeFar   = -1;
     static GLint   locResScale  = -1;
-    static GLint   locMbScale   = -1;
+    static GLint   locMbDivLim  = -1;
 
     if ( ! prog)
         prog = shaderProgramLoad( "spacedust" );
@@ -343,7 +343,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
         locFadeNear  = glGetUniformLocation( *prog, "uFadeNear"  );
         locFadeFar   = glGetUniformLocation( *prog, "uFadeFar"   );
         locResScale  = glGetUniformLocation( *prog, "uResScale"  );
-        locMbScale   = glGetUniformLocation( *prog, "uMbScale"   );
+        locMbDivLim  = glGetUniformLocation( *prog, "uMbDivLimit");
     }
 
     // Calculate various uniform inputs.
@@ -373,7 +373,7 @@ void spaceDustRender( DustVolume* vol, Camera* camera, real32 alpha ) {
     glUniform1f       ( locFadeNear,           vol->fadeNear    );
     glUniform1f       ( locFadeFar,            vol->fadeFar     );
     glUniform1f       ( locResScale,           primSize         );
-    glUniform1f       ( locMbScale,            0.125f           );
+    glUniform1f       ( locMbDivLim,           0.5f             );
 
 
 
