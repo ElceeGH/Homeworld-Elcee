@@ -233,7 +233,6 @@ void svClose(void)
 sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword data)
 {
     rectangle *rect = &region->rect;
-    rectangle defaultRect = {0, 0, MAIN_WindowWidth, MAIN_WindowHeight};
 
     switch(event)
     {
@@ -279,7 +278,7 @@ sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword dat
         mousePositionSet(svMouseLastX, svMouseLastY);
         mouseCursorShow();
         mouseCaptureStop();
-        mouseClipToRect(&defaultRect);
+        mouseClipToRect(NULL);
         svMousePressRight = FALSE;
         break;
 
