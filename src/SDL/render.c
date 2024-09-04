@@ -157,9 +157,6 @@ udword meshRenders;
 
 real32 rndAspectRatio; //aspect ratio of rendering context
 
-static sdword rndFillCounter = 0;
-static color rndFillColour = 0;
-
 //callback functions optionally called during rendering a mission sphere
 rendercallback rndPreObjectCallback = NULL, rndPostObjectCallback = NULL;
 
@@ -3964,19 +3961,6 @@ DEFINE_TASK(rndRenderTask)
             rndTakeScreenshot = FALSE;
             ssTakeScreenshot();
         }
-
-        if (rndFillCounter)
-        {
-            static rectangle r;
-            r.x0 = 0;
-            r.y0 = 0;
-            r.x1 = MAIN_WindowWidth - 1;
-            r.y1 = MAIN_WindowHeight - 1;
-            primRectSolid2(&r, rndFillColour);
-            rndFillCounter--;
-        }
-
-
 
         //demo-specific update code
         if (demDemoPlaying && gameIsRunning)

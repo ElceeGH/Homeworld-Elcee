@@ -557,7 +557,7 @@ bool toDrawPulsedLine(vector linestart, vector lineend, real32 pulsesize, color 
     //calculate the pulse
     //get the unit direction vector of the pulse line
     vecSub(dirvect, lineend, linestart);
-    distance = (real32) sqrtf(vecMagnitudeSquared(dirvect));
+    distance = sqrtf(vecMagnitudeSquared(dirvect));
     vecNormalize(&dirvect);
 
     //find the start and end points of the pulse
@@ -783,8 +783,6 @@ void toDrawMoveFromLine(ShipPtr ship)
         glVertex3fv((GLfloat *)&ship->moveFrom);
     }
     glEnd();
-
-
 }
 
 
