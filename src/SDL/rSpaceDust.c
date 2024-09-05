@@ -119,7 +119,7 @@ static void spaceDustStartupInternal( DustVolume* vol ) {
 
     // Area and density
     const real32 volumeArea               = 6.0f * sqr(radius); // Cube actual area
-    const real32 motesPerUnitArea         = 1.0f / 200'000.0f;  // Area-independent average density
+    const real32 motesPerUnitArea         = 1.0f / 300'000.0f;  // Area-independent average density
     const real32 moteDensityScaleOpt      = (real32)opRenderSpaceDustDensity / 100.0f;
     const real32 moteDensityScaleForLevel = getLevelDensity();
 
