@@ -206,7 +206,7 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
     static GLuint* prog         = NULL;
     static GLint   locMatCurr   = -1;
     static GLint   locMatPrev   = -1;
-    static GLint   locMode      = -1;
+    static GLint   locMask      = -1;
     static GLint   locCentre    = -1;
     static GLint   locRadius    = -1;
     static GLint   locRes       = -1;
@@ -216,35 +216,35 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
     static GLint   locCloseFar  = -1;
     static GLint   locFadeNear  = -1;
     static GLint   locFadeFar   = -1;
-    static GLint   locResScale  = -1;
+    static GLint   locPrimSize  = -1;
     static GLint   locMbDivLim  = -1;
 
     if ( ! prog)
         prog = shaderProgramLoad( "spacedust" );
 
     if (shaderProgramWasJustLoaded( prog )) {
-        locMatCurr   = glGetUniformLocation( *prog, "uMatCurr"   );
-        locMatPrev   = glGetUniformLocation( *prog, "uMatPrev"   );
-        locMode      = glGetUniformLocation( *prog, "uMode"      );
-        locCentre    = glGetUniformLocation( *prog, "uCentre"    );
-        locRadius    = glGetUniformLocation( *prog, "uRadius"    );
-        locRes       = glGetUniformLocation( *prog, "uRes"       );
-        locCol       = glGetUniformLocation( *prog, "uCol"       );
-        locAlpha     = glGetUniformLocation( *prog, "uAlpha"     );
-        locCloseNear = glGetUniformLocation( *prog, "uCloseNear" );
-        locCloseFar  = glGetUniformLocation( *prog, "uCloseFar"  );
-        locFadeNear  = glGetUniformLocation( *prog, "uFadeNear"  );
-        locFadeFar   = glGetUniformLocation( *prog, "uFadeFar"   );
-        locResScale  = glGetUniformLocation( *prog, "uResScale"  );
-        locMbDivLim  = glGetUniformLocation( *prog, "uMbDivLimit");
+        locMatCurr   = glGetUniformLocation( *prog, "uMatCurr"    );
+        locMatPrev   = glGetUniformLocation( *prog, "uMatPrev"    );
+        locMask      = glGetUniformLocation( *prog, "uMask"       );
+        locCentre    = glGetUniformLocation( *prog, "uCentre"     );
+        locRadius    = glGetUniformLocation( *prog, "uRadius"     );
+        locRes       = glGetUniformLocation( *prog, "uRes"        );
+        locCol       = glGetUniformLocation( *prog, "uCol"        );
+        locAlpha     = glGetUniformLocation( *prog, "uAlpha"      );
+        locCloseNear = glGetUniformLocation( *prog, "uCloseNear"  );
+        locCloseFar  = glGetUniformLocation( *prog, "uCloseFar"   );
+        locFadeNear  = glGetUniformLocation( *prog, "uFadeNear"   );
+        locFadeFar   = glGetUniformLocation( *prog, "uFadeFar"    );
+        locPrimSize  = glGetUniformLocation( *prog, "uPrimSize"   );
+        locMbDivLim  = glGetUniformLocation( *prog, "uMbDivLimit" );
     }
 
     // Calculate various uniform inputs.
     const real32 res[2] = { (real32)MAIN_WindowWidth, (real32)MAIN_WindowHeight };
     const real32 col[3] = { 1.0f, 1.0f, 1.0f };
 
-    const real32 resScale = 0.75f * getResDensityRelative();
-    const real32 primSize = max( 1.0f, min(2.0f, resScale) );
+    const real32 primScale = 0.75f * getResDensityRelative();
+    const real32 primSize  = max( 1.0f, min(2.0f, primScale) );
 
     const real32 camDist     = sqrtf( vecDistanceSquared(camera->eyeposition, camera->lookatpoint) );
     const real32 closeFactor = boxStepf( camDist, vol->camRefNear, vol->camRefFar );
@@ -264,7 +264,7 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
     glUniform1f       ( locCloseFar,           closeFar         );
     glUniform1f       ( locFadeNear,           vol->fadeNear    );
     glUniform1f       ( locFadeFar,            vol->fadeFar     );
-    glUniform1f       ( locResScale,           primSize         );
+    glUniform1f       ( locPrimSize,           primSize         );
     glUniform1f       ( locMbDivLim,           0.5f             );
 
 
@@ -273,9 +273,11 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
     // Lines have two vertexes per mote so they use the duplicated values
     // Points only have one vertex so they skip over the dupes
     const udword  lineModulo     = 2;
+    const udword  lineMask       = lineModulo - 1;
     const udword  lineStride     = sizeof(Mote)   / lineModulo;
     const udword  lineVertCount  = vol->moteCount * lineModulo;
     const udword  pointModulo    = 1;
+    const udword  pointMask      = pointModulo - 1;
     const udword  pointStride    = sizeof(Mote)   / pointModulo;
     const udword  pointVertCount = vol->moteCount * pointModulo;
     GLvoid* const posOffs        = (GLvoid*) offsetof( Mote, pos   );
@@ -311,13 +313,13 @@ void spaceDustRenderInternal( DustVolume* vol, const Camera* camera, real32 alph
     glEnableClientState( GL_COLOR_ARRAY  );
     
     // Draw lines
-    glUniform1i( locMode, lineModulo );
+    glUniform1i( locMask, lineMask );
     glVertexPointer( 3, GL_FLOAT, lineStride, posOffs );
     glColorPointer ( 3, GL_FLOAT, lineStride, colOffs );
     glDrawArrays( GL_LINES, 0, lineVertCount );
     
     // Draw points
-    glUniform1i( locMode, pointModulo );
+    glUniform1i( locMask, pointMask );
     glVertexPointer( 3, GL_FLOAT, pointStride, posOffs );
     glColorPointer ( 3, GL_FLOAT, pointStride, colOffs );
     glDrawArrays( GL_POINTS, 0, pointVertCount );

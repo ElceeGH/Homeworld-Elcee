@@ -34,7 +34,7 @@
 // Uniforms
 uniform mat4  uMatCurr;   // CamProj matrix, current frame
 uniform mat4  uMatPrev;   // CamProj matrix, previous frame
-uniform int   uMode;      // Primitive/modulo. 1 = points, 2 = lines
+uniform int   uMask;      // Primitive modulo mask. 0 = points, 1 = lines
 
 uniform vec3  uCentre;    // Camera position / centre of volume
 uniform float uRadius;    // Cube side half-length
@@ -46,7 +46,7 @@ uniform float uCloseNear; // Fade in when this close to camera (begin)
 uniform float uCloseFar;  // Fade in when this close to camera (end)
 uniform float uFadeNear;  // Fade out when this far from camera (begin)
 uniform float uFadeFar;   // Fade out when this far from camera (end)
-uniform float uResScale;  // Thickness in [1:2] range
+uniform float uPrimSize;  // Thickness in [1:2] range
 uniform float uMbDivLimit;// Motion blur max alpha division rate
 
 
@@ -119,7 +119,7 @@ void main() {
     float ssLen   = length( ssDelta );
     
     // Lines fade in as length goes from 0 -> thickness.
-    float lineRatio = boxStep( ssLen, 0.0, uResScale );
+    float lineRatio = boxStep( ssLen, 0.0, uPrimSize );
     float lineAlpha = baseAlpha * lineRatio;
     
     // Points fade in as length goes from thickness -> 0
@@ -130,15 +130,15 @@ void main() {
     lineAlpha *= max( 1.0 / ssLen, uMbDivLimit );
     
     // Select the point/line alpha
-    float alpha = (uMode == 1) ? pointAlpha : lineAlpha;
+    float alpha = (uMask == 0) ? pointAlpha : lineAlpha;
     
     // Set colour
     gl_FrontColor = colourise( uCol, alpha, moteBlend );
     gl_BackColor  = gl_FrontColor;
     
     // Select the line end to use. For points this always selects csCurr.
-    int vertexSelect = gl_VertexID % uMode;
-    gl_Position = (vertexSelect == 0) ? csCurr : csPrev;
+    int vSel = gl_VertexID & uMask;
+    gl_Position = (vSel == 0) ? csCurr : csPrev;
 }
 
 
