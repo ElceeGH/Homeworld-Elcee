@@ -6,12 +6,11 @@
 
     How this works takes a bit of explanation.
     - Dust motes are worldspace points that don't move*.
-    - Dust should always be visible.
-    - Lines with zero length have zero pixels, so we need points too.
-    - Since we need both lines and points, the shader is executed twice
-      once for each primitive type.
-    - Vertexes are duplicated for each mote so that a mote can be
-      emitted as a line with no additional CPU overhead.
+    - Dust should always be visible, but lines with zero length have zero
+      pixels, so we need to draw dust motes as both points and lines.
+    - Therefore the shader is executed twice once for each primitive type.
+    - Vertexes are duplicated for each mote so that a mote can be emitted
+      as a line or a point with no additional CPU overhead.
     - Lines select the curr/prev transformed pos by mod 2 of vertex index.
     - Points select curr by mod 1 and skip every second vertex using stride.
     
@@ -19,7 +18,11 @@
       into the cube centred at the camera and wrapped around at its edges.
       You can't see it, even without alpha fading, because the worldspace
       position is conjured using the curr/prev camproj matrixes as if it were
-      continuous motion.
+      continuous motion. It's magical.
+
+    This uses alpha-premultiplied colour blending, which allows for separate
+    concepts of colour, opacity, and additivity in any proportion. That way
+    only one draw call is required for all motes per primitive.
     
     Created 30/08/2024 by Elcee
 =============================================================================*/
