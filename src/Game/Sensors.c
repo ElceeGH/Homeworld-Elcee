@@ -98,7 +98,7 @@ extern color HorseRaceDropoutColor;
 //region handle for the sensors manager viewport
 regionhandle smViewportRegion;
 regionhandle smBaseRegion;
-rectangle smViewRectangle;
+rectanglei smViewRectangle;
 
 sdword smClicking = FALSE;
 
@@ -155,7 +155,7 @@ bool8 smZoomingIn = FALSE, smZoomingOut = FALSE, smFocus = FALSE, smFocusTransit
 FocusCommand *smFocusCommand = NULL;
 
 //for selections
-rectangle smSelectionRect;
+rectanglei smSelectionRect;
 //blob *smLastClosestBlob = NULL;
 
 blob *closestBlob = NULL;
@@ -685,8 +685,8 @@ static void addTickToList( real32 x, real32 y, real32 rads, bool camEyeAboveLook
         return;
 
     smticktext* smt = &smTickText[smTickTextIndex];
-    smt->x = primGLToScreenX(x);
-    smt->y = primGLToScreenY(y);
+    smt->x = (sdword)primGLToScreenX(x);
+    smt->y = (sdword)primGLToScreenY(y);
 
     real32 degrees = -RAD_TO_DEG(rads - smHorizTickAngle);
     if (degrees < 0.0f)   degrees += 360.0f;
@@ -1761,11 +1761,12 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 //    Node *node;
     blob *closestMoveBlob = NULL;
     real32 closestMoveDistance = REALlyBig, moveDistance;
-    sdword index, blobIndex, nSegments, distance, closestDistance = SDWORD_Max;
+    sdword index, blobIndex, nSegments;
+    real32 distance, closestDistance = INFINITY;
     real32 distanceToOrigin, distanceToOriginSquared, factor;
     real32 closestSortDistance = REALlyBig, farthestSortDistance = REALlyNegative, highestBlob = 0.0f;
     color c;
-    sdword radius;
+    real32 radius;
     vector p0, p1;
     real32 x, y, screenRadius;
 #if BOB_VERBOSE_LEVEL >= 2
@@ -1773,7 +1774,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 #endif
     bool bClosestMove = FALSE;      // used for playing the tick sound when a blob is highligted
     static bool bPlayedSound;       // ditto
-    sdword carrierHalfWidth = 0, mothershipHalfWidth = 0;
+    real32 carrierHalfWidth = 0, mothershipHalfWidth = 0;
     char *carrier = NULL, *mothership = NULL;
     fonthandle oldFont = 0;
 
@@ -1884,7 +1885,7 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 #if BOB_VERBOSE_LEVEL >= 2
         nBlobs++;
 #endif
-        if (mouseInRectGeneral(o.centreX - o.radiusX, o.centreY - o.radiusY, o.centreX + o.radiusX, o.centreY + o.radiusY))
+        if (mouseInRectGeneralf(o.centreX - o.radiusX, o.centreY - o.radiusY, o.centreX + o.radiusX, o.centreY + o.radiusY))
         {                                                   //if inside bounding box of circle
             distance = ABS(o.centreX - mouseCursorX()) + ABS(o.centreY - mouseCursorY());
             if (distance < closestDistance)
@@ -1934,11 +1935,11 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
 //        node = node->next;
     if (smTacticalOverlay)
     {
-        oldFont = fontMakeCurrent(selGroupFont3);
-        carrier = ShipTypeToNiceStr(Carrier);
-        mothership = ShipTypeToNiceStr(Mothership);
-        carrierHalfWidth = fontWidth(carrier) / 2;
-        mothershipHalfWidth = fontWidth(mothership) / 2;
+        oldFont             = fontMakeCurrent(selGroupFont3);
+        carrier             = ShipTypeToNiceStr(Carrier);
+        mothership          = ShipTypeToNiceStr(Mothership);
+        carrierHalfWidth    = (real32) fontWidth(carrier)    * 0.5f;
+        mothershipHalfWidth = (real32) fontWidth(mothership) * 0.5f;
     }
 
     for (blobIndex = 0; blobIndex < smNumberBlobsSorted; blobIndex++)
@@ -1952,16 +1953,17 @@ blob *smBlobsDraw(Camera *camera, LinkedList *list, hmatrix *modelView, hmatrix 
             {
                 if (smTacticalOverlay)
                 {
-                    if (bitTest(thisBlob->flags, BTF_Mothership))
-                    {
+                    bool hasMothership = bitTest(thisBlob->flags, BTF_Mothership);
+                    bool hasCarrier    = bitTest(thisBlob->flags, BTF_Carrier);
+
+                    if (hasMothership || hasCarrier) {
+                        real32 half = hasMothership ? mothershipHalfWidth : carrierHalfWidth;
+                        char*  text = hasMothership ? mothership          : mothership;
+                        sdword fx   = (sdword)(primGLToScreenX(thisBlob->screenX) - half);
+                        sdword fy   = (sdword)(primGLToScreenY(thisBlob->screenY) + primGLToScreenScaleX(thisBlob->screenRadius));
+
                         primModeSet2();
-                        fontPrint(primGLToScreenX(thisBlob->screenX) - mothershipHalfWidth, primGLToScreenY(thisBlob->screenY) + primGLToScreenScaleX(thisBlob->screenRadius), smTOColor, mothership);
-                        primModeClear2();
-                    }
-                    else if (bitTest(thisBlob->flags, BTF_Carrier))
-                    {
-                        primModeSet2();
-                        fontPrint(primGLToScreenX(thisBlob->screenX) - carrierHalfWidth, primGLToScreenY(thisBlob->screenY) + primGLToScreenScaleX(thisBlob->screenRadius), smTOColor, carrier);
+                        fontPrint(fx, fy, smTOColor, text);
                         primModeClear2();
                     }
                 }
@@ -2286,10 +2288,10 @@ void smSensorsCloseForGood(void)
     Outputs     : player clicked on or NULL
     Return      : void
 ----------------------------------------------------------------------------*/
-sdword smClickedOnPlayer(rectangle *viewportRect)
+sdword smClickedOnPlayer(rectanglei *viewportRect)
 {
     fonthandle oldfont;
-    rectangle  playerColorRect;
+    rectanglei playerColorRect;
     sdword     index;
 
     oldfont = fontMakeCurrent(selGroupFont2);
@@ -2327,37 +2329,30 @@ sdword smClickedOnPlayer(rectangle *viewportRect)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-void smPlayerNamesDraw(rectangle *viewportRect)
+void smPlayerNamesDraw(rectanglei *viewportRect)
 {
-    fonthandle oldfont;
-    sdword index;
-    rectangle playerColorRect;
-    color c;
-    char buffer[50];
-    sdword bounty;
+    fonthandle oldfont = fontMakeCurrent(selGroupFont2);
 
-    oldfont = fontMakeCurrent(selGroupFont2);
-
+    rectanglei playerColorRect;
     playerColorRect.y1 = viewportRect->y1 - smPlayerListMarginY;
     playerColorRect.y0 = playerColorRect.y1 - fontHeight(" ");
     playerColorRect.x0 = viewportRect->x0 + smPlayerListMarginX;
     playerColorRect.x1 = playerColorRect.x0 + fontHeight(" ");
 
     //draw the list of player names/colors
-    for (index = universe.numPlayers - 1; index >= 0; index--)
+    for (sdword index = universe.numPlayers - 1; index >= 0; index--)
     {
         if (universe.players[index].playerState==PLAYER_ALIVE)
         {
             sdword x;
-            bool playerhasdroppedOutOrQuit = playerHasDroppedOutOrQuit(index);
-
-            c = teColorSchemes[index].textureColor.base;
+            bool  playerhasdroppedOutOrQuit = playerHasDroppedOutOrQuit(index);
+            color c = teColorSchemes[index].textureColor.base;
             if (playerhasdroppedOutOrQuit)
             {
                 c = HorseRaceDropoutColor;
             }
 
-            primRectSolid2(&playerColorRect, c);                 //draw colored rectangle
+            primRectiSolid2(&playerColorRect, c);                 //draw colored rectangle
             x = playerColorRect.x1 + smPlayerListTextMargin;
             fontPrint(x, //print the player name in a stock color
                       playerColorRect.y0, playerhasdroppedOutOrQuit ? HorseRaceDropoutColor : smPlayerListTextColor, playerNames[index]);
@@ -2377,8 +2372,9 @@ void smPlayerNamesDraw(rectangle *viewportRect)
                 //draw bounty values
                 fontPrint(x,
                           playerColorRect.y0, playerhasdroppedOutOrQuit ? HorseRaceDropoutColor : colWhite, "B: ");
-                bounty = getPlayerBountyRender(&universe.players[index]);
+                sdword bounty = getPlayerBountyRender(&universe.players[index]);
                 /*itoa(bounty,buffer,10);*/
+                char buffer[50];
                 sprintf(buffer, "%d", bounty);
                 x += fontWidth("B: ");
 
@@ -2409,7 +2405,7 @@ void smPlayerNamesDraw(rectangle *viewportRect)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-void smCursorTextDraw(rectangle *viewportRect, blob *selectedBlob, sdword sensorLevel)
+void smCursorTextDraw(rectanglei *viewportRect, blob *selectedBlob, sdword sensorLevel)
 {
     char *cursorText = NULL;
     SpaceObj *object;
@@ -2659,9 +2655,9 @@ void smHotkeyGroupsDraw(void)
             selCircleComputeGeneral(&rndCameraMatrix, &rndProjectionMatrix, &centre, 1.0f, &x, &y, &radius);
             if (radius > 0.0f)
             {
-                fontPrint(primGLToScreenX(x) + smHotKeyOffsetX,
-                           primGLToScreenY(y) + smHotKeyOffsetY,
-                           selHotKeyNumberColor, selHotKeyString[index]);
+                fontPrint((sdword) primGLToScreenX(x) + smHotKeyOffsetX,
+                          (sdword) primGLToScreenY(y) + smHotKeyOffsetY,
+                          selHotKeyNumberColor, selHotKeyString[index]);
             }
         }
     }
@@ -2953,7 +2949,7 @@ void smViewportRender(featom *atom, regionhandle region)
 
     if (smHoldLeft == smSelectHold)                         //and then draw the current selection progress
     {
-        primRectOutline2(&smSelectionRect, 1, TW_SELECT_BOX_COLOR);
+        primRectiOutline2(&smSelectionRect, 1, TW_SELECT_BOX_COLOR);
     }
     if (nisStatic[NIS_SMStaticIndex] != NULL)
     {

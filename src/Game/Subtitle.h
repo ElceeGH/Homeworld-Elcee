@@ -117,8 +117,8 @@ typedef struct
     bool8  bContinuousEvent;                    //this event will keep playing after this speech fragment
 
     //settings for the region
-    rectangle defaultRect;                      //rectangle in 640x480 rez
-    rectangle rect;                             //where the text is printed
+    rectanglei defaultRect;                      //rectangle in 640x480 rez
+    rectanglei rect;                             //where the text is printed
     bool8 bScaleRezX, bScaleRezY;               //TRUE if the rectangle is to scale with the screen rez
     bool8 bEnabled;                             //a subtitle region can be disabled
     sdword iconOffsetX, iconOffsetY;            //offsets to the speech icon
@@ -185,6 +185,6 @@ void subTitlesUpdate(void);
 
 void subTitlesDraw(subregion *region);
 void subTitlesFadeOut(subregion *region, real32 fadeTime);
-sdword subStringsChop(rectangle *region, fonthandle font, sdword longLength, char *longString, char *chopBuffer, char **choppedStrings);
+sdword subStringsChop(rectanglei *region, fonthandle font, sdword longLength, char *longString, char *chopBuffer, char **choppedStrings);
 
 #endif

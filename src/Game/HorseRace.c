@@ -87,7 +87,7 @@ color  HorseRaceDropoutColor      = colRGB(75,75,75);
     data:
 =============================================================================*/
 
-static rectangle hrSinglePlayerPos;
+static rectanglei hrSinglePlayerPos;
 static color hrSinglePlayerLoadingBarColor = colRGB(255,63,63);  // pastel red
 
 static sdword JustInit;
@@ -232,9 +232,9 @@ void hrDirtyChatBox()
     }
 }
 
-void hrBarDraw(rectangle *rect, color back, color fore, real32 percent)
+void hrBarDraw(rectanglei *rect, color back, color fore, real32 percent)
 {
-    rectangle temp;
+    rectanglei temp;
 //  primRectSolid2(rect, back);
 
     if (percent > 1.0)
@@ -247,14 +247,14 @@ void hrBarDraw(rectangle *rect, color back, color fore, real32 percent)
     temp.x1 = rect->x0 + (sdword)((rect->x1-rect->x0)*percent);
     temp.y1 = rect->y1;
 
-    primRectSolid2(&temp, fore);
+    primRectiSolid2(&temp, fore);
 }
 
 void hrDrawPlayersProgress(featom *atom, regionhandle region)
 {
     sdword     index;
-    rectangle pos; 
-    rectangle outline;
+    rectanglei pos; 
+    rectanglei outline;
     real32 percent;
     fonthandle currentfont;
     bool droppedOut;
@@ -289,7 +289,7 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
 
             PlayersAlreadyDrawnDropped[index] = droppedOut;
 
-            primRectSolid2(&outline, colBlack);
+            primRectiSolid2(&outline, colBlack);
 
             if (droppedOut)
             {
@@ -307,7 +307,7 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
                 }
             }
 
-            primRectOutline2(&outline, 1, (droppedOut) ? HorseRaceDropoutColor : tpGameCreated.playerInfo[index].stripeColor);
+            primRectiOutline2(&outline, 1, (droppedOut) ? HorseRaceDropoutColor : tpGameCreated.playerInfo[index].stripeColor);
 
             pos.y0+=fontHeight(" ");
             pos.y1=pos.y0+4;
@@ -363,8 +363,8 @@ void hrDrawPlayersProgress(featom *atom, regionhandle region)
         outline.y0 -= 3;
         outline.y1 = outline.y0 + fontHeight(" ")*2 - 2;
 
-        primRectTranslucent2(&outline, colRGBA(0,0,0,64));
-        primRectOutline2(&outline, 1, teColorSchemes[0].textureColor.detail);
+        primRectiTranslucent2(&outline, colRGBA(0,0,0,64));
+        primRectiOutline2(&outline, 1, teColorSchemes[0].textureColor.detail);
 
         fontPrintf(pos.x0,pos.y0,teColorSchemes[0].textureColor.base,"%s",playerNames[0]);
 
@@ -388,7 +388,7 @@ void hrDrawChatBox(featom *atom, regionhandle region)
 
     currentfont = fontMakeCurrent(playernamefont);
 
-    primRectSolid2(&region->rect,colRGB(0,0,0));
+    primRectiSolid2(&region->rect,colRGB(0,0,0));
     feStaticRectangleDraw(region);
 
     x = region->rect.x0+10;
@@ -736,7 +736,7 @@ void hrInitBackground(void)
     }
 }
 
-void hrRectSolidTextured2(rectangle *rect)
+void hrRectSolidTextured2(rectanglei *rect)
 {
     GLfloat t[8] = { 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f };
     GLfloat v[8] = { primScreenToGLX(rect->x0), primScreenToGLY(rect->y1 - 1),
@@ -796,7 +796,7 @@ void hrInitDrawFile(char* filename, GLuint* handle, sdword* width, sdword* heigh
 // Elcee: I mind since I made this operate at infinitely high framerates lol, oops
 void hrDrawFile(GLuint* handle, sdword x, sdword y, sdword w, sdword h)
 {
-    rectangle rect;
+    rectanglei rect;
 
     rndTextureEnable(TRUE);
     rndAdditiveBlends(FALSE);

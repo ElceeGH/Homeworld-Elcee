@@ -312,7 +312,7 @@ regionhandle child;
 ----------------------------------------------------------------------------*/
 bool regPointOnRegion(sdword x, sdword y, regionhandle region)
 {
-    rectangle* r = &region->rect;
+    rectanglei* r = &region->rect;
     if (x >= r->x0 && x <= r->x1 &&
         y >= r->y0 && y <= r->y1)
     {
@@ -351,7 +351,7 @@ bool regRegionInside(regionhandle needle, regionhandle haystack)
     //!!! temporary hack to make button text visible.  This function checks to see
     //if the top region is more or less on the bottom region:  It must be within the
     //vertical limits and no more that 50% off horizontally.
-    rectangle *nRect, *hRect;
+    rectanglei *nRect, *hRect;
     sdword nWidth, hWidth, overlap;
 
     nRect = &needle->rect;
@@ -438,9 +438,9 @@ void regDirtySiblingsInside(regionhandle region)
 ----------------------------------------------------------------------------*/
 bool regDoRegionsOverlap(regionhandle a, regionhandle b)
 {
-    rectangle c;
+    rectanglei c;
 
-    primRectUnion2(&c, &a->rect, &b->rect);
+    primRectiUnion2(&c, &a->rect, &b->rect);
     return (c.x0 == c.x1 || c.y0 == c.y1);
 }
 

@@ -314,7 +314,7 @@ typedef struct
     Node         node;
     textype      type;   //what part of the region does it cut out
     char         *name;  //name of decorative bitmap (if region is decorative)
-    rectangle    rect;   //size of region
+    rectanglei   rect;   //size of region
     regionhandle region; //pointer to the region associated with the cutout
 } cutouttype;
 
@@ -334,21 +334,21 @@ void ferReset(void);
 void ferShutdown(void);
 
 //draw a textured box
-void ferDrawBoxRegion(rectangle dimensions, drawtype textures,
+void ferDrawBoxRegion(rectanglei dimensions, drawtype textures,
                        drawtype glow, LinkedList *cutouts, bool bUseAlpha);
 
 //draw UI Elements
-void ferDrawButton(rectangle dimensions, ferbuttonstate);
-void ferDrawMenuItemSelected(rectangle *rect);
-void ferDrawCheckbox(rectangle dimensions, ferbuttonstate state);
-void ferDrawRadioButton(rectangle dimensions, ferbuttonstate state);
+void ferDrawButton(rectanglei dimensions, ferbuttonstate);
+void ferDrawMenuItemSelected(rectanglei *rect);
+void ferDrawCheckbox(rectanglei dimensions, ferbuttonstate state);
+void ferDrawRadioButton(rectanglei dimensions, ferbuttonstate state);
 void ferDrawScrollbar(scrollbarhandle shandle, ferscrollbarstate state);
 void ferDrawScrollbarButton(regionhandle region, ferscrollbarbuttonstate state);
 void ferDrawFocusWindow(regionhandle region, ferfocuswindowstate state);
 void ferDrawDecorative(regionhandle region);
 void ferDrawOpaqueDecorative(regionhandle region);
-void ferDrawSelectedDot(rectangle *rect);
-void ferDrawPopoutArrow(rectangle *rect);
+void ferDrawSelectedDot(rectanglei *rect);
+void ferDrawPopoutArrow(rectanglei *rect);
 void ferDrawBitmapButton(regionhandle region, ferbitmapbuttonstate state);
 
 void ferDrawHorizSlider(sliderhandle shandle, uword state);

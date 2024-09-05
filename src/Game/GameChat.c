@@ -49,9 +49,9 @@
     Data:
 =============================================================================*/
 
-textentryhandle chatentrybox=NULL;
-regionhandle    chatdrawregion=NULL;
-featom          chatdrawatom=
+static textentryhandle chatentrybox=NULL;
+static regionhandle    chatdrawregion=NULL;
+static featom          chatdrawatom=
 {
     "ChatTextDraw",  // name
     FAF_Function,    // flags
@@ -75,41 +75,37 @@ featom          chatdrawatom=
     {0, 0},          // pad[2]
 };
 
-fescreen       *gcScreenHandle=NULL;
-rectangle       textentrypos;
+static fescreen       *gcScreenHandle=NULL;
+static rectanglei      textentrypos;
 
 // boolean indicating if the game chatting system is running or not.
 bool            gcRunning=FALSE;
 
 // booleans to indicate if the game chatting system is accepting text at the moment or not.
-bool            InChatMode=FALSE;
-sdword          MessageToAllies;
-bool            ViewingBuffer=FALSE;
+static bool            InChatMode=FALSE;
+static sdword          MessageToAllies;
+       bool            ViewingBuffer=FALSE;
 
-//bool            reset=FALSE;
+static fonthandle      chathistoryfont=0;
+static char            chathistoryfontname[64]="default.hff";
 
-fonthandle      chathistoryfont=0;
-char            chathistoryfontname[64]="default.hff";
+static LinkedList      chathistorylist;
+static Node           *curPosition=NULL;
+static chathistory     threadtransfer[40];
+static sdword          numnewchat=0;
 
-LinkedList      chathistorylist;
-Node           *curPosition=NULL;
-chathistory     threadtransfer[40];
-sdword          numnewchat=0;
+// tweakable variables
+color   gcGamePrivateChatColor=colRGB(255,0,0);
+color   gcGameWhisperedColor=colRGB(0,255,0);
+color   gcGameNormalChatColor=colRGB(200,200,200);
+sdword  maxlines=3;
+sdword  chatwidth;
+real32  GC_SCROLL_TIME=2.5f;
 
-// tweakable variables for color
+static void* chatmutex=NULL;
+static BabyCallBack   *ScrollDownAutoBaby=NULL;
+static uword           RUTransferToPlayer;
 
-color           gcGamePrivateChatColor=colRGB(255,0,0);
-color           gcGameWhisperedColor=colRGB(0,255,0);
-color           gcGameNormalChatColor=colRGB(200,200,200);
-
-void           *chatmutex=NULL;
-
-BabyCallBack   *ScrollDownAutoBaby=NULL;
-real32          GC_SCROLL_TIME=2.5f;
-sdword          maxlines=3;
-uword           RUTransferToPlayer;
-
-sdword          chatwidth;
 
 /*=============================================================================
     function prototypes:
@@ -256,7 +252,7 @@ void gcAddChatItemToList(chathistory *chat)
         else
         {
             strcpy(wrap->chatstring, chat->chatstring + nCharacters + 1);
-            chat->chatstring[nCharacters] = 0;
+            chat->chatstring[nCharacters] = '\0';
         }
 
         listAddNodeBefore(chathistorylist.tail, &chat->link, chat);

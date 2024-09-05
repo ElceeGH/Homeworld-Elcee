@@ -1491,12 +1491,14 @@ void cmShutdown(void)
 ----------------------------------------------------------------------------*/
 void cmConnectorDraw(featom *atom, regionhandle region)
 {
-    sdword centerX  = region->rect.x0 + ((region->rect.x1 - region->rect.x0) / 2);
-
     cmConnectorRegion = region;
 
-    primLine2(centerX, region->rect.y0, centerX, region->rect.y1, colRGB(255, 0, 0));
-    primCircleSolid2(centerX, region->rect.y1, 3, 16, colRGB(255, 0, 0));
+    rectanglef rect    = rectToFloatRect( &region->rect );
+    real32     centerX = rect.x0 + ((rect.x1 - rect.x0) / 2);
+    color      col     = colRGB(255, 0, 0);
+
+    primLine2       (centerX, rect.y0, centerX, rect.y1, col );
+    primCircleSolid2(centerX, rect.y1, 3, 16,            col );
 }
 
 /*-----------------------------------------------------------------------------
@@ -1882,7 +1884,7 @@ void cmPauseJobs(char *string, featom *atom)
 void cmShipCostsDraw(featom *atom, regionhandle region)
 {
     sdword x, y, index;
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     bool        newline=FALSE;
     color c;
     shipsinprogress *factory;
@@ -1894,8 +1896,8 @@ void cmShipCostsDraw(featom *atom, regionhandle region)
     fontMakeCurrent(cmDefaultFont);
 
     feStaticRectangleDraw(region);                          //draw standard rectangle
-    primRectSolid2(rect, CM_BackgroundColor);
-    primLine2(rect->x0, rect->y0, rect->x0, rect->y1, colRGB(0, 100, 160));
+    primRectiSolid2(rect, CM_BackgroundColor);
+    primLinei2(rect->x0, rect->y0, rect->x0, rect->y1, colRGB(0, 100, 160));
 
     cmShipCostsRegion = region;
 
@@ -2437,20 +2439,18 @@ sdword cmLeftArrowProcess(regionhandle region, sdword ID, udword event, udword d
 ----------------------------------------------------------------------------*/
 void cmDrawArrow(regionhandle region, bool leftArrow)
 {
-    sdword y, index, numlines, startind=0;
-    bool newline = FALSE;
-    rectangle *rect = &region->rect;
-    triangle tri;
-    sdword width = rect->x1 - rect->x0 - 4;
-    shipsinprogress *factory;
-    shipinprogress *progress;
-    fonthandle currentFont;
+    fonthandle currentFont = fontMakeCurrent(cmDefaultFont);
+    rectanglef rect        = rectToFloatRect(&region->rect);
+    real32     y           = rect.y0 + CM_ASMarginTop;
+    real32     width       = rect.x1 - rect.x0 - 4;
+    real32     spaceHeight =  (real32) fontHeight(" ");
+    bool       newline     = FALSE;
+    sdword     numlines    = 0;
+    sdword     startind    = 0;
 
-    numlines = 0;
+    shipsinprogress* factory = curshipsInProgress;
 
-    currentFont = fontMakeCurrent(cmDefaultFont);
-
-    for (index=0; cmShipsAvailable[index].nJobs!=-1; index++)
+    for (sdword index=0; cmShipsAvailable[index].nJobs!=-1; index++)
     {
         if ( (cmShipsAvailable[index].itemtype==ITEM_SHIP) &&
              (cmShipsAvailable[index].itemstat != STAT_CANTBUILD) )
@@ -2471,28 +2471,22 @@ void cmDrawArrow(regionhandle region, bool leftArrow)
         }
     }
 
-    newline=FALSE;
-    numlines=0;
+    
 
-    y = rect->y0 + CM_ASMarginTop;
-    factory = curshipsInProgress;
-
-    if(leftArrow)
-    {
-        tri.x0 = rect->x1 - 2;
-        tri.x1 = rect->x0 + 2;
-        tri.x2 = rect->x1 - 2;
-    }
-    else
-    {
-        tri.x0 = rect->x0 + 2;
-        tri.x1 = rect->x0 + 2;
-        tri.x2 = rect->x1 - 2;
+    triangle tri;
+    if (leftArrow) {
+        tri.x0 = rect.x1 - 2;
+        tri.x1 = rect.x0 + 2;
+        tri.x2 = rect.x1 - 2;
+    } else {
+        tri.x0 = rect.x0 + 2;
+        tri.x1 = rect.x0 + 2;
+        tri.x2 = rect.x1 - 2;
     }
 
-    for (index=startind;cmShipsAvailable[index].nJobs!=-1; index++)
+    for (sdword index=startind;cmShipsAvailable[index].nJobs!=-1; index++)
     {
-        if (y + fontHeight(" ") >= rect->y1)
+        if (y + spaceHeight >= rect.y1)
         {
             break;
         }
@@ -2500,16 +2494,11 @@ void cmDrawArrow(regionhandle region, bool leftArrow)
         if ( (cmShipsAvailable[index].itemtype==ITEM_SHIP) &&
              (cmShipsAvailable[index].itemstat==STAT_CANBUILD) )
         {
-            progress = &factory->progress[cmShipsAvailable[index].info->shiptype];
-
-            if(leftArrow)
-            {
+            if(leftArrow) {
                 tri.y0 = y;
                 tri.y1 = y + (width / 2);
                 tri.y2 = y + width;
-            }
-            else
-            {
+            } else {
                 tri.y0 = y;
                 tri.y1 = y + width;
                 tri.y2 = y + (width / 2);
@@ -2537,7 +2526,7 @@ void cmDrawArrow(regionhandle region, bool leftArrow)
         {
             newline = FALSE;
 
-            y+= fontHeight(" ") + CM_ASInterSpacing;
+            y += spaceHeight + CM_ASInterSpacing;
         }
     }
     fontMakeCurrent(currentFont);
@@ -2590,7 +2579,7 @@ void cmRightArrowDraw(featom *atom, regionhandle region)
 void cmShipNumbersDraw(featom *atom, regionhandle region)
 {
     sdword x, y, index, numShips;
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     bool newline = FALSE;
     color c;
     shipsinprogress *factory;
@@ -2608,8 +2597,8 @@ void cmShipNumbersDraw(featom *atom, regionhandle region)
     //    regFunctionSet(region, cmSelectNumber);             //set new region handler function
     //}
     feStaticRectangleDraw(region);                          //draw standard rectangle
-    primRectSolid2(rect, CM_BackgroundColor);
-    primLine2(rect->x0, rect->y0, rect->x0, rect->y1, colRGB(0, 100, 160));
+    primRectiSolid2(rect, CM_BackgroundColor);
+    primLinei2(rect->x0, rect->y0, rect->x0, rect->y1, colRGB(0, 100, 160));
 
     cmShipNumbersRegion = region;
 
@@ -2844,7 +2833,7 @@ sdword cmSelectAvailable(regionhandle region, sdword ID, udword event, udword da
 void cmShipInfoDraw(featom *atom, regionhandle region)
 {
     sdword x, y, index, percent;
-    rectangle rect = region->rect;
+    rectanglei rect = region->rect;
     color c;
     shipsinprogress *factory  = NULL;
     shipinprogress  *progress = NULL;
@@ -2872,7 +2861,7 @@ void cmShipInfoDraw(featom *atom, regionhandle region)
     feStaticRectangleDraw(region);                          //draw standard rectangle
 
     rect.x1 -= CM_ProgressMarginRight;
-    primRectSolid2(&rect, CM_BackgroundColor);
+    primRectiSolid2(&rect, CM_BackgroundColor);
 
     numlines = 0;
 
@@ -2945,8 +2934,8 @@ void cmShipInfoDraw(featom *atom, regionhandle region)
                 rect.x1 = region->rect.x0 + CM_SelectBoxX1 + cmSelectRightAdjust;
                 rect.y1 = y + CM_SelectBoxY1 + cmSelectBottomAdjust;
 
-                primRectTranslucent2(&rect, FEC_ListItemTranslucent/*CM_SelectedColorSolid*/);
-                primRectOutline2(&rect, 1, FEC_ListItemTranslucentBorder/*CM_SelectedColorOutline*/);
+                primRectiTranslucent2(&rect, FEC_ListItemTranslucent/*CM_SelectedColorSolid*/);
+                primRectiOutline2(&rect, 1, FEC_ListItemTranslucentBorder/*CM_SelectedColorOutline*/);
             }
 
             if (progress->nJobs > 0)
@@ -2962,7 +2951,7 @@ void cmShipInfoDraw(featom *atom, regionhandle region)
                 rect.y1 = y + fontHeight(" ") / 2 + cmSelectTopAdjust;
                 rect.x1 = rect.x0 - 1 + cmSelectRightAdjust + percent * (region->rect.x1 -
                     region->rect.x0 - CM_ProgressMarginLeft - CM_ProgressMarginRight) / 100;
-                primRectSolid2(&rect, cmProgressShipColor);
+                primRectiSolid2(&rect, cmProgressShipColor);
 
                 percent = 100 - (progress->timeLeft +
                     (progress->nJobs - 1) * progress->timeStart) * 100 /
@@ -2971,26 +2960,13 @@ void cmShipInfoDraw(featom *atom, regionhandle region)
                 rect.y1 = y + CM_SelectBoxY1 + cmSelectBottomAdjust - 1;
                 rect.x1 = rect.x0 - 1 + cmSelectRightAdjust + percent * (region->rect.x1 -
                     region->rect.x0 - CM_ProgressMarginLeft - CM_ProgressMarginRight) / 100;
-                primRectSolid2(&rect, cmProgressTotalColor);
+                primRectiSolid2(&rect, cmProgressTotalColor);
             }
 
             if ((taskTimeElapsed-ExceededCapsFrames < FLASH_TIMER) && (ShipNumberExceeded==index))
             {
                 c = FEC_ListItemInvalid;//cmCapsExceededTextColor;
             }
-
-
-            /*
-            if (progress->paused)
-            {
-                rect.x0 = region->rect.x0 + CM_SelectBoxX0+2;
-                rect.y0 = y + CM_SelectBoxY0+2;
-                rect.x1 = region->rect.x0 + CM_SelectBoxX1+2;
-                rect.y1 = y + CM_SelectBoxY1+2;
-
-                primRectOutline2(&rect, 1, CM_PausedColor);
-            }
-              */
 
 
             //ship fancy name
@@ -3045,19 +3021,15 @@ void cmNumberRUsDraw(featom *atom, regionhandle region)
 {
     sdword width;
     fonthandle oldfont;
-    rectangle rect = region->rect;
+    rectanglei rect = region->rect;
 
     cmNumberRUsRegion = region;
 
     oldfont = fontMakeCurrent(cmShipListFont);
 
     primModeSet2();
-    primRectSolid2(&rect, CM_BackgroundColor);
-
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    primRectiSolid2(&rect, CM_BackgroundColor);
+    scissorClearDepthInRect( &rect );
 
     width = fontWidthf("%d", universe.curPlayerPtr->resourceUnits);//width of number
     feStaticRectangleDraw(region);                          //draw regular rectangle as backdrop
@@ -3081,7 +3053,7 @@ void cmTotalRUsDraw(featom *atom, regionhandle region)
     sdword index, RUs;
     shipsinprogress *factory;
     shipinprogress *progress;
-    rectangle rect = region->rect;
+    rectanglei rect = region->rect;
     fonthandle oldfont;
     real32 RUsAlready;
 
@@ -3092,12 +3064,8 @@ void cmTotalRUsDraw(featom *atom, regionhandle region)
     factory = curshipsInProgress;
 
     primModeSet2();
-    primRectSolid2(&rect, CM_BackgroundColor);
-
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    primRectiSolid2(&rect, CM_BackgroundColor);
+    scissorClearDepthInRect( &rect );
 
     for (index = RUs = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {
@@ -3154,7 +3122,7 @@ void cmTotalShipsDraw(featom *atom, regionhandle region)
     sdword index, nShips;
     shipsinprogress *factory;
     shipinprogress *progress;
-    rectangle rect = region->rect;
+    rectanglei rect = region->rect;
     fonthandle oldfont;
 
     cmTotalShipsRegion = region;
@@ -3164,12 +3132,8 @@ void cmTotalShipsDraw(featom *atom, regionhandle region)
     factory = curshipsInProgress;
 
     primModeSet2();
-    primRectSolid2(&rect, CM_BackgroundColor);
-
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    primRectiSolid2(&rect, CM_BackgroundColor);
+    scissorClearDepthInRect(&rect);
 
     for (index = nShips = 0; cmShipsAvailable[index].nJobs != -1; index++)
     {
@@ -3753,7 +3717,7 @@ sdword cmSelectCarrier4(regionhandle region, sdword ID, udword event, udword dat
 ----------------------------------------------------------------------------*/
 void cmDrawShipImage(regionhandle region, sdword shipID)
 {
-    rectangle rect;
+    rectanglei rect;
     udword usetexture;
 
     usetexture = (shipID == 0) ? 0 : 1;
@@ -3777,7 +3741,7 @@ void cmDrawShipImage(regionhandle region, sdword shipID)
         trRGBTextureMakeCurrent(cmShipTexture[universe.curPlayerPtr->race][usetexture]);
     }
 
-    primRectSolidTextured2(&rect);
+    primRectiSolidTextured2(&rect, colWhite);
     
 }
 

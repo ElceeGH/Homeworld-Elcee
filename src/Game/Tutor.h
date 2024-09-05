@@ -100,17 +100,15 @@ typedef struct
 } tutGameEnableFlags;
 
 //structure of a named pointer
-typedef struct
-{
+typedef struct tutpointer {
     char name[TUT_PointerNameLength];           //name of pointer
     sdword pointerType;                         //type of object the pointer points to
     sdword x, y;                                //if the pointer points at a point on screen
     ShipPtr ship;                               //if the pointer points to a ship
-    rectangle rect;                             //if the pointer points to a rectangle of some sort
+    rectanglei rect;                            //if the pointer points to a rectangle of some sort
     Volume *volume;                             //if it points to an AI point
     SelectCommand *selection;                   //optional selection of ships
-}
-tutpointer;
+} tutpointer;
 
 extern bool tutPointersDrawnThisFrame;
 
@@ -124,8 +122,8 @@ extern tutGameEnableFlags tutEnable;
 extern char tutBuildRestrict[TOTAL_STD_SHIPS];
 extern ShipType tutFEContextMenuShipType;
 extern ShipPtr tutPointerShip;
-extern rectangle *tutPointerShipHealthRect;
-extern rectangle *tutPointerShipGroupRect;
+extern rectanglei *tutPointerShipHealthRect;
+extern rectanglei *tutPointerShipGroupRect;
 
 void tutSaveLesson(sdword Num, char *pName);
 
@@ -149,8 +147,7 @@ void tutSetPointerTargetRect(char *name, sdword x0, sdword y0, sdword x1, sdword
 void tutSetPointerTargetAIVolume(char *name, Volume *volume);
 void tutRemovePointerByName(char *name);
 void tutRemoveAllPointers(void);
-void tutRemoveAllPointers(void);
-void tutDrawTextPointers(rectangle *pRect);
+void tutDrawTextPointers(rectanglef *pRect);
 
 void tutSetTextDisplayBox(sdword x, sdword y, sdword width, sdword height, bool bScale);
 void tutSetTextDisplayBoxToSubtitleRegion(void);

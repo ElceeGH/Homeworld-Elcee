@@ -124,9 +124,9 @@ typedef struct uiclistitem    *listitemhandle;
 typedef struct uicslider      *sliderhandle;
 
 
-typedef void (*listitemdraw)        (rectangle *rect, listitemhandle data);
+typedef void (*listitemdraw)        (rectanglei *rect, listitemhandle data);
 typedef void (*listtitlebarclick)   (struct tagRegion *reg, sdword xClicked);
-typedef void (*listtitlebardraw)    (rectangle *rect);
+typedef void (*listtitlebardraw)    (rectanglei *rect);
 
 //structure for a button control.  This includes regular buttons,
 //toggle buttons, check boxes and radio buttons
@@ -166,8 +166,8 @@ typedef struct uicscrollbar
     //in absolute coords
     scrollbarbuttonhandle upbutton;
     scrollbarbuttonhandle downbutton;
-    rectangle thumbreg;         //region for thumbwheeling, smaller than reg.rect
-    rectangle thumb;            //placement of thumbwheel
+    rectanglei thumbreg;         //region for thumbwheeling, smaller than reg.rect
+    rectanglei thumb;            //placement of thumbwheel
     udword  event;
     uword mouseX, mouseY;
     sword mouseMoved;           //relative mouse coord for thumb drag
@@ -211,7 +211,7 @@ typedef struct uictextentry
     sdword iVisible;                            //first visible character
     fonthandle currentFont;                     //font to draw the text in
     real32 flashRate;                           //rate the caret flashes at
-    rectangle textRect;                         //the actual rectangle for the text
+    rectanglei textRect;                        //the actual rectangle for the text
     udword message;                             //method for passing messages to text entry handlers
     udword textflags;
     udword key;

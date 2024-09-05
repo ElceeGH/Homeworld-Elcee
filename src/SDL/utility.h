@@ -171,7 +171,7 @@ void utyTasksDispatch(void);
 void utyTaskTimerClear(void);                   //cancels all previous task time
 
 //get client rect in screen coords
-void utyClientRectGet(rectangle *rect);
+void utyClientRectGet(rectanglei *rect);
 void utyMouseButtonsClear(void);
 void utyForceTopmost(bool bTopMost);
 

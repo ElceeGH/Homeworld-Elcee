@@ -40,35 +40,37 @@ uword scRelativeY(scrollbarhandle shandle)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void scArrow(rectangle *r, uword width, uword thickness, color c, sc_direction dir)
+void scArrow(rectanglei *ri, uword width, uword thickness, color c, sc_direction dir)
 {
-    udword rw, rh, x, y, w2;
-    rw = r->x1 - r->x0;
-    rh = r->y1 - r->y0;
-    w2 = width / 2;
+    rectanglef r = rectToFloatRect(ri);
+    real32 rw = r.x1 - r.x0;
+    real32 rh = r.y1 - r.y0;
+    real32 w2 = (real32)width / 2;
+    real32 x, y;
+
     switch (dir)
     {
     case SC_UpArrow:
-        y = r->y0 + ((rh - width) / 2);
-        x = (rw / 2) + r->x0;
+        y = r.y0 + ((rh - width) / 2);
+        x = (rw / 2) + r.x0;
         primLineThick2(x, y, x - w2, y + width, thickness, c);
         primLineThick2(x, y, x + w2, y + width, thickness, c);
         break;
     case SC_DownArrow:
-        y = r->y1 - ((rh - width) / 2);
-        x = (rw / 2) + r->x0;
+        y = r.y1 - ((rh - width) / 2);
+        x = (rw / 2) + r.x0;
         primLineThick2(x, y, x - w2, y - width, thickness, c);
         primLineThick2(x, y, x + w2, y - width, thickness, c);
         break;
     case SC_LeftArrow:
-        y = (rh / 2) + r->y0;
-        x = r->x0 + ((rw - width) / 2);
+        y = (rh / 2) + r.y0;
+        x = r.x0 + ((rw - width) / 2);
         primLineThick2(x, y, x + width, y - w2, thickness, c);
         primLineThick2(x, y, x + width, y + w2, thickness, c);
         break;
     case SC_RightArrow:
-        y = (rh / 2) + r->y0;
-        x = r->x1 - ((rw - width) / 2);
+        y = (rh / 2) + r.y0;
+        x = r.x1 - ((rw - width) / 2);
         primLineThick2(x, y, x - width, y - w2, thickness, c);
         primLineThick2(x, y, x - width, y + w2, thickness, c);
         break;

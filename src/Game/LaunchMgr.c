@@ -608,7 +608,7 @@ void lmCloseIfOpen()
     }
 }
 
-void lmShipItemDraw(rectangle *rect, listitemhandle data)
+void lmShipItemDraw(rectanglei *rect, listitemhandle data)
 {
     fonthandle currentFont;
     char       tempstr[64];
@@ -738,23 +738,23 @@ void lmShipsToLaunchDraw(char *string, featom *atom)
     Outputs     : none
     Return      : void
 ----------------------------------------------------------------------------*/
-void lmBarDraw(rectangle *rect, color back, color fore, real32 percent)
+void lmBarDraw(rectanglei *rect, color back, color fore, real32 percent)
 {
     
-    primRectSolid2(rect, back);
+    primRectiSolid2(rect, back);
 
     if (percent > 1.0f)
     {
         percent = 1.0f;
     }
 
-    rectangle temp;
+    rectanglei temp;
     temp.x0 = rect->x0;
     temp.y0 = rect->y0;
     temp.x1 = rect->x0 + (sdword)((rect->x1-rect->x0)*percent);
     temp.y1 = rect->y1;
 
-    primRectSolid2(&temp, lmUsedColor);
+    primRectiSolid2(&temp, lmUsedColor);
 }
 
 
@@ -909,7 +909,7 @@ sdword lmSelectCarrier4(regionhandle region, smemsize ID, udword event, udword d
 ----------------------------------------------------------------------------*/
 void lmDrawShipImage(regionhandle region, smemsize shipID)
 {
-    rectangle rect;
+    rectanglei rect;
     sdword usetexture;
 
     usetexture = (shipID == 0) ? 0 : 1;
@@ -933,7 +933,7 @@ void lmDrawShipImage(regionhandle region, smemsize shipID)
         trRGBTextureMakeCurrent(lmShipTexture[universe.curPlayerPtr->race][usetexture]);
     }
 
-    primRectSolidTextured2(&rect);
+    primRectiSolidTextured2(&rect,colWhite);
 }
 
 /*-----------------------------------------------------------------------------

@@ -389,7 +389,7 @@ void tbButtonDraw(regionhandle region)
     sdword width, movement;
     char string[TB_MaxString], *stringEnd, *stringEndStart;
     featom *atom = (featom *)tbButtonBaseRegion->userID;
-    rectangle r;
+    rectanglei r;
 
     movement = 0;
     if (tbBumpSmooth)
@@ -425,8 +425,8 @@ void tbButtonDraw(regionhandle region)
         c = atom->contentColor;
         width = 2;
     }
-    primRectSolid2(&r, c);
-    primRectOutline2(&r, (real32)width, borderColor);
+    primRectiSolid2(&r, c);
+    primRectiOutline2(&r, (real32)width, borderColor);
 
     //tbButtons[region->userID];
     strcpy(string, tbButtons[region->userID].caption);      //copy the string to local copy
@@ -830,7 +830,7 @@ void tbButtonListRefresh(void)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void tbObjectiveItemDraw(rectangle *rect, listitemhandle data)
+void tbObjectiveItemDraw(rectanglei *rect, listitemhandle data)
 {
     sdword     x, y;
     fonthandle oldfont;
@@ -935,7 +935,7 @@ void tbObjectivesListAddItem(ubyte *data)
     Node         *search;
     uiclistitem  *listitem;
     bool          secondfound=FALSE;
-    rectangle     rect;
+    rectanglei    rect;
 
     dbgAssertOrIgnore(strlen(objective->description) <= TBL_MaxCharsPerLine*3);
 
@@ -1129,51 +1129,52 @@ void tbListWindowInit(char *name, featom *atom)
     }
 }
 
-#define TB_GENERIC_INDICATOR(var) \
-    color col; \
-    rectangle* rect = &region->rect; \
-    \
-    if ((var) > 0) \
-    { \
-        col = TB_ACTIVE_COLOR; \
-        primRectSolid2(rect, col); \
-    } \
-    else \
-    { \
-        col = TB_DIM_COLOR; \
-        primRectOutline2(rect, 1, col); \
-    } \
+void tbGenericIndicator( udword var, regionhandle region ) {
+    color col;
+    rectanglei* rect = &region->rect;
+    
+    if (var > 0)
+    {
+        col = TB_ACTIVE_COLOR;
+        primRectiSolid2(rect, col);
+    }
+    else
+    {
+        col = TB_DIM_COLOR;
+        primRectiOutline2(rect, 1, col);
+    }
+}
 
 void tbMovingIndicator(featom *atom, regionhandle region)
 {
-    TB_GENERIC_INDICATOR(tbShipsMoving)
+    tbGenericIndicator(tbShipsMoving, region);
 }
 
 void tbGuardingIndicator(featom *atom, regionhandle region)
 {
-    TB_GENERIC_INDICATOR(tbShipsGuarding)
+    tbGenericIndicator(tbShipsGuarding, region);
 }
 
 void tbDockingIndicator(featom *atom, regionhandle region)
 {
-    TB_GENERIC_INDICATOR(tbShipsDocking)
+    tbGenericIndicator(tbShipsDocking, region);
 }
 
 void tbAttackingIndicator(featom *atom, regionhandle region)
 {
-    TB_GENERIC_INDICATOR(tbShipsAttacking)
+    tbGenericIndicator(tbShipsAttacking, region);
 }
 
 void tbOtherIndicator(featom* atom, regionhandle region)
 {
-    TB_GENERIC_INDICATOR(tbShipsOther)
+    tbGenericIndicator(tbShipsOther, region);
 }
 
-void tbBarDraw(rectangle *rect, color back, color fore, real32 percent)
+void tbBarDraw(rectanglei *rect, color back, color fore, real32 percent)
 //percent is actually 0.0 to 1.0
 {
-    rectangle temp;
-    primRectSolid2(rect, back);
+    rectanglei temp;
+    primRectiSolid2(rect, back);
 
     if (percent > 1.0f)
     {
@@ -1185,7 +1186,7 @@ void tbBarDraw(rectangle *rect, color back, color fore, real32 percent)
     temp.x1 = rect->x0 + (sdword)((rect->x1-rect->x0)*percent);
     temp.y1 = rect->y1;
 
-    primRectSolid2(&temp, fore);
+    primRectiSolid2(&temp, fore);
 }
 
 void tbMothershipIndicator(featom *atom, regionhandle region)
@@ -1193,10 +1194,8 @@ void tbMothershipIndicator(featom *atom, regionhandle region)
     color col,backcol;
     uword r,g;
     real32 percent;
-    rectangle *rect = &region->rect;
-    Ship *mommy;
-
-    mommy = universe.curPlayerPtr->PlayerMothership;
+    rectanglei *rect = &region->rect;
+    Ship *mommy = universe.curPlayerPtr->PlayerMothership;
 
     if (!mommy)
     {

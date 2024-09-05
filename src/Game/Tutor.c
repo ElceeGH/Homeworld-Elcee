@@ -50,7 +50,7 @@ bool FalkosFuckedUpTutorialFlag = FALSE;
 
 // Function declarations
 void utySinglePlayerGameStart(char *name, featom *atom);
-char *tutGetNextTextLine(char *pDest, char *pString, long Width, unsigned int pDestSize);
+char *tutGetNextTextLine(char *pDest, char *pString, sdword Width, udword pDestSize);
 udword tutProcessNextButton(struct tagRegion *reg, smemsize ID, udword event, udword data);
 udword tutProcessBackButton(struct tagRegion *reg, smemsize ID, udword event, udword data);
 udword uicButtonProcess(regionhandle region, smemsize ID, udword event, udword data);
@@ -72,8 +72,8 @@ rectangle tutPointerRegion;
 hvector tutPointerAIPoint;
 */
 ShipPtr tutPointerShip;
-rectangle *tutPointerShipHealthRect;
-rectangle *tutPointerShipGroupRect;
+rectanglei *tutPointerShipHealthRect;
+rectanglei *tutPointerShipGroupRect;
 //list of named tutorial pointers
 static tutpointer tutPointer[TUT_NumberPointers];
 bool tutPointersDrawnThisFrame = FALSE;
@@ -82,7 +82,7 @@ bool tutPointersDrawnThisFrame = FALSE;
 static sdword  tutTextPosX, tutTextPosY;
 static sdword  tutTextSizeX, tutTextSizeY;
 
-static rectangle   tutTextRect;
+static rectanglei tutTextRect;
 static fonthandle tutTextFont = 0;
 
 static regionhandle    tutRootRegion;
@@ -565,7 +565,7 @@ void tutSaveTutorialGame(void)
     SaveLong(tutTextSizeX);
     SaveLong(tutTextSizeY);
 
-    SaveStructureOfSize( &tutTextRect, sizeof(rectangle) );
+    SaveStructureOfSize( &tutTextRect, sizeof(rectanglei) );
 
     SaveLong(tutTextVisible);
     SaveLong(tutNextVisible);
@@ -588,7 +588,7 @@ void tutLoadTutorialGame(void)
     tutTextSizeX = LoadLong();
     tutTextSizeY = LoadLong();
 
-    LoadStructureOfSizeToAddress( &tutTextRect, sizeof(rectangle) );
+    LoadStructureOfSizeToAddress( &tutTextRect, sizeof(rectanglei) );
 
     tutTextVisible = LoadLong();
     tutNextVisible = LoadLong();
@@ -852,24 +852,24 @@ void tutSetTextDisplayBox(sdword x, sdword y, sdword width, sdword height, bool 
 {
     if(bScale)
     {
-        x = (sdword)( ((real32)x / 640.0f) * (real32)MAIN_WindowWidth  );
-        y = (sdword)( ((real32)y / 480.0f) * (real32)MAIN_WindowHeight );
+        x = (x / 640) * MAIN_WindowWidth;
+        y = (y / 480) * MAIN_WindowHeight;
     }
     else
     {
-        x += ((MAIN_WindowWidth - 640) / 2);
+        x += ((MAIN_WindowWidth  - 640) / 2);
         y += ((MAIN_WindowHeight - 480) / 2);
     }
 
-    tutTextPosX = x+5;
-    tutTextPosY = y+5;
+    tutTextPosX  = x+5;
+    tutTextPosY  = y+5;
     tutTextSizeX = width-10;
     tutTextSizeY = height-10;
 
     tutTextRect.x0 = x;
     tutTextRect.y0 = y;
-    tutTextRect.x1 = x + width;
-    tutTextRect.y1 = y + height;
+    tutTextRect.x1 = (x + width);
+    tutTextRect.y1 = (y + height);
 }
 
 /*-----------------------------------------------------------------------------
@@ -1036,11 +1036,11 @@ bool tutIsspace(char c)
 
 // This function gets a line of text that is up to Width pixels wide, and returns a
 // pointer to the start of the next line.  Assumes the current font is set.
-char *tutGetNextTextLine(char *pDest, char *pString, long Width, unsigned int pDestSize)
+char *tutGetNextTextLine(char *pDest, char *pString, sdword Width, udword pDestSize)
 {
-    long WordLen, StringLen;
+    sdword WordLen, StringLen;
+    bool done = FALSE;
     char *pstr;
-    long done = FALSE;
     char temp;
 
     StringLen = 0;
@@ -1121,94 +1121,73 @@ static long PulseVal(long Val)
 }
 
 // long vector type for the clipper
-typedef struct {
-    sdword x,y;
+typedef struct lvector {
+    real32 x,y;
 } lvector;
 
 
 // Clips segment to a horizontal line at y.
 // Puts the intersection point in the return vector at *pDest
 // returns true if clipped, false otherwise
-sdword tutClipSegToHorizontal(lvector *pSeg, lvector *pDest, sdword y)
+sdword tutClipSegToHorizontal(lvector *pSeg, lvector *pDest, real32 y)
 {
-    sdword dy0, dy1;
-    real32 t;
+    real32 dy0 = pSeg[1].y - pSeg[0].y;
+    real32 dy1 = y - pSeg[0].y;
+    real32 t   = dy1 / dy0;
 
-    dy0 = pSeg[1].y - pSeg[0].y;
-    dy1 = y - pSeg[0].y;
-
-    t = (real32)dy1 / dy0;
-
-    if(t > 0.0f && t < 1.0f)
-    {
+    if (t > 0.0f && t < 1.0f) {
         pDest->y = y;
-        pDest->x = pSeg[0].x + (sdword)((real32)(pSeg[1].x - pSeg[0].x) * t + 0.5f);
-
-        return 1;
+        pDest->x = pSeg[0].x + ((pSeg[1].x - pSeg[0].x) * t + 0.5f);
+        return TRUE;
+    } else {
+        return FALSE;
     }
-    else
-        return 0;
 }
 
 // Clips segment to a vertical line at x.
 // Puts the intersection point in the return vector at *pDest
 // returns true if clipped, false otherwise
-sdword tutClipSegToVertical(lvector *pSeg, lvector *pDest, sdword x)
+sdword tutClipSegToVertical(lvector *pSeg, lvector *pDest, real32 x)
 {
-    sdword dx0, dx1;
-    real32 t;
+    real32 dx0 = pSeg[1].x - pSeg[0].x;
+    real32 dx1 = x - pSeg[0].x;
+    real32 t   = dx1 / dx0;
 
-    dx0 = pSeg[1].x - pSeg[0].x;
-    dx1 = x - pSeg[0].x;
-
-    t = (real32)dx1 / dx0;
-
-    if(t > 0.0f && t < 1.0f)
+    if (t > 0.0f && t < 1.0f)
     {
         pDest->x = x;
-        pDest->y = pSeg[0].y + (sdword)((real32)(pSeg[1].y - pSeg[0].y) * t + 0.5f);
-
-        return 1;
+        pDest->y = pSeg[0].y + ((pSeg[1].y - pSeg[0].y) * t + 0.5f);
+        return TRUE;
+    } else {
+        return FALSE;
     }
-    else
-        return 0;
 }
 
 
-void tutClipSegToTextBox(sdword *x0, sdword *y0, sdword *x1, sdword *y1)
+void tutClipSegToTextBox(real32 *x0, real32 *y0, real32 *x1, real32 *y1)
 {
-    lvector ClipSeg[2];
-    lvector Clipped;
+    lvector    clipped;
+    lvector    seg[2] = { {*x0, *y0}, {*x1,*y1} };
+    rectanglef rect   = rectToFloatRect( &tutTextRect );
 
-    ClipSeg[0].x = *x0; ClipSeg[0].y = *y0;
-    ClipSeg[1].x = *x1; ClipSeg[1].y = *y1;
+    if (tutClipSegToHorizontal(seg, &clipped, rect.y0))
+    if (clipped.x >= rect.x0 && clipped.x <= rect.x1)
+        seg[0] = clipped;
 
-    if(tutClipSegToHorizontal(ClipSeg, &Clipped, tutTextRect.y0))
-    {
-        if(Clipped.x >= tutTextRect.x0 && Clipped.x <= tutTextRect.x1)
-            ClipSeg[0] = Clipped;
-    }
+    if (tutClipSegToHorizontal(seg, &clipped, rect.y1))
+    if (clipped.x >= rect.x0 && clipped.x <= rect.x1)
+        seg[0] = clipped;
 
-    if(tutClipSegToHorizontal(ClipSeg, &Clipped, tutTextRect.y1))
-    {
-        if(Clipped.x >= tutTextRect.x0 && Clipped.x <= tutTextRect.x1)
-            ClipSeg[0] = Clipped;
-    }
+    if (tutClipSegToVertical(seg, &clipped, rect.x0))
+    if (clipped.y >= rect.y0 && clipped.y <= rect.y1)
+        seg[0] = clipped;
 
-    if(tutClipSegToVertical(ClipSeg, &Clipped, tutTextRect.x0))
-    {
-        if(Clipped.y >= tutTextRect.y0 && Clipped.y <= tutTextRect.y1)
-            ClipSeg[0] = Clipped;
-    }
+    if (tutClipSegToVertical(seg, &clipped, rect.x1))
+    if (clipped.y >= rect.y0 && clipped.y <= rect.y1)
+        seg[0] = clipped;
 
-    if(tutClipSegToVertical(ClipSeg, &Clipped, tutTextRect.x1))
-    {
-        if(Clipped.y >= tutTextRect.y0 && Clipped.y <= tutTextRect.y1)
-            ClipSeg[0] = Clipped;
-    }
-
-    *x0 = ClipSeg[0].x; *y0 = ClipSeg[0].y;
-    *x1 = ClipSeg[1].x; *y1 = ClipSeg[1].y;
+    *x0 = seg[0].x; *y0 = seg[0].y;
+    *x1 = seg[1].x; *y1 = seg[1].y;
 }
 
 
@@ -1236,7 +1215,7 @@ static void tutGetScreenSpaceInfoForLineToCircle( tutpointer* tp, real32* sx, re
 
 
 // Draw a line from the current text box meeting a circle over the given worldspace position
-static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, real32 thickness, color col ) {
+static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectanglef* rect, real32 thickness, color col ) {
     // Get the screenspace info
     real32 sx, sy, sradius;
     tutGetScreenSpaceInfoForLineToCircle( tp, &sx, &sy, &sradius );
@@ -1265,8 +1244,8 @@ static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, rea
     real32 cy           = (real32) primGLToScreenY( sy );
                     
     // Text box centre
-    sdword rcx = ((rect->x0 + rect->x1) / 2);
-    sdword rcy = ((rect->y0 + rect->y1) / 2);
+    real32 rcx = ((rect->x0 + rect->x1) / 2.0f);
+    real32 rcy = ((rect->y0 + rect->y1) / 2.0f);
                     
     // Line params
     real32 dx     = cx - rcx;
@@ -1275,10 +1254,10 @@ static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, rea
     real32 dScale = (dMag - radius) / dMag; // Meet circle edge
 
     // Line endpoints
-    sdword bx = primGLToScreenX(rcx);
-    sdword by = primGLToScreenY(rcy);
-    sdword ex = primGLToScreenX(rcx + dx * dScale);
-    sdword ey = primGLToScreenY(rcy + dy * dScale);
+    real32 bx = primGLToScreenX(rcx);
+    real32 by = primGLToScreenY(rcy);
+    real32 ex = primGLToScreenX(rcx + dx * dScale);
+    real32 ey = primGLToScreenY(rcy + dy * dScale);
 
     // Clip the line to the box it's coming from.
     tutClipSegToTextBox( &bx, &by, &ex, &ey );
@@ -1302,11 +1281,12 @@ static void tutDrawTextPointerLineToCircle( tutpointer* tp, rectangle* rect, rea
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void tutDrawTextPointers(rectangle *pRect)
+void tutDrawTextPointers(rectanglef *pRect)
 {
     static sdword tutPulse = TUT_PointerPulseMin;
 
-    sdword  x0, y0, x1, y1, index;
+    real32 x0, y0, x1, y1;
+    sdword index;
     tutpointer *pointer;
 
     glEnable( GL_MULTISAMPLE );
@@ -1317,6 +1297,8 @@ void tutDrawTextPointers(rectangle *pRect)
 
     for (pointer = tutPointer, index = 0; index < TUT_NumberPointers; index++, pointer++)
     {                                                       //for each pointer
+        rectanglef prectf = rectToFloatRect(&pointer->rect);
+
         glLineWidth( thickness );
 
         switch(pointer->pointerType)
@@ -1327,8 +1309,8 @@ void tutDrawTextPointers(rectangle *pRect)
             case TUT_PointerTypeXY:
                 x0 = (pRect->x0 + pRect->x1) / 2;
                 y0 = (pRect->y0 + pRect->y1) / 2;
-                x1 = pointer->x;//tutPointerX;
-                y1 = pointer->y;//tutPointerY;
+                x1 = (real32) pointer->x;//tutPointerX;
+                y1 = (real32) pointer->y;//tutPointerY;
 
                 tutClipSegToTextBox(&x0, &y0, &x1, &y1);
                 primLine2(x0, y0, x1, y1, pulseWhite);
@@ -1341,11 +1323,11 @@ void tutDrawTextPointers(rectangle *pRect)
                     dx /= magnitude;
                     dy /= magnitude;                        //normalize the vector
                     //now we have angle of main vector; offset that to get arrowhead vectors
-                    x0 = x1 + (sdword)(cosf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    y0 = y1 + (sdword)(sinf((angle - TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    x0 = x1 + cosf(angle - TUT_ArrowheadAngle) * TUT_ArrowheadLength;
+                    y0 = y1 + sinf(angle - TUT_ArrowheadAngle) * TUT_ArrowheadLength;
                     primLine2(x0, y0, x1, y1, pulseWhite);
-                    x0 = x1 + (sdword)(cosf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
-                    y0 = y1 + (sdword)(sinf((angle + TUT_ArrowheadAngle)) * TUT_ArrowheadLength);
+                    x0 = x1 + cosf(angle + TUT_ArrowheadAngle) * TUT_ArrowheadLength;
+                    y0 = y1 + sinf(angle + TUT_ArrowheadAngle) * TUT_ArrowheadLength;
                     primLine2(x0, y0, x1, y1, pulseWhite);
                 }
                 break;
@@ -1356,12 +1338,12 @@ void tutDrawTextPointers(rectangle *pRect)
                     x0 = (pRect->x0 + pRect->x1) / 2;
                     y0 = (pRect->y0 + pRect->y1) / 2;
 
-                    x1 = (pointer->rect.x0 + pointer->rect.x1) / 2;
-                    y1 = pointer->rect.y0;
+                    x1 = (prectf.x0 + prectf.x1) / 2;
+                    y1 = prectf.y0;
 
                     tutClipSegToTextBox(&x0, &x1, &y0, &y1);
                     primLine2(x0, y0, x1, y1, pulseGreen);
-                    primRectOutline2(&pointer->rect, thickness, pulseGreen);
+                    primRectOutline2(&prectf, thickness, pulseGreen);
                 }
                 break;
 
@@ -1371,17 +1353,17 @@ void tutDrawTextPointers(rectangle *pRect)
                     x0 = (pRect->x0 + pRect->x1) / 2;
                     y0 = (pRect->y0 + pRect->y1) / 2;
 
-                    x1 = (pointer->rect.x0 + pointer->rect.x1) / 2;
-                    y1 = pointer->rect.y0;
+                    x1 = (prectf.x0 + prectf.x1) / 2;
+                    y1 = prectf.y0;
 
                     tutClipSegToTextBox(&x0, &y0, &x1, &y1);
                     primLine2(x0, y0, x1, y1, pulseGreen);
-                    primRectOutline2(&pointer->rect, thickness, pulseGreen);
+                    primRectOutline2(&prectf, thickness, pulseGreen);
                 }
                 break;
 
             case TUT_PointerTypeRegion:
-                primRectOutline2(&pointer->rect, sqrtf(thickness*3.0f), pulseWhite);
+                primRectOutline2(&prectf, sqrtf(thickness*3.0f), pulseWhite);
                 break;
 
             case TUT_PointerTypeShip:
@@ -1401,33 +1383,29 @@ void tutDrawTextPointers(rectangle *pRect)
 // This function actually handles drawing the text in the region added by tutShowText
 void tutDrawTextFunction(regionhandle reg)
 {
-char    *pString;
-char    Line[256];
-long    x, y, Width;
-fonthandle  currFont;
-featom  *pAtom = (featom *)reg->atom;
-rectangle   rect;
+    char       Line[256];
+    featom*    pAtom = (featom *)reg->atom;
+    rectanglei recti = reg->rect;
+    rectanglef rectf = rectToFloatRect( &recti );
 
-    rect = reg->rect;
 //    if(tutTextPointerType != TUT_PointerTypeNone)
     if (!tutPointersDrawnThisFrame)
     {
-        tutDrawTextPointers(&rect);
+        tutDrawTextPointers(&rectf);
     }
 
     // Draw the translucent blue box behind the text
-    primRectTranslucent2(&rect, colRGBA(0, 0, 64, 192));
+    primRectTranslucent2(&rectf, colRGBA(0, 0, 64, 192));
 
-    currFont = fontMakeCurrent(tutTextFont);
+    fonthandle currFont = fontMakeCurrent(tutTextFont);
+    sdword x     =  recti.x0+5;
+    sdword y     =  recti.y0+5;
+    sdword width = (recti.x1 - recti.x0) - 10;
 
-    x = rect.x0+5;
-    y = rect.y0+5;
-    Width = (rect.x1 - rect.x0) - 10;
-
-    pString = (char *)pAtom->pData;
+    char* pString = (char *)pAtom->pData;
 
     do {
-        pString = tutGetNextTextLine(Line, pString, Width, 256); //256 defined above as size of Line
+        pString = tutGetNextTextLine(Line, pString, width, 256); //256 defined above as size of Line
         if(Line[0])
             fontPrintf(x, y, colRGB(255, 255, 128), "%s", Line);
         y += fontHeight(" ");
@@ -1443,9 +1421,9 @@ void tutShowNextButton(void)
 
     tutAllocateRootRegion();
 
-    tutNextAtom.x = tutTextRect.x0 + 128;
-    tutNextAtom.y = tutTextRect.y1;
-    tutNextAtom.width = 64;
+    tutNextAtom.x = (sdword)tutTextRect.x0 + 128;
+    tutNextAtom.y = (sdword)tutTextRect.y1;
+    tutNextAtom.width  = 64;
     tutNextAtom.height = 32;
 
     tutNextRegion = (buttonhandle)regChildAlloc(tutRootRegion, (smemsize)&tutNextAtom,
@@ -1492,15 +1470,15 @@ void tutDrawNextButtonFunction(regionhandle reg)
     if(mouseInRect(&reg->rect))
     {
         if(mouseLeftButton())
-            trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_ON]);
-        else
-            trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_MOUSE]);
+             trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_ON]);
+        else trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_MOUSE]);
     }
-    else
+    else {
         trRGBTextureMakeCurrent(tutTexture[TUT_NEXT_OFF]);
+    }
 
 //  glEnable(GL_BLEND);
-    primRectSolidTextured2(&reg->rect);
+    primRectiSolidTextured2(&reg->rect, colWhite);
 //  glDisable(GL_BLEND);
 }
 
@@ -1525,8 +1503,8 @@ void tutShowBackButton(void)
 
     tutAllocateRootRegion();
 
-    tutBackAtom.x = tutTextRect.x0;
-    tutBackAtom.y = tutTextRect.y1;
+    tutBackAtom.x = (sdword) tutTextRect.x0;
+    tutBackAtom.y = (sdword) tutTextRect.y1;
     tutBackAtom.width = 128;
     tutBackAtom.height = 32;
 
@@ -1623,7 +1601,7 @@ void tutDrawBackButtonFunction(regionhandle reg)
     }
 
 //  glEnable(GL_BLEND);
-    primRectSolidTextured2(&reg->rect);
+    primRectiSolidTextured2(&reg->rect, colWhite);
 //  glDisable(GL_BLEND);
 }
 
@@ -1737,26 +1715,23 @@ long    ImageCount;
 
 void tutDrawImageFunction(regionhandle reg)
 {
-    rectangle   rect;
-    long    i, Index;
-    long    x, y;
-
-    x = reg->rect.x0;
-    y = reg->rect.y0;
+    sdword x = reg->rect.x0;
+    sdword y = reg->rect.y0;
+    sdword i = 0;
 
 //  glEnable(GL_BLEND);
-    i = 0;
 
-    while(szImageIndexList[i])
+    while (szImageIndexList[i])
     {
-        Index = szImageIndexList[i];
+        sdword Index = szImageIndexList[i];
 
         trRGBTextureMakeCurrent(tutTexture[Index]);
+        rectanglei rect;
         rect.x0 = x + (64 * i);
         rect.y0 = y;
         rect.x1 = x + (64 * i) + 64;
         rect.y1 = y + 64;
-        primRectSolidTextured2(&rect);
+        primRectiSolidTextured2(&rect, colWhite);
 
         i++;
     }

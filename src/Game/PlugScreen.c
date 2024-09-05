@@ -95,7 +95,7 @@ void psImageDraw(psimage *image, color c)
 {
     sdword x, y, xStart, yStart;
     udword *quiltTexture = image->imageQuilt;
-    rectangle rect;
+    rectanglei rect;
 
     dbgAssertOrIgnore(image->width != 0);
     dbgAssertOrIgnore(image->imageQuilt != NULL);
@@ -111,7 +111,7 @@ void psImageDraw(psimage *image, color c)
             rect.x0 = xStart + x * PS_QuiltPieceWidth;
             rect.x1 = rect.x0 + PS_QuiltPieceWidth;
             trRGBTextureMakeCurrent(*quiltTexture);
-            primRectSolidTexturedFullRectC2(&rect, c);
+            primRectiSolidTextured2(&rect, c);
         }
     }
 }
@@ -128,11 +128,11 @@ void psLinkDraw(regionhandle region)
     pluglink *link = (pluglink *)region;
     udword handle = (bitTest(region->status, RSF_MouseInside)) ? link->onTexture : link->offTexture;
     lifheader *header = (bitTest(region->status, RSF_MouseInside)) ? link->onImage : link->offImage;
-    rectangle screenRect = {plugXMargin-1, plugYMargin, plugXMargin + max(psScreenImage.width, region->rect.x1), plugYMargin + max(psScreenImage.height, region->rect.y1)};
+    rectanglei screenRect = {plugXMargin-1, plugYMargin, plugXMargin + max(psScreenImage.width, region->rect.x1), plugYMargin + max(psScreenImage.height, region->rect.y1)};
     char linkName[80];
 
     trPalettedTextureMakeCurrent(handle, header->palette);
-    primRectSolidTextured2(&region->rect);
+    primRectiSolidTextured2(&region->rect,colWhite);
 
     if (bitTest(region->userID, PLF_FadeRegion))
     {                                                       //if this is the fader region
@@ -147,7 +147,7 @@ void psLinkDraw(regionhandle region)
             }
             else
             {
-                primRectSolid2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
+                primRectiSolid2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
             }
             glDisable(GL_BLEND);
             regRecursiveSetDirty(psBaseRegion);
@@ -174,10 +174,8 @@ void psLinkDraw(regionhandle region)
                         psFadeState = PFS_None;
                         psModeEnd();
                         regRecursiveSetDirty(ghMainRegion);
-                        glEnable(GL_BLEND);
                         psFadeState = PFS_FromBlack;
-                        primRectSolid2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
-                        glDisable(GL_BLEND);
+                        primRectiTranslucent2(&screenRect, colRGBA(0, 0, 0, min(psFadeLevel, UBYTE_Max)));
                         keyClearAll();
                         // Why is this here?  This is not a task.
                         //taskExit();
@@ -196,9 +194,7 @@ void psLinkDraw(regionhandle region)
             }
             else
             {
-                glEnable(GL_BLEND);
-                primRectSolid2(&screenRect, colRGBA(0, 0, 0, max(0, psFadeLevel)));
-                glDisable(GL_BLEND);
+                primRectiTranslucent2(&screenRect, colRGBA(0, 0, 0, max(0, psFadeLevel)));
             }
             if (psFadeState == PFS_FromBlack)
             {

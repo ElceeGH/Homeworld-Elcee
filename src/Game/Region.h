@@ -133,7 +133,7 @@ typedef udword (*regionfunction) (struct tagRegion *reg, smemsize ID, udword eve
 //structure for a region, the base element of the front end
 typedef struct tagRegion
 {
-    rectangle rect;                             //rectangle defining limits of region
+    rectanglei rect;                             //rectangle defining limits of region
     regiondrawfunction drawFunction;            //render function for region
     regionfunction processFunction;             //logic processing function for region
     struct tagRegion *parent, *child;           //region list links

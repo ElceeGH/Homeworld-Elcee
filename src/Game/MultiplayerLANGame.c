@@ -450,7 +450,7 @@ extern fonthandle selGroupFont1;
 
 void lgDrawProtocal(featom *atom, regionhandle region)
 {
-    rectangle pos=region->rect;
+    rectanglei pos=region->rect;
     fonthandle oldfont;
     char *str = (IPGame) ? strGetString(strProtocalTCPIPLAN) : strGetString(strProtocalIPXLAN);
     sdword width;
@@ -934,7 +934,7 @@ void lgChangeColors(char *name, featom *atom)
     mgShowScreen(LGS_Player_Options,TRUE);
 }
 
-void lgDrawChatWindowItem(rectangle *rect, listitemhandle data)
+void lgDrawChatWindowItem(rectanglei *rect, listitemhandle data)
 {
     char   temp[512];
     sdword x = rect->x0 + LG_HorzSpacing,
@@ -1034,7 +1034,7 @@ void lgChatWindowInit(char *name, featom *atom)
     }
 }
 
-void lgDrawUserNameWindowItem(rectangle *rect, listitemhandle data)
+void lgDrawUserNameWindowItem(rectanglei *rect, listitemhandle data)
 {
     char            temp[512];
     sdword          x, y;
@@ -1324,25 +1324,27 @@ void lgListOfGamesTitleClick(struct tagRegion *reg, sdword xClicked)
 void lgDrawTriangle(sdword x, color col)
 {
     triangle tri;
+    real32 rx    = (real32) x;
+    real32 yoffs = (real32) lgListOfGamesWindow->reg.rect.y0 + LG_VertSpacing+4;
 
     if (!lgListOfGamesWindow->sortOrder)
     {
-        tri.x0 = -4 + x; tri.y0 = 4 + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
-        tri.x1 = 4  + x; tri.y1 = 4 + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
-        tri.x2 = 0  + x; tri.y2 = -4  + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
+        tri.x0 = -4 + rx;  tri.y0 =  4 + yoffs;
+        tri.x1 =  4 + rx;  tri.y1 =  4 + yoffs;
+        tri.x2 =  0 + rx;  tri.y2 = -4 + yoffs;
     }
     else
     {
-        tri.x0 = -4 + x; tri.y0 = -4  + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
-        tri.x1 = 0  + x; tri.y1 = 4 + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
-        tri.x2 = 4  + x; tri.y2 = -4  + lgListOfGamesWindow->reg.rect.y0+LG_VertSpacing+4;
+        tri.x0 = -4 + rx;  tri.y0 = -4 + yoffs;
+        tri.x1 =  0 + rx;  tri.y1 =  4 + yoffs;
+        tri.x2 =  4 + rx;  tri.y2 = -4 + yoffs;
     }
 
     primTriSolid2(&tri, col);
 }
 
 // callback to draw the title bar for the list
-void lgListOfGamesTitleDraw(rectangle *rect)
+void lgListOfGamesTitleDraw(rectanglei*rect)
 {
     sdword     x, y;
     fonthandle oldfont;
@@ -1402,7 +1404,7 @@ void lgListOfGamesTitleDraw(rectangle *rect)
 }
 
 // callback to draw each item in the list
-void lgListOfGamesItemDraw(rectangle *rect, listitemhandle data)
+void lgListOfGamesItemDraw(rectanglei *rect, listitemhandle data)
 {
     char        temp[512];
     sdword      x, y;
@@ -1535,7 +1537,7 @@ void lgListOfGamesInit(char *name, featom *atom)
     Callbacks for the waiting for game screens.:
 =============================================================================*/
 
-void lgGameChatItemDraw(rectangle *rect, listitemhandle data)
+void lgGameChatItemDraw(rectanglei *rect, listitemhandle data)
 {
     char    temp[512];
     sdword  x = rect->x0 + LG_HorzSpacing,
@@ -1632,7 +1634,7 @@ void lgGameChatWindowInit(char *name, featom *atom)
     }
 }
 
-void lgGameUserNameItemDraw(rectangle *rect, listitemhandle data)
+void lgGameUserNameItemDraw(rectanglei *rect, listitemhandle data)
 {
     gameplayerinfo *playerinfo=(gameplayerinfo *)data->data;
     sdword          x, y;

@@ -388,7 +388,7 @@ void subThemeFontSet(char *directory, char *field, void *dataToFillIn)
 void subRegionBoundsSet(char *directory, char *field, void *dataToFillIn)
 {
     sdword nScanned, iRegion;
-    rectangle rect;
+    rectanglei rect;
 
     RemoveCommasFromString(field);
     nScanned = sscanf(field, "%d %d %d %d %d", &iRegion, &rect.x0, &rect.y0, &rect.x1, &rect.y1);
@@ -707,7 +707,7 @@ void subShutdown(void)
                   choppedStrings - list of pointers to chopped lines.
     Return      : number of chopped strings
 ----------------------------------------------------------------------------*/
-sdword subStringsChop(rectangle *rect, fonthandle font, sdword longLength, char *longString, char *chopBuffer, char **choppedStrings)
+sdword subStringsChop(rectanglei *rect, fonthandle font, sdword longLength, char *longString, char *chopBuffer, char **choppedStrings)
 {
     sdword nChopped = 0;
     sdword nBytesUsed = 0;
@@ -1353,7 +1353,7 @@ void subTitlesDraw(subregion *region)
 
     if (region->picture != TR_InvalidHandle)
     {
-        rectangle rect;
+        rectanglei rect;
 
         rect.x0 = region->rect.x0 + region->iconOffsetX;
         rect.y0 = region->rect.y0 + region->iconOffsetY;
@@ -1362,7 +1362,7 @@ void subTitlesDraw(subregion *region)
         trMakeCurrent(region->picture);
         glDisable(GL_ALPHA_TEST);
         glEnable(GL_BLEND);
-        primRectSolidTextured2(&rect);
+        primRectiSolidTextured2(&rect,colWhite);
         glDisable(GL_BLEND);
     }
 

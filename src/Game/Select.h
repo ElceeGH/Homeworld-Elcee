@@ -175,8 +175,8 @@ sdword selShipInSelection(ShipPtr *shipList, sdword nShips, ShipPtr ship);
 bool selShipsInSelection(MaxSelection *dest, MaxSelection *list);
 
 //selections by mouse dragging
-void selRectDragFunction(Node *startNode, Camera *camera, rectangle *rect, SpaceObjRotImpTarg **destList, sdword *destCount, sdword playerSpecific, bool selectAnything, bool bAttack);
-void selRectDragAddFunction(Node *startNode, Camera *camera, rectangle *rect);
+void selRectDragFunction(Node *startNode, Camera *camera, rectanglei *rect, SpaceObjRotImpTarg **destList, sdword *destCount, sdword playerSpecific, bool selectAnything, bool bAttack);
+void selRectDragAddFunction(Node *startNode, Camera *camera, rectanglei *rect);
 
 //selection by mouse click (on release)
 Ship *selSelectionClick(Node *listhead, Camera *camera, sdword x, sdword y, bool bIncludeDerelicts, bool bIncludeResources);

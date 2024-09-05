@@ -95,7 +95,7 @@ bool mrWhiteOut = FALSE;
 real32 mrWhiteOutT = 0.0f;
 
 //rectangle of currently dragged selection
-rectangle mrSelectionRect;
+rectanglei mrSelectionRect;
 sdword mrOldMouseX, mrOldMouseY;
 
 //logic handlers for main region
@@ -1091,7 +1091,7 @@ void mrTransferRUS(char *string, featom *atom)
     Outputs     : fills in mrSelectionRect
     Return      : void
 ----------------------------------------------------------------------------*/
-void mrSelectRectBuild(rectangle *dest, sdword anchorX, sdword anchorY)
+void mrSelectRectBuild(rectanglei *dest, sdword anchorX, sdword anchorY)
 {
     dest->x0 = anchorX;                                     //build selection rect
     dest->y0 = anchorY;
@@ -2046,7 +2046,7 @@ cancelfocus:
 
             if (NoModifierKeyPressed() && ((!(tutorial==TUTORIAL_ONLY)) || tutEnable.bBandSelect))
             {                                               //'E': select everyone onscreen
-                rectangle fullScreen = {0, 0, MAIN_WindowWidth, MAIN_WindowHeight};
+                rectanglei fullScreen = {0, 0, MAIN_WindowWidth, MAIN_WindowHeight};
                 MaxSelection tempSelection;
 
                 tutGameMessage("KB_SelectEveryone");
@@ -3036,7 +3036,7 @@ void mrRightClickMenu(void)
     TypeOfFormation formation;
     udword tacticsBits = 0;
     fescreen *screen;
-    rectangle playerColorRect;
+    rectanglei playerColorRect;
 
     playerColorRect.x0 = TO_PLAYERLIST_X;
     playerColorRect.x1 = MAIN_WindowWidth;
@@ -3588,7 +3588,7 @@ udword mrRegionProcess(regionhandle reg, sdword ID, udword event, udword data)
     MaxSelection tempSelection;
 
 
-    rectangle defaultRect = {0, 0, MAIN_WindowWidth, MAIN_WindowHeight};
+    rectanglei defaultRect = {0, 0, MAIN_WindowWidth, MAIN_WindowHeight};
 
     while (feMenuLevel > 0)
     {
@@ -4010,7 +4010,6 @@ endReleaseButtonLogic:
                 mouseCaptureStop();                         //leave it alone now
                 mouseCursorShow();                          //show mouse cursor
                 mrHoldRight = mrNULL;                       //idle mode
-                //mouseClipToRect(&defaultRect);
                 mouseClipToRect(NULL);
 
                 if (!mrDisabled && mrMouseHasMoved <= MR_MouseMovementClickLimit)
@@ -4291,7 +4290,7 @@ void mrRegionDraw(regionhandle reg)
     if (mrHoldLeft == mrSelectHold)                         //and then draw the current selection progress
     {
         selSelectingDraw();
-        primRectOutline2(&mrSelectionRect, 1, TW_SELECT_BOX_COLOR);
+        primRectiOutline2(&mrSelectionRect, 1, TW_SELECT_BOX_COLOR);
     }
     glDisable( GL_MULTISAMPLE );
 
@@ -4475,7 +4474,7 @@ void mrRegionDraw(regionhandle reg)
 
     if (mrWhiteOut)
     {
-        rectangle rect = { -1,0,MAIN_WindowWidth,MAIN_WindowHeight };
+        rectanglei rect = { -1,0,MAIN_WindowWidth,MAIN_WindowHeight };
         sdword c;
         real32 t;
 
@@ -4485,7 +4484,7 @@ void mrRegionDraw(regionhandle reg)
             c = (sdword)(t * 255.0f);
             glEnable(GL_BLEND);
             rndAdditiveBlends(TRUE);
-            primRectSolid2(&rect, colRGBA(70,70,255,c));
+            primRectiSolid2(&rect, colRGBA(70,70,255,c));
             rndAdditiveBlends(FALSE);
             glDisable(GL_BLEND);
         }
@@ -4493,7 +4492,7 @@ void mrRegionDraw(regionhandle reg)
         {
             t = 2.0f * (mrWhiteOutT - 0.5f);
             c = (sdword)((1.0f - t) * 255.0f);
-            primRectSolid2(&rect, colRGB((70*c)>>8,(70*c)>>8,(255*c)>>8));
+            primRectiSolid2(&rect, colRGB((70*c)>>8,(70*c)>>8,(255*c)>>8));
         }
     }
 }
