@@ -8,6 +8,7 @@
 #ifndef ___CAMERA_H
 #define ___CAMERA_H
 
+#include "Matrix.h"
 #include "Vector.h"
 
 /*=============================================================================
@@ -68,7 +69,7 @@ void cameraCopyPositionInfo(Camera *dst,Camera *src);
 void cameraChangeLookatpoint(Camera *camera,vector *newlookatpoint);
 void cameraRotateAbout(Camera *camera,vector about,real32 deg);
 void cameraSensitivitySet(sdword sens100);
-void cameraRayCast(vector *dest, Camera *cam, sdword screenX, sdword screenY, sdword screenWidth, sdword screenHeight);
+void cameraRayCast(vector *dest, hmatrix* matProj, hmatrix* matCam, real32 screenX, real32 screenY);
 #if CAM_CHECKSUM
 udword cameraChecksum(Camera *cam);
 #endif

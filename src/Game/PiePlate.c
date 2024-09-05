@@ -608,6 +608,7 @@ nextnode:
     /* play the movement gui click sound */
     if ((closestShip != NULL) && (pieLastClosestShip != closestShip) && !selShipInSelection(selSelected.ShipPtr, selSelected.numShips, closestShip) && bClosestHeightDrawn)
     {
+        // @todo Does this need to be rate limited?
         soundEvent(NULL, UI_MoveChimes);
     }
 
@@ -615,19 +616,17 @@ nextnode:
 
     // Restore
     glLineWidth( lineWidthPrev );
-    glLineWidth( lineWidthPrev );
+    glPointSize( 1.0f );
 }
 
 /*-----------------------------------------------------------------------------
     Name        : pieWorldLocationCompute
-    Description : Compute the location of the mouse in world coordinates by
-                    'unprojecting' them.
-    Outputs     : fills in world0 and world1 with 3d points describing a line
-                    under the mouse.
+    Description : Compute the location of the mouse in world coordinates by 'unprojecting' them.
+    Outputs     : fills in world0 and world1 with 3d points describing a line under the mouse.
                   eyeMag - approximate magnitude of the camera's eye position
     Return      : void
 ----------------------------------------------------------------------------*/
-void pieWorldLocationCompute(vector *world0, vector *world1, real32 *eyeMag)
+void pieWorldLocationCompute(hmatrix* matProj, hmatrix* matCam, vector *world0, vector *world1, real32 *eyeMag)
 {
     world0->x = mrCamera->eyeposition.x;
     world0->y = mrCamera->eyeposition.y;
@@ -635,7 +634,7 @@ void pieWorldLocationCompute(vector *world0, vector *world1, real32 *eyeMag)
 
     *eyeMag = sqrtf(vecMagnitudeSquared(*world0));
 
-    cameraRayCast(world1, mrCamera, mouseCursorX(), mouseCursorY(), MAIN_WindowWidth, MAIN_WindowHeight);
+    cameraRayCast(world1, matProj, matCam, (real32)mouseCursorX(), (real32)mouseCursorY());
     vecMultiplyByScalar(*world1, *eyeMag);
     vecAdd(*world1, *world1, *world0);
 }
@@ -995,8 +994,7 @@ void piePointSpecDraw(void)
 {
     vector world0, world1;
     vector highPoint, lowPoint;
-    GLfloat modelView[16], projection[16];
-    hmatrix modelViewF, projectionF;
+    hmatrix modelView, projection;
     real32 distance, deltaX, deltaY;
     real32 oldPointSpecZ, slope, b;
     vector moveLengthVector;
@@ -1016,6 +1014,10 @@ void piePointSpecDraw(void)
         piePointModeOnOff();
         return;
     }
+
+    glGetFloatv(GL_PROJECTION_MATRIX, &projection.m11); //get the matrices in hmatrix format
+    glGetFloatv(GL_MODELVIEW_MATRIX,  &modelView .m11);
+
     //before recomputing the selection centre point, get the relationship between selection centre, plane point and heightpoint
     preUpdateCentre = selCentrePoint;
     selCentrePointCompute();                                //get new centre of selection
@@ -1023,17 +1025,12 @@ void piePointSpecDraw(void)
 
     if (piePointSpecMouseReset)
     {                                                       //if we should reset location of mouse
-        glGetFloatv(GL_PROJECTION_MATRIX,                   //get the matrices in hmatrix format
-                    (float *)(&projectionF));
-        glGetFloatv(GL_MODELVIEW_MATRIX,
-                    (float *)(&modelViewF));
         if (piePointSpecMode == PSM_XY)
         {
             vecAdd(world0, piePlanePoint, updateDrift);
             vecAdd(world1, pieHeightPoint, updateDrift);
-            pieMousePosSet3D(&modelViewF, &projectionF,     //set the position of the mouse
-                                    &world0);
-            if (pieSameOnScreenPoint(&modelViewF, &projectionF, &world0, &world1))
+            pieMousePosSet3D(&modelView, &projection, &world0); //set the position of the mouse
+            if (pieSameOnScreenPoint(&modelView, &projection, &world0, &world1))
             {                                               //if they're still at the same spot on-screen
                 pieHeightPoint = piePlanePoint;             //kill any vertical component
                 piePointSpecZ = 0.0f;
@@ -1042,16 +1039,12 @@ void piePointSpecDraw(void)
         else
         {
             vecAdd(world0, pieHeightPoint, updateDrift);
-            pieMousePosSet3D(&modelViewF, &projectionF,     //set the postion of the mouse
-                                    &world0);
+            pieMousePosSet3D(&modelView, &projection, &world0); //set the postion of the mouse
         }
         piePointSpecMouseReset = FALSE;                      //don't reset on next frame
     }
 
     windowHeightMinusOne = (real32)(MAIN_WindowHeight - 1);
-
-    glGetFloatv(GL_PROJECTION_MATRIX, projection);
-    glGetFloatv(GL_MODELVIEW_MATRIX, modelView);           //get the matrices
 
     world0.x = mrCamera->eyeposition.x - selCentrePoint.x;
     world0.y = mrCamera->eyeposition.y - selCentrePoint.y;
@@ -1066,7 +1059,7 @@ void piePointSpecDraw(void)
     if (piePointSpecMode != PSM_Waiting)
     {
         //compute mouse location in world space
-        pieWorldLocationCompute(&world0, &world1, &eyeMagnitude);
+        pieWorldLocationCompute(&projection, &modelView, &world0, &world1, &eyeMagnitude);
 
         if (piePointSpecMode == PSM_XY)
         {                                                   //find point on pizza dish plane which represents mouse

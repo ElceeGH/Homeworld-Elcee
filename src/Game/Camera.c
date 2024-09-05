@@ -10,6 +10,7 @@
 #include "FastMath.h"
 #include "Key.h"
 #include "render.h"
+#include "Shader.h"
 #include "StatScript.h"
 #include "Universe.h"
 
@@ -451,66 +452,50 @@ udword cameraChecksum(Camera *cam)
 }
 #endif //CAM_CHECKSUM
 
+
 /*-----------------------------------------------------------------------------
     Name        : cameraRayCast
-    Description : Get a vector for the specified pixel
-    Inputs      : cam - what camera to cast the ray from
-                  screenX, screenY - what pixel to cast the ray from
-                  screenWidth, screenHeight - screenSize
-    Outputs     : dest - the casted vector
-    Return      :
+    Description : Produce worldspace orientation vector for a ray passing through given screen coordinates accounting for perspective etc.
+    Inputs      : matProj   - Projection matrix
+                  matCam    - Camera matrix
+                  screenX/Y - Screen coordinates in view (ie mouse coordinates)
+    Outputs     : dest - ray orientation
 ----------------------------------------------------------------------------*/
-void cameraRayCast(vector *dest, Camera *cam, sdword screenX, sdword screenY, sdword screenWidth, sdword screenHeight)
-{
-    real32 mappedMouseX     = 0.0f,
-           mappedMouseY     = 0.0f,
-           normalisedHeight = 0.0f;
+void cameraRayCast(vector *dest, hmatrix* matProj, hmatrix* matCam, real32 screenX, real32 screenY) {
+    // Get mouse coordinates in NDC space
+    real32 ndcX = primScreenToGLX( screenX );
+    real32 ndcY = primScreenToGLY( screenY );
+
+    // Make two reference points. We'll transform both, the direction between them will be the ray vector.
+    hvector ndcNear = { ndcX, ndcY, -1.0f, 1.0f };
+    hvector ndcFar  = { ndcX, ndcY, +1.0f, 1.0f };
+
+    // Invert viewproj
+    hmatrix mvp, mvpInv;
+    hmatMultiplyHMatByHMat( &mvp, matProj, matCam );
+    shInvertMatrix( &mvpInv.m11, &mvp.m11 );
     
-    vector looking,
-           right,
-           down,
-           temp;
-    
-    // form a right-handed, three axis reference frame with "looking" as the +z axis
-    // and the +x axis to the right (which forces the +y axis down - this is the same
-    // direction as the mouse coordinate system)
-    vecSub(looking, cam->lookatpoint, cam->eyeposition);
-    vecCrossProduct(right, looking, cam->upvector);
-    vecCrossProduct(down,  looking, right        );
+    // Deproject points from the NDC cube back into the world
+    hvector wsNear, wsFar;
+    hmatMultiplyHMatByHVec( &wsNear, &mvpInv, &ndcNear );
+    hmatMultiplyHMatByHVec( &wsFar,  &mvpInv, &ndcFar  );
 
-    vecNormalize(&looking);
-    vecNormalize(&right);
-    vecNormalize(&down);
+    // Account for perspective
+    vector pNear, pFar;
+    pNear.x = wsNear.x / wsNear.w;
+    pNear.y = wsNear.y / wsNear.w;
+    pNear.z = wsNear.z / wsNear.w;
+    pFar .x = wsFar .x / wsFar .w;
+    pFar .y = wsFar .y / wsFar .w;
+    pFar .z = wsFar .z / wsFar .w;
 
-    // map the cursor on to an imaginary plane a unit distance away from
-    // eyeposition whose normal is parallel with "looking"
+    // Normalised vector between the two points is our ray orientation
+    vector orient;
+    vecSub( orient, pFar, pNear );
+    vecNormalize( &orient );
 
-    // half-height of the screen has a normalised height of
-    normalisedHeight = tanf(DEG_TO_RAD(cam->fieldofview / 2));
-
-    // NB: the height dimension is how the fieldofview is defined so this is used
-    // as the unit measure. Also note that a centred origin is used in this mapping.
-    mappedMouseY =  ((real32)screenY / (real32)screenHeight) - 0.5f;
-    mappedMouseX = (((real32)screenX / (real32)screenWidth ) - 0.5f) * rndAspectRatio;
-
-    // clean up the mouse vectors
-    vecMultiplyByScalar(right, normalisedHeight * mappedMouseX);
-    vecMultiplyByScalar(down,  normalisedHeight * mappedMouseY);
-
-    // This is a hack - it shouldn't be here and I don't know what it represents.
-    // The original Relic developer had a similar hack too and he didn't know what
-    // it was either. I suspect that it's something to do with the inter-conversion
-    // with the perspective projection since the maths in this function is dealing 
-    // with orthogonal reference frames.
-    vecMultiplyByScalar(looking, 0.49f);
-
-    // add the three vectors to get the cast ray vector
-    // (eyeball to mouse cursor and beyond)
-    vecAdd(temp, looking, right);
-    vecAdd(*dest, down, temp);   
-
-    // finally, normalise the cast ray
-    vecNormalize(dest);
+    // Done
+    *dest = orient;
 }
 
 // R1 and other races
