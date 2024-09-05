@@ -1460,25 +1460,11 @@ static real32 selResScaleBar( real32 base ) {
     return max( base, base * 0.5f * getResDensityRelative() );
 }
 
-void selStatusDraw0( Ship* ship ) {
-    selStatusDrawClose( ship, selResScaleBar(4.0f), selGroupFont0, selGroupFont3, 5.0f, TRUE,  TRUE, tutPointerShipHealthRect );
-}
-
-void selStatusDraw1( Ship* ship ) {
-    selStatusDrawClose( ship, selResScaleBar(3.0f), selGroupFont1, selGroupFont3, 4.0f, FALSE, TRUE, tutPointerShipHealthRect );
-}
-
-void selStatusDraw2( Ship* ship ) {
-    selStatusDrawClose( ship, selResScaleBar(2.0f), selGroupFont2, selGroupFont3, 3.0f, FALSE, FALSE, tutPointerShipGroupRect ); // For some reason it was done that way
-}
-
-void selStatusDraw3( Ship* ship ) {
-    selStatusDrawFar( ship, selResScaleBar(1.0f), selGroupFont3, TRUE, tutPointerShipHealthRect );
-}
-
-void selStatusDraw4( Ship* ship ) {
-    selStatusDrawFar( ship, selResScaleBar(1.0f), selGroupFont3, FALSE, tutPointerShipHealthRect );
-}
+void selStatusDraw0( Ship* ship ) { selStatusDrawClose( ship, selResScaleBar(4.0f), selGroupFont0, selGroupFont3, 5.0f, TRUE,  TRUE,  tutPointerShipHealthRect ); }
+void selStatusDraw1( Ship* ship ) { selStatusDrawClose( ship, selResScaleBar(3.0f), selGroupFont1, selGroupFont3, 4.0f, FALSE, TRUE,  tutPointerShipHealthRect ); }
+void selStatusDraw2( Ship* ship ) { selStatusDrawClose( ship, selResScaleBar(2.0f), selGroupFont2, selGroupFont3, 3.0f, FALSE, FALSE, tutPointerShipGroupRect  ); }  // For some reason it was done that way, bug?
+void selStatusDraw3( Ship* ship ) { selStatusDrawFar  ( ship, selResScaleBar(1.0f), selGroupFont3, TRUE,                              tutPointerShipHealthRect ); }
+void selStatusDraw4( Ship* ship ) { selStatusDrawFar  ( ship, selResScaleBar(1.0f), selGroupFont3, FALSE,                             tutPointerShipHealthRect ); }
 
 
 
