@@ -110,7 +110,6 @@ void primRectiSolidTextured2(rectanglei *rect, color c);
 
 //draw a line
 void primLine2(real32 x0, real32 y0, real32 x1, real32 y1, color c);
-void primNonAALine2(real32 x0, real32 y0, real32 x1, real32 y1, color c);
 void primLineThick2(real32 x0, real32 y0, real32 x1, real32 y1, real32 thickness, color c);
 
 //draw a line, integer coords

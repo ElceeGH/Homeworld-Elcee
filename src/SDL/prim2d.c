@@ -417,23 +417,6 @@ void primLine2(real32 x0, real32 y0, real32 x1, real32 y1, color c)
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : primNonAALine2
-    Description : Draw a non-antialiased line 1 pixel wide
-    Inputs      : c - attributes of line to be drawn
-                  x0, y0, x1, y1 - start/end of line segment
-    Outputs     : sets GL_COLOR
-    Return      :
-----------------------------------------------------------------------------*/
-void primNonAALine2(real32 x0, real32 y0, real32 x1, real32 y1, color c)
-{
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glBegin(GL_LINES);
-    glVertex2f(primScreenToGLX(x0), primScreenToGLY(y0));
-    glVertex2f(primScreenToGLX(x1), primScreenToGLY(y1));
-    glEnd();
-}
-
-/*-----------------------------------------------------------------------------
     Name        : primLineThick2
     Description : Draw a line "thickness" pixels wide
     Inputs      : c - attributes of line to be drawn
