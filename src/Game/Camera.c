@@ -470,7 +470,7 @@ void cameraRayCast(vector *dest, hmatrix* matProj, hmatrix* matCam, real32 scree
     hvector ndcNear = { ndcX, ndcY, -1.0f, 1.0f };
     hvector ndcFar  = { ndcX, ndcY, +1.0f, 1.0f };
 
-    // Invert viewproj
+    // Invert camproj
     hmatrix mvp, mvpInv;
     hmatMultiplyHMatByHMat( &mvp, matProj, matCam );
     shInvertMatrix( &mvpInv.m11, &mvp.m11 );
