@@ -2054,7 +2054,7 @@ sdword kasfPathNextPoint(void)
 void kasfPopupTextDraw(void)
 {
     sdword rowHeight, x, y, i, popupTextBorder;
-    rectangle rect;
+    rectanglei rect;
     fonthandle fhSave;
     //char buf[256];
 
@@ -2090,8 +2090,9 @@ void kasfPopupTextDraw(void)
     rect.x1 = x + popupTextWidth + popupTextBorder;
     rect.y0 = y - popupTextBorder;
     rect.y1 = y + rowHeight * (popupTextNumLines+2) + popupTextBorder;
-    primBeveledRectSolid(&rect, POPUPTEXT_BACKGROUND, 4, 4);
-    primSeriesOfRoundRects(&rect, 1, POPUPTEXT_COLOR, POPUPTEXT_BORDER_COLOR, 5, 4, 4);
+    rectanglef rectf = rectToFloatRect(&rect);
+    primBeveledRectiSolid(&rect, POPUPTEXT_BACKGROUND, 4, 4);
+    primSeriesOfRoundRects(&rectf, 1, POPUPTEXT_COLOR, POPUPTEXT_BORDER_COLOR, 5, 4, 4);
 
     // title
     fontPrint(x, y, POPUPTEXT_TITLE_COLOR, "FLEET INTELLIGENCE");
@@ -3028,27 +3029,27 @@ sdword kasfSelectContainsShipTypes(char *shipTypes)
 
 void kasfTutSetPointerTargetXY(char *name, sdword x, sdword y)
 {
-    tutSetPointerTargetXY(name, x,y);
+    tutSetPointerTargetXY(name, x, y);
 }
 
 void kasfTutSetPointerTargetXYRight(char *name, sdword x, sdword y)
 {
-    tutSetPointerTargetXYRight(name, x,y);
+    tutSetPointerTargetXYRight(name, x, y);
 }
 
 void kasfTutSetPointerTargetXYBottomRight(char *name, sdword x, sdword y)
 {
-    tutSetPointerTargetXYBottomRight(name, x,y);
+    tutSetPointerTargetXYBottomRight(name, x, y);
 }
 
 void kasfTutSetPointerTargetXYTaskbar(char *name, sdword x, sdword y)
 {
-    tutSetPointerTargetXYTaskbar(name, x,y);
+    tutSetPointerTargetXYTaskbar(name, x, y);
 }
 
 void kasfTutSetPointerTargetXYFE(char *name, sdword x, sdword y)
 {
-    tutSetPointerTargetXYFE(name, x,y);
+    tutSetPointerTargetXYFE(name, x, y);
 }
 
 void kasfTutSetPointerTargetShip(char *name, GrowSelection *ships)

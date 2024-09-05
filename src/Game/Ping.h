@@ -116,7 +116,7 @@ void pingReset(void);
 
 ping *pingCreate(vector *loc, SpaceObj *owner, pingeval evaluate, ubyte **userData, sdword userDataSize, SpaceObj *user);
 void pingObjectDied(SpaceObj *obj);
-void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, rectangle *viewPort);
+void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, rectanglei *viewPort);
 
 void pingAnomalySelectionPingAdd(char *pingName, SelectCommand *selection);
 void pingAnomalyObjectPingAdd(char *pingName, SpaceObj *owner);

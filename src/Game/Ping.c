@@ -374,7 +374,7 @@ bool pingListSortCallback(void *firststruct,void *secondstruct)
     Return      :
     Note        : The renderer should be in 2D mode at this point.
 ----------------------------------------------------------------------------*/
-void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, rectangle *viewPort)
+void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, rectanglei *viewPort)
 {
     real32 pingAge, pingCycle, pingMod, pingSize;
     real32 x, y, radius;
@@ -518,9 +518,9 @@ void pingListDraw(Camera *camera, hmatrix *modelView, hmatrix *projection, recta
             }
             if (rintUniverseElapsedTime() - pingTOList[index].lastTimeDrawn <= pingTOLingerTime)
             {
-                o.centreX = viewPort->x0 + rowHeight * 3 / 2;
-                o.centreY = yScreen + rowHeight / 2;
-                o.radiusX = o.radiusY = (sdword)(rowHeight / 2.5f); // Divide by >2 so they don't touch other things
+                o.centreX = (real32)(viewPort->x0 + rowHeight * 3 / 2);
+                o.centreY = yScreen + rowHeight / 2.0f;
+                o.radiusX = o.radiusY = (rowHeight / 2.5f); // Divide by >2 so they don't touch other things
                 primOvalArcOutline2(&o, 0.0f, TWOPI, thickness, pingTONSegments, *pingTOList[index].c);
                 fontPrint(xScreen, yScreen, TO_TextColor, strGetString(pingTOList[index].stringEnum));
                 yScreen += rowHeight + 1;

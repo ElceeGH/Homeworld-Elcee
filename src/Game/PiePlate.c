@@ -247,8 +247,8 @@ sdword pieMousePosSet3D(hmatrix *modelView, hmatrix *projection, vector *mouse3D
     {
         return(ERROR);
     }
-    mouseViewX = primGLToScreenX(mouseScreen.x / mouseScreen.w);//get location in viewport coords
-    mouseViewY = primGLToScreenY(mouseScreen.y / mouseScreen.w);
+    mouseViewX = (sdword) primGLToScreenX(mouseScreen.x / mouseScreen.w);//get location in viewport coords
+    mouseViewY = (sdword) primGLToScreenY(mouseScreen.y / mouseScreen.w);
 
     //dbgMessagef("3d->2d mouse pos: (%.2f, %.2f, %.2f) -> (%d,%d).", mouse3D->x, mouse3D->y, mouse3D->z, mouseViewX, mouseViewY);
     if (mouseViewX < 0 || mouseViewX >= MAIN_WindowWidth || //if offscreen
@@ -283,8 +283,8 @@ bool pieSameOnScreenPoint(hmatrix *modelView, hmatrix *projection, vector *world
     {                                                       //if behind camera
         return(FALSE);
     }
-    x0 = primGLToScreenX(screen.x / screen.w);              //get location in viewport coords
-    y0 = primGLToScreenY(screen.y / screen.w);
+    x0 = (sdword) primGLToScreenX(screen.x / screen.w);     //get location in viewport coords
+    y0 = (sdword) primGLToScreenY(screen.y / screen.w);
     if (x0 < 0 || x0 >= MAIN_WindowWidth ||                 //if offscreen
         y0 < 0 || y0 >= MAIN_WindowHeight)
     {
@@ -300,8 +300,8 @@ bool pieSameOnScreenPoint(hmatrix *modelView, hmatrix *projection, vector *world
     {                                                       //if behind camera
         return(FALSE);
     }
-    x1 = primGLToScreenX(screen.x / screen.w);              //get location in viewport coords
-    y1 = primGLToScreenY(screen.y / screen.w);
+    x1 = (sdword) primGLToScreenX(screen.x / screen.w);     //get location in viewport coords
+    y1 = (sdword) primGLToScreenY(screen.y / screen.w);
     if (x1 < 0 || x1 >= MAIN_WindowWidth ||                 //if offscreen
         y1 < 0 || y1 >= MAIN_WindowHeight)
     {
@@ -463,13 +463,13 @@ void pieDistanceReadoutDraw(vector *movepoint, vector *origin, color c)
     }
     else
     {
-        fontPrint((primGLToScreenX(screen_x) + PIE_DIST_READOUT_X_OFFSET),
-                  (primGLToScreenY(screen_y) + PIE_DIST_READOUT_Y_OFFSET),
+        fontPrint((sdword) (primGLToScreenX(screen_x) + PIE_DIST_READOUT_X_OFFSET),
+                  (sdword) (primGLToScreenY(screen_y) + PIE_DIST_READOUT_Y_OFFSET),
                   TW_DISTANCE_READOUT_COLOR, dist_str);
         if(MP_HyperSpaceFlag)
         {
-            fontPrint((primGLToScreenX(screen_x) + PIE_RU_READOUT_X_OFFSET),
-                  (primGLToScreenY(screen_y) + PIE_DIST_READOUT_Y_OFFSET+PIE_RU_READOUT_Y_OFFSET+fontHeight("K")),
+            fontPrint((sdword)(primGLToScreenX(screen_x) + PIE_RU_READOUT_X_OFFSET),
+                      (sdword)(primGLToScreenY(screen_y) + PIE_DIST_READOUT_Y_OFFSET+PIE_RU_READOUT_Y_OFFSET+fontHeight("K")),
                   ruReadoutColour, ru_str);
 
         }

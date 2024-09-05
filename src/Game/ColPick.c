@@ -816,12 +816,11 @@ forcedToRace1:;
 void cpNumberDraw(featom *atom, regionhandle region, sdword value)
 {
     fonthandle  fhSave;
-
-    rectangle *r = &region->rect;
+    rectanglei *r = &region->rect;
 
     if (bitTest(atom->flags, FAF_BorderVisible))
     {
-        primRectOutline2(r, atom->borderWidth, atom->borderColor);
+        primRectiOutline2(r, atom->borderWidth, atom->borderColor);
     }
 
     fhSave = fontCurrentGet();                              //save the current font
@@ -907,9 +906,9 @@ void cpBaseColorPreviewDraw(featom *atom, regionhandle region)
 
     cpRegion[12] = region;
     region->rect.y1--;
-    primRectSolid2(&region->rect, colRGB(cpBaseRed, cpBaseGreen, cpBaseBlue));
+    primRectiSolid2(&region->rect, colRGB(cpBaseRed, cpBaseGreen, cpBaseBlue));
     region->rect.y1++;
-    primRectOutline2(&region->rect, atom->borderWidth, atom->borderColor);
+    primRectiOutline2(&region->rect, atom->borderWidth, atom->borderColor);
 }
 void cpStripeColorPreviewDraw(featom *atom, regionhandle region)
 {
@@ -923,9 +922,9 @@ void cpStripeColorPreviewDraw(featom *atom, regionhandle region)
 
     cpRegion[13] = region;
     region->rect.y1--;
-    primRectSolid2(&region->rect, colRGB(cpStripeRed, cpStripeGreen, cpStripeBlue));
+    primRectiSolid2(&region->rect, colRGB(cpStripeRed, cpStripeGreen, cpStripeBlue));
     region->rect.y1++;
-    primRectOutline2(&region->rect, atom->borderWidth, atom->borderColor);
+    primRectiOutline2(&region->rect, atom->borderWidth, atom->borderColor);
 }
 void cpPreviewImageDraw(featom *atom, regionhandle region)
 {
@@ -942,15 +941,15 @@ void cpPreviewImageDraw(featom *atom, regionhandle region)
         cpPreviewImagePrepare();
     }
     trPalettedTextureMakeCurrent(cpPreviewTexture, cpPreviewTexturePalette);
-    primRectSolidTextured2(&region->rect);
-    primRectOutline2(&region->rect, atom->borderWidth, atom->borderColor);
+    primRectiSolidTextured2(&region->rect, colWhite);
+    primRectiOutline2(&region->rect, atom->borderWidth, atom->borderColor);
 #endif
 }
 void cpHueSaturationDraw(featom *atom, regionhandle region)
 {
     oval o;
     sdword *hue, *sat;
-    rectangle rect;
+    rectanglei rect;
 
     if (FELASTCALL(atom))
     {
@@ -974,7 +973,7 @@ void cpHueSaturationDraw(featom *atom, regionhandle region)
     rect.x1 += CP_HueSaturationCircleRadius;
     rect.y0 -= CP_HueSaturationCircleRadius + 1;
     rect.y1 += CP_HueSaturationCircleRadius;
-    primRectSolid2(&rect, atom->borderColor);
+    primRectiSolid2(&rect, atom->borderColor);
     //draw the hue/saturation map
     if (cpHueSatTexture == TR_InvalidInternalHandle)
     {
@@ -982,13 +981,14 @@ void cpHueSaturationDraw(featom *atom, regionhandle region)
     }
 
     trRGBTextureMakeCurrent(cpHueSatTexture);
-    primRectSolidTextured2(&region->rect);
+    primRectiSolidTextured2(&region->rect, colWhite);
     
-    primLine2(region->rect.x0, region->rect.y1-1, region->rect.x1, region->rect.y1-1, atom->borderColor);
-    primLine2(region->rect.x0, region->rect.y1, region->rect.x1, region->rect.y1, atom->borderColor);
+    rectanglef rectf = rectToFloatRect(&region->rect);
+    primLine2(rectf.x0, rectf.y1-1, rectf.x1, rectf.y1-1, atom->borderColor);
+    primLine2(rectf.x0, rectf.y1, rectf.x1, rectf.y1, atom->borderColor);
     //draw the pointer indicating what color we have
-    o.centreX = (region->rect.x0 + *hue * (region->rect.x1 - region->rect.x0) / CP_HueSatTextureWidth + 1);
-    o.centreY = (region->rect.y1 - *sat * (region->rect.y1 - region->rect.y0) / CP_HueSatTextureHeight);
+    o.centreX = (rectf.x0 + *hue * (rectf.x1 - rectf.x0) / CP_HueSatTextureWidth + 1);
+    o.centreY = (rectf.y1 - *sat * (rectf.y1 - rectf.y0) / CP_HueSatTextureHeight);
     o.radiusX = o.radiusY = CP_HueSaturationCircleRadius;
     primOvalArcOutline2(&o, 0.0f, TWOPI, 1,
                         CP_HueSaturationCircleSegments, colBlack);
@@ -1002,10 +1002,10 @@ void cpHueSaturationDraw(featom *atom, regionhandle region)
         sdword cIndex, index;
         real32 realX0, realY0, realWidth, realHeight;
 
-        realX0 = primScreenToGLX(region->rect.x0);
-        realY0 = primScreenToGLY(region->rect.y1);
-        realWidth = (real32)(region->rect.x1 - region->rect.x0);
-        realHeight = (real32)(region->rect.y1 - region->rect.y0);
+        realX0 = primScreenToGLX(rectf.x0);
+        realY0 = primScreenToGLY(rectf.y1);
+        realWidth = (real32)(rectf.x1 - rectf.x0);
+        realHeight = (real32)(rectf.y1 - rectf.y0);
         glColor3ub((ubyte)cpBaseRed, (ubyte)cpBaseGreen, (ubyte)cpBaseBlue);     //color for first line
         for (cIndex = 0; cIndex < 2; cIndex++, curve++)
         {
@@ -1023,10 +1023,6 @@ void cpHueSaturationDraw(featom *atom, regionhandle region)
 }
 void cpValueDraw(featom *atom, regionhandle region)
 {
-    triangle tri;
-    sdword val;
-    rectangle rect;
-
     if (FELASTCALL(atom))
     {
         cpValueRegion = NULL;
@@ -1034,43 +1030,37 @@ void cpValueDraw(featom *atom, regionhandle region)
     }
 
     //draw the value pointer
-    if (cpColorMode == 0)
-    {
-        val = cpBaseValue;
-    }
-    else
-    {
-        val = cpStripeValue;
-    }
+    rectanglef rect = rectToFloatRect( &region->rect );
 
-    val = val * (region->rect.y1 - region->rect.y0) / CP_ValueTextureHeight;
-    tri.x0 = region->rect.x1 - cpValueArrowWidth;
-    tri.y0 = region->rect.y1 - val - 1;
+    real32 val = (cpColorMode == 0) ? (real32)cpBaseValue : (real32)cpStripeValue;
+    val = val * (rect.y1 - region->rect.y0) / CP_ValueTextureHeight;
+
+    triangle   tri;
+    tri.x0 = rect.x1 - cpValueArrowWidth;
+    tri.y0 = rect.y1 - val - 1;
     tri.x1 = tri.x2 = tri.x0 + cpValueArrowWidth;
     tri.y1 = tri.y0 - cpValueArrowHeight / 2;
     tri.y2 = tri.y0 + cpValueArrowHeight / 2;
     primTriOutline2(&tri, 1, cpValueArrowColor);
-    //draw the gradient of value
-    rect = region->rect;
-    rect.x1 = tri.x0 - 1;
 
-//    cpValueTextureCreate();
+    //draw the gradient of value
+    rect.x1 = tri.x0 - 1;
     trRGBTextureMakeCurrent(cpValueTexture);
-    primRectSolidTextured2(&rect);
+    primRectSolidTextured2(&rect, colWhite);
     primRectOutline2(&rect, atom->borderWidth, atom->borderColor);
 }
 void cpPreviousDraw(featom *atom, regionhandle region)
 {
     sdword index;
-    rectangle rect;
+    rectanglei rect;
 
     index = atom->name[15] - '0';                           //index of "CP_PreviousDraw0"
-    primRectSolid2(&region->rect, colPreviousColors[index].base);
+    primRectiSolid2(&region->rect, colPreviousColors[index].base);
     rect.x0 = region->rect.x0;
     rect.x1 = region->rect.x1;
     rect.y0 = region->rect.y0 + (region->rect.y1 - region->rect.y0) * 1 / 3;
     rect.y1 = region->rect.y0 + (region->rect.y1 - region->rect.y0) * 3 / 5;
-    primRectSolid2(&rect, colPreviousColors[index].detail);
+    primRectiSolid2(&rect, colPreviousColors[index].detail);
 }
 
 /*=============================================================================

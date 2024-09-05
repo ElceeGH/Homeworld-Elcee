@@ -433,7 +433,7 @@ void toLegendDraw(void)
     color col;
     real32 radius;
     fonthandle fhSave;
-    rectangle playerColorRect;
+    rectanglei playerColorRect;
 
     fhSave = fontCurrentGet();                  //save the current font
     fontMakeCurrent(selGroupFont2);  // use a common, fairly small font

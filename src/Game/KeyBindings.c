@@ -208,10 +208,10 @@ bool kbKeyUsed(udword keytocheck);
     Parameters  : rectangle *rect
     Return      : void
 -----------------------------------------------------------------------------*/
-void kbListTitleDraw(rectangle *rect)
+void kbListTitleDraw(rectanglei *rect)
 {
     fonthandle oldfont;
-    rectangle r = *rect;
+    rectanglei r = *rect;
 
     oldfont = fontMakeCurrent(kbKeyListFont);
 
@@ -222,7 +222,7 @@ void kbListTitleDraw(rectangle *rect)
     r.x1++;
     r.y1--;
 
-    primRectTranslucent2(&r, colRGBA(0,160,100,63));
+    primRectiTranslucent2(&r, colRGBA(0,160,100,63));
 //    primLine2(r.x0,r.y1,r.x1,r.y1,colRGB(20,200,20));
 //    primRectOutline2(&r, 1, colRGB(20,200,20));
 
@@ -238,7 +238,7 @@ void kbListTitleDraw(rectangle *rect)
     Parameters  : rectangle *rect, listitemhandle data
     Return      : void
 -----------------------------------------------------------------------------*/
-void kbListItemDraw(rectangle *rect, listitemhandle data)
+void kbListItemDraw(rectanglei *rect, listitemhandle data)
 {
     fonthandle      oldfont;
     kbBoundKeys    *bkey = (kbBoundKeys *)data->data;
@@ -386,7 +386,7 @@ void kbListWindowCB(char *string, featom *atom)
     Parameters  : rectangle *rect, listitemhandle data
     Return      : void
 -----------------------------------------------------------------------------*/
-void kbPoolListItemDraw(rectangle *rect, listitemhandle data)
+void kbPoolListItemDraw(rectanglei *rect, listitemhandle data)
 {
     fonthandle      oldfont;
     color           c = FEC_ListItemStandard;

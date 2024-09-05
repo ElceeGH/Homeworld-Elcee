@@ -3899,7 +3899,8 @@ DEFINE_TASK(rndRenderTask)
         {
             if ((!tutPointersDrawnThisFrame) && index == STR_LetterboxBar)
             {                                           //if this is the subtitle region
-                tutDrawTextPointers(&subRegion[STR_LetterboxBar].rect);//draw any active pointers there may be
+                rectanglef r = rectToFloatRect( &subRegion[STR_LetterboxBar].rect );
+                tutDrawTextPointers(&r);//draw any active pointers there may be
             }
             if (subRegion[index].bEnabled && subRegion[index].cardIndex > 0)
             {
@@ -4378,7 +4379,7 @@ real32 rndComputeOverlap(Ship* ship, real32 scalar)
     real32 overlap;
     CollInfo* acoll;
     CollInfo* bcoll;
-    rectangle arect, brect, crect;
+    rectanglei arect, brect, crect;
     real32 aarea, carea;
     real32 ratio;
     real32 radius;
@@ -4408,10 +4409,10 @@ real32 rndComputeOverlap(Ship* ship, real32 scalar)
     //make screenspace rectangle
     acoll = &ship->collInfo;
     radius = scalar * acoll->selCircleRadius;
-    arect.x0 = primGLToScreenX(acoll->selCircleX - radius);
-    arect.x1 = primGLToScreenX(acoll->selCircleX + radius);
-    arect.y0 = primGLToScreenY(acoll->selCircleY + radius);
-    arect.y1 = primGLToScreenY(acoll->selCircleY - radius);
+    arect.x0 = (sdword)primGLToScreenX(acoll->selCircleX - radius);
+    arect.x1 = (sdword)primGLToScreenX(acoll->selCircleX + radius);
+    arect.y0 = (sdword)primGLToScreenY(acoll->selCircleY + radius);
+    arect.y1 = (sdword)primGLToScreenY(acoll->selCircleY - radius);
     aarea = (real32)(2 * (arect.x1 - arect.x0) +
                      2 * (arect.y1 - arect.y0));
     while (objnode != NULL)
@@ -4438,13 +4439,13 @@ real32 rndComputeOverlap(Ship* ship, real32 scalar)
             //make screenspace rectangle
             bcoll = &testship->collInfo;
             radius = scalar * bcoll->selCircleRadius;
-            brect.x0 = primGLToScreenX(bcoll->selCircleX - radius);
-            brect.x1 = primGLToScreenX(bcoll->selCircleX + radius);
-            brect.y0 = primGLToScreenY(bcoll->selCircleY + radius);
-            brect.y1 = primGLToScreenY(bcoll->selCircleY - radius);
+            brect.x0 = (sdword)primGLToScreenX(bcoll->selCircleX - radius);
+            brect.x1 = (sdword)primGLToScreenX(bcoll->selCircleX + radius);
+            brect.y0 = (sdword)primGLToScreenY(bcoll->selCircleY + radius);
+            brect.y1 = (sdword)primGLToScreenY(bcoll->selCircleY - radius);
 
             //find union of ab
-            primRectUnion2(&crect, &arect, &brect);
+            primRectiUnion2(&crect, &arect, &brect);
             if (crect.x0 == crect.x1 || crect.y0 == crect.y1)
             {
                 carea = 0.0f;

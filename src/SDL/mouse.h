@@ -126,15 +126,6 @@ typedef enum
 #define mouseLeftDouble()       (keyIsHit(LMOUSE_DOUBLE))
 #define mouseRightDouble()       (keyIsHit(RMOUSE_DOUBLE))
 
-#define mouseInRect(r)          (mouseCursorXPosition >= (r)->x0 && \
-                                 mouseCursorYPosition >= (r)->y0 && \
-                                 mouseCursorXPosition < (r)->x1 &&  \
-                                 mouseCursorYPosition < (r)->y1)
-#define mouseInRectGeneral(x0, y0, x1, y1)  (mouseCursorXPosition >= (x0) && \
-                                             mouseCursorYPosition >= (y0) && \
-                                             mouseCursorXPosition < (x1) &&  \
-                                             mouseCursorYPosition < (y1))
-
 /*=============================================================================
     Functions:
 =============================================================================*/
@@ -160,8 +151,13 @@ void mouseClickShipDied(ShipPtr deadship);
 
 //set new position for mouse
 void mousePositionSet(sdword x, sdword y);
-void mouseClipToRect(rectangle *rect);
-bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect);
+void mouseClipToRect(rectanglei *rect);
+bool mouseClipPointToRect(sdword *x, sdword *y, rectanglei *rect);
+
+// Rectangle check
+bool mouseInRect(rectanglei* r);
+bool mouseInRectGeneral (sdword x0, sdword y0, sdword x1, sdword y1);
+bool mouseInRectGeneralf(real32 x0, real32 y0, real32 x1, real32 y1);
 
 //draw mouse cursor and update cursor position/button flags
 void mouseStoreCursorUnder(void);

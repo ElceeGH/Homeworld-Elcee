@@ -115,49 +115,17 @@ void primTriOutline2(triangle *tri, real32 thickness, color c)
 
 /*-----------------------------------------------------------------------------
     Name        : primRectSolidTextured2
-    Description : Draw a solid 2d rectangle with the current texture mapped thereupon.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw a solid 2d rectanglef with the current texture mapped thereupon.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
+                : c    - color of the rectangle
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
 #define COORD(S,T,X,Y) \
     glTexCoord2f(S, T); \
     glVertex2f(primScreenToGLX(X), primScreenToGLY(Y));
-void primRectSolidTextured2(rectangle *rect)
-{
-    glColor3ub(255, 255, 255);
 
-    rndTextureEnvironment(RTE_Replace);
-    rndTextureEnable(TRUE);
-
-    glBegin(GL_QUADS);
-    COORD(0.0f, 0.0f, rect->x0, rect->y0);
-    COORD(0.0f, 1.0f, rect->x0, rect->y1 - 1);
-    COORD(1.0f, 1.0f, rect->x1, rect->y1 - 1);
-    COORD(1.0f, 0.0f, rect->x1, rect->y0);
-    glEnd();
-
-    rndTextureEnable(FALSE);
-    rndTextureEnvironment(RTE_Modulate);
-}
-void primRectSolidTexturedFullRect2(rectangle *rect)
-{
-    glColor3ub(255, 255, 255);
-
-    rndTextureEnvironment(RTE_Replace);
-    rndTextureEnable(TRUE);
-
-    glBegin(GL_QUADS);
-    COORD(0.0f, 0.0f, rect->x0, rect->y0);
-    COORD(0.0f, 1.0f, rect->x0, rect->y1);
-    COORD(1.0f, 1.0f, rect->x1, rect->y1);
-    COORD(1.0f, 0.0f, rect->x1, rect->y0);
-    glEnd();
-
-    rndTextureEnable(FALSE);
-    rndTextureEnvironment(RTE_Modulate);
-}
-void primRectSolidTexturedFullRectC2(rectangle *rect, color c)
+void primRectSolidTextured2(rectanglef *rect, color c)
 {
     glColor4ub(colRed(c), colGreen(c), colBlue(c), colAlpha(c));
 
@@ -176,13 +144,13 @@ void primRectSolidTexturedFullRectC2(rectangle *rect, color c)
 
 /*-----------------------------------------------------------------------------
     Name        : primRectSolid2
-    Description : Draw a solid 2d rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw a solid 2d rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   c - color to draw it in.
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRectSolid2(rectangle *rect, color c)
+void primRectSolid2(rectanglef *rect, color c)
 {
     glColor4ub(colRed(c), colGreen(c), colBlue(c), colAlpha(c));
     glBegin(GL_QUADS);
@@ -195,13 +163,13 @@ void primRectSolid2(rectangle *rect, color c)
 
 /*-----------------------------------------------------------------------------
     Name        : primRectTranslucent2
-    Description : Draw a translucent 2d rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw a translucent 2d rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   c - color to draw it in.
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRectTranslucent2(rectangle* rect, color c)
+void primRectTranslucent2(rectanglef* rect, color c)
 {
     GLboolean blendOn;
 
@@ -220,16 +188,16 @@ void primRectTranslucent2(rectangle* rect, color c)
 
 /*-----------------------------------------------------------------------------
     Name        : primRectOutline2
-    Description : Draw an outline 2d rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw an outline 2d rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   thickness - thickness of the lines
                   c - color to draw it in.
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRectOutline2(rectangle *rect, real32 thickness, color c)
+void primRectOutline2(rectanglef *rect, real32 thickness, color c)
 {
-    sdword bottom = rect->y1 - 1;
+    real32 bottom = rect->y1 - 1;
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
 
@@ -248,13 +216,13 @@ void primRectOutline2(rectangle *rect, real32 thickness, color c)
 
 /*-----------------------------------------------------------------------------
     Name        : primRectShaded2
-    Description : Draw a shaded 2d rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw a shaded 2d rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   c - pointer to 4 color values to draw it in.
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRectShaded2(rectangle *rect, color *c)
+void primRectShaded2(rectanglef *rect, color *c)
 {
     glShadeModel(GL_SMOOTH);
 
@@ -288,7 +256,7 @@ void primRectShaded2(rectangle *rect, color *c)
                     and/or y0 members of the reslult will be the same as
                     the x1 and/or y1 members.
 ----------------------------------------------------------------------------*/
-void primRectUnion2(rectangle *result, rectangle *r0, rectangle *r1)
+void primRectiUnion2(rectanglei *result, rectanglei *r0, rectanglei *r1)
 {
     result->x0 = max(r0->x0, r1->x0);                       //get min/max bounds
     result->y0 = max(r0->y0, r1->y0);
@@ -307,7 +275,7 @@ void primRectUnion2(rectangle *result, rectangle *r0, rectangle *r1)
     Return      :
     Notes       :
 ----------------------------------------------------------------------------*/
-void primRealRectUnion2(realrectangle *result, realrectangle *r0, realrectangle *r1)
+void primRealRectUnion2(rectanglef *result, rectanglef *r0, rectanglef *r1)
 {
     result->x0 = max(r0->x0, r1->x0);                       //get min/max bounds
     result->y0 = max(r0->y0, r1->y0);
@@ -432,7 +400,7 @@ void primErrorMessagePrintFunction(char *file, sdword line)
     Outputs     : Sets GL_COLOR
     Return      : void
 ----------------------------------------------------------------------------*/
-void primLine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
+void primLine2(real32 x0, real32 y0, real32 x1, real32 y1, color c)
 {
     bool blendon;
 
@@ -456,7 +424,7 @@ void primLine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
     Outputs     : sets GL_COLOR
     Return      :
 ----------------------------------------------------------------------------*/
-void primNonAALine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
+void primNonAALine2(real32 x0, real32 y0, real32 x1, real32 y1, color c)
 {
     glColor3ub(colRed(c), colGreen(c), colBlue(c));
     glBegin(GL_LINES);
@@ -474,7 +442,7 @@ void primNonAALine2(sdword x0, sdword y0, sdword x1, sdword y1, color c)
     Outputs     : Sets GL_COLOR
     Return      : void
 ----------------------------------------------------------------------------*/
-void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, real32 thickness, color c)
+void primLineThick2(real32 x0, real32 y0, real32 x1, real32 y1, real32 thickness, color c)
 {
     GLfloat linewidth;
     glGetFloatv(GL_LINE_WIDTH, &linewidth);
@@ -485,6 +453,10 @@ void primLineThick2(sdword x0, sdword y0, sdword x1, sdword y1, real32 thickness
     glVertex2f(primScreenToGLX(x1), primScreenToGLY(y1));
     glEnd();
     glLineWidth(linewidth);
+}
+
+void primLinei2(sdword x0, sdword y0, sdword x1, sdword y1, color c) {
+    primLine2( (real32)x0, (real32)y0, (real32)x1, (real32)y1, c );
 }
 
 /*-----------------------------------------------------------------------------
@@ -537,32 +509,13 @@ void primLineLoopEnd2(void)
 }
 
 /*-----------------------------------------------------------------------------
-    Name        : cparam
-    Description : blends a single color component
-    Inputs      : a - component a, b - com b, t - lerp parm
-    Outputs     :
-    Return      : blended component
-----------------------------------------------------------------------------*/
-/*
-uword cparam(uword a, uword b, real32 t)
-{
-    uword c;
-    real32 bt = (real32)1 - t;
-    c = (uword)((real32)a * t + (real32)b * bt);
-    if (c > 255)
-        return 255;
-    else
-        return c;
-}
-*/
-/*-----------------------------------------------------------------------------
     Name        : decRect
-    Description : decrease size of a rectangle
-    Inputs      : rect - the rectangle, width - amount to dec
+    Description : decrease size of a rectanglef
+    Inputs      : rect - the rectanglef, width - amount to dec
     Outputs     : rect is modified
     Return      :
 ----------------------------------------------------------------------------*/
-void decRect(rectangle *rect, uword width)
+void decRect(rectanglef *rect, uword width)
 {
     rect->x0 = rect->x0 + width;
     rect->y0 = rect->y0 + width;
@@ -573,16 +526,16 @@ void decRect(rectangle *rect, uword width)
 /*-----------------------------------------------------------------------------
     Name        : primSeriesOfRects
     Description : draws a series of rects decreasing in size and color
-    Inputs      : rect - starting rectangle, width - width,
+    Inputs      : rect - starting rectanglef, width - width,
                   fore - fg, back - fg, steps - number of rects
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void primSeriesOfRects(rectangle *rect, uword width,
+void primSeriesOfRects(rectanglef *rect, uword width,
                        color fore, color back, uword steps)
 {
     // ignore width
-    rectangle drect;
+    rectanglef drect;
     real32 cfrac, frac;
     uword i;
     color Color;
@@ -590,7 +543,7 @@ void primSeriesOfRects(rectangle *rect, uword width,
     steps++;
     frac = (real32)1.0;
     Color = fore;
-    memcpy(&drect, rect, sizeof(rectangle));
+    memcpy(&drect, rect, sizeof(rectanglef));
     for (i = 0; i < steps; i++)
     {
         decRect(&drect, 1);
@@ -609,13 +562,13 @@ void primSeriesOfRects(rectangle *rect, uword width,
 #define SEGS 4
 /*-----------------------------------------------------------------------------
     Name        : primRectSolid2
-    Description : Draw a solid 2d rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw a solid 2d rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   c - color to draw it in, xb - x offset, yb - y offset
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb)
+void primBeveledRectSolid(rectanglef *rect, color c, uword xb, uword yb)
 {
     bool cull;
 
@@ -638,45 +591,17 @@ void primBeveledRectSolid(rectangle *rect, color c, uword xb, uword yb)
     }
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : primBeveledRectOutline
-    Description : Draw an outline 2d beveled rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
-                  thickness - thickness of the lines
-                  c - color to draw it in, xb - x offset, yb - y offset
-    Outputs     : ..
-    Return      : void
-----------------------------------------------------------------------------*/
-void primBeveledRectOutline(rectangle *rect, real32 thickness, color c,
-                            uword xb, uword yb)
-{
-    GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(SX(X0+xb), SY(Y0));
-    glVertex2f(SX(X1-xb), SY(Y0));
-    glVertex2f(SX(X1), SY(Y0+yb));
-    glVertex2f(SX(X1), SY(Y1-yb));
-    glVertex2f(SX(X1-xb), SY(Y1));
-    glVertex2f(SX(X0+xb), SY(Y1));
-    glVertex2f(SX(X0), SY(Y1-yb));
-    glVertex2f(SX(X0), SY(Y0+yb));
-    glEnd();
-    glLineWidth(linewidth);
-}
 
 /*-----------------------------------------------------------------------------
     Name        : primRoundRectOutline
-    Description : Draw an outline 2d rounded rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
+    Description : Draw an outline 2d rounded rectanglef.
+    Inputs      : rect - pointer to rectanglef structure containing coordinates.
                   thickness - thickness of the lines
                   c - color to draw it in, xb - x offset, yb - y offset
     Outputs     : ..
     Return      : void
 ----------------------------------------------------------------------------*/
-void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, uword yb)
+void primRoundRectOutline(rectanglef *rect, real32 thickness, color c, uword xb, uword yb)
 {
     oval o;
     sdword segs = SEGS;
@@ -719,149 +644,21 @@ void primRoundRectOutline(rectangle *rect, real32 thickness, color c, uword xb, 
     o.centreX = X0+xb;
     primOvalArcOutline2(&o, PI, 3*PI/2, 2, segs, c);
 }
-
-/*-----------------------------------------------------------------------------
-    Name        : primMaskedRoundRectOutline
-    Description : Draw an outline 2d rounded rectangle.
-    Inputs      : rect - pointer to rectangle structure containing coordinates.
-                  thickness - thickness of the lines, mask - OL_* mask for roundedness
-                  c - color to draw it in, xb - x offset, yb - y offset
-    Outputs     : ..
-    Return      : void
-----------------------------------------------------------------------------*/
-void primMaskedRoundRectOutline(rectangle *rect, real32 thickness, color c,
-                                uword xb, uword yb, uword mask)
-{
-    oval o;
-    sdword segs = SEGS;
-    GLfloat linewidth;
-    glGetFloatv(GL_LINE_WIDTH, &linewidth);
-
-    glColor3ub(colRed(c), colGreen(c), colBlue(c));
-    glLineWidth((GLfloat)thickness);
-    glBegin(GL_LINES);
-    glVertex2f(SX(X0+xb), SY(Y0));
-    glVertex2f(SX(X1-xb), SY(Y0));
-    glVertex2f(SX(X1), SY(Y0+yb));
-    glVertex2f(SX(X1), SY(Y1-yb));
-    glVertex2f(SX(X1-xb), SY(Y1));
-    glVertex2f(SX(X0+xb), SY(Y1));
-    glVertex2f(SX(X0), SY(Y1-yb));
-    glVertex2f(SX(X0), SY(Y0+yb));
-
-    if (!(mask & OL_UL))
-    {
-        glVertex2f(SX(X0), SY(Y0));
-        glVertex2f(SX(X0+xb), SY(Y0));
-        glVertex2f(SX(X0), SY(Y0));
-        glVertex2f(SX(X0), SY(Y0+yb));
-    }
-    if (!(mask & OL_LL))
-    {
-        glVertex2f(SX(X0), SY(Y1));
-        glVertex2f(SX(X0+xb), SY(Y1));
-        glVertex2f(SX(X0), SY(Y1));
-        glVertex2f(SX(X0), SY(Y1-yb));
-    }
-    if (!(mask & OL_UR))
-    {
-        glVertex2f(SX(X1-xb), SY(Y0));
-        glVertex2f(SX(X1), SY(Y0));
-        glVertex2f(SX(X1), SY(Y0));
-        glVertex2f(SX(X1), SY(Y0+yb));
-    }
-    if (!(mask & OL_LR))
-    {
-        glVertex2f(SX(X1), SY(Y1-yb));
-        glVertex2f(SX(X1), SY(Y1));
-        glVertex2f(SX(X1), SY(Y1));
-        glVertex2f(SX(X1-xb), SY(Y1));
-    }
-
-    glEnd();
-    glLineWidth(linewidth);
-
-    if (xb > 4 || yb > 4)
-        segs *= 2;
-
-    // upper left
-    o.centreX = X0+xb;
-    o.centreY = Y0+yb;
-    o.radiusX = xb;
-    o.radiusY = yb;
-    if (mask & OL_UL)
-        primOvalArcOutline2(&o, 3*PI/2, TWOPI, 2, segs, c);
-
-    // upper right
-    o.centreX = X1-xb;
-    if (mask & OL_UR)
-        primOvalArcOutline2(&o, 0.0f, PI/2, 2, segs, c);
-
-    // lower right
-    o.centreY = Y1-yb;
-    if (mask & OL_LR)
-        primOvalArcOutline2(&o, PI/2, PI, 2, segs, c);
-
-    // lower left
-    o.centreX = X0+xb;
-    if (mask & OL_LL)
-        primOvalArcOutline2(&o, PI, 3*PI/2, 2, segs, c);
-}
-#undef SEGS
-#undef Y1
-#undef X1
-#undef Y0
-#undef X0
-#undef SY
-#undef SX
-
-/*-----------------------------------------------------------------------------
-    Name        : primSeriesOfBeveledRects
-    Description : draws a series of rects decreasing in size and color
-    Inputs      : rect - starting rectangle, width - width,
-                  fore - fg, back - fg, steps - number of rects,
-                  xb - x offset, yb - y offset
-    Outputs     :
-    Return      :
-----------------------------------------------------------------------------*/
-void primSeriesOfBeveledRects(rectangle *rect, uword width,
-                              color fore, color back, uword steps,
-                              uword xb, uword yb)
-{
-    // ignore width
-    rectangle drect;
-    real32 cfrac, frac;
-    uword i;
-    color Color;
-    cfrac = (real32)1.0 / (real32)steps;
-    steps++;
-    frac = (real32)1.0;
-    Color = fore;
-    memcpy(&drect, rect, sizeof(rectangle));
-    for (i = 0; i < steps; i++)
-    {
-        decRect(&drect, 1);
-        primBeveledRectOutline(&drect, 2, Color, xb, yb);
-        frac -= cfrac;
-        Color = colBlend(fore, back, frac);
-    }
-}
-
 /*-----------------------------------------------------------------------------
     Name        : primSeriesOfRoundRects
     Description : draws a series of rects decreasing in size and color
-    Inputs      : rect - starting rectangle, width - width,
+    Inputs      : rect - starting rectanglef, width - width,
                   fore - fg, back - fg, steps - number of rects,
                   xb - x offset, yb - y offset
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void primSeriesOfRoundRects(rectangle *rect, uword width,
+void primSeriesOfRoundRects(rectanglef *rect, uword width,
                             color fore, color back, uword steps,
                             uword xb, uword yb)
 {
     // ignore width
-    rectangle drect;
+    rectanglef drect;
     real32 cfrac, frac;
     uword i;
     color Color;
@@ -869,7 +666,7 @@ void primSeriesOfRoundRects(rectangle *rect, uword width,
     steps++;
     frac = (real32)1.0;
     Color = fore;
-    memcpy(&drect, rect, sizeof(rectangle));
+    memcpy(&drect, rect, sizeof(rectanglef));
     for (i = 0; i < steps; i++)
     {
         decRect(&drect, 1);
@@ -886,11 +683,11 @@ void primSeriesOfRoundRects(rectangle *rect, uword width,
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
+void primCircleSolid2(real32 x, real32 y, real32 rad, sdword nSlices, color c)
 {
     sdword index;
-    GLfloat v[3];
-    double theta;
+    GLfloat v[2];
+    real32 theta;
     vector centre;
     real32 radiusX, radiusY;
     bool cull;
@@ -902,8 +699,7 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
     radiusX = primScreenToGLScaleX(rad);
     radiusY = primScreenToGLScaleY(rad);
 
-    glColor4ub(colRed(c), colGreen(c),
-               colBlue(c), colAlpha(c));
+    glColor4ub(colRed(c), colGreen(c), colBlue(c), colAlpha(c));
     v[0] = centre.x;
     v[1] = centre.y;
     glDisable(GL_CULL_FACE);
@@ -911,9 +707,9 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
     glVertex2f(v[0], v[1]);
     for (index = 0, theta = 0.0; index < nSlices; index++)
     {
-        v[0] = centre.x + (real32)(sin(theta)) * radiusX;
-        v[1] = centre.y + (real32)(cos(theta)) * radiusY;
-        theta += 2.0 * PI / (double)nSlices;
+        v[0] = centre.x + sinf(theta) * radiusX;
+        v[1] = centre.y + cosf(theta) * radiusY;
+        theta += 2.0f * PI / (real32)nSlices;
         glVertex2f(v[0], v[1]);
     }
     v[0] = centre.x;
@@ -939,7 +735,7 @@ void primCircleSolid2(sdword x, sdword y, sdword rad, sdword nSlices, color c)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdword nSlices, color colInner)
+void primCircleBorder(real32 x, real32 y, real32 radInner, real32 radOuter, sdword nSlices, color colInner)
 {
     sdword index;
     real32 centreX, centreY;
@@ -999,103 +795,41 @@ void primCircleBorder(sdword x, sdword y, sdword radInner, sdword radOuter, sdwo
     glShadeModel(GL_FLAT);
 }
 
-/*-----------------------------------------------------------------------------
-    Name        : primBlurryPoint2
-    Description : Renders a 2D blurry dot in a specified color.
-    Inputs      : x, y - location of the point on-screen
-                  c - color to draw it in
-    Outputs     :
-    Return      : void
-----------------------------------------------------------------------------*/
-#define PD1_FuzzyPointYStart     -1
-#define PD1_FuzzyPointYEnd       2
-#define PD1_FuzzyPointXStart     -1
-#define PD1_FuzzyPointXEnd       2
-#define PD1_FuzzyPointHeight     4
-#define PD1_FuzzyPointWidth      4
 
-#define PD2_FuzzyPointYStart     -2
-#define PD2_FuzzyPointYEnd       3
-#define PD2_FuzzyPointXStart     -2
-#define PD2_FuzzyPointXEnd       3
-#define PD2_FuzzyPointHeight     6
-#define PD2_FuzzyPointWidth      6
-/*
-ubyte p2dAlphaArray[PD1_FuzzyPointWidth][PD1_FuzzyPointHeight] =
-{
-    {0x10, 0x20, 0x10},
-    {0x20, 0x3f, 0x20},
-    {0x10, 0x20, 0x10},
-};
-*/
-//1x1 pixel alpha'd out
-/*
-ubyte p2dAlphaArray1[PD1_FuzzyPointWidth][PD1_FuzzyPointHeight] =
-{
-    {0x07, 0x0e, 0x0e, 0x07},
-    {0x0e, 0x1d, 0x1d, 0x0e},
-    {0x0e, 0x1d, 0x1c, 0x0e},
-    {0x07, 0x0e, 0x0e, 0x07},
-};
-*/
-//1x1 pixel alpha'd out
-ubyte p2dAlphaArray1[PD1_FuzzyPointWidth][PD1_FuzzyPointHeight] =
-{
-    {(0x0e * 2), (0x1c * 2), (0x1c * 2), (0x0e * 2)},
-    {(0x1c * 2), (0x3a * 2), (0x3a * 2), (0x1c * 2)},
-    {(0x1c * 2), (0x3a * 2), (0x3a * 2), (0x1c * 2)},
-    {(0x0e * 2), (0x1c * 2), (0x1c * 2), (0x0e * 2)},
-};
-//2x2 pixel alpha'd out
-ubyte p2dAlphaArray2[PD2_FuzzyPointWidth][PD2_FuzzyPointHeight] =
-{
-    {(0x04 * 2), (0x09 * 2), (0x13 * 2), (0x13 * 2), (0x09 * 2), (0x04 * 2)},
-    {(0x0a * 2), (0x1a * 2), (0x2d * 2), (0x2d * 2), (0x1a * 2), (0x0a * 2)},
-    {(0x13 * 2), (0x2d * 2), (0x4f * 2), (0x4f * 2), (0x2d * 2), (0x13 * 2)},
-    {(0x13 * 2), (0x2d * 2), (0x4f * 2), (0x4f * 2), (0x2d * 2), (0x13 * 2)},
-    {(0x0a * 2), (0x1a * 2), (0x2d * 2), (0x2d * 2), (0x1a * 2), (0x0a * 2)},
-    {(0x04 * 2), (0x09 * 2), (0x13 * 2), (0x13 * 2), (0x09 * 2), (0x04 * 2)}
-};
-void primBlurryPoint2(sdword x, sdword y, color c)
-{
-    sdword iX, iY;
-    ubyte *alpha, red = colRed(c), green = colGreen(c), blue = colBlue(c);
 
-    glEnable(GL_BLEND);
-    glBegin(GL_POINTS);
-    alpha = &p2dAlphaArray1[0][0];
-    for (iY = PD1_FuzzyPointYStart; iY <= PD1_FuzzyPointYEnd; iY++)
-    {
-        for (iX = PD1_FuzzyPointXStart; iX <= PD1_FuzzyPointXEnd; iX++, alpha++)
-        {
-            glColor4ub(red, green, blue, *alpha);
-            glVertex2f(primScreenToGLX((x + iX)), primScreenToGLY((y + iY)));
-        }
-    }
-    glEnd();
-    glColor4ub(0, 0, 0, 0xff);
-    glDisable(GL_BLEND);
+
+void primRectiSolid2(rectanglei *rect, color c) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primRectSolid2( &rectf, c );
 }
-void primBlurryPoint22(sdword x, sdword y, color c)
-{
-    sdword iX, iY;
-    ubyte *alpha, red = colRed(c), green = colGreen(c), blue = colBlue(c);
 
-    glEnable(GL_BLEND);
-    glBegin(GL_POINTS);
-    alpha = &p2dAlphaArray2[0][0];
-    for (iY = PD2_FuzzyPointYStart; iY <= PD2_FuzzyPointYEnd; iY++)
-    {
-        for (iX = PD2_FuzzyPointXStart; iX <= PD2_FuzzyPointXEnd; iX++, alpha++)
-        {
-            glColor4ub(red, green, blue, *alpha);
-            glVertex2f(primScreenToGLX((x + iX)), primScreenToGLY((y + iY)));
-        }
-    }
-    glEnd();
-    glColor4ub(0, 0, 0, 0xff);
-    glDisable(GL_BLEND);
+void primRectiTranslucent2(rectanglei *rect, color c) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primRectTranslucent2( &rectf, c );
 }
+
+void primBeveledRectiSolid(rectanglei *rect, color c, uword xb, uword yb) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primBeveledRectSolid( &rectf, c, xb, yb );
+}
+
+void primRectiOutline2(rectanglei *rect, real32 thickness, color c) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primRectOutline2( &rectf, thickness, c );
+}
+
+void primRectiShaded2(rectanglei *rect, color *c) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primRectShaded2( &rectf, c );
+}
+
+void primRectiSolidTextured2(rectanglei *rect, color c) {
+    rectanglef rectf = rectToFloatRect( rect );
+    primRectSolidTextured2( &rectf, c );
+}
+
+
+
 
 /*-----------------------------------------------------------------------------
     Name        : primPointLineIntersection
@@ -1110,3 +844,27 @@ real32 primPointLineIntersection(real32 xp, real32 yp, real32 x0, real32 y0, rea
     return((y0 - y1) * xp + (x1 - x0) * yp + (x0 * y1 - y0 * x1));
 }
 
+rectanglei rectToIntRect( rectanglef* rect ) {
+    return (rectanglei) {
+        (sdword) rect->x0,
+        (sdword) rect->y0,
+        (sdword) rect->x1,
+        (sdword) rect->y1
+    };
+}
+
+rectanglef rectToFloatRect( rectanglei* rect ) {
+    return (rectanglef) {
+        (real32) rect->x0,
+        (real32) rect->y0,
+        (real32) rect->x1,
+        (real32) rect->y1
+    };
+}
+
+void scissorClearDepthInRect( rectanglei* rect ) {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor( rect->x0, MAIN_WindowHeight-rect->y1, rect->x1-rect->x0, rect->y1-rect->y0 );
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_SCISSOR_TEST);
+}

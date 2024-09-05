@@ -2094,15 +2094,15 @@ void uicScrollBarButtonDraw(regionhandle reg)
         ferDrawScrollbarButton(reg, sdb_off);
 }
 
-void uicListItemSelectedDraw(rectangle* rect)
+void uicListItemSelectedDraw(rectanglei* rect)
 {
-    rectangle r = *rect;
+    rectanglei r = *rect;
 
     r.x0 -= 2;
     r.x1++;
     r.y1--;
-    primRectTranslucent2(&r, FEC_ListItemTranslucent);
-    primRectOutline2(&r, 1, FEC_ListItemTranslucentBorder);
+    primRectiTranslucent2(&r, FEC_ListItemTranslucent);
+    primRectiOutline2(&r, 1, FEC_ListItemTranslucentBorder);
 }
 
 /*-----------------------------------------------------------------------------
@@ -2116,7 +2116,7 @@ void uicListWindowDraw(regionhandle reg)
 {
     listwindowhandle    listhandle;
     listitemhandle      item;
-    rectangle           rect=reg->rect; //, erase;
+    rectanglei          rect=reg->rect; //, erase;
     Node               *walk;
     sdword              count=0;
 
@@ -2147,14 +2147,14 @@ void uicListWindowDraw(regionhandle reg)
     rect.x1-=uicListWindowMargin;
     rect.y1-=uicListWindowMargin;
 
-    primRectSolid2(&reg->rect, FEC_Background);
+    primRectiSolid2(&reg->rect, FEC_Background);
 
     if (bitTest(reg->status,RSF_CurrentSelected))
         ferDrawFocusWindow(reg, lw_focus);
     else
         ferDrawFocusWindow(reg, lw_normal);
 
-    primRectSolid2(&rect, FEC_Background);
+    primRectiSolid2(&rect, FEC_Background);
 
     rect.y1 = rect.y0+listhandle->TitleHeight;
 
@@ -2175,7 +2175,7 @@ void uicListWindowDraw(regionhandle reg)
     {
         item = (listitemhandle)listGetStructOfNode(walk);
         dbgAssertOrIgnore(listhandle->itemdraw!=NULL);
-        listhandle->itemdraw((rectangle *)&rect, item);
+        listhandle->itemdraw((rectanglei *)&rect, item);
 
         if (bitTest(item->flags, UICLI_Selected))
         {
@@ -4122,7 +4122,7 @@ void uicTextEntryDraw(regionhandle reg)
         }
         else*/
         {                                               //draw a small rectangle instead of a pipe
-            primLine2(caretLocation-1, y+2,
+            primLinei2(caretLocation-1, y+2,
                       caretLocation-1, y + fontHeight(" "), entry->borderColor);
         }
 //        }
@@ -4298,7 +4298,7 @@ buttonhandle uicChildButtonAlloc(controlhandle parent, smemsize ID, sdword x, sd
 /*
  * convenient
  */
-void setRect(rectangle *rect, rectangle* ofs,
+void setRect(rectanglei *rect, rectanglei* ofs,
              uword x0, uword x1, uword y0, uword y1)
 {
     rect->x0 = ofs->x0 + x0;
@@ -4397,7 +4397,7 @@ listwindowhandle uicChildListWindowAlloc(controlhandle parent, smemsize ID,
 {
     featom *atom = (featom *)ID;
     listwindowhandle newHandle;
-    rectangle prect;
+    rectanglei prect;
 
     newHandle = (listwindowhandle)regChildAlloc((regionhandle)parent, ID,
                  x, y, width, height, uicStructureExtra(uiclistwindow),

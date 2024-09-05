@@ -171,7 +171,7 @@ FontShadowType fontShadowGet(void);
 
 //printing fonts
 sdword fontPrintCentre(sdword y, color c, char *string);
-sdword fontPrintCentreCentreRectangle(rectangle *rect, color c, char *string);
+sdword fontPrintCentreCentreRectangle(rectanglei *rect, color c, char *string);
 sdword fontPrint(sdword x, sdword y, color c, char *string);
 sdword fontPrintN(sdword x, sdword y, color c, char *string, sdword maxCharacters);
 sdword fontPrintf(sdword x, sdword y, color c, char *format, ...);

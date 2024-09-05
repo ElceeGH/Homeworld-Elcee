@@ -139,7 +139,7 @@ void mrTransferRUS(char *string, featom *atom);
 void mrCameraMotion(void);
 void mrPlayerNameDraw(sdword playerIndex, sdword x, sdword y);
 void mrCommandMessageDraw(void);
-void mrSelectRectBuild(rectangle *dest, sdword anchorX, sdword anchorY);
+void mrSelectRectBuild(rectanglei *dest, sdword anchorX, sdword anchorY);
 sdword mrCursorText(SpaceObj *cursorobj);
 void mrEnable(void);
 void mrDisable(void);

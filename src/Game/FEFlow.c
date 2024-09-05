@@ -746,7 +746,7 @@ void feStaticRectangleDraw(regionhandle region)
 
     if (bitTest(atom->flags, FAF_ContentsVisible))
     {
-        primRectSolid2(&region->rect, atom->contentColor);  //draw rectangle insides
+        primRectiSolid2(&region->rect, atom->contentColor);  //draw rectangle insides
     }
 
     if (bitTest(atom->flags, FAF_BorderVisible))
@@ -801,7 +801,7 @@ void feBaseRegionDraw(regionhandle region)
 //    primRectOutline2(&region->rect, 3, atom->borderColor);
     if (bitTest(atom->flags, FAF_ContentsVisible))
     {
-        primBeveledRectSolid(&region->rect, atom->contentColor, 2, 2);
+        primBeveledRectiSolid(&region->rect, atom->contentColor, 2, 2);
     }
 
 
@@ -2327,7 +2327,7 @@ void feDividerDraw(regionhandle region)
     dbgAssertOrIgnore(atom->type == FA_Divider);                    //verify correct type
 #endif
     y = (region->rect.y0 + region->rect.y1) / 2;
-    primLine2(region->rect.x0, y, region->rect.x1, y, atom->borderColor);
+    primLinei2(region->rect.x0, y, region->rect.x1, y, atom->borderColor);
 }
 
 /*-----------------------------------------------------------------------------

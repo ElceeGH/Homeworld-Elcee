@@ -859,7 +859,7 @@ fonthandle fontCurrentGet(void)
     Outputs     :
     Return      : OKAY
 ----------------------------------------------------------------------------*/
-sdword fontPrintCentreCentreRectangle(rectangle *rect, color c, char *string)
+sdword fontPrintCentreCentreRectangle(rectanglei *rect, color c, char *string)
 {
     sdword x;
     sdword width = fontWidth(string);

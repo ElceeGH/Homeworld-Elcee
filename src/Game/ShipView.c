@@ -232,7 +232,7 @@ void svClose(void)
 ----------------------------------------------------------------------------*/
 sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword data)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
 
     switch(event)
     {
@@ -301,9 +301,9 @@ sdword svReadMouseEvent(regionhandle region, sdword ID, udword event, udword dat
 ----------------------------------------------------------------------------*/
 void svShipViewRender(featom* atom, regionhandle region)
 {
-    rectangle drawRect;
-    rectangle* rect;
-    rectangle viewRect;
+    rectanglei drawRect;
+    rectanglei* rect;
+    rectanglei viewRect;
     fonthandle currentFont;
     GLint viewPort[4];
     GLint box[4];
@@ -450,7 +450,7 @@ void svShipViewRender(featom* atom, regionhandle region)
     primModeSet2();
     if (!resetRender)
     {
-        primRectSolid2(&viewRect, FEC_Background);
+        primRectiSolid2(&viewRect, FEC_Background);
     }
     primModeClear2();
 
@@ -582,7 +582,7 @@ void svShipViewRender(featom* atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svFirepowerRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     fonthandle currentFont;
     uword firepower;
     char buftemp[50];
@@ -648,7 +648,7 @@ void svFirepowerRender(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svCoverageRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     sdword width;
     fonthandle currentFont;
     char buftemp[50];
@@ -711,7 +711,7 @@ void svCoverageRender(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svManeuverRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     fonthandle currentFont;
     char maneuverability[100] = "";
     ShipStaticInfo *info = GetShipStaticInfoSafe(svShipType, universe.curPlayerPtr->race);
@@ -760,7 +760,7 @@ void svManeuverRender(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svArmorRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     sdword width;
     char buftemp[50];
 
@@ -815,7 +815,7 @@ void svArmorRender(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svTopSpeedRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     fonthandle currentFont;
     char buftemp[50];
 
@@ -877,7 +877,7 @@ void svTopSpeedRender(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void svMassRender(featom *atom, regionhandle region)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     fonthandle currentFont;
     sdword width;
     char buftemp[50];

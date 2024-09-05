@@ -26,6 +26,7 @@
 #include "Memory.h"
 #include "mouse.h"
 #include "MultiplayerGame.h"
+#include "prim2d.h"
 #include "rinit.h"
 #include "Sensors.h"
 #include "Shader.h"
@@ -614,7 +615,7 @@ udword opSelectKey(regionhandle region, sdword ID, udword event, udword data);
 void opKeyboardDraw(featom *atom, regionhandle region)
 {
     sdword x, y, i;
-    rectangle rect = region->rect, select;
+    rectanglei rect = region->rect, select;
     color c;
     fonthandle currentFont;
     bool hl = FALSE;
@@ -641,7 +642,7 @@ void opKeyboardDraw(featom *atom, regionhandle region)
 
     //rect.x1 -= CM_ProgressMarginRight;
 
-    primRectSolid2(&rect, colRGB(0, 0, 0));
+    primRectiSolid2(&rect, colRGB(0, 0, 0));
 
     y = region->rect.y0 + OP_KBMarginTop;
     x = region->rect.x0 + OP_KBMarginLeft;
@@ -664,8 +665,8 @@ void opKeyboardDraw(featom *atom, regionhandle region)
             select.x1 = x + OP_KBBoxwidth;
             select.y1 = y - OP_BoxSpacingY + OP_KeyVertSpacing;
 
-            primRectTranslucent2(&select, FEC_ListItemTranslucent);
-            primRectOutline2(&select, 1, FEC_ListItemTranslucentBorder);
+            primRectiTranslucent2(&select, FEC_ListItemTranslucent);
+            primRectiOutline2(&select, 1, FEC_ListItemTranslucentBorder);
         }
 
         if (i == opKeyBeingDefined)
@@ -1962,7 +1963,7 @@ void opDrawNumChannels(featom *atom, regionhandle region)
 
     currentFont = fontMakeCurrent(opKeyboardFont);
 
-    primRectSolid2(&region->rect, colBlack);
+    primRectiSolid2(&region->rect, colBlack);
 
     soundGetVoiceLimits(&min, &max);
 
@@ -2413,7 +2414,7 @@ void opCustomEffects(char* name, featom* atom)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void opResItemDraw(rectangle* rect, listitemhandle data)
+void opResItemDraw(rectanglei* rect, listitemhandle data)
 {
     char temp[64];
     sdword x, y;
@@ -2603,7 +2604,7 @@ void opResolution(char* name, featom* atom)
     }
 }
 
-void opSqueezeString(char* buf, rectangle* rect, sdword offset)
+void opSqueezeString(char* buf, rectanglei* rect, sdword offset)
 {
     sdword width;
 
@@ -2628,7 +2629,7 @@ void opSqueezeString(char* buf, rectangle* rect, sdword offset)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void opRenderItemDraw(rectangle* rect, listitemhandle data)
+void opRenderItemDraw(rectanglei* rect, listitemhandle data)
 {
     char temp[128];
     sdword x, y;
@@ -3542,13 +3543,8 @@ void opNoPalIncrease(featom* atom, regionhandle region)
 
 void opBlackRect(sdword x, sdword y, char* str)
 {
-    rectangle rect;
-
-    rect.x0 = x;
-    rect.y0 = y;
-    rect.x1 = x + fontWidth(str);
-    rect.y1 = y + fontHeight(str);
-    primRectSolid2(&rect, colBlack);
+    rectanglei rect = { x, y, x+fontWidth(str), y+fontHeight(str) };
+    primRectiSolid2(&rect, colBlack);
 }
 
 void opNoPalDraw(featom* atom, regionhandle region)
@@ -3558,7 +3554,7 @@ void opNoPalDraw(featom* atom, regionhandle region)
     color c;
     extern fonthandle ghDefaultFont;
 
-    primRectSolid2(&region->rect, colBlack);
+    primRectiSolid2(&region->rect, colBlack);
     oldfont = fontMakeCurrent(ghDefaultFont);
 
     sprintf(buf, "%dMB", opNoPalMB);

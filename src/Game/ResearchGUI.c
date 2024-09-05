@@ -721,13 +721,12 @@ void rmCloseIfOpen()
 void rmMarqueePulse(LabPrintList *labprint, regionhandle region)
 {
     sdword count, index;
-    sdword x, y;
-    rectangle *rect = &region->rect;
-    primLine2(rect->x0, rect->y0, rect->x1, rect->y0, rmStandardTextColor);
-    primLine2(rect->x0, rect->y1, rect->x1, rect->y1, rmStandardTextColor);
+    rectanglei *rect = &region->rect;
+    primLinei2(rect->x0, rect->y0, rect->x1, rect->y0, rmStandardTextColor);
+    primLinei2(rect->x0, rect->y1, rect->x1, rect->y1, rmStandardTextColor);
 
-    x = rect->x0 + RM_MARQUEESPACE;
-    y = rect->y0 + ((rect->y1 - rect->y0) >> 1);
+    real32 x = (real32)(rect->x0 + RM_MARQUEESPACE);
+    real32 y = (real32)(rect->y0 + ((rect->y1 - rect->y0) >> 1));
 
     if ((labprint->selected) && (labprint->lab->labstatus==LS_RESEARCHITEM))
     {
@@ -771,7 +770,7 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
 {
     color progressColor[4]; // Shaded values
     ferfocuswindowstate state;
-    rectangle rect, progressRect;
+    rectanglei rect, progressRect;
     real32 percent, width;
     sdword pos;
     PlayerResearchInfo *research = &universe.curPlayerPtr->researchinfo;
@@ -796,14 +795,14 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
     switch (labprint->lab->labstatus)
     {
     case LS_NORESEARCHSHIP :
-        primRectSolid2(&rect, colRGB(0, 0, 0));                    // clear area
-        primRectOutline2(&progressRect, 1, rmNoResearchItemColor); // draw empty progress bar
+        primRectiSolid2(&rect, colRGB(0, 0, 0));                    // clear area
+        primRectiOutline2(&progressRect, 1, rmNoResearchItemColor); // draw empty progress bar
         break;
 
     default:
     case LS_NORESEARCHITEM :
-        primRectSolid2(&rect, colRGB(0, 0, 0));                // clear area
-        primRectOutline2(&progressRect, 1, colRGB(255, 0, 0)); // draw empty active progress bar
+        primRectiSolid2(&rect, colRGB(0, 0, 0));                // clear area
+        primRectiOutline2(&progressRect, 1, colRGB(255, 0, 0)); // draw empty active progress bar
 
         rect.x0 += 5;
         rect.x1 -= 5;
@@ -818,11 +817,11 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
             trRGBTextureMakeCurrent(rmLabTexture[universe.curPlayerPtr->race]);
         }
 
-        primRectSolidTextured2(&rect);
+        primRectiSolidTextured2(&rect,colWhite);
         break;
 
     case LS_RESEARCHITEM :
-        primRectOutline2(&progressRect, 1, colRGB(255, 0, 0));
+        primRectiOutline2(&progressRect, 1, colRGB(255, 0, 0));
 
         rect.x0 += 5;
         rect.x1 -= 5;
@@ -837,7 +836,7 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
             trRGBTextureMakeCurrent(rmLabTexture[universe.curPlayerPtr->race]);
         }
 
-        primRectSolidTextured2(&rect);
+        primRectiSolidTextured2(&rect,colWhite);
         
         // compute progress bar length
         percent = (real32)((1.0 - (real32)labprint->lab->topic->timeleft/(real32)research->techstat->TimeToComplete[labprint->lab->topic->techresearch]));
@@ -853,7 +852,7 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
             pos = ((progressRect.x1 - progressRect.x0) * labprint->pulsepos) >> 16;
             pos = progressRect.x0 + pos;
 
-            primLine2(pos, progressRect.y0 + 1, pos, progressRect.y1 - 1, 0);
+            primLinei2(pos, progressRect.y0 + 1, pos, progressRect.y1 - 1, 0);
 
             if (labprint->pulsepos > FIXED16_ONE)
             {
@@ -867,7 +866,7 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
             pos = ((progressRect.x1 - progressRect.x0) * labprint->pulsepos) >> 16;
             pos = progressRect.x0 + pos;
 
-            primLine2(pos, progressRect.y0 + 1, pos, progressRect.y1 - 1, PULSE_COLOR);
+            primLinei2(pos, progressRect.y0 + 1, pos, progressRect.y1 - 1, PULSE_COLOR);
         }
 
         width = ((real32)(progressRect.x1 - progressRect.x0)) * percent;
@@ -878,12 +877,12 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
         progressColor[2] = rmProgressDoneColor1;
         progressColor[3] = rmProgressDoneColor1;
 
-        primRectShaded2(&progressRect, progressColor);
+        primRectiShaded2(&progressRect, progressColor);
 
         break;
         case LS_RESEARCHITEMSOON :
-            primRectSolid2(&rect, colRGB(0, 0, 0));                // clear area
-            primRectOutline2(&progressRect, 1, colRGB(255, 0, 0)); // draw empty active progress bar
+            primRectiSolid2(&rect, colRGB(0, 0, 0));                // clear area
+            primRectiOutline2(&progressRect, 1, colRGB(255, 0, 0)); // draw empty active progress bar
 
             rect.x0 += 5;
             rect.x1 -= 5;
@@ -898,7 +897,7 @@ void rmDrawLabButton(LabPrintList *labprint, regionhandle region)
                 trRGBTextureMakeCurrent(rmLabTexture[universe.curPlayerPtr->race]);
             }
 
-            primRectSolidTextured2(&rect);
+            primRectiSolidTextured2(&rect, colWhite);
             break;
 
     }
@@ -1567,7 +1566,7 @@ void rmTechBriefDraw(featom *atom, regionhandle region)
 {
     fonthandle  currentFont;
     sdword      x,y;
-    rectangle   rect;
+    rectanglei  rect;
     //char       *pos, *oldpos;
     //char        oldline[100], line[100];
     //char        stringtoprint[650];
@@ -1581,10 +1580,9 @@ void rmTechBriefDraw(featom *atom, regionhandle region)
     rect.y0 += 2;
     rect.x1 -= 2;
     rect.y1 -= 2;
-    primRectSolid2(&rect, atom->contentColor);
+    primRectiSolid2(&rect, atom->contentColor);
 
     currentFont = fontMakeCurrent(rmTechListFont);
-    //currentFont = fontMakeCurrent(rmTechInfoFont);
 
     x = region->rect.x0 + 15;
     y = region->rect.y0 + 5;
@@ -1592,67 +1590,6 @@ void rmTechBriefDraw(featom *atom, regionhandle region)
     if (techinfo != -1)
     {
         fontPrintf(x,y,FEC_ListItemStandard/*rmResearchingTextColor*/,"%s",TechTypeToNiceString(techinfo));
-
-        /*
-        y += RM_VertSpacing + fontHeight(" ");
-
-        //fontMakeCurrent(rmTechInfoFont);
-
-        if (universe.curPlayerPtr->race==R1)
-        {
-            dbgAssertOrIgnore(strGetString(techinfo+strTechInfoOffsetR1)!=NULL);
-            strcpy(stringtoprint,strGetString(techinfo+strTechInfoOffsetR1));
-        }
-        else
-        {
-            dbgAssertOrIgnore(strGetString(techinfo+strTechInfoOffsetR2)!=NULL);
-            strcpy(stringtoprint,strGetString(techinfo+strTechInfoOffsetR2));
-        }
-
-        getShipBuild(stringtoprint);
-
-        pos = stringtoprint;
-
-        done = FALSE;
-        while (!done)
-        {
-            justified = FALSE;
-            line[0]=0;
-            while (!justified)
-            {
-                strcpy(oldline, line);
-                oldpos = pos;
-                pos = getWord(line, pos);
-
-                if (pos[0] == '\n')
-                {
-                    justified = TRUE;
-                    pos++;
-                    while ( pos[0] == ' ' ) pos++;
-                }
-                else
-                {
-                    if ( (width=fontWidth(line)) > RM_InfoWidth - 15)
-                    {
-                        strcpy(line, oldline);
-                        pos = oldpos;
-                        while ( pos[0] == ' ' ) pos++;
-
-                        justified = TRUE;
-                    }
-                    if (pos[0]==0)
-                    {
-                        justified = TRUE;
-                        done      = TRUE;
-                    }
-                }
-            }
-
-            fontPrintf(x,y,rmStandardTextColor,"%s",line);
-            y += fontHeight(" ");
-            if (y > region->rect.y1 + fontHeight(" ")) done=TRUE;
-        }
-        */
     }
 
     fontMakeCurrent(currentFont);
@@ -1667,10 +1604,10 @@ void rmTechBriefDraw(featom *atom, regionhandle region)
 ----------------------------------------------------------------------------*/
 void rmTechImageDraw(featom *atom, regionhandle region)
 {
-    char      filename[128];
-    sdword    index, lru = 0;
-    real32    time=(real32)1.0e22;
-    rectangle textureRect;
+    char       filename[128];
+    sdword     index, lru = 0;
+    real32     time=(real32)1.0e22;
+    rectanglei textureRect;
 
     rmTechImageRegion = region;
 
@@ -1703,11 +1640,11 @@ void rmTechImageDraw(featom *atom, regionhandle region)
                     textureRect.x1 = region->rect.x1-RM_TEXTURE_INSET;
                     textureRect.y1 = region->rect.y1-RM_TEXTURE_INSET;
 
-                    primRectSolidTextured2(&textureRect);
+                    primRectiSolidTextured2(&textureRect,colWhite);
                     
                     if (rmExtendedInfoActive)
                     {
-                        primRectTranslucent2(&textureRect, colRGBA(0, 0, 0, 128));
+                        primRectiTranslucent2(&textureRect, colRGBA(0, 0, 0, 128));
                         rmTechInfoDraw(region);
                     }
                     return;
@@ -1753,11 +1690,11 @@ void rmTechImageDraw(featom *atom, regionhandle region)
         textureRect.x1 = region->rect.x1 - RM_TEXTURE_INSET;
         textureRect.y1 = region->rect.y1 - RM_TEXTURE_INSET;
 
-        primRectSolidTextured2(&textureRect);
+        primRectiSolidTextured2(&textureRect,colWhite);
         
         if (rmExtendedInfoActive)
         {
-            primRectTranslucent2(&textureRect, colRGBA(0, 0, 0, 128));
+            primRectiTranslucent2(&textureRect, colRGBA(0, 0, 0, 128));
             rmTechInfoDraw(region);
         }
     }
@@ -1778,10 +1715,11 @@ void rmConnectorDraw(featom *atom, regionhandle region)
 
     if (techinfo != -1)
     {
-        sdword centerX  = region->rect.x0 + ((region->rect.x1 - region->rect.x0) / 2);
+        rectanglef rectf = rectToFloatRect( &region->rect );
+        real32 centerX  = rectf.x0 + ((rectf.x1 - rectf.x0) / 2);
 
-        primLine2(centerX, region->rect.y0, centerX, region->rect.y1, colRGB(255, 0, 0));
-        primCircleSolid2(centerX, region->rect.y1, 3, 16, colRGB(255, 0, 0));
+        primLine2(centerX, rectf.y0, centerX, rectf.y1, colRGB(255, 0, 0));
+        primCircleSolid2(centerX, rectf.y1, 3, 16, colRGB(255, 0, 0));
     }
 }
 
@@ -1792,7 +1730,7 @@ void rmConnectorDraw(featom *atom, regionhandle region)
     Outputs     :
     Return      : void
 ----------------------------------------------------------------------------*/
-void rmDrawTechListItem(rectangle *rect, listitemhandle data)
+void rmDrawTechListItem(rectanglei *rect, listitemhandle data)
 {
     TechPrintList *techprint=(TechPrintList *)data->data;
     sdword              x, y;
@@ -1803,7 +1741,7 @@ void rmDrawTechListItem(rectangle *rect, listitemhandle data)
     TechnologyType      tech;
     char                temp[64];
     real32              percent;
-    rectangle           bar;
+    rectanglei          bar;
     fonthandle          oldfont;
     color               progressColor[4];
 
@@ -1837,7 +1775,7 @@ void rmDrawTechListItem(rectangle *rect, listitemhandle data)
                     bar.y0 = y/*-2*/;
                     bar.x1 = rect->x1-2;
                     bar.y1 = y+fontHeight(" ") + 2;
-                    primRectSolid2(&bar, rmProgressToGoColor);
+                    primRectiSolid2(&bar, rmProgressToGoColor);
                     bar.x1 -= (udword)((real32)( (rect->x1-2) - (x-2))*percent);
 
                     progressColor[0] = rmProgressDoneColor0;
@@ -1845,7 +1783,7 @@ void rmDrawTechListItem(rectangle *rect, listitemhandle data)
                     progressColor[2] = rmProgressDoneColor1;
                     progressColor[3] = rmProgressDoneColor1;
 
-                    primRectShaded2(&bar, progressColor);
+                    primRectiShaded2(&bar, progressColor);
 
 #ifdef DEBUG_STOMP
                     regVerify((regionhandle)&rmTechListWindowHandle->reg);
@@ -1857,7 +1795,7 @@ void rmDrawTechListItem(rectangle *rect, listitemhandle data)
             case STAT_ALREADYHAVE :
                 x += RM_HorzSpacing<<2;
                 c = FEC_ListItemInactive;//rmStandardTextColor;
-                primCircleSolid2(x-7,y+5,3,20,rmResearchingTextColor);
+                primCircleSolid2((real32)x-7,(real32)y+5,3,20,rmResearchingTextColor);
             break;
         }
         if (bitTest(data->flags,UICLI_Selected))

@@ -483,7 +483,7 @@ static bool useDrawTex = FALSE;
 
 //register a font
 lifheader *ferTextureRegister(tex_holder holder, textype newtype, textype origtype);
-void ferDrawBox(rectangle dimensions, tex_holder outerCornerName, tex_holder innerCornerName,
+void ferDrawBox(rectanglei dimensions, tex_holder outerCornerName, tex_holder innerCornerName,
                 tex_holder sideName, udword kludgyflag);
 
 
@@ -579,11 +579,11 @@ bool ferFindCutoutType(textype cuts[NUM_CUTS], textype find)
     Outputs     :
     Return      : rectangle defining the dimensions of the cutout
 ----------------------------------------------------------------------------*/
-rectangle ferGetCutoutDimensions(textype cutout)
+rectanglei ferGetCutoutDimensions(textype cutout)
 {
     Node *node = globalCutouts->head;
     cutouttype *element;
-    rectangle bad_rect = {-1, -1, -1, -1};
+    rectanglei bad_rect = {-1, -1, -1, -1};
 
     while (node != NULL)
     {
@@ -1289,7 +1289,7 @@ void ferDrawBoxLine(sdword x0, sdword y0, sdword x1, sdword y1, sdword corner_of
     Outputs     : draws 4 corner bitmaps in the corners of the rectangles
     Return      : size of the corner bitmaps to aid in drawing the lines
 ----------------------------------------------------------------------------*/
-udword ferDrawBoxCorners(rectangle dimensions, tex_holder cornerName, textype cuts[NUM_CUTS])
+udword ferDrawBoxCorners(rectanglei dimensions, tex_holder cornerName, textype cuts[NUM_CUTS])
 {
     lifheader *texture;
 
@@ -1336,11 +1336,11 @@ udword ferDrawBoxCorners(rectangle dimensions, tex_holder cornerName, textype cu
 ----------------------------------------------------------------------------*/
 #define LINE_ENDPOINTS endpoints.x0, endpoints.y0, endpoints.x1, endpoints.y1
 
-void ferDrawBoxSides(rectangle dimensions, tex_holder sideName, udword corner_width,
+void ferDrawBoxSides(rectanglei dimensions, tex_holder sideName, udword corner_width,
                      textype cuts[NUM_CUTS], udword kludgyflag)
 {
     lifheader *texture;
-    rectangle endpoints, cutout;
+    rectanglei endpoints, cutout;
 
 //    corner_width /= 2;
 
@@ -1467,7 +1467,7 @@ void ferDrawBoxSides(rectangle dimensions, tex_holder sideName, udword corner_wi
     Outputs     : draws the corners and lines that make up a cutout
     Return      : the texture type that was cut out (left, top, topleft, bottomright, etc.)
 ----------------------------------------------------------------------------*/
-textype ferDrawCutout(rectangle dimensions, rectangle cutDimensions,
+textype ferDrawCutout(rectanglei dimensions, rectanglei cutDimensions,
                       tex_holder outerCornerName, tex_holder innerCornerName,
                       tex_holder sideName, udword kludgyflag)
 {
@@ -1730,7 +1730,7 @@ textype ferDrawCutout(rectangle dimensions, rectangle cutDimensions,
     Outputs     : calls the functions to draw the corners and lines of the box
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawBox(rectangle dimensions, tex_holder outerCornerName, tex_holder innerCornerName,
+void ferDrawBox(rectanglei dimensions, tex_holder outerCornerName, tex_holder innerCornerName,
                 tex_holder sideName, udword kludgyflag)
 {
     bool primModeOn = TRUE;
@@ -1798,7 +1798,7 @@ void ferDrawBox(rectangle dimensions, tex_holder outerCornerName, tex_holder inn
     Outputs     : calls ferDrawBox to draw the base region
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawBoxRegion(rectangle dimensions, drawtype textures,
+void ferDrawBoxRegion(rectanglei dimensions, drawtype textures,
                        drawtype glow, LinkedList *cutouts, bool bUseAlpha)
 {
     tex_holder  outerCorner = BOX_OUTER_CORNER,
@@ -2014,7 +2014,7 @@ void ferDrawLine(sdword x0, sdword y0, sdword x1, sdword y1,
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawMenuItemSelected(rectangle *rect)
+void ferDrawMenuItemSelected(rectanglei *rect)
 {
     lifheader *texture;
     udword end_width;
@@ -2040,7 +2040,7 @@ void ferDrawMenuItemSelected(rectangle *rect)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawPopoutArrow(rectangle *rect)
+void ferDrawPopoutArrow(rectanglei *rect)
 {
     lifheader *texture;
 
@@ -2055,7 +2055,7 @@ void ferDrawPopoutArrow(rectangle *rect)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawSelectedDot(rectangle *rect)
+void ferDrawSelectedDot(rectanglei *rect)
 {
     lifheader *texture;
 
@@ -2071,7 +2071,7 @@ void ferDrawSelectedDot(rectangle *rect)
     Outputs     : draws a button on the screen
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawButton(rectangle dimensions, ferbuttonstate state)
+void ferDrawButton(rectanglei dimensions, ferbuttonstate state)
 {
     lifheader *texture;
     udword end_width;
@@ -2227,7 +2227,7 @@ void ferDrawButton(rectangle dimensions, ferbuttonstate state)
     Outputs     : draws uh buh-ton on da skreen
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawCheckbox(rectangle dimensions, ferbuttonstate state)
+void ferDrawCheckbox(rectanglei dimensions, ferbuttonstate state)
 {
     lifheader *texture = NULL;
     uword x,y;
@@ -2286,7 +2286,7 @@ void ferDrawCheckbox(rectangle dimensions, ferbuttonstate state)
     Outputs     : draws uh buh-ton on da skreen - note that the radio is *not* included
     Return      :
 ----------------------------------------------------------------------------*/
-void ferDrawRadioButton(rectangle dimensions, ferbuttonstate state)
+void ferDrawRadioButton(rectanglei dimensions, ferbuttonstate state)
 {
     lifheader *texture = NULL;
 
@@ -2661,7 +2661,7 @@ void ferDrawScrollbarButton(regionhandle region, ferscrollbarbuttonstate state)
 ----------------------------------------------------------------------------*/
 void ferDrawFocusWindow(regionhandle region, ferfocuswindowstate state)
 {
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     tex_holder nw_corner  = UNINITIALIZED_TEX_HOLDER,
                n_straight = UNINITIALIZED_TEX_HOLDER,
                ne_corner  = UNINITIALIZED_TEX_HOLDER,

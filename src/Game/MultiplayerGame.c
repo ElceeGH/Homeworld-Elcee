@@ -2486,7 +2486,7 @@ void mgChangeColors(char *name, featom *atom)
     mgShowScreen(MGS_Player_Options,TRUE);
 }
 
-void mgDrawChatWindowItem(rectangle *rect, listitemhandle data)
+void mgDrawChatWindowItem(rectanglei *rect, listitemhandle data)
 {
     char   temp[512];
     sdword x = rect->x0 + MG_HorzSpacing,
@@ -2591,7 +2591,7 @@ void mgChatWindowInit(char *name, featom *atom)
     }
 }
 
-void mgDrawUserNameWindowItem(rectangle *rect, listitemhandle data)
+void mgDrawUserNameWindowItem(rectanglei *rect, listitemhandle data)
 {
     char            temp[512];
     sdword          x, y;
@@ -2747,7 +2747,7 @@ void mgBackToChannelChat(char*name,featom *atom)
 }
 
 
-void mgDrawListOfChannelsTitle(rectangle *rect)
+void mgDrawListOfChannelsTitle(rectanglei *rect)
 {
     sdword          x, y;
     fonthandle      oldfont;
@@ -2774,7 +2774,7 @@ void mgDrawListOfChannelsTitle(rectangle *rect)
     fontMakeCurrent(oldfont);
 }
 
-void mgDrawListOfChannelsItem(rectangle *rect, listitemhandle data)
+void mgDrawListOfChannelsItem(rectanglei *rect, listitemhandle data)
 {
     char            temp[512];
     sdword          x, y;
@@ -3373,25 +3373,27 @@ void mgListOfGamesTitleClick(struct tagRegion *reg, sdword xClicked)
 void mgDrawTriangle(sdword x, color col)
 {
     triangle tri;
+    real32 xr    = (real32) x;
+    real32 yoffs = (real32)(mgListOfGamesWindow->reg.rect.y0 + MG_VertSpacing + 4);
 
     if (!mgListOfGamesWindow->sortOrder)
     {
-        tri.x0 = -4 + x; tri.y0 = 4 + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x1 = 4  + x; tri.y1 = 4 + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x2 = 0  + x; tri.y2 = -4  + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
+        tri.x0 = -4 + xr;  tri.y0 =  4 + yoffs;
+        tri.x1 =  4 + xr;  tri.y1 =  4 + yoffs;
+        tri.x2 =  0 + xr;  tri.y2 = -4 + yoffs;
     }
     else
     {
-        tri.x0 = -4 + x; tri.y0 = -4  + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x1 = 0  + x; tri.y1 = 4 + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x2 = 4  + x; tri.y2 = -4  + mgListOfGamesWindow->reg.rect.y0+MG_VertSpacing+4;
+        tri.x0 = -4 + xr;  tri.y0 = -4 + yoffs;
+        tri.x1 =  0 + xr;  tri.y1 =  4 + yoffs;
+        tri.x2 =  4 + xr;  tri.y2 = -4 + yoffs;
     }
 
     primTriSolid2(&tri, col);
 }
 
 // callback to draw the title bar for the list
-void mgListOfGamesTitleDraw(rectangle *rect)
+void mgListOfGamesTitleDraw(rectanglei *rect)
 {
     sdword     x, y;
     fonthandle oldfont;
@@ -3459,7 +3461,7 @@ void mgListOfGamesTitleDraw(rectangle *rect)
 }
 
 // callback to draw each item in the list
-void mgListOfGamesItemDraw(rectangle *rect, listitemhandle data)
+void mgListOfGamesItemDraw(rectanglei *rect, listitemhandle data)
 {
     char        temp[512];
     sdword      x, y;
@@ -3704,7 +3706,7 @@ bool PingAllServers(udword num, void *data, struct BabyCallBack *baby)
     Callbacks for the waiting for game screens.:
 =============================================================================*/
 
-void mgGameChatItemDraw(rectangle *rect, listitemhandle data)
+void mgGameChatItemDraw(rectanglei *rect, listitemhandle data)
 {
     char   temp[512];
     sdword x = rect->x0 + MG_HorzSpacing,
@@ -3801,7 +3803,7 @@ void mgGameChatWindowInit(char *name, featom *atom)
     }
 }
 
-void mgGameUserNameItemDraw(rectangle *rect, listitemhandle data)
+void mgGameUserNameItemDraw(rectanglei *rect, listitemhandle data)
 {
     gameplayerinfo *playerinfo=(gameplayerinfo *)data->data;
     sdword          x, y;
@@ -4460,25 +4462,23 @@ sdword mgAddCPUProcess(regionhandle region, sdword ID, udword event, udword data
 ----------------------------------------------------------------------------*/
 void mgDrawArrow(regionhandle region, bool leftArrow, bool human)
 {
-    sdword y;
-    rectangle *rect = &region->rect;
+    rectanglei *recti = &region->rect;
+    rectanglef  rect  = rectToFloatRect( recti );
+    real32      width = rect.x1 - rect.x0 - 4;
+    real32      y     = rect.y0 + mg_ArrowMarginTop;
+
     triangle tri;
-    sdword width = rect->x1 - rect->x0 - 4;
-    bool flag;
-
-    y = rect->y0 + mg_ArrowMarginTop;
-
     if(leftArrow)
     {
-        tri.x0 = rect->x1 - 2;
-        tri.x1 = rect->x0 + 2;
-        tri.x2 = rect->x1 - 2;
+        tri.x0 = rect.x1 - 2;
+        tri.x1 = rect.x0 + 2;
+        tri.x2 = rect.x1 - 2;
     }
     else
     {
-        tri.x0 = rect->x0 + 2;
-        tri.x1 = rect->x0 + 2;
-        tri.x2 = rect->x1 - 2;
+        tri.x0 = rect.x0 + 2;
+        tri.x1 = rect.x0 + 2;
+        tri.x2 = rect.x1 - 2;
     }
 
 
@@ -4498,7 +4498,7 @@ void mgDrawArrow(regionhandle region, bool leftArrow, bool human)
 
     if (human)
     {
-        flag = ((leftArrow && mgHumanLeftArrowActive) || (!leftArrow && mgHumanRightArrowActive));
+        bool flag = ((leftArrow && mgHumanLeftArrowActive) || (!leftArrow && mgHumanRightArrowActive));
         if (flag)
         {
             mgHumanLeftArrowActive  = FALSE;
@@ -4515,13 +4515,10 @@ void mgDrawArrow(regionhandle region, bool leftArrow, bool human)
         {
             primTriSolid2(&tri, colRGB(0, 0, 0));
         }
-
-
-
     }
     else //cpu
     {
-        flag = ((leftArrow && mgCPULeftArrowActive) || (!leftArrow && mgCPURightArrowActive));
+        bool flag = ((leftArrow && mgCPULeftArrowActive) || (!leftArrow && mgCPURightArrowActive));
         if( flag )
         {
             mgCPULeftArrowActive  = FALSE;
@@ -4540,14 +4537,7 @@ void mgDrawArrow(regionhandle region, bool leftArrow, bool human)
 
     }
 
-
-
-
-
     primTriOutline2(&tri, 1, colRGB(200, 200, 0));
-
-
-
 }
 
 
@@ -4688,7 +4678,7 @@ void mgNumberOfComputers(featom *atom, regionhandle region)
 
     mgNumCompPlayerReg = region;
 
-    primRectSolid2(&region->rect,0);
+    primRectiSolid2(&region->rect,0);
 
     oldfont = fontMakeCurrent(mgOptionsFont);
 
@@ -5351,7 +5341,7 @@ void mgConnectingCancel(char *name, featom *atom)
     mgShowScreen(mgConnectingScreenGoto,TRUE);
 }
 
-void mgConnectingStatusItemDraw(rectangle *rect, listitemhandle data)
+void mgConnectingStatusItemDraw(rectanglei *rect, listitemhandle data)
 {
     sdword      x, y;
     fonthandle  oldfont;
@@ -6727,25 +6717,17 @@ void titanGetPatchFailedCB(int patchFailErrorMsg)
     patchErrorMsg = patchFailErrorMsg;
 }
 
-void drawBarWithOutline(rectangle *rect,real32 progress,color barcolor,color baroutlinecolor)
+void drawBarWithOutline(rectanglei *rect,real32 progress,color barcolor,color baroutlinecolor)
 {
-    rectangle temp;
+    rectanglei temp;
     //rectangle clear;
 
     temp.x0 = rect->x0;
     temp.y0 = rect->y0;
     temp.x1 = rect->x0 + (sdword)((rect->x1-rect->x0)*progress);
     temp.y1 = rect->y1;
-#if 0
-    clear.y0 = temp.y0;
-    clear.y1 = temp.y1;
-    clear.x0 = temp.x1;
-    clear.x1 = rect->x1;
-
-    primRectSolid2(&clear, colBlack);
-#endif
-    primRectSolid2(&temp, barcolor);
-    primRectOutline2(rect, 1, baroutlinecolor);
+    primRectiSolid2(&temp, barcolor);
+    primRectiOutline2(rect, 1, baroutlinecolor);
 }
 
 extern fonthandle selGroupFont1;
@@ -6753,7 +6735,7 @@ extern fonthandle selGroupFont1;
 void mgDrawPatchProgress(featom *atom, regionhandle region)
 {
     fonthandle oldfont;
-    rectangle pos=region->rect;
+    rectanglei pos=region->rect;
     real32 progress;
     sdword fontheight;
 
@@ -6765,7 +6747,7 @@ void mgDrawPatchProgress(featom *atom, regionhandle region)
     pos.y0 += fontheight;
     pos.y1 = pos.y0 + fontheight;
 
-    primRectSolid2(&pos,colBlack);
+    primRectiSolid2(&pos,colBlack);
 
     if (patchErrorMsg)
     {
@@ -7476,24 +7458,26 @@ void mgCancelChooseServer(char *name, featom *atom)
 void mgDrawTriangleServer(sdword x, color col)
 {
     triangle tri;
+    real32 rx    = (real32) x;
+    real32 yoffs = mgListOfServersWindow->reg.rect.y0 + (real32)(MG_VertSpacing+4);
 
     if (!mgListOfServersWindow->sortOrder)
     {
-        tri.x0 = -4 + x; tri.y0 = 4 + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x1 = 4  + x; tri.y1 = 4 + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x2 = 0  + x; tri.y2 = -4  + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
+        tri.x0 = -4 + rx;  tri.y0 =  4 + yoffs;
+        tri.x1 =  4 + rx;  tri.y1 =  4 + yoffs;
+        tri.x2 =  0 + rx;  tri.y2 = -4 + yoffs;
     }
     else
     {
-        tri.x0 = -4 + x; tri.y0 = -4  + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x1 = 0  + x; tri.y1 = 4 + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
-        tri.x2 = 4  + x; tri.y2 = -4  + mgListOfServersWindow->reg.rect.y0+MG_VertSpacing+4;
+        tri.x0 = -4 + rx;  tri.y0 = -4 + yoffs;
+        tri.x1 =  0 + rx;  tri.y1 =  4 + yoffs;
+        tri.x2 =  4 + rx;  tri.y2 = -4 + yoffs;
     }
 
     primTriSolid2(&tri, col);
 }
 
-void mgDrawListOfServersTitle(rectangle *rect)
+void mgDrawListOfServersTitle(rectanglei *rect)
 {
     sdword     x, y;
     fonthandle oldfont;
@@ -7711,7 +7695,7 @@ void mgListOfServersTitleClick(struct tagRegion *reg, sdword xClicked)
     }
 }
 
-void mgDrawListOfServersItem(rectangle *rect, listitemhandle data)
+void mgDrawListOfServersItem(rectanglei *rect, listitemhandle data)
 {
     char            temp[512];
     sdword          x, y;

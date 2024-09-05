@@ -361,7 +361,7 @@ void objectiveDrawStatus(void)
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void poPopupTextDraw(rectangle *rect)
+void poPopupTextDraw(rectanglei *rect)
 {
     sdword x, y, width, rectWidth;
 //    udword count;

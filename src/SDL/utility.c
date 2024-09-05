@@ -805,12 +805,12 @@ void utyTutorialAlertCancel(char* name, featom* atom)
 ----------------------------------------------------------------------------*/
 void versionNumDraw(featom *atom, regionhandle region)
 {
-    rectangle pos=region->rect;
+    rectanglei pos=region->rect;
     sdword fontheight;
     fonthandle oldfont;
     char versionstr[70];
 
-    primRectSolid2(&region->rect, colBlack);
+    primRectiSolid2(&region->rect, colBlack);
 
     strcpy(versionstr, strGetString(strVersion));
     strcat(versionstr, " ");

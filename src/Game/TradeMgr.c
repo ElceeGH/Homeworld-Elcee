@@ -448,7 +448,7 @@ void tmCostListDraw(featom *atom, regionhandle region)
 {
     udword price;
     sdword x, y, index;
-    rectangle *rect = &region->rect;
+    rectanglei *rect = &region->rect;
     bool        newline=FALSE;
     color c;
     fonthandle currentFont;
@@ -750,19 +750,15 @@ void tmNumberRUsDraw(featom *atom, regionhandle region)
 {
     sdword width;
     fonthandle oldfont;
-    rectangle rect = region->rect;
+    rectanglei rect = region->rect;
     tmNumberRUsRegion = region;
 
     oldfont = fontMakeCurrent(tmTechListFont);
     width = fontWidthf("%d", universe.curPlayerPtr->resourceUnits);//width of number
 
     primModeSet2();
-    primRectSolid2(&rect, colRGB(0, 0, 0));
-
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(rect.x0, MAIN_WindowHeight - rect.y1, rect.x1 - rect.x0, rect.y1 - rect.y0);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
+    primRectiSolid2(&rect, colRGB(0, 0, 0));
+    scissorClearDepthInRect( &rect );
 
     feStaticRectangleDraw(region);                          //draw regular rectangle as backdrop
     fontPrintf(region->rect.x1 - width - TM_RUMarginRight,
@@ -1057,7 +1053,7 @@ void tmTechImageDraw(featom *atom, regionhandle region)
     char      filename[128];
     sdword    index, lru = 0;
     real32    time=(real32)1.0e22;
-    rectangle textureRect;
+    rectanglei textureRect;
 
     tmTechImageRegion = region;
 
@@ -1090,7 +1086,7 @@ void tmTechImageDraw(featom *atom, regionhandle region)
                     textureRect.x1=region->rect.x1-TM_TEXTURE_INSET;
                     textureRect.y1=region->rect.y1-TM_TEXTURE_INSET;
 
-                    primRectSolidTextured2(&textureRect);
+                    primRectiSolidTextured2(&textureRect,colWhite);
 
                     //if(tmExtendedInfoActive)
                     //{
@@ -1139,7 +1135,7 @@ void tmTechImageDraw(featom *atom, regionhandle region)
         textureRect.y0=region->rect.y0+TM_TEXTURE_INSET;
         textureRect.x1=region->rect.x1-TM_TEXTURE_INSET;
         textureRect.y1=region->rect.y1-TM_TEXTURE_INSET;
-        primRectSolidTextured2(&textureRect);
+        primRectiSolidTextured2(&textureRect,colWhite);
     }
 }
 
@@ -1149,10 +1145,7 @@ bool tmFirstWordNULL(char *s)
 
     line[0] = 0;
     getWord(line,s);
-    if(!strcmp(line,"NULL"))
-        return (TRUE);
-    else
-        return (FALSE);
+    return ! strcmp(line,"NULL");
 }
 
 sdword tmDrawTextBlock(char *s, sdword x, sdword y, sdword width, sdword height, color c)

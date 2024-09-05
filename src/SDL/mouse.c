@@ -90,22 +90,22 @@ typedef struct
 //so we need to include singlePlayerGameInfo
 extern SinglePlayerGameInfo singlePlayerGameInfo;
 
-sdword    mouseCursorXPosition = 0;
-sdword    mouseCursorYPosition = 0;
-sdword    mouseCursorXDelta    = 0;
-sdword    mouseCursorYDelta    = 0;
-uword     mouseButtons;
-udword    mouseModuleInit;
-rectangle mouseClipRect;
-bool8     mouseCaptureEnabled     = FALSE; // When true, mouse is locked to a certain pos
-bool8     mouseCaptureEnabledPrev = FALSE;
-sdword    mouseCapturePosX    = 0;
-sdword    mouseCapturePosY    = 0;
-bool8     mouseClip           = FALSE;
-bool8     mouseIsVisible      = TRUE;
-uword     mouseWillBeVisible  = 0;
-bool8     mouseDisabled       = FALSE;
-uword     mouseInsideClient   = FALSE;
+sdword     mouseCursorXPosition = 0;
+sdword     mouseCursorYPosition = 0;
+sdword     mouseCursorXDelta    = 0;
+sdword     mouseCursorYDelta    = 0;
+uword      mouseButtons;
+udword     mouseModuleInit;
+rectanglei mouseClipRect;
+bool8      mouseCaptureEnabled     = FALSE; // When true, mouse is locked to a certain pos
+bool8      mouseCaptureEnabledPrev = FALSE;
+sdword     mouseCapturePosX    = 0;
+sdword     mouseCapturePosY    = 0;
+bool8      mouseClip           = FALSE;
+bool8      mouseIsVisible      = TRUE;
+uword      mouseWillBeVisible  = 0;
+bool8      mouseDisabled       = FALSE;
+uword      mouseInsideClient   = FALSE;
 
 static bool mouseGLInitialized;
 
@@ -466,7 +466,7 @@ void mousePositionSet(sdword x, sdword y)
     Description : Sets up the mouse for clipping to a given rectangle. (Not immediate effect, done in mousePoll())
     Inputs      : rect - rectangle to clip to.  NULL means no rectangle.
 ----------------------------------------------------------------------------*/
-void mouseClipToRect(rectangle *rect)
+void mouseClipToRect(rectanglei *rect)
 {
     if (rect == NULL)
     {
@@ -754,16 +754,16 @@ void mouseDrawTriangle(void)
 {
     triangle mouseTri, mouseTri2;
 
-    mouseTri.x0 = mouseCursorXPosition + 0;
-    mouseTri.y0 = mouseCursorYPosition + 0;
-    mouseTri.x1 = mouseCursorXPosition + 4;
-    mouseTri.y1 = mouseCursorYPosition + 16;
-    mouseTri.x2 = mouseCursorXPosition + 14;
-    mouseTri.y2 = mouseCursorYPosition + 7;
+    mouseTri.x0 = (real32)(mouseCursorXPosition + 0 );
+    mouseTri.y0 = (real32)(mouseCursorYPosition + 0 );
+    mouseTri.x1 = (real32)(mouseCursorXPosition + 4 );
+    mouseTri.y1 = (real32)(mouseCursorYPosition + 16);
+    mouseTri.x2 = (real32)(mouseCursorXPosition + 14);
+    mouseTri.y2 = (real32)(mouseCursorYPosition + 7 );
     mouseTri2 = mouseTri;
-    mouseTri2.x2++;
+    mouseTri2.x2 += 1.0f;
     primTriSolid2(&mouseTri2, mouseCursorContentColor);      //draw mouse cursor
-    primTriOutline2(&mouseTri, 1, mouseCursorEdgeColor);
+    primTriOutline2(&mouseTri, 1.0f, mouseCursorEdgeColor);
 }
 
 
@@ -1743,31 +1743,40 @@ void mouseCursorTextDraw(void)
     Outputs     : clips x, y to rect
     Return      :
 ----------------------------------------------------------------------------*/
-static bool mouseClipPointToRect(sdword *x, sdword *y, rectangle *rect)
+static bool mouseClipPointToRect(sdword *x, sdword *y, rectanglei *rect)
 {
-    bool modified = FALSE;
+    bool   mod = FALSE;
+    sdword x0  = rect->x0;
+    sdword y0  = rect->y0;
+    sdword x1  = rect->x1;
+    sdword y1  = rect->y1;
 
-    if (*x < rect->x0) {
-        *x = rect->x0;
-        modified = TRUE;
-    }
+    if (*x <  x0) { *x = x0;     mod = TRUE; }
+    if (*x >= x1) { *x = x1 - 1; mod = TRUE; }
+    if (*y <  y0) { *y = y0;     mod = TRUE; }
+    if (*y >= y1) { *y = y1 - 1; mod = TRUE; }
 
-    if (*x >= rect->x1) {
-        *x  = rect->x1 - 1;
-        modified = TRUE;
-    }
+    return mod;
+}
 
-    if (*y < rect->y0) {
-        *y = rect->y0;
-        modified = TRUE;
-    }
 
-    if (*y >= rect->y1) {
-        *y  = rect->y1 - 1;
-        modified = TRUE;
-    }
 
-    return modified;
+bool mouseInRect( rectanglei* rect ) {
+    return mouseInRectGeneral( rect->x0, rect->y0, rect->x1, rect->y1 );
+}
+
+bool mouseInRectGeneral( sdword x0, sdword y0, sdword x1, sdword y1) {
+    return mouseCursorXPosition >= x0
+        && mouseCursorYPosition >= y0
+        && mouseCursorXPosition <  x1
+        && mouseCursorYPosition <  y1;
+}
+
+bool mouseInRectGeneralf( real32 x0, real32 y0, real32 x1, real32 y1) {
+    return (real32) mouseCursorXPosition >= x0
+        && (real32) mouseCursorYPosition >= y0
+        && (real32) mouseCursorXPosition <  x1
+        && (real32) mouseCursorYPosition <  y1;
 }
 
 

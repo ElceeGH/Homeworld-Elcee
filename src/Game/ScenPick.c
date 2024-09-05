@@ -170,7 +170,7 @@ scriptEntry spDescriptionTweaksItalian[] =
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void spScenarioItemDraw(rectangle *rect, listitemhandle data)
+void spScenarioItemDraw(rectanglei *rect, listitemhandle data)
 {
     char            temp[64];
     sdword          x, y;
@@ -208,7 +208,7 @@ void spScenarioNameDraw(featom *atom, regionhandle region)
     char scenarioName[128];
     bool useDisplayName = FALSE;
 
-    rectangle *r = &region->rect;
+    rectanglei *r = &region->rect;
 
     fhSave = fontMakeCurrent(spNameFont); //select the appropriate font
 
@@ -946,7 +946,7 @@ void spNewItem(void)
     char descriptionFile[PATH_MAX];
     char *chopBuffer;
     sdword scen;
-    rectangle textureRect;
+    rectanglei textureRect;
 //    rectangle rect = spScenarioBitmapWindow->rect;
     color *bmpBuffer;
     filehandle handle;
@@ -1028,7 +1028,7 @@ void spNewItem(void)
         textureRect.y0 = atom->y + SCP_TEXTURE_INSET;
         textureRect.x1 = atom->x + atom->width - SCP_TEXTURE_INSET;
         textureRect.y1 = atom->y + atom->height - SCP_TEXTURE_INSET;
-        primRectSolid2(&textureRect, colBlack);
+        primRectiSolid2(&textureRect, colBlack);
     }
 
     if (strlen(descriptionFile) > 0)
@@ -1117,7 +1117,7 @@ void spNewItem(void)
 ----------------------------------------------------------------------------*/
 void spScenarioBitmap(featom *atom, regionhandle region)
 {
-    rectangle textureRect;
+    rectanglei textureRect;
     sdword index, y;
     fonthandle oldFont;
 
@@ -1130,7 +1130,7 @@ void spScenarioBitmap(featom *atom, regionhandle region)
     if (scenarioTexture != TR_InvalidInternalHandle)
     {
         trRGBTextureMakeCurrent(scenarioTexture);
-        primRectSolidTextured2(&textureRect);               //draw the bitmap
+        primRectiSolidTextured2(&textureRect,colWhite);     //draw the bitmap
         feStaticRectangleDraw(region);                      //draw a border
     }
     //draw the description text...

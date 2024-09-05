@@ -143,7 +143,7 @@ sdword escapemenu;                              //remember what scren to return 
     Outputs     :
     Return      :
 ----------------------------------------------------------------------------*/
-void gpGameItemDraw(rectangle *rect, listitemhandle data)
+void gpGameItemDraw(rectanglei *rect, listitemhandle data)
 {
     char            temp[64];
     sdword          x, y;
@@ -154,9 +154,8 @@ void gpGameItemDraw(rectangle *rect, listitemhandle data)
     oldfont = fontMakeCurrent(gpListFont);
 
     if (data->flags&UICLI_Selected)
-        c = FEC_ListItemSelected;
-    else
-        c = FEC_ListItemStandard;
+         c = FEC_ListItemSelected;
+    else c = FEC_ListItemStandard;
 
     x = rect->x0;
     y = rect->y0;
@@ -182,7 +181,7 @@ void gpGameNameDraw(featom *atom, regionhandle region)
     strToUpper(gameName, gameName);
 
     fonthandle fhSave = fontMakeCurrent(gpNameFont); //select the appropriate font
-    rectangle *r = &region->rect;
+    rectanglei *r = &region->rect;
     fontPrintf(r->x0, r->y0, GP_SelectedColor, gameName);
     fontMakeCurrent(fhSave); //restore font
 }
