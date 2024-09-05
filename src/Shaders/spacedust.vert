@@ -65,10 +65,9 @@ float boxStep( float value, float low, float high ) {
 // - Regular semitransparent black
 // - Additive semitransparent colour
 // Output is an alpha-premultiplied colour for APM blending.
-// Black ones are made more opaque because they're harder to see (the sqrt).
 vec4 colourise( vec3 rgb, float alpha, float blend ) {
-    vec4 black = vec4( vec3(0.0),   sqrt(alpha) );
-    vec4 col   = vec4( rgb * alpha, 0.0         );
+    vec4 black = vec4( vec3(0.0),   alpha );
+    vec4 col   = vec4( rgb * alpha, 0.0   );
     return mix( black, col, blend );
 }
 
